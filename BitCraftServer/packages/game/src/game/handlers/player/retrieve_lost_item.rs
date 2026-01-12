@@ -1,0 +1,92 @@
+use spacetimedb::ReducerContext;
+
+use crate::game::coordinates::*;
+use crate::game::game_state::game_state_filters;
+use crate::game::reducer_helpers::player_action_helpers;
+use crate::messages::action_request::PlayerRetrieveLostItemRequest;
+use crate::messages::components::*;
+use crate::messages::game_util::ItemType;
+use crate::messages::static_data::{building_desc, BuildingCategory};
+use crate::{game_state, params};
+use crate::{parameters_desc_v2, unwrap_or_err};
+
+#[spacetimedb::reducer]
+
+pub fn retrieve_lost_item(ctx: &ReducerContext, request: PlayerRetrieveLostItemRequest) -> Result<(), String> {
+    let actor_id = game_state::actor_id(&ctx, true)?;
+    HealthState::check_incapacitated(ctx, actor_id, true)?;
+
+    PlayerTimestampState::refresh(ctx, actor_id, ctx.timestamp);
+
+    let building = unwrap_or_err!(
+        ctx.db.building_state().entity_id().find(request.building_entity_id),
+        "Invalid building"
+    );
+
+    let building_desc = unwrap_or_err!(
+        ctx.db.building_desc().id().find(&building.building_description_id),
+        "Unknown building type"
+    );
+
+    if building.distance_to(ctx, &game_state_filters::coordinates_float(ctx, actor_id).into()) > 2 {
+        return Err("Too far".into());
+    }
+
+    if !building_desc.has_category(ctx, BuildingCategory::RecoveryChest) {
+        return Err("You can't retrieve items from this building".into());
+    }
+
+    let building_coord: SmallHexTile = game_state_filters::coordinates_try_get(ctx, request.building_entity_id)?.into();
+    let max_distance = params!(ctx).item_recovery_range;
+
+    let mut player_inventory = if request.item_id == TradeOrderState::MARKET_MODE_CURRENCY_ID && !request.is_cargo {
+        InventoryState::get_player_wallet(ctx, actor_id).unwrap()
+    } else {
+        InventoryState::get_player_inventory(ctx, actor_id).unwrap()
+    };
+
+    // TODO, possibly: sort by distance so the closest inventories get depleted first.
+    for lost_items in ctx.db.lost_items_state().owner_entity_id().filter(actor_id) {
+        let coord: SmallHexTile = lost_items.location.into();
+        if building_coord.distance_to(coord) <= max_distance {
+            let mut inventory = ctx.db.inventory_state().entity_id().find(lost_items.inventory_entity_id).unwrap();
+            let mut updated_inventory = false;
+            for i in 0..inventory.pockets.len() {
+                let pocket = inventory.pockets.get_mut(i).unwrap();
+                if let Some(item_stack) = pocket.contents.as_mut() {
+                    if item_stack.item_id == request.item_id && request.is_cargo == (item_stack.item_type == ItemType::Cargo) {
+                        if let Some(durability) = item_stack.durability {
+                            // durability items are only picked one by one if the durability matches the query
+                            if durability == request.durability {
+                                if !player_inventory.add(ctx, *item_stack) {
+                                    return Err("Not enough room in inventory".into());
+                                }
+                                ctx.db.inventory_state().entity_id().update(player_inventory);
+                                pocket.contents = None;
+                                ctx.db.inventory_state().entity_id().update(inventory);
+                                player_action_helpers::post_reducer_update_cargo(ctx, actor_id);
+                                return Ok(());
+                            }
+                            continue;
+                        }
+                        // no durability items are always stacked
+                        updated_inventory = player_inventory.add_partial(ctx, item_stack);
+                    }
+                }
+            }
+            if updated_inventory {
+                if inventory.is_empty() {
+                    ctx.db.inventory_state().entity_id().delete(inventory.entity_id);
+                    ctx.db.lost_items_state().inventory_entity_id().delete(inventory.entity_id);
+                } else {
+                    ctx.db.inventory_state().entity_id().update(inventory);
+                }
+            }
+        }
+    }
+
+    ctx.db.inventory_state().entity_id().update(player_inventory);
+    player_action_helpers::post_reducer_update_cargo(ctx, actor_id);
+
+    Ok(())
+}

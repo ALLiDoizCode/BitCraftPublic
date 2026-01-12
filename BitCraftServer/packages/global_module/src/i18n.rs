@@ -1,0 +1,1 @@
+../../game/src/i18n.rs

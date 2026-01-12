@@ -1,0 +1,94 @@
+name: Delete Module when PR closed
+on:
+  pull_request:
+    types: [closed]
+  workflow_dispatch: # allows manually triggering the workflow through the GitHub API, GitHub UI or Github CLI
+    inputs:
+      moduleName:
+        description: 'Manually trigger this workflow.'
+        required: true
+        default: bitcraft-master
+        type: 'string'
+
+jobs:
+  DeleteModule:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run script file 1
+        run: |
+          echo "hello world, printing ls -la"
+          ls -la
+        shell: bash
+      - name: Set Module Name from Trigger Condition and Branch Name
+        id: set_module_name
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]
+          then
+            echo "Set module name from branch name"
+            GIT_BRANCH=${GITHUB_REF_NAME}
+
+            if [ "$GIT_BRANCH" = "master" ] || [ "$GIT_BRANCH" = "main" ]
+            then
+              # Example : bitcraft
+              MODULE_NAME=bitcraft-master
+            else
+              # Example : bitcraft-qa
+              MODULE_NAME=bitcraft-$GIT_BRANCH
+            fi
+
+            echo "SET module_name=$MODULE_NAME"
+            echo "module_name=$MODULE_NAME" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event_name }}" = "pull_request" ]
+          then
+            echo "Set module name from Pull Request number"
+            echo "SET module_name=bitcraft-pr-${{ github.event.number }}"
+            echo "module_name=bitcraft-pr-${{ github.event.number }}" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]
+          then
+            echo "Set module name from user input"
+            echo "SET module_name=${{ github.event.inputs.moduleName }}"
+            echo "module_name=${{ github.event.inputs.moduleName }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "ERROR : Unexpected flow to trigger the action. Please add logic to define module_name to handle this case."
+            exit 1 # Set action as failed
+          fi
+        shell: bash
+      - uses: actions/checkout@v3
+        with:
+          clean: false
+      - name: spacetime install
+        run: |
+          chmod +x ./.github/install-spacetimedb-github-actions.sh
+          ./.github/install-spacetimedb-github-actions.sh
+
+          ls -la
+
+          ./spacetime version
+        shell: bash
+      - name: spacetime set server
+        run: |
+          ./spacetime server list
+          ./spacetime server fingerprint ${{ vars.SPACETIME_SERVER_NAME }} -y
+          ./spacetime server set-default ${{ vars.SPACETIME_SERVER_NAME }}
+        shell: bash
+      - name: SpacetimeDB Login
+        run: |
+          ./spacetime login --token ${{ secrets.SPACETIME_TOKEN }}
+        shell: bash
+      - name: spacetime delete module
+        run: |
+          echo "./spacetime delete ${{ steps.set_module_name.outputs.module_name }}"
+          ./spacetime delete -s ${{ vars.SPACETIME_SERVER_NAME }} ${{ steps.set_module_name.outputs.module_name }}
+        shell: bash
+      - if: ${{ github.event_name == 'pull_request' }} # only leave a comment if this is triggered by a PR
+        name: Leave comment PR comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: '👋 Module `${{ steps.set_module_name.outputs.module_name }}` has been deleted because the PR was closed.'
+                })
+

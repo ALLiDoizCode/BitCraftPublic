@@ -1,0 +1,9 @@
+{
+  "env": "dev",
+  "cheats": {
+    "build_consumes_item_stacks": true,
+    "craft_consumes_item_stacks": true,
+    "creative_mode": false,
+    "dev_pw": "6c9c96c9"
+  }
+}

@@ -1,0 +1,30 @@
+[package]
+name = "bitcraft-spacetimedb"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+probability = "0.20.3"
+spacetimedb = { version = "=1.6.0", features = ["unstable"] }
+spacetimedb-bindings-sys = "=1.6.0"
+spacetimedb-bindings-macro = "=1.6.0"
+bitcraft-macro = { path = "./bitcraft-macro" }
+strum = "0.24"
+strum_macros = "0.24"
+queues = "1.0"
+num-traits = "0.2"
+csv = "1.1"
+json = "*"
+regex = "1.10.4"
+
+[profile.release]
+opt-level = 's'
+lto = true
+
+[build-dependencies]
+glob = "0.3.0"

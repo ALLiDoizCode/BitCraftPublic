@@ -1,0 +1,1 @@
+../../../game/src/messages/authentication.rs

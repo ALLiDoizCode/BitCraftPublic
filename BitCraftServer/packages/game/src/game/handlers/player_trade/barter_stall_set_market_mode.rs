@@ -1,0 +1,8 @@
+use spacetimedb::ReducerContext;
+
+use crate::messages::action_request::BarterStallSetMarketModeEnabledRequest;
+
+#[spacetimedb::reducer]
+pub fn barter_stall_set_market_mode_enabled(_ctx: &ReducerContext, _request: BarterStallSetMarketModeEnabledRequest) -> Result<(), String> {
+    return Err("Market mode has been discontinued".into());
+}

@@ -1,0 +1,35 @@
+name: Weekly master -> qa -> stable PR
+
+on:
+  schedule:
+    # At 08:00 AM UTC, only on Tuesday
+    - cron: '0 8 * * 2'
+  workflow_dispatch: # allows manually triggering the workflow through the GitHub API, GitHub UI or Github CLI
+    inputs:
+
+jobs:
+  reset-and-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          ref: master # Ensures we checkout the latest master
+
+      - name: Configure git
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+      - name: Reset QA branch to Develop
+        run: |
+          git fetch origin
+          git checkout qa
+          git reset --hard origin/master
+          git push --force
+
+      - name: Create Pull Request
+        run: |
+          echo -e "# Update \`stable\` to \`master\`\n\n### This PR was created as part of a weekly automation.\nThe automation resets the \`qa\` branch to point to \`master\` and creates this PR from \`qa\` to \`stable\`." | gh pr create -B stable -H qa --title "[BOT] Weekly update of \`stable\` to \`master\`" --reviewer CLVoxel,aasoni,CMinch --body-file -
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
