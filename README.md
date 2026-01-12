@@ -1,6 +1,6 @@
 # BitCraftPublic
 
-This repository contains the **erver-side code** for **BitCraft**, a community sandbox MMORPG developed by Clockwork Labs.
+This repository contains the **server-side code** for **BitCraft**, a community sandbox MMORPG developed by Clockwork Labs.
 
 BitCraft blends cooperative gameplay, city-building, crafting, exploration, and survival — all in a single seamless world shared by players around the globe.
 This repository represents the first phase of our open source initiative. It is being made available for public inspection, experimentation, and contribution.
