@@ -1,0 +1,26 @@
+# 8. Action Cost Registry
+
+Static JSON configuration. Researchers edit costs between experiments.
+
+```json
+{
+  "version": 1,
+  "defaultCost": 10,
+  "actions": {
+    "player_move":           { "cost": 1,   "category": "movement",  "frequency": "high" },
+    "player_teleport_home":  { "cost": 20,  "category": "movement",  "frequency": "low" },
+    "portal_enter":          { "cost": 5,   "category": "movement",  "frequency": "medium" },
+    "attack_start":          { "cost": 10,  "category": "combat",    "frequency": "medium" },
+    "harvest_start":         { "cost": 5,   "category": "resource",  "frequency": "high" },
+    "project_site_place":    { "cost": 50,  "category": "building",  "frequency": "low" },
+    "trade_with_player":     { "cost": 10,  "category": "economy",   "frequency": "medium" },
+    "chat_post_message":     { "cost": 1,   "category": "social",    "frequency": "high" },
+    "empire_form":           { "cost": 100, "category": "governance", "frequency": "very_low" },
+    "craft_item":            { "cost": 15,  "category": "crafting",  "frequency": "medium" }
+  }
+}
+```
+
+The `AffordanceEngine` reads this registry to annotate affordances with costs, enabling budget-aware decision-making in the `GoalPlanner`.
+
+---
