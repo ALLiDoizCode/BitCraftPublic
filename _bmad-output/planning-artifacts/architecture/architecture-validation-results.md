@@ -2,8 +2,8 @@
 
 ## Coherence Validation
 
-**Decision Compatibility: PASS**
-- SpacetimeDB 2.0 TS SDK confirmed backwards-compatible with 1.6.x server modules
+**Decision Compatibility: PASS (Updated 2026-02-26)**
+- SpacetimeDB SDK 1.3.3 (1.x) required for compatibility with 1.6.x server modules (SDK 2.0 NOT backwards compatible - see spike report)
 - ratatui 0.30 + crossterm 0.29 + tokio: standard, well-tested Rust TUI stack
 - JSON-RPC 2.0 over stdio: proven IPC pattern, strong tooling in both TS and Rust (serde)
 - `@sigil/client` as single abstraction: clean separation — no consumer touches SpacetimeDB/Crosstown directly
@@ -48,7 +48,7 @@
 | NFR1-7 | Performance | ratatui dirty flags + tick system (30+ FPS), ILP pipeline in `@sigil/client`, skill parsing in `skill-loader.ts` |
 | NFR8-13 | Security | `client/identity/` (key management), `client/payments/bls-proxy.ts` (identity propagation), keys never transmitted |
 | NFR14-17 | Scalability | SpacetimeDB handles server-side concurrency; `@sigil/client` is single-connection per instance; JSONL log rotation |
-| NFR18-22 | Integration | SpacetimeDB 2.0 SDK (backwards-compatible with 1.6.x), Nostr via `nostr-tools`, Agent SDK pluggable, SKILL.md runtime-agnostic, Docker for Linux/macOS |
+| NFR18-22 | Integration | SpacetimeDB SDK 1.3.3 (required for 1.6.x compatibility), Nostr via `nostr-tools`, Agent SDK pluggable, SKILL.md runtime-agnostic, Docker for Linux/macOS |
 | NFR23-27 | Reliability | `client/perception/reconnect.ts` (auto-reconnect, state recovery), typed errors with boundary, append-only decision logs, TUI graceful degradation |
 
 ## Gap Analysis Results
@@ -88,7 +88,7 @@
 
 **Architectural Decisions**
 - [x] Critical decisions documented with versions (9 decisions)
-- [x] Technology stack fully specified (SpacetimeDB 2.0 TS SDK, ratatui 0.30, etc.)
+- [x] Technology stack fully specified (SpacetimeDB SDK 1.3.3, ratatui 0.30, etc.)
 - [x] Integration patterns defined (IPC JSON-RPC 2.0, MCP, EventEmitter)
 - [x] Performance considerations addressed (dirty flags, tick system, FPS targets)
 - [x] Agent inference strategy defined (pluggable Agent SDK in `@sigil/client`)
@@ -140,7 +140,7 @@
 
 **First Implementation Priority:**
 1. Repository scaffolding: monorepo with pnpm workspace + cargo workspace
-2. `@sigil/client` package: SpacetimeDB 2.0 connection + basic identity (FR1, FR6)
+2. `@sigil/client` package: SpacetimeDB 1.x connection + basic identity (FR1, FR6)
 3. MCP server: expose one read resource + one write tool to validate end-to-end
 4. Headless agent: minimal agent that connects and logs game state
 5. TUI backend + Rust TUI: splash screen with connection status

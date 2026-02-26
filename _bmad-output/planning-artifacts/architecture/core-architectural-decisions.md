@@ -24,7 +24,7 @@
 ## Data Architecture
 
 **Database:** SpacetimeDB (server-side, unmodified BitCraft). No additional database required for MVP.
-- SpacetimeDB 2.0 client SDKs targeting 1.6.x server modules (backwards compatible)
+- SpacetimeDB SDK 1.3.3 (1.x) required for compatibility with BitCraft's 1.6.0 server (SDK 2.0+ NOT backwards compatible)
 - ~80 entity tables, 148 static data tables, 364+ reducers available
 - Subscription-based real-time state sync via TypeScript SDK
 
@@ -65,10 +65,10 @@ Agent/Player → SDK Proxy Layer → Inject Nostr pubkey as reducer arg
 - Connects to SpacetimeDB for subscriptions, Crosstown/BLS for authenticated writes
 
 **SpacetimeDB Protocol:**
-- WebSocket v2 (SpacetimeDB 2.0 client SDK)
+- WebSocket (SpacetimeDB SDK 1.x compatible with 1.6.0 server)
 - Subscription-based: clients subscribe to table queries, receive real-time updates
 - Reducer calls for all write operations
-- Event tables + `_then()` callbacks (replaces deprecated reducer callbacks)
+- Global reducer callbacks (1.x SDK pattern; 2.0+ uses event tables + `_then()` callbacks)
 
 **Crosstown/ILP Protocol:**
 - Every game write action is an ILP micropayment
@@ -255,7 +255,7 @@ sigil/
 
 **Implementation Sequence:**
 1. Repository scaffolding (monorepo with TS workspace + Rust crate)
-2. `@sigil/client` package: SpacetimeDB 2.0 client + Nostr relay + Crosstown/ILP + Identity + `client.publish()` write path
+2. `@sigil/client` package: SpacetimeDB 1.x client + Nostr relay + Crosstown/ILP + Identity + `client.publish()` write path
 3. `@sigil/mcp-server` (MCP protocol wrapper over `@sigil/client`, exposes game world as tools/resources)
 4. `@sigil/tui-backend` (JSON-RPC IPC wrapper over `@sigil/client`, bridge for ratatui)
 5. `sigil-tui` Rust TUI application (ratatui presentation layer, connects to tui-backend via IPC)

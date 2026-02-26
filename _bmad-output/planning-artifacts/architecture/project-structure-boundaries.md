@@ -34,7 +34,7 @@ sigil/
 │   │   │   ├── errors.ts              # SigilError class, error codes, boundary enum
 │   │   │   ├── spacetimedb/
 │   │   │   │   ├── index.ts           # FR6-FR10: client.spacetimedb surface
-│   │   │   │   ├── connection.ts      # SpacetimeDB 2.0 WebSocket v2 connection manager
+│   │   │   │   ├── connection.ts      # SpacetimeDB 1.x WebSocket connection manager
 │   │   │   │   ├── subscriptions.ts   # Table subscription management
 │   │   │   │   ├── reconnect.ts       # Auto-reconnect with exponential backoff
 │   │   │   │   ├── static-data.ts     # *_desc table loader (FR8)
@@ -186,7 +186,7 @@ sigil/
 ## Architectural Boundaries
 
 **Boundary 1: `@sigil/client` → External Services**
-- SpacetimeDB: WebSocket v2 connection (subscription + reducer calls)
+- SpacetimeDB: WebSocket connection (subscription + reducer calls, SDK 1.x)
 - Crosstown: ILP packet routing (payment + BLS identity)
 - Agent SDKs: HTTP to LLM providers (Anthropic API, OpenAI-compatible)
 - All external errors wrapped with `boundary` field at this layer
@@ -240,7 +240,7 @@ sigil/
 │                        SpacetimeDB Server                          │
 │  (BitCraft WASM module — unmodified, ~80 tables, 364+ reducers)    │
 └──────────┬──────────────────────────────────┬───────────────────────┘
-           │ WebSocket v2 (subscriptions)      │ reducer calls
+           │ WebSocket (subscriptions, SDK 1.x) │ reducer calls
            ▼                                   ▲
 ┌────────────────────────────────────────────────────────────────────┐
 │                       @sigil/client                                │
