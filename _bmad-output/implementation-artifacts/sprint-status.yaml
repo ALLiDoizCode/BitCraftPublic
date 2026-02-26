@@ -26,7 +26,7 @@ epics:
         status: done
       - id: story-1.2
         title: "Nostr Identity Management"
-        status: backlog
+        status: done
       - id: story-1.3
         title: "Docker Local Development Environment"
         status: backlog
