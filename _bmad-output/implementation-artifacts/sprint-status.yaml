@@ -23,7 +23,7 @@ epics:
     stories:
       - id: story-1.1
         title: "Monorepo Scaffolding & Build Infrastructure"
-        status: backlog
+        status: done
       - id: story-1.2
         title: "Nostr Identity Management"
         status: backlog

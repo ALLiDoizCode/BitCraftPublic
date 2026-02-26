@@ -1,0 +1,25 @@
+{
+  "name": "sigil-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "scripts": {
+    "build": "pnpm --recursive build",
+    "test": "pnpm --recursive test",
+    "test:integration": "vitest run",
+    "lint": "eslint packages/*/src --ext .ts",
+    "typecheck": "pnpm --recursive exec tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "@typescript-eslint/eslint-plugin": "^8.56.1",
+    "@typescript-eslint/parser": "^8.56.1",
+    "eslint": "^8.50.0",
+    "prettier": "^3.0.0",
+    "typescript": "^5.2.0",
+    "vitest": "latest"
+  }
+}

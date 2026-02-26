@@ -1,1 +1,36 @@
 .auto-bmad-tmp/
+
+# Workspaces
+node_modules/
+dist/
+build/
+target/
+*.tsbuildinfo
+.turbo/
+
+# Environment & Logs
+.env
+.env.local
+.env.*.local
+*.log
+.pnpm-debug.log*
+
+# Testing
+coverage/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Rust
+Cargo.lock
+**/*.rs.bk
+
+# Packages
+*.tgz
