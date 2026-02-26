@@ -39,6 +39,7 @@ Identify engine type by checking for:
 - **Godot**: `project.godot`, `*.tscn`, `*.gd` files
 
 Load the appropriate engine-specific knowledge fragment:
+
 - Unity: `knowledge/unity-testing.md`
 - Unreal: `knowledge/unreal-testing.md`
 - Godot: `knowledge/godot-testing.md`
@@ -120,11 +121,7 @@ Tests/PlayMode/E2E/
 {
   "name": "E2E",
   "rootNamespace": "{ProjectNamespace}.Tests.E2E",
-  "references": [
-    "{GameAssemblyName}",
-    "Unity.InputSystem",
-    "Unity.InputSystem.TestFramework"
-  ],
+  "references": ["{GameAssemblyName}", "Unity.InputSystem", "Unity.InputSystem.TestFramework"],
   "includePlatforms": [],
   "excludePlatforms": [],
   "allowUnsafeCode": false,
@@ -135,15 +132,14 @@ Tests/PlayMode/E2E/
     "UnityEditor.TestRunner.dll"
   ],
   "autoReferenced": false,
-  "defineConstraints": [
-    "UNITY_INCLUDE_TESTS"
-  ],
+  "defineConstraints": ["UNITY_INCLUDE_TESTS"],
   "versionDefines": [],
   "noEngineReferences": false
 }
 ```
 
 **Notes:**
+
 - Replace `{ProjectNamespace}` with detected project namespace
 - Replace `{GameAssemblyName}` with main game assembly
 - Include `Unity.InputSystem` references only if Input System package detected
@@ -173,60 +169,60 @@ namespace {Namespace}.Tests.E2E
         /// Override to specify a different scene for specific test classes.
         /// </summary>
         protected virtual string SceneName => "{MainSceneName}";
-        
+
         /// <summary>
         /// Primary game state manager reference.
         /// </summary>
         protected {GameStateClass} GameState { get; private set; }
-        
+
         /// <summary>
         /// Input simulation utility.
         /// </summary>
         protected InputSimulator Input { get; private set; }
-        
+
         /// <summary>
         /// Scenario configuration builder.
         /// </summary>
         protected ScenarioBuilder Scenario { get; private set; }
-        
+
         [UnitySetUp]
         public IEnumerator BaseSetUp()
         {
             // Load the game scene
             yield return SceneManager.LoadSceneAsync(SceneName);
             yield return null; // Wait one frame for Awake/Start
-            
+
             // Get core references
             GameState = Object.FindFirstObjectByType<{GameStateClass}>();
-            Assert.IsNotNull(GameState, 
+            Assert.IsNotNull(GameState,
                 $"{nameof({GameStateClass})} not found in scene '{SceneName}'");
-            
+
             // Initialize test utilities
             Input = new InputSimulator();
             Scenario = new ScenarioBuilder(GameState);
-            
+
             // Wait for game to reach ready state
             yield return WaitForGameReady();
-            
+
             // Call derived class setup
             yield return SetUp();
         }
-        
+
         [UnityTearDown]
         public IEnumerator BaseTearDown()
         {
             // Call derived class teardown first
             yield return TearDown();
-            
+
             // Reset input state
             Input?.Reset();
-            
+
             // Clear references
             GameState = null;
             Input = null;
             Scenario = null;
         }
-        
+
         /// <summary>
         /// Override for test-class-specific setup. Called after scene loads and game is ready.
         /// </summary>
@@ -234,7 +230,7 @@ namespace {Namespace}.Tests.E2E
         {
             yield return null;
         }
-        
+
         /// <summary>
         /// Override for test-class-specific teardown. Called before base cleanup.
         /// </summary>
@@ -242,7 +238,7 @@ namespace {Namespace}.Tests.E2E
         {
             yield return null;
         }
-        
+
         /// <summary>
         /// Waits until the game reaches a playable state.
         /// </summary>
@@ -253,24 +249,24 @@ namespace {Namespace}.Tests.E2E
                 "Game to reach ready state",
                 timeout);
         }
-        
+
         /// <summary>
         /// Captures screenshot on test failure for debugging.
         /// </summary>
         protected IEnumerator CaptureFailureScreenshot()
         {
-            if (TestContext.CurrentContext.Result.Outcome.Status == 
+            if (TestContext.CurrentContext.Result.Outcome.Status ==
                 NUnit.Framework.Interfaces.TestStatus.Failed)
             {
                 var texture = ScreenCapture.CaptureScreenshotAsTexture();
                 var bytes = texture.EncodeToPNG();
                 var testName = TestContext.CurrentContext.Test.Name;
                 var path = $"TestResults/E2E_Failure_{testName}_{System.DateTime.Now:yyyyMMdd_HHmmss}.png";
-                
+
                 System.IO.Directory.CreateDirectory("TestResults");
                 System.IO.File.WriteAllBytes(path, bytes);
                 Debug.Log($"[E2E] Failure screenshot saved: {path}");
-                
+
                 Object.Destroy(texture);
             }
             yield return null;
@@ -280,6 +276,7 @@ namespace {Namespace}.Tests.E2E
 ```
 
 **Customization Points:**
+
 - `{Namespace}`: Project namespace (e.g., `AugustStorm`)
 - `{MainSceneName}`: Detected main gameplay scene
 - `{GameStateClass}`: Identified game state manager class
@@ -307,14 +304,14 @@ namespace {Namespace}.Tests.E2E
     {
         private readonly {GameStateClass} _gameState;
         private readonly List<Func<IEnumerator>> _setupActions = new();
-        
+
         public ScenarioBuilder({GameStateClass} gameState)
         {
             _gameState = gameState;
         }
-        
+
         #region State Configuration
-        
+
         /// <summary>
         /// Load a pre-configured scenario from a save file.
         /// </summary>
@@ -323,7 +320,7 @@ namespace {Namespace}.Tests.E2E
             _setupActions.Add(() => LoadSaveFile(fileName));
             return this;
         }
-        
+
         // TODO: Add domain-specific configuration methods
         // Examples for a turn-based strategy game:
         //
@@ -344,11 +341,11 @@ namespace {Namespace}.Tests.E2E
         //     _setupActions.Add(() => SetActiveFaction(faction));
         //     return this;
         // }
-        
+
         #endregion
-        
+
         #region Execution
-        
+
         /// <summary>
         /// Execute all configured setup actions.
         /// </summary>
@@ -361,7 +358,7 @@ namespace {Namespace}.Tests.E2E
             }
             _setupActions.Clear();
         }
-        
+
         /// <summary>
         /// Clear pending actions without executing.
         /// </summary>
@@ -369,11 +366,11 @@ namespace {Namespace}.Tests.E2E
         {
             _setupActions.Clear();
         }
-        
+
         #endregion
-        
+
         #region Private Implementation
-        
+
         private IEnumerator LoadSaveFile(string fileName)
         {
             var path = $"TestData/{fileName}";
@@ -382,7 +379,7 @@ namespace {Namespace}.Tests.E2E
             Debug.Log($"[ScenarioBuilder] Loading scenario from: {path}");
             yield return null;
         }
-        
+
         // TODO: Implement domain-specific setup methods
         // private IEnumerator SpawnUnit(Faction faction, Hex position, int mp)
         // {
@@ -390,7 +387,7 @@ namespace {Namespace}.Tests.E2E
         //     unit.MovementPoints = mp;
         //     yield return null;
         // }
-        
+
         #endregion
     }
 }
@@ -420,16 +417,16 @@ namespace {Namespace}.Tests.E2E
         private Mouse _mouse;
         private Keyboard _keyboard;
         private Camera _camera;
-        
+
         public InputSimulator()
         {
             _mouse = Mouse.current ?? InputSystem.AddDevice<Mouse>();
             _keyboard = Keyboard.current ?? InputSystem.AddDevice<Keyboard>();
             _camera = Camera.main;
         }
-        
+
         #region Mouse Input
-        
+
         /// <summary>
         /// Click at a world position.
         /// </summary>
@@ -438,7 +435,7 @@ namespace {Namespace}.Tests.E2E
             var screenPos = _camera.WorldToScreenPoint(worldPos);
             yield return ClickScreenPosition(new Vector2(screenPos.x, screenPos.y));
         }
-        
+
         /// <summary>
         /// Click at a screen position.
         /// </summary>
@@ -447,7 +444,7 @@ namespace {Namespace}.Tests.E2E
             // Move mouse to position
             InputState.Change(_mouse.position, screenPos);
             yield return null;
-            
+
             // Press
             using (StateEvent.From(_mouse, out var eventPtr))
             {
@@ -456,7 +453,7 @@ namespace {Namespace}.Tests.E2E
                 InputSystem.QueueEvent(eventPtr);
             }
             yield return null;
-            
+
             // Release
             using (StateEvent.From(_mouse, out var eventPtr))
             {
@@ -466,7 +463,7 @@ namespace {Namespace}.Tests.E2E
             }
             yield return null;
         }
-        
+
         /// <summary>
         /// Click a UI button by name.
         /// </summary>
@@ -501,7 +498,7 @@ namespace {Namespace}.Tests.E2E
             button.onClick.Invoke();
             yield return null;
         }
-        
+
         /// <summary>
         /// Drag from one world position to another.
         /// </summary>
@@ -509,11 +506,11 @@ namespace {Namespace}.Tests.E2E
         {
             var fromScreen = (Vector2)_camera.WorldToScreenPoint(from);
             var toScreen = (Vector2)_camera.WorldToScreenPoint(to);
-            
+
             // Move to start
             InputState.Change(_mouse.position, fromScreen);
             yield return null;
-            
+
             // Press
             using (StateEvent.From(_mouse, out var eventPtr))
             {
@@ -522,7 +519,7 @@ namespace {Namespace}.Tests.E2E
                 InputSystem.QueueEvent(eventPtr);
             }
             yield return null;
-            
+
             // Drag
             var elapsed = 0f;
             while (elapsed < duration)
@@ -533,7 +530,7 @@ namespace {Namespace}.Tests.E2E
                 yield return null;
                 elapsed += Time.deltaTime;
             }
-            
+
             // Release at destination
             InputState.Change(_mouse.position, toScreen);
             using (StateEvent.From(_mouse, out var eventPtr))
@@ -544,11 +541,11 @@ namespace {Namespace}.Tests.E2E
             }
             yield return null;
         }
-        
+
         #endregion
-        
+
         #region Keyboard Input
-        
+
         /// <summary>
         /// Press and release a key.
         /// </summary>
@@ -561,7 +558,7 @@ namespace {Namespace}.Tests.E2E
                 InputSystem.QueueEvent(eventPtr);
             }
             yield return null;
-            
+
             using (StateEvent.From(_keyboard, out var eventPtr))
             {
                 control.WriteValueIntoEvent(0f, eventPtr);
@@ -569,7 +566,7 @@ namespace {Namespace}.Tests.E2E
             }
             yield return null;
         }
-        
+
         /// <summary>
         /// Hold a key for a duration.
         /// </summary>
@@ -581,9 +578,9 @@ namespace {Namespace}.Tests.E2E
                 control.WriteValueIntoEvent(1f, eventPtr);
                 InputSystem.QueueEvent(eventPtr);
             }
-            
+
             yield return new WaitForSeconds(duration);
-            
+
             using (StateEvent.From(_keyboard, out var eventPtr))
             {
                 control.WriteValueIntoEvent(0f, eventPtr);
@@ -591,11 +588,11 @@ namespace {Namespace}.Tests.E2E
             }
             yield return null;
         }
-        
+
         #endregion
-        
+
         #region Utility
-        
+
         /// <summary>
         /// Reset all input state.
         /// </summary>
@@ -610,7 +607,7 @@ namespace {Namespace}.Tests.E2E
                 InputState.Change(_keyboard, new KeyboardState());
             }
         }
-        
+
         /// <summary>
         /// Update camera reference (call after scene load if needed).
         /// </summary>
@@ -618,7 +615,7 @@ namespace {Namespace}.Tests.E2E
         {
             _camera = Camera.main;
         }
-        
+
         #endregion
     }
 }
@@ -664,11 +661,11 @@ namespace {Namespace}.Tests.E2E
                 yield return null;
                 elapsed += Time.deltaTime;
             }
-            
+
             Assert.IsTrue(condition(),
                 $"Timeout after {timeout:F1}s waiting for: {description}");
         }
-        
+
         /// <summary>
         /// Wait until condition is true, with periodic debug logging.
         /// </summary>
@@ -680,7 +677,7 @@ namespace {Namespace}.Tests.E2E
         {
             var elapsed = 0f;
             var lastLog = 0f;
-            
+
             while (!condition() && elapsed < timeout)
             {
                 if (elapsed - lastLog >= logInterval)
@@ -691,16 +688,16 @@ namespace {Namespace}.Tests.E2E
                 yield return null;
                 elapsed += Time.deltaTime;
             }
-            
+
             if (condition())
             {
                 Debug.Log($"[E2E] Condition met: {description} (after {elapsed:F1}s)");
             }
-            
+
             Assert.IsTrue(condition(),
                 $"Timeout after {timeout:F1}s waiting for: {description}");
         }
-        
+
         /// <summary>
         /// Wait for a value to equal expected.
         /// Note: For floating-point comparisons, use WaitForValueApprox instead
@@ -764,7 +761,7 @@ namespace {Namespace}.Tests.E2E
                 $"{description} to change from '{notExpected}'",
                 timeout);
         }
-        
+
         /// <summary>
         /// Wait for a reference to become non-null.
         /// </summary>
@@ -778,7 +775,7 @@ namespace {Namespace}.Tests.E2E
                 $"{description} to exist (not null)",
                 timeout);
         }
-        
+
         /// <summary>
         /// Wait for a Unity Object to exist (handles Unity's fake null).
         /// </summary>
@@ -792,7 +789,7 @@ namespace {Namespace}.Tests.E2E
                 $"{description} to exist",
                 timeout);
         }
-        
+
         /// <summary>
         /// Assert that a condition does NOT become true within a time window.
         /// Useful for testing that something doesn't happen.
@@ -811,7 +808,7 @@ namespace {Namespace}.Tests.E2E
                 elapsed += Time.deltaTime;
             }
         }
-        
+
         /// <summary>
         /// Wait for a specific number of frames.
         /// Use sparingly - prefer WaitUntil with conditions.
@@ -823,7 +820,7 @@ namespace {Namespace}.Tests.E2E
                 yield return null;
             }
         }
-        
+
         /// <summary>
         /// Wait for physics to settle (multiple FixedUpdates).
         /// </summary>
@@ -866,54 +863,54 @@ namespace {Namespace}.Tests.E2E
         {
             // This test verifies the E2E infrastructure is working correctly.
             // If this test passes, your infrastructure is properly configured.
-            
+
             // The base fixture already loaded the scene and waited for ready,
             // so if we get here, everything worked.
-            
+
             Assert.IsNotNull(GameState, "GameState should be available");
             Assert.IsNotNull(Input, "InputSimulator should be available");
             Assert.IsNotNull(Scenario, "ScenarioBuilder should be available");
-            
+
             // Verify game is actually ready
             // NOTE: {IsReadyProperty} is a template placeholder. Replace it with your
             // game's actual ready-state property (e.g., IsReady, IsInitialized, HasLoaded).
             yield return AsyncAssert.WaitUntil(
                 () => GameState.{IsReadyProperty},
                 "Game should be in ready state");
-            
+
             Debug.Log("[E2E] Infrastructure test passed - E2E framework is working!");
         }
-        
+
         [UnityTest]
         public IEnumerator Infrastructure_InputSimulatorCanClickButtons()
         {
             // Test that input simulation works
             // Modify this to click an actual button in your game
-            
+
             // Example: Click a button that should exist in your main scene
             // yield return Input.ClickButton("SomeButtonName");
             // yield return AsyncAssert.WaitUntil(
             //     () => /* button click result */,
             //     "Button click should have effect");
-            
+
             Debug.Log("[E2E] Input simulation test - customize with your UI elements");
             yield return null;
         }
-        
+
         [UnityTest]
         public IEnumerator Infrastructure_ScenarioBuilderCanConfigureState()
         {
             // Test that scenario builder works
             // Modify this to use your domain-specific setup methods
-            
+
             // Example:
             // yield return Scenario
             //     .WithUnit(Faction.Player, new Hex(3, 3))
             //     .OnTurn(1)
             //     .Build();
-            // 
+            //
             // Assert.AreEqual(1, GameState.TurnNumber);
-            
+
             Debug.Log("[E2E] Scenario builder test - customize with your domain methods");
             yield return Scenario.Build(); // Execute empty builder (no-op)
         }
@@ -929,7 +926,7 @@ Create a README explaining how to use the E2E infrastructure.
 
 **Template: `Tests/PlayMode/E2E/README.md`**
 
-```markdown
+````markdown
 # E2E Testing Infrastructure
 
 End-to-end tests that validate complete player journeys through the game.
@@ -951,22 +948,24 @@ public IEnumerator Player_CanCompleteBasicAction()
     yield return Scenario
         .WithSomeSetup()
         .Build();
-    
+
     // WHEN: Player takes action
     yield return Input.ClickButton("ActionButton");
-    
+
     // THEN: Expected outcome occurs
     yield return AsyncAssert.WaitUntil(
         () => GameState.ActionCompleted,
         "Action should complete");
 }
 ```
+````
 
 ## Infrastructure Components
 
 ### GameE2ETestFixture
 
 Base class for all E2E tests. Provides:
+
 - Automatic scene loading and cleanup
 - Access to `GameState`, `Input`, and `Scenario`
 - Override `SetUp()` and `TearDown()` for test-specific setup
@@ -987,6 +986,7 @@ public ScenarioBuilder WithPlayer(Vector3 position)
 ### InputSimulator
 
 Simulates player input:
+
 - `ClickWorldPosition(Vector3)` - Click in 3D space
 - `ClickScreenPosition(Vector2)` - Click at screen coordinates
 - `ClickButton(string)` - Click UI button by name
@@ -996,6 +996,7 @@ Simulates player input:
 ### AsyncAssert
 
 Async assertions with timeouts:
+
 - `WaitUntil(condition, description, timeout)` - Wait for condition
 - `WaitForValue(getter, expected, description)` - Wait for specific value
 - `AssertNeverTrue(condition, description, duration)` - Assert something doesn't happen
@@ -1012,11 +1013,13 @@ E2E/
 ## Running Tests
 
 **In Unity Editor:**
+
 - Window → General → Test Runner
 - Select "PlayMode" tab
 - Filter by "E2E" category
 
 **Command Line:**
+
 ```bash
 unity -runTests -testPlatform PlayMode -testCategory E2E -batchmode
 ```
@@ -1063,13 +1066,14 @@ public IEnumerator ClickHex(Hex hex)
 
 ## Troubleshooting
 
-| Issue | Cause | Fix |
-|-------|-------|-----|
-| Tests timeout waiting for ready | Game init takes too long | Increase timeout in `WaitForGameReady` |
-| Input simulation doesn't work | Wrong input system | Check `InputSimulator` matches your setup |
-| Flaky tests | Race conditions | Use `AsyncAssert.WaitUntil` instead of `WaitForSeconds` |
-| Can't find GameState | Wrong scene or class name | Check `SceneName` and class reference |
-```
+| Issue                           | Cause                     | Fix                                                     |
+| ------------------------------- | ------------------------- | ------------------------------------------------------- |
+| Tests timeout waiting for ready | Game init takes too long  | Increase timeout in `WaitForGameReady`                  |
+| Input simulation doesn't work   | Wrong input system        | Check `InputSimulator` matches your setup               |
+| Flaky tests                     | Race conditions           | Use `AsyncAssert.WaitUntil` instead of `WaitForSeconds` |
+| Can't find GameState            | Wrong scene or class name | Check `SceneName` and class reference                   |
+
+````
 
 ---
 
@@ -1085,20 +1089,22 @@ After generating all files, provide this summary:
 
 ### Files Created
 
-```
+````
+
 Tests/PlayMode/E2E/
 ├── E2E.asmdef
 ├── Infrastructure/
-│   ├── GameE2ETestFixture.cs
-│   ├── ScenarioBuilder.cs
-│   ├── InputSimulator.cs
-│   └── AsyncAssert.cs
+│ ├── GameE2ETestFixture.cs
+│ ├── ScenarioBuilder.cs
+│ ├── InputSimulator.cs
+│ └── AsyncAssert.cs
 ├── Scenarios/
-│   └── (empty)
+│ └── (empty)
 ├── TestData/
-│   └── (empty)
+│ └── (empty)
 ├── ExampleE2ETest.cs
 └── README.md
+
 ```
 
 ### Configuration

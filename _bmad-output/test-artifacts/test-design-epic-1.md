@@ -33,12 +33,12 @@ lastSaved: ''
 
 ## Not in Scope
 
-| Item | Reasoning | Mitigation |
-| --- | --- | --- |
-| **BitCraft game server testing** | Original BitCraft codebase is Apache 2.0 fork, run unmodified | Rely on upstream BitCraft tests |
-| **Crosstown relay internals** | Third-party dependency, integration point only | Test SDK integration, not Crosstown implementation |
-| **SpacetimeDB server module** | Server-side WASM module is existing codebase | Test client SDK connection, not module logic |
-| **External LLM backends** | Phase 2 feature, not in Epic 1 scope | Defer to Phase 2 testing |
+| Item                             | Reasoning                                                     | Mitigation                                         |
+| -------------------------------- | ------------------------------------------------------------- | -------------------------------------------------- |
+| **BitCraft game server testing** | Original BitCraft codebase is Apache 2.0 fork, run unmodified | Rely on upstream BitCraft tests                    |
+| **Crosstown relay internals**    | Third-party dependency, integration point only                | Test SDK integration, not Crosstown implementation |
+| **SpacetimeDB server module**    | Server-side WASM module is existing codebase                  | Test client SDK connection, not module logic       |
+| **External LLM backends**        | Phase 2 feature, not in Epic 1 scope                          | Defer to Phase 2 testing                           |
 
 ---
 
@@ -46,29 +46,29 @@ lastSaved: ''
 
 ### High-Priority Risks (Score ≥6)
 
-| Risk ID | Category | Description | Probability | Impact | Score | Mitigation | Owner | Timeline |
-|---------|----------|-------------|-------------|---------|-------|-----------|-------|----------|
-| R-001 | TECH | SpacetimeDB 2.0 SDK backwards compatibility with 1.6.x server unverified | 3 | 3 | 9 | Run compatibility spike before Story 1.4 implementation. If incompatible, fall back to 1.6.x client SDK | Dev | Before Story 1.4 |
-| R-002 | SEC | Nostr private key storage without encryption-at-rest (NFR11 requires encrypted at rest with passphrase) | 2 | 3 | 6 | Implement passphrase encryption in Story 1.2 OR defer to Phase 2 with explicit warning in code/docs | Dev | Story 1.2 or Phase 2 |
-| R-003 | TECH | WebSocket reconnection state recovery may lose in-flight updates during disconnect window | 3 | 2 | 6 | Implement event buffer with replay mechanism for missed updates during reconnection | Dev | Story 1.6 |
-| R-004 | PERF | Static data loading (148 tables) may exceed 10s performance budget (NFR6) | 2 | 3 | 6 | Profile early, implement parallel loading with connection pooling if serial loading too slow | Dev | Story 1.5 |
+| Risk ID | Category | Description                                                                                             | Probability | Impact | Score | Mitigation                                                                                              | Owner | Timeline             |
+| ------- | -------- | ------------------------------------------------------------------------------------------------------- | ----------- | ------ | ----- | ------------------------------------------------------------------------------------------------------- | ----- | -------------------- |
+| R-001   | TECH     | SpacetimeDB 2.0 SDK backwards compatibility with 1.6.x server unverified                                | 3           | 3      | 9     | Run compatibility spike before Story 1.4 implementation. If incompatible, fall back to 1.6.x client SDK | Dev   | Before Story 1.4     |
+| R-002   | SEC      | Nostr private key storage without encryption-at-rest (NFR11 requires encrypted at rest with passphrase) | 2           | 3      | 6     | Implement passphrase encryption in Story 1.2 OR defer to Phase 2 with explicit warning in code/docs     | Dev   | Story 1.2 or Phase 2 |
+| R-003   | TECH     | WebSocket reconnection state recovery may lose in-flight updates during disconnect window               | 3           | 2      | 6     | Implement event buffer with replay mechanism for missed updates during reconnection                     | Dev   | Story 1.6            |
+| R-004   | PERF     | Static data loading (148 tables) may exceed 10s performance budget (NFR6)                               | 2           | 3      | 6     | Profile early, implement parallel loading with connection pooling if serial loading too slow            | Dev   | Story 1.5            |
 
 ### Medium-Priority Risks (Score 4-5)
 
-| Risk ID | Category | Description | Probability | Impact | Score | Mitigation | Owner |
-|---------|----------|-------------|-------------|---------|-------|-----------|-------|
-| R-005 | OPS | Docker images for BitCraft/Crosstown may not exist publicly | 2 | 2 | 4 | Build from source with Dockerfiles if needed, budget extra time for Story 1.3 | Dev |
-| R-006 | TECH | CI/CD complexity with polyglot monorepo (TS + Rust) may cause flaky builds | 2 | 2 | 4 | Use matrix builds, workspace caching, keep CI simple | Dev |
-| R-007 | DATA | Subscription state inconsistency after rapid disconnect/reconnect cycles | 2 | 2 | 4 | Add connection state machine with hysteresis to prevent race conditions | Dev |
-| R-008 | TECH | TypeScript strict mode may surface type errors in SpacetimeDB generated types | 2 | 2 | 4 | Run typecheck early, fix generated type issues upstream if needed | Dev |
+| Risk ID | Category | Description                                                                   | Probability | Impact | Score | Mitigation                                                                    | Owner |
+| ------- | -------- | ----------------------------------------------------------------------------- | ----------- | ------ | ----- | ----------------------------------------------------------------------------- | ----- |
+| R-005   | OPS      | Docker images for BitCraft/Crosstown may not exist publicly                   | 2           | 2      | 4     | Build from source with Dockerfiles if needed, budget extra time for Story 1.3 | Dev   |
+| R-006   | TECH     | CI/CD complexity with polyglot monorepo (TS + Rust) may cause flaky builds    | 2           | 2      | 4     | Use matrix builds, workspace caching, keep CI simple                          | Dev   |
+| R-007   | DATA     | Subscription state inconsistency after rapid disconnect/reconnect cycles      | 2           | 2      | 4     | Add connection state machine with hysteresis to prevent race conditions       | Dev   |
+| R-008   | TECH     | TypeScript strict mode may surface type errors in SpacetimeDB generated types | 2           | 2      | 4     | Run typecheck early, fix generated type issues upstream if needed             | Dev   |
 
 ### Low-Priority Risks (Score 1-3)
 
-| Risk ID | Category | Description | Probability | Impact | Score | Action |
-|---------|----------|-------------|-------------|---------|-------|--------|
-| R-009 | OPS | Platform differences between Linux and macOS Docker environments | 1 | 2 | 2 | Monitor in CI, fix if issues arise |
-| R-010 | BUS | User confusion about Nostr key backup workflow | 1 | 2 | 2 | Document clearly in README |
-| R-011 | PERF | Exponential backoff cap at 30s may feel slow to users | 1 | 1 | 1 | Monitor user feedback, adjust if needed |
+| Risk ID | Category | Description                                                      | Probability | Impact | Score | Action                                  |
+| ------- | -------- | ---------------------------------------------------------------- | ----------- | ------ | ----- | --------------------------------------- |
+| R-009   | OPS      | Platform differences between Linux and macOS Docker environments | 1           | 2      | 2     | Monitor in CI, fix if issues arise      |
+| R-010   | BUS      | User confusion about Nostr key backup workflow                   | 1           | 2      | 2     | Document clearly in README              |
+| R-011   | PERF     | Exponential backoff cap at 30s may feel slow to users            | 1           | 1      | 1     | Monitor user feedback, adjust if needed |
 
 ### Risk Category Legend
 
@@ -105,19 +105,19 @@ lastSaved: ''
 
 **Criteria**: Blocks core journey + High risk (≥6) + No workaround
 
-| Requirement | Test Level | Risk Link | Test Count | Owner | Notes |
-|-------------|------------|-----------|------------|-------|-------|
-| Story 1.1 - CI/CD pipeline validation | Integration | - | 2 | Dev | Verify TS + Rust builds pass |
-| Story 1.2 - Nostr key generation | Unit | R-002 | 3 | Dev | Generate, validate, no duplicates |
-| Story 1.2 - Key import (hex/nsec) | Unit | R-002 | 3 | Dev | Valid formats, error on invalid |
-| Story 1.2 - Key export | Integration | R-002 | 2 | Dev | File operations, encryption |
-| Story 1.2 - Identity signing | Unit | R-002 | 2 | Dev | Sign/verify operations |
-| Story 1.3 - Docker compose startup | Integration | R-005 | 2 | Dev | BitCraft + Crosstown running |
-| Story 1.4 - SpacetimeDB WebSocket connection | Integration | R-001 | 3 | Dev | Connect, subscribe, disconnect |
-| Story 1.4 - Table subscriptions | Integration | R-001 | 4 | Dev | Subscribe, updates, type safety |
-| Story 1.4 - SDK backwards compatibility | Integration | R-001 | 3 | Dev | 2.0 client + 1.6.x server |
-| Story 1.6 - Auto-reconnection | Integration | R-003 | 4 | Dev | Disconnect, backoff, reconnect |
-| Story 1.6 - Subscription recovery | Integration | R-003 | 3 | Dev | Re-subscribe, state recovery |
+| Requirement                                  | Test Level  | Risk Link | Test Count | Owner | Notes                             |
+| -------------------------------------------- | ----------- | --------- | ---------- | ----- | --------------------------------- |
+| Story 1.1 - CI/CD pipeline validation        | Integration | -         | 2          | Dev   | Verify TS + Rust builds pass      |
+| Story 1.2 - Nostr key generation             | Unit        | R-002     | 3          | Dev   | Generate, validate, no duplicates |
+| Story 1.2 - Key import (hex/nsec)            | Unit        | R-002     | 3          | Dev   | Valid formats, error on invalid   |
+| Story 1.2 - Key export                       | Integration | R-002     | 2          | Dev   | File operations, encryption       |
+| Story 1.2 - Identity signing                 | Unit        | R-002     | 2          | Dev   | Sign/verify operations            |
+| Story 1.3 - Docker compose startup           | Integration | R-005     | 2          | Dev   | BitCraft + Crosstown running      |
+| Story 1.4 - SpacetimeDB WebSocket connection | Integration | R-001     | 3          | Dev   | Connect, subscribe, disconnect    |
+| Story 1.4 - Table subscriptions              | Integration | R-001     | 4          | Dev   | Subscribe, updates, type safety   |
+| Story 1.4 - SDK backwards compatibility      | Integration | R-001     | 3          | Dev   | 2.0 client + 1.6.x server         |
+| Story 1.6 - Auto-reconnection                | Integration | R-003     | 4          | Dev   | Disconnect, backoff, reconnect    |
+| Story 1.6 - Subscription recovery            | Integration | R-003     | 3          | Dev   | Re-subscribe, state recovery      |
 
 **Total P0**: 31 tests, ~40-50 hours
 
@@ -125,19 +125,19 @@ lastSaved: ''
 
 **Criteria**: Important features + Medium risk (3-4) + Common workflows
 
-| Requirement | Test Level | Risk Link | Test Count | Owner | Notes |
-|-------------|------------|-----------|------------|-------|-------|
-| Story 1.1 - Monorepo workspace structure | Unit | - | 2 | Dev | pnpm + cargo workspace validation |
-| Story 1.1 - Shared config inheritance | Unit | - | 3 | Dev | tsconfig, ESLint, rustfmt |
-| Story 1.2 - Seed phrase import | Unit | R-002 | 2 | Dev | BIP-39 derivation |
-| Story 1.3 - Docker dev overrides | Integration | R-005 | 2 | Dev | docker-compose.dev.yml |
-| Story 1.3 - Platform compatibility | Integration | R-009 | 2 | Dev | Linux + macOS tests |
-| Story 1.4 - Type-safe table accessors | Integration | R-008 | 3 | Dev | Generated types from SDK |
-| Story 1.4 - gameStateUpdate events | Integration | - | 3 | Dev | Event aggregation |
-| Story 1.5 - Static data loading | Integration | R-004 | 4 | Dev | Load all *_desc tables |
-| Story 1.5 - Lookup maps | Integration | R-004 | 3 | Dev | Query by ID, performance |
-| Story 1.6 - Exponential backoff | Unit | - | 3 | Dev | Backoff calculation, 30s cap |
-| Story 1.6 - Connection status events | Integration | - | 3 | Dev | connected/disconnected/reconnecting |
+| Requirement                              | Test Level  | Risk Link | Test Count | Owner | Notes                               |
+| ---------------------------------------- | ----------- | --------- | ---------- | ----- | ----------------------------------- |
+| Story 1.1 - Monorepo workspace structure | Unit        | -         | 2          | Dev   | pnpm + cargo workspace validation   |
+| Story 1.1 - Shared config inheritance    | Unit        | -         | 3          | Dev   | tsconfig, ESLint, rustfmt           |
+| Story 1.2 - Seed phrase import           | Unit        | R-002     | 2          | Dev   | BIP-39 derivation                   |
+| Story 1.3 - Docker dev overrides         | Integration | R-005     | 2          | Dev   | docker-compose.dev.yml              |
+| Story 1.3 - Platform compatibility       | Integration | R-009     | 2          | Dev   | Linux + macOS tests                 |
+| Story 1.4 - Type-safe table accessors    | Integration | R-008     | 3          | Dev   | Generated types from SDK            |
+| Story 1.4 - gameStateUpdate events       | Integration | -         | 3          | Dev   | Event aggregation                   |
+| Story 1.5 - Static data loading          | Integration | R-004     | 4          | Dev   | Load all \*\_desc tables            |
+| Story 1.5 - Lookup maps                  | Integration | R-004     | 3          | Dev   | Query by ID, performance            |
+| Story 1.6 - Exponential backoff          | Unit        | -         | 3          | Dev   | Backoff calculation, 30s cap        |
+| Story 1.6 - Connection status events     | Integration | -         | 3          | Dev   | connected/disconnected/reconnecting |
 
 **Total P1**: 30 tests, ~35-45 hours
 
@@ -145,14 +145,14 @@ lastSaved: ''
 
 **Criteria**: Secondary features + Low risk (1-2) + Edge cases
 
-| Requirement | Test Level | Risk Link | Test Count | Owner | Notes |
-|-------------|------------|-----------|------------|-------|-------|
-| Story 1.1 - Build artifact validation | Integration | - | 2 | Dev | ESM + CJS + DTS output |
-| Story 1.2 - Key export error handling | Unit | - | 2 | Dev | Missing file, permissions |
-| Story 1.3 - Docker image build from source | Integration | R-005 | 2 | Dev | If images missing |
-| Story 1.4 - Connection timeout handling | Integration | - | 2 | Dev | Server unreachable |
-| Story 1.5 - Static data caching | Integration | - | 2 | Dev | Subsequent loads fast |
-| Story 1.6 - Persistent failure handling | Integration | - | 2 | Dev | Exhaust retries, emit failed event |
+| Requirement                                | Test Level  | Risk Link | Test Count | Owner | Notes                              |
+| ------------------------------------------ | ----------- | --------- | ---------- | ----- | ---------------------------------- |
+| Story 1.1 - Build artifact validation      | Integration | -         | 2          | Dev   | ESM + CJS + DTS output             |
+| Story 1.2 - Key export error handling      | Unit        | -         | 2          | Dev   | Missing file, permissions          |
+| Story 1.3 - Docker image build from source | Integration | R-005     | 2          | Dev   | If images missing                  |
+| Story 1.4 - Connection timeout handling    | Integration | -         | 2          | Dev   | Server unreachable                 |
+| Story 1.5 - Static data caching            | Integration | -         | 2          | Dev   | Subsequent loads fast              |
+| Story 1.6 - Persistent failure handling    | Integration | -         | 2          | Dev   | Exhaust retries, emit failed event |
 
 **Total P2**: 12 tests, ~15-20 hours
 
@@ -160,10 +160,10 @@ lastSaved: ''
 
 **Criteria**: Nice-to-have + Exploratory + Performance benchmarks
 
-| Requirement | Test Level | Test Count | Owner | Notes |
-|-------------|------------|------------|-------|-------|
-| Story 1.2 - User confusion about backup | Manual | 1 | QA | UX validation |
-| Story 1.6 - Reconnect latency benchmarks | Performance | 2 | Dev | Measure 10s recovery |
+| Requirement                              | Test Level  | Test Count | Owner | Notes                |
+| ---------------------------------------- | ----------- | ---------- | ----- | -------------------- |
+| Story 1.2 - User confusion about backup  | Manual      | 1          | QA    | UX validation        |
+| Story 1.6 - Reconnect latency benchmarks | Performance | 2          | Dev   | Measure 10s recovery |
 
 **Total P3**: 3 tests, ~3-5 hours
 
@@ -216,13 +216,13 @@ lastSaved: ''
 
 ### Test Development Effort
 
-| Priority | Count | Hours/Test | Total Hours | Notes |
-|----------|-------|------------|-------------|-------|
-| P0 | 31 | 1.5-2.0 | 40-50 | Complex setup, security |
-| P1 | 30 | 1.0-1.5 | 35-45 | Standard coverage |
-| P2 | 12 | 1.0-1.5 | 15-20 | Simple scenarios |
-| P3 | 3 | 1.0-2.0 | 3-5 | Exploratory |
-| **Total** | **76** | **-** | **93-120** | **~12-15 days** |
+| Priority  | Count  | Hours/Test | Total Hours | Notes                   |
+| --------- | ------ | ---------- | ----------- | ----------------------- |
+| P0        | 31     | 1.5-2.0    | 40-50       | Complex setup, security |
+| P1        | 30     | 1.0-1.5    | 35-45       | Standard coverage       |
+| P2        | 12     | 1.0-1.5    | 15-20       | Simple scenarios        |
+| P3        | 3      | 1.0-2.0    | 3-5         | Exploratory             |
+| **Total** | **76** | **-**      | **93-120**  | **~12-15 days**         |
 
 ### Prerequisites
 
@@ -369,11 +369,11 @@ lastSaved: ''
 
 ## Interworking & Regression
 
-| Service/Component | Impact | Regression Scope |
-| --- | --- | --- |
-| **BitCraft Server** | SDK reads game state | No regression tests needed (unmodified upstream) |
-| **Crosstown Relay** | SDK connects to Nostr relay | No regression tests needed (Epic 2 scope) |
-| **SpacetimeDB SDK** | Core dependency | Verify SDK version compatibility (R-001) |
+| Service/Component   | Impact                      | Regression Scope                                 |
+| ------------------- | --------------------------- | ------------------------------------------------ |
+| **BitCraft Server** | SDK reads game state        | No regression tests needed (unmodified upstream) |
+| **Crosstown Relay** | SDK connects to Nostr relay | No regression tests needed (Epic 2 scope)        |
+| **SpacetimeDB SDK** | Core dependency             | Verify SDK version compatibility (R-001)         |
 
 ---
 

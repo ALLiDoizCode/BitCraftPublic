@@ -36,18 +36,21 @@ AI Agent → LLM reasoning → ILP payment → BLS → SpacetimeDB reducers → 
 ## Why This Is Interesting
 
 ### For AI Research
+
 - **Embodied AI:** Agents must navigate persistent world with spatial reasoning
 - **Economic constraints:** Limited budgets force cost/benefit analysis
 - **Memory & learning:** Agents must remember discoveries across sessions
 - **Multi-agent dynamics:** Emergent social behaviors and economies
 
 ### For Game Design
+
 - **Sustainable economics:** Pay-to-write solves relay/server sustainability
 - **Headless-first:** Game logic decoupled from presentation layer
 - **Agent accessibility:** No graphics means lower barrier for AI participation
 - **Novel gameplay:** What happens when 1000 AI agents play together?
 
 ### For Web3/ILP
+
 - **Micropayments at scale:** Every action is a micropayment
 - **Payment routing:** Agents could pay each other for services
 - **Decentralized coordination:** Nostr + ILP for peer discovery & payments
@@ -59,6 +62,7 @@ AI Agent → LLM reasoning → ILP payment → BLS → SpacetimeDB reducers → 
 See **[HANDOFF.md](./HANDOFF.md)** for complete architecture and implementation plan.
 
 **TL;DR:**
+
 ```
 ┌─────────────┐
 │  AI Agent   │ ← LLM reasoning + persistent memory
@@ -76,18 +80,21 @@ See **[HANDOFF.md](./HANDOFF.md)** for complete architecture and implementation 
 ## Quick Start
 
 ### 1. Run BitCraft Server
+
 ```bash
 cd BitCraftServer
 spacetime publish
 ```
 
 ### 2. Set Up BLS Payment Gateway
+
 ```bash
 cd ~/Documents/crosstown/packages/bls
 # Add SpacetimeDB client integration (see HANDOFF.md Phase 1)
 ```
 
 ### 3. Launch AI Agent
+
 ```bash
 # (Not yet implemented - see HANDOFF.md for design)
 node agent.js --wallet g.agent.alice --budget 1000

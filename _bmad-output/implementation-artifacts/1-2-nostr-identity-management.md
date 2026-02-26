@@ -150,8 +150,8 @@ packages/client/src/nostr/
 ```typescript
 // Core types (in keypair.ts)
 interface NostrKeypair {
-  privateKey: Uint8Array;  // 32 bytes
-  publicKey: Uint8Array;   // 32 bytes
+  privateKey: Uint8Array; // 32 bytes
+  publicKey: Uint8Array; // 32 bytes
 }
 
 interface ExportedKeypair {
@@ -160,14 +160,14 @@ interface ExportedKeypair {
 }
 
 // Public API functions
-async function generateKeypair(): Promise<NostrKeypair>
-async function importPrivateKey(key: string, format: 'hex' | 'nsec'): Promise<NostrKeypair>
-async function importFromSeedPhrase(seedPhrase: string): Promise<NostrKeypair>
-function exportKeypair(keypair: NostrKeypair): ExportedKeypair
+async function generateKeypair(): Promise<NostrKeypair>;
+async function importPrivateKey(key: string, format: 'hex' | 'nsec'): Promise<NostrKeypair>;
+async function importFromSeedPhrase(seedPhrase: string): Promise<NostrKeypair>;
+function exportKeypair(keypair: NostrKeypair): ExportedKeypair;
 
 // Storage functions (in storage.ts)
-async function saveKeypair(keypair: NostrKeypair, passphrase: string): Promise<void>
-async function loadKeypair(passphrase: string): Promise<NostrKeypair>
+async function saveKeypair(keypair: NostrKeypair, passphrase: string): Promise<void>;
+async function loadKeypair(passphrase: string): Promise<NostrKeypair>;
 
 // Client integration (in client.ts)
 interface ClientIdentity {
@@ -183,6 +183,7 @@ Directory permissions: `0o700` (owner only)
 File permissions: `0o600` (owner read/write only)
 
 Encryption algorithm:
+
 1. Generate 32-byte random salt
 2. Derive 32-byte key using `crypto.scrypt(passphrase, salt, 32, { N: 16384, r: 8, p: 1 })`
 3. Generate 12-byte random IV
@@ -190,6 +191,7 @@ Encryption algorithm:
 5. Extract auth tag from cipher with `cipher.getAuthTag()`
 
 File format (JSON, all values hex-encoded):
+
 ```json
 {
   "version": 1,
@@ -203,11 +205,13 @@ File format (JSON, all values hex-encoded):
 **Client Integration API:**
 
 `client.identity` exposes:
+
 - `publicKey.hex` — 64-char hex string
 - `publicKey.npub` — bech32-encoded npub format
 - `sign(event: NostrEvent): Promise<SignedNostrEvent>` — signing function
 
 Used by future stories:
+
 - Story 2.3: `client.identity.sign(ilpPacket)` for ILP payment signatures
 - Story 2.5: `client.identity.publicKey` for BLS proxy identity propagation
 - Story 4.2: `client.identity.publicKey` for MCP resource URIs
@@ -217,6 +221,7 @@ Used by future stories:
 Use vitest (configured in Story 1.1). Test files: `keypair.test.ts`, `storage.test.ts`, `client.test.ts` additions.
 
 Coverage requirements:
+
 - All public functions: generate, import (hex, nsec, seed), export, save, load
 - Security: encryption at rest, private key never exposed, signature validity
 - Error cases: invalid inputs, wrong passphrase, missing files
@@ -225,6 +230,7 @@ Coverage requirements:
 **Story 1.1 Context (Previous Story):**
 
 Story 1.1 established monorepo structure. Follow these patterns:
+
 - TypeScript strict mode (`tsconfig.base.json`)
 - Dual ESM + CJS exports via `tsup.config.ts`
 - Vitest for testing
@@ -232,6 +238,7 @@ Story 1.1 established monorepo structure. Follow these patterns:
 - Commit format: `feat(1-2): description` + Co-Authored-By trailer
 
 Build on these files:
+
 - `packages/client/package.json` — has `nostr-tools@^2.23.0`, ADD `@scure/bip39`
 - `packages/client/src/index.ts` — ADD identity exports here
 - `packages/client/tsup.config.ts` — build config ready
@@ -293,6 +300,7 @@ None - all tests passed on first complete test run after fixing scrypt parameter
 ### File List
 
 **Created:**
+
 - `packages/client/src/nostr/keypair.ts` - Nostr keypair generation, import, export functions
 - `packages/client/src/nostr/storage.ts` - Encrypted keypair storage with scrypt + AES-256-GCM
 - `packages/client/src/client.ts` - SigilClient class with identity property
@@ -305,6 +313,7 @@ None - all tests passed on first complete test run after fixing scrypt parameter
 - `packages/client/src/nostr/test-utils/fs.fixture.ts` - File system test fixtures
 
 **Modified:**
+
 - `packages/client/package.json` - Added @scure/bip39@^1.6.0 dependency
 - `packages/client/src/index.ts` - Added exports for keypair, storage, and client modules
 - `packages/client/src/nostr/client-identity.test.ts` - Updated to use actual SigilClient implementation
@@ -326,6 +335,7 @@ None - all tests passed on first complete test run after fixing scrypt parameter
 **Issues Found:** 8 total (0 Critical, 2 High, 3 Medium, 3 Low)
 
 **Severity Breakdown:**
+
 - Critical: 0
 - High: 2 (FIXED)
 - Medium: 3 (FIXED)
@@ -334,20 +344,16 @@ None - all tests passed on first complete test run after fixing scrypt parameter
 **Critical Issues (0):** None
 
 **High Severity Issues (2) - FIXED:**
+
 1. **Missing passphrase validation** - `saveKeypair()` and `loadKeypair()` accepted empty passphrases, creating weak encryption risk. Fixed by adding validation to reject empty/whitespace-only passphrases. Added corresponding tests.
 2. **Story documentation inconsistency** - Task 2 claimed scrypt N=32768 but implementation used N=16384. Fixed documentation to consistently reflect N=16384 (the correct value).
 
-**Medium Severity Issues (3) - FIXED:**
-3. **Confusing JSDoc on NostrKeypair** - Comment said "32 bytes (hex string in some contexts)" was ambiguous. Clarified to state both keys are always Uint8Array.
-4. **Test factory used CommonJS require()** - `createValidNsecPrivateKey()` used require() in ESM module. Replaced with hardcoded known-valid nsec string for deterministic testing.
-5. **Story File List incomplete** - File List section didn't include all test files created. Updated to list all files including acceptance-criteria.test.ts, edge-cases.test.ts, client-identity.test.ts, and test utilities.
+**Medium Severity Issues (3) - FIXED:** 3. **Confusing JSDoc on NostrKeypair** - Comment said "32 bytes (hex string in some contexts)" was ambiguous. Clarified to state both keys are always Uint8Array. 4. **Test factory used CommonJS require()** - `createValidNsecPrivateKey()` used require() in ESM module. Replaced with hardcoded known-valid nsec string for deterministic testing. 5. **Story File List incomplete** - File List section didn't include all test files created. Updated to list all files including acceptance-criteria.test.ts, edge-cases.test.ts, client-identity.test.ts, and test utilities.
 
-**Low Severity Issues (3) - FIXED:**
-6. **Missing error code constants** - Error messages used raw strings. Acceptable for MVP but noted for future refactoring.
-7. **No bounds check on seed derivation** - `importFromSeedPhrase()` took first 32 bytes without checking seed.length >= 32. Added defensive assertion (though mnemonicToSeedSync always returns 64 bytes).
-8. **Encryption parameter documentation** - Dev Notes section updated to consistently document scrypt N=16384 in all locations.
+**Low Severity Issues (3) - FIXED:** 6. **Missing error code constants** - Error messages used raw strings. Acceptable for MVP but noted for future refactoring. 7. **No bounds check on seed derivation** - `importFromSeedPhrase()` took first 32 bytes without checking seed.length >= 32. Added defensive assertion (though mnemonicToSeedSync always returns 64 bytes). 8. **Encryption parameter documentation** - Dev Notes section updated to consistently document scrypt N=16384 in all locations.
 
 **Verification:**
+
 - All 80 tests passing (was 78, added 2 for passphrase validation)
 - Build successful (ESM + CJS + DTS)
 - Security audit: No console.log of private keys, encryption at rest, private key isolation verified
@@ -373,6 +379,7 @@ None - all tests passed on first complete test run after fixing scrypt parameter
 **Issues Found:** 9 total (0 Critical, 1 High, 4 Medium, 4 Low) - ALL FIXED
 
 **Severity Breakdown:**
+
 - Critical: 0
 - High: 0
 - Medium: 3 (FIXED)
@@ -383,24 +390,22 @@ None - all tests passed on first complete test run after fixing scrypt parameter
 **High Severity Issues (0):** None
 
 **Medium Severity Issues (3) - FIXED:**
+
 1. **Weak passphrase acceptance** - System accepted passphrases shorter than 8 characters, enabling brute-force attacks. Fixed by adding minimum length validation (8 chars) in `validatePassphrase()`. Updated all test fixtures to use 8+ character passphrases.
 2. **Missing input validation on encrypted data** - No bounds checking on salt, IV, authTag, or encrypted data sizes could enable DoS attacks via malformed files. Fixed by adding strict size validation: salt (32 bytes), IV (12 bytes), authTag (16 bytes), encryptedData (max 10KB).
 3. **File permissions not verified after creation** - Race condition vulnerability where file permissions could be changed between `writeFileSync()` and `chmodSync()`. Fixed by adding verification step that checks permissions and retries once if incorrect.
 
-**Low Severity Issues (5) - FIXED:**
-4. **JSDoc examples show console.log of private keys** - Code examples in `generateKeypair()` and `exportKeypair()` showed logging private keys, encouraging bad security practices. Fixed by replacing with security-focused comments.
-5. **Magic number for file format version** - File format version was hardcoded as `1` in multiple places, making future migrations harder. Fixed by introducing `FILE_FORMAT_VERSION` constant and adding version validation in `loadKeypair()`.
-6. **Error messages leak timing information** - Different error messages for authentication failure vs corrupted data could enable side-channel attacks. Fixed by using constant-time generic error message: "Failed to decrypt identity file: incorrect passphrase or corrupted data".
-7. **No version validation on load** - File could have wrong version number and still be processed. Fixed by adding explicit version check that throws clear error for unsupported versions.
-8. **Incomplete error handling documentation** - Storage module error cases not fully documented. Fixed by ensuring all validation errors throw with clear, consistent messages.
+**Low Severity Issues (5) - FIXED:** 4. **JSDoc examples show console.log of private keys** - Code examples in `generateKeypair()` and `exportKeypair()` showed logging private keys, encouraging bad security practices. Fixed by replacing with security-focused comments. 5. **Magic number for file format version** - File format version was hardcoded as `1` in multiple places, making future migrations harder. Fixed by introducing `FILE_FORMAT_VERSION` constant and adding version validation in `loadKeypair()`. 6. **Error messages leak timing information** - Different error messages for authentication failure vs corrupted data could enable side-channel attacks. Fixed by using constant-time generic error message: "Failed to decrypt identity file: incorrect passphrase or corrupted data". 7. **No version validation on load** - File could have wrong version number and still be processed. Fixed by adding explicit version check that throws clear error for unsupported versions. 8. **Incomplete error handling documentation** - Storage module error cases not fully documented. Fixed by ensuring all validation errors throw with clear, consistent messages.
 
 **Files Modified:**
+
 - `packages/client/src/nostr/keypair.ts` - Updated JSDoc examples to remove console.log of private keys
 - `packages/client/src/nostr/storage.ts` - Added FILE_FORMAT_VERSION constant, validatePassphrase() function with 8-char minimum, input size validation, file permission verification, version validation, and constant-time error messages
 - `packages/client/src/nostr/edge-cases.test.ts` - Updated test passphrases from 4-7 chars to 8+ chars
 - `packages/client/src/nostr/client-identity.test.ts` - Updated test passphrases from 4-7 chars to 8+ chars
 
 **Security Improvements:**
+
 - Minimum passphrase length now 8 characters (prevents dictionary attacks)
 - Buffer size validation prevents malformed data DoS attacks
 - File permission verification prevents race condition exploits
@@ -408,6 +413,7 @@ None - all tests passed on first complete test run after fixing scrypt parameter
 - Version validation enables safe future format migrations
 
 **Verification:**
+
 - All 80 tests passing
 - Build successful (ESM + CJS + DTS)
 - Zero TypeScript errors
@@ -416,6 +422,7 @@ None - all tests passed on first complete test run after fixing scrypt parameter
 **Outcome:** Success - All issues fixed, story remains "done" with enhanced security posture
 
 **Severity Breakdown:**
+
 - Critical: 0
 - High: 1 (FIXED)
 - Medium: 4 (FIXED)
@@ -424,21 +431,15 @@ None - all tests passed on first complete test run after fixing scrypt parameter
 **Critical Issues (0):** None
 
 **High Severity Issues (1) - FIXED:**
+
 1. **Weak passphrase entropy requirements** - Minimum length was 8 chars with no complexity requirements, enabling dictionary attacks. Fixed by increasing minimum to 12 characters and requiring at least 2 different character types (uppercase, lowercase, numbers, symbols). Added repeat character detection.
 
-**Medium Severity Issues (4) - FIXED:**
-2. **Math.random() in test fixtures** - Used insecure PRNG for test directory names. Fixed by replacing with crypto.randomBytes() to set best-practice example even in test code.
-3. **No rate limiting on failed decrypt attempts** - Enabled offline brute-force attacks. Fixed by implementing rate limiting: max 5 failed attempts per 5-minute window, 3-second delay after limit, counters persisted in encrypted file metadata.
-4. **Missing key rotation mechanism** - No safe way to update/rotate identity keys. Fixed by creating comprehensive SECURITY.md documentation with backup/recovery procedures and workarounds.
-5. **Error messages leak internal state** - Revealing exact expected format aids attackers. Fixed by using generic error messages ("incorrect format or word count" instead of "must be 24 words").
+**Medium Severity Issues (4) - FIXED:** 2. **Math.random() in test fixtures** - Used insecure PRNG for test directory names. Fixed by replacing with crypto.randomBytes() to set best-practice example even in test code. 3. **No rate limiting on failed decrypt attempts** - Enabled offline brute-force attacks. Fixed by implementing rate limiting: max 5 failed attempts per 5-minute window, 3-second delay after limit, counters persisted in encrypted file metadata. 4. **Missing key rotation mechanism** - No safe way to update/rotate identity keys. Fixed by creating comprehensive SECURITY.md documentation with backup/recovery procedures and workarounds. 5. **Error messages leak internal state** - Revealing exact expected format aids attackers. Fixed by using generic error messages ("incorrect format or word count" instead of "must be 24 words").
 
-**Low Severity Issues (4) - FIXED:**
-6. **No password strength guidance** - Users had no guidance on creating strong passphrases. Fixed by adding comprehensive JSDoc comments with security recommendations and creating detailed SECURITY.md guide.
-7. **Missing secure memory clearing** - Private keys and derived keys lingered in memory. Fixed by implementing secureClear() function to zero out sensitive buffers after use in both success and error paths.
-8. **No backup/recovery workflow documentation** - Users may lose access to identities. Fixed by creating comprehensive SECURITY.md with step-by-step backup, recovery, and key rotation procedures.
-9. **Missing dependency pinning** - Using `^` version ranges could introduce vulnerabilities via transitive dependencies. Fixed by pinning all production dependencies to exact versions (removed ^ prefixes from package.json).
+**Low Severity Issues (4) - FIXED:** 6. **No password strength guidance** - Users had no guidance on creating strong passphrases. Fixed by adding comprehensive JSDoc comments with security recommendations and creating detailed SECURITY.md guide. 7. **Missing secure memory clearing** - Private keys and derived keys lingered in memory. Fixed by implementing secureClear() function to zero out sensitive buffers after use in both success and error paths. 8. **No backup/recovery workflow documentation** - Users may lose access to identities. Fixed by creating comprehensive SECURITY.md with step-by-step backup, recovery, and key rotation procedures. 9. **Missing dependency pinning** - Using `^` version ranges could introduce vulnerabilities via transitive dependencies. Fixed by pinning all production dependencies to exact versions (removed ^ prefixes from package.json).
 
 **Files Modified:**
+
 - `packages/client/src/nostr/storage.ts` - Enhanced validatePassphrase() (12+ chars, 2+ types), added rate limiting (5 attempts/5min window), implemented secureClear() for memory safety, added failedAttempts/lastAttempt metadata to encrypted file format
 - `packages/client/src/nostr/keypair.ts` - Genericized error messages to prevent information leakage
 - `packages/client/src/nostr/test-utils/fs.fixture.ts` - Replaced Math.random() with crypto.randomBytes() for secure random directory names
@@ -447,6 +448,7 @@ None - all tests passed on first complete test run after fixing scrypt parameter
 - All test files - Updated 80+ test passphrases to meet new 12-char, 2-type complexity requirements
 
 **Security Improvements Summary:**
+
 - Passphrase entropy: 8 chars → 12+ chars with complexity requirements (prevents dictionary attacks)
 - Rate limiting: None → 5 attempts per 5 minutes with 3s delay (prevents brute-force)
 - Memory security: None → Explicit clearing of keys/buffers after use (reduces exposure window)
@@ -456,6 +458,7 @@ None - all tests passed on first complete test run after fixing scrypt parameter
 - Documentation: None → Comprehensive SECURITY.md guide (educates users)
 
 **OWASP Top 10 (2021) Compliance:**
+
 - ✅ A02 - Cryptographic Failures: Enhanced with stronger passphrases, rate limiting, secure memory clearing
 - ✅ A03 - Injection: No injection vectors (no eval, no dynamic code)
 - ✅ A04 - Insecure Design: Defense in depth (rate limiting + strong crypto + secure defaults)
@@ -466,6 +469,7 @@ None - all tests passed on first complete test run after fixing scrypt parameter
 - ✅ A10 - Server-Side Request Forgery: N/A (no network requests in identity module)
 
 **Verification:**
+
 - All 80 tests passing (updated passphrases to meet new requirements)
 - Build successful (ESM + CJS + DTS)
 - Zero TypeScript errors

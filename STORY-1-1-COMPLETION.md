@@ -21,6 +21,7 @@ This story was implemented using the ATDD (Acceptance Test-Driven Development) a
 ## Files Created
 
 ### Root Configuration
+
 - `pnpm-workspace.yaml` - pnpm workspace definition
 - `package.json` - Root package with shared devDependencies
 - `tsconfig.base.json` - Shared TypeScript config with strict mode
@@ -31,10 +32,13 @@ This story was implemented using the ATDD (Acceptance Test-Driven Development) a
 - `rustfmt.toml` - Rust formatting rules
 
 ### Files Modified
+
 - `.gitignore` - Added workspace exclusions (node_modules, dist, target, etc.)
 
 ### TypeScript Packages
+
 #### packages/client (@sigil/client)
+
 - `package.json` - Package definition with workspace protocol
 - `tsconfig.json` - Package-specific TypeScript config
 - `tsup.config.ts` - Build configuration (ESM + CJS + DTS)
@@ -43,7 +47,8 @@ This story was implemented using the ATDD (Acceptance Test-Driven Development) a
 - `src/index.test.ts` - Placeholder test
 
 #### packages/mcp-server (@sigil/mcp-server)
-- `package.json` - Package definition with workspace:* dependency on @sigil/client
+
+- `package.json` - Package definition with workspace:\* dependency on @sigil/client
 - `tsconfig.json` - Package-specific TypeScript config
 - `tsup.config.ts` - Build configuration
 - `vitest.config.ts` - Test configuration
@@ -51,7 +56,8 @@ This story was implemented using the ATDD (Acceptance Test-Driven Development) a
 - `src/index.test.ts` - Placeholder test
 
 #### packages/tui-backend (@sigil/tui-backend)
-- `package.json` - Package definition with workspace:* dependency on @sigil/client
+
+- `package.json` - Package definition with workspace:\* dependency on @sigil/client
 - `tsconfig.json` - Package-specific TypeScript config
 - `tsup.config.ts` - Build configuration
 - `vitest.config.ts` - Test configuration
@@ -59,25 +65,31 @@ This story was implemented using the ATDD (Acceptance Test-Driven Development) a
 - `src/index.test.ts` - Placeholder test
 
 ### Rust Crate
+
 #### crates/tui (sigil-tui)
+
 - `Cargo.toml` - Crate manifest with ratatui, crossterm, tokio, serde dependencies
 - `src/main.rs` - Main binary with placeholder implementation and test
 
 ### GitHub Actions CI/CD
+
 - `.github/workflows/ci-typescript.yml` - TypeScript CI pipeline (lint, typecheck, test, build)
 - `.github/workflows/ci-rust.yml` - Rust CI pipeline (fmt, clippy, test, build)
 
 ### Placeholder Directories
+
 - `skills/.gitkeep` - Skills directory for SKILL.md files
 - `agents/.gitkeep` - Agents directory for agent definitions
 - `docker/.gitkeep` - Docker directory for compose files
 
 ### Testing Infrastructure
+
 - `test-story-1-1.sh` - ATDD acceptance test suite (51 tests)
 
 ## Verification Results
 
 ### pnpm Workspace
+
 ```
 ✓ pnpm install - All 3 packages resolved successfully
 ✓ pnpm build - All packages built (ESM + CJS + DTS outputs)
@@ -87,6 +99,7 @@ This story was implemented using the ATDD (Acceptance Test-Driven Development) a
 ```
 
 ### Cargo Workspace
+
 ```
 ✓ cargo build - Compiled successfully to target/debug/sigil-tui
 ✓ cargo test - All tests passed (1 test)
@@ -96,6 +109,7 @@ This story was implemented using the ATDD (Acceptance Test-Driven Development) a
 ```
 
 ### Build Outputs Verified
+
 - TypeScript: ESM (.js), CJS (.cjs), TypeScript declarations (.d.ts, .d.cts)
 - Rust: Binary executable at target/debug/sigil-tui (435K)
 
@@ -103,7 +117,7 @@ This story was implemented using the ATDD (Acceptance Test-Driven Development) a
 
 1. **SpacetimeDB SDK Version**: Used @clockworklabs/spacetimedb-sdk@^1.3.3 (CRITICAL - SDK 2.0+ incompatible with BitCraft's 1.6.x server)
 2. **Export Order Fix**: Placed "types" field first in package.json exports to satisfy modern TypeScript/bundler requirements
-3. **Workspace Protocol**: Used workspace:* for local package dependencies to ensure development uses local versions
+3. **Workspace Protocol**: Used workspace:\* for local package dependencies to ensure development uses local versions
 4. **Dual Output Format**: All TypeScript packages produce both ESM and CJS for maximum compatibility
 
 ## Issues Found & Fixed
@@ -114,6 +128,7 @@ This story was implemented using the ATDD (Acceptance Test-Driven Development) a
 ## Architecture Alignment
 
 This implementation exactly matches the architecture specification in:
+
 - `_bmad-output/planning-artifacts/architecture/project-structure-boundaries.md`
 - `_bmad-output/planning-artifacts/architecture/core-architectural-decisions.md`
 - `_bmad-output/planning-artifacts/architecture/starter-template-technology-foundation.md`

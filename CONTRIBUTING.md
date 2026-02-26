@@ -18,18 +18,20 @@ automatically mirrored in our private repo so that it is picked up for the next 
 We are currently accepting **server-side contributions** that fall into the following categories:
 
 **Bug Fixes**
+
 - Fixes for crashes, panics, or incorrect behavior
 - Memory leaks or thread safety issues
 - Reproducible problems with clean solutions
 
 **User/Developer Experience Improvements**
+
 - Better error messages or logging
 - Build system or dependency fixes
 - Safer defaults or config improvements
 
 **Security Improvements**
 
-To ensure that exploits are addressed quickly and not abused by other players, we ask that you submit them to us privately using 
+To ensure that exploits are addressed quickly and not abused by other players, we ask that you submit them to us privately using
 [**this form**](https://docs.google.com/forms/d/e/1FAIpQLSdlQMdxjTmUScKeVL9T-rs7lZOU4VrYl80ida0Kb0d38Nah8w/viewform?usp=sharing&ouid=112232658922648279400).
 
 ## What We're Not Accepting (Yet)
@@ -37,14 +39,17 @@ To ensure that exploits are addressed quickly and not abused by other players, w
 To keep the scope narrow and our workflows stable, **please avoid the following**:
 
 **Feature Additions**
+
 - We are not currently accepting new gameplay, mechanics, or systems
 - Please don't propose roadmap items or “cool ideas” just yet
 
 **Code Refactoring / Style Changes**
+
 - No large-scale formatting or stylistic refactors
 - We’re gradually aligning internal and external codebases — changes will come later
 
 **Speculative Work**
+
 - Please avoid "just in case" PRs — changes must be motivated by a real problem
 
 ## Contribution Checklist
@@ -70,6 +75,7 @@ Before opening a pull request:
 We will **not always respond immediately**, but we will do our best to communicate clearly.
 
 If we accept your change:
+
 - We may **re-implement it internally**, or
 - Cherry-pick it into our internal mono-repo, from which the next public release will include it
 

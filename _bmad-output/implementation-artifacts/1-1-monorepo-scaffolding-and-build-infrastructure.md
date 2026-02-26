@@ -49,7 +49,7 @@ so that all subsequent packages and crates have a consistent foundation to build
 - [x] Task 1: Create pnpm workspace structure (AC1, AC3)
   - [x] Initialize root `package.json` with `"private": true`, pnpm workspace config, and shared devDependencies (eslint, prettier, typescript)
   - [x] Create `pnpm-workspace.yaml` with `packages: ["packages/*"]`
-  - [x] Create/append to `.gitignore`: node_modules/, target/, .env, dist/, build/, *.tsbuildinfo, .turbo/, *.local, coverage/, .pnpm-debug.log*
+  - [x] Create/append to `.gitignore`: node*modules/, target/, .env, dist/, build/, *.tsbuildinfo, .turbo/, \_.local, coverage/, .pnpm-debug.log\*
   - [x] Create `tsconfig.base.json` with strict: true, target: ES2022, module: ESNext, moduleResolution: bundler
   - [x] Create `.eslintrc.cjs` with @typescript-eslint parser and recommended rules
   - [x] Create `.prettierrc` with semi: true, singleQuote: true, trailingComma: es5
@@ -57,8 +57,8 @@ so that all subsequent packages and crates have a consistent foundation to build
 
 - [x] Task 2: Initialize TypeScript workspace packages (AC5)
   - [x] Create `packages/client/package.json`: name "@sigil/client", type "module", main "./dist/index.js", exports with ESM/CJS, dependencies: @clockworklabs/spacetimedb-sdk@^1.3.3, nostr-tools@^2.23.0
-  - [x] Create `packages/mcp-server/package.json`: name "@sigil/mcp-server", dependencies: "@sigil/client": "workspace:*"
-  - [x] Create `packages/tui-backend/package.json`: name "@sigil/tui-backend", dependencies: "@sigil/client": "workspace:*"
+  - [x] Create `packages/mcp-server/package.json`: name "@sigil/mcp-server", dependencies: "@sigil/client": "workspace:\*"
+  - [x] Create `packages/tui-backend/package.json`: name "@sigil/tui-backend", dependencies: "@sigil/client": "workspace:\*"
   - [x] Create `tsup.config.ts` in each package: format: ["esm", "cjs"], dts: true, entry: ["src/index.ts"], outDir: "dist", clean: true
   - [x] Create `vitest.config.ts` in each package with test glob patterns
   - [x] Create `packages/client/src/index.ts` exporting `export const SIGIL_VERSION = "0.1.0";`
@@ -166,6 +166,7 @@ This story establishes the foundational monorepo structure for Sigil. The projec
 **TypeScript packages (src/index.ts)**: Must export at least one named constant to ensure build succeeds. Example: `export const SIGIL_VERSION = "0.1.0";`. This ensures tsup produces valid output and tests can import.
 
 **TypeScript tests (src/index.test.ts)**: Import from index and assert. Example:
+
 ```typescript
 import { expect, test } from 'vitest';
 import { SIGIL_VERSION } from './index';
@@ -175,6 +176,7 @@ test('exports version', () => {
 ```
 
 **Rust main (src/main.rs)**: Must have main fn and passing test. Example:
+
 ```rust
 fn main() {
     println!("Sigil TUI v0.1.0");
@@ -192,6 +194,7 @@ mod tests {
 ### Configuration File Examples
 
 **packages/client/package.json** must include:
+
 ```json
 {
   "name": "@sigil/client",
@@ -215,6 +218,7 @@ mod tests {
 ```
 
 **packages/client/tsup.config.ts** must contain:
+
 ```typescript
 import { defineConfig } from 'tsup';
 export default defineConfig({
@@ -228,6 +232,7 @@ export default defineConfig({
 ```
 
 **tsconfig.base.json** at root must include:
+
 ```json
 {
   "compilerOptions": {
@@ -242,6 +247,7 @@ export default defineConfig({
 ```
 
 **Root package.json**:
+
 ```json
 {
   "name": "sigil-monorepo",
@@ -264,12 +270,14 @@ export default defineConfig({
 ```
 
 **pnpm-workspace.yaml** at root:
+
 ```yaml
 packages:
   - 'packages/*'
 ```
 
 **Root Cargo.toml** (virtual workspace):
+
 ```toml
 [workspace]
 members = ["crates/*"]
@@ -277,6 +285,7 @@ resolver = "2"
 ```
 
 **.env.example** at root:
+
 ```bash
 # SpacetimeDB connection (default for Docker dev environment)
 SPACETIMEDB_URL=ws://localhost:3000
@@ -289,6 +298,7 @@ LOG_LEVEL=info
 ```
 
 **crates/tui/Cargo.toml** must include:
+
 ```toml
 [package]
 name = "sigil-tui"
@@ -304,13 +314,11 @@ serde_json = "1"
 ```
 
 **.eslintrc.cjs** at root:
+
 ```javascript
 module.exports = {
   parser: '@typescript-eslint/parser',
-  extends: [
-    'eslint:recommended',
-    'plugin:@typescript-eslint/recommended',
-  ],
+  extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended'],
   parserOptions: {
     ecmaVersion: 2022,
     sourceType: 'module',
@@ -323,6 +331,7 @@ module.exports = {
 ```
 
 **.prettierrc** at root:
+
 ```json
 {
   "semi": true,
@@ -334,6 +343,7 @@ module.exports = {
 ```
 
 **rustfmt.toml** at root:
+
 ```toml
 edition = "2021"
 max_width = 100
@@ -403,12 +413,13 @@ This story implements the exact monorepo structure defined in `_bmad-output/plan
 1. Only modify `.gitignore` from existing files - all other files are NEW
 2. Package names are exact: `@sigil/client`, `@sigil/mcp-server`, `@sigil/tui-backend`, `sigil-tui`
 3. SpacetimeDB SDK must be 1.3.3 (NOT 2.0+) - protocol incompatibility
-4. Use pnpm (NOT npm/yarn) and workspace:* protocol for local dependencies
+4. Use pnpm (NOT npm/yarn) and workspace:\* protocol for local dependencies
 5. All packages must build and test successfully even as placeholders
 
 ### Verification Steps
 
 Run these commands to verify completion:
+
 1. `pnpm install` - succeeds without errors, resolves all workspace packages
 2. `pnpm --filter @sigil/client build` - produces dist/ with .js, .cjs, .d.ts files
 3. `cargo build` - produces target/debug/sigil-tui binary
@@ -431,9 +442,10 @@ None - Story was previously completed with ATDD approach. Verification run on 20
 ### Completion Notes List
 
 **Task 1: Create pnpm workspace structure**
+
 - Created root package.json with pnpm workspace configuration
 - Set up shared devDependencies (eslint, prettier, typescript)
-- Created pnpm-workspace.yaml with packages/* pattern
+- Created pnpm-workspace.yaml with packages/\* pattern
 - Updated .gitignore with workspace exclusions
 - Created tsconfig.base.json with strict mode and ES2022 target
 - Created .eslintrc.cjs with TypeScript ESLint configuration
@@ -441,9 +453,10 @@ None - Story was previously completed with ATDD approach. Verification run on 20
 - Created .env.example with SpacetimeDB and Crosstown URL placeholders
 
 **Task 2: Initialize TypeScript workspace packages**
+
 - Created @sigil/client package with ESM/CJS dual output
-- Created @sigil/mcp-server package with workspace:* dependency on client
-- Created @sigil/tui-backend package with workspace:* dependency on client
+- Created @sigil/mcp-server package with workspace:\* dependency on client
+- Created @sigil/tui-backend package with workspace:\* dependency on client
 - All packages include tsup.config.ts for build (ESM + CJS + DTS)
 - All packages include vitest.config.ts for testing
 - All packages include placeholder src/index.ts with exported constants
@@ -452,6 +465,7 @@ None - Story was previously completed with ATDD approach. Verification run on 20
 - SpacetimeDB SDK pinned to 1.3.3 for BitCraft 1.6.x compatibility
 
 **Task 3: Create Cargo workspace structure**
+
 - Created root Cargo.toml as virtual workspace with resolver "2"
 - Created crates/tui with sigil-tui binary crate
 - Added dependencies: ratatui 0.30, crossterm 0.29.0, tokio, serde, serde_json
@@ -459,17 +473,20 @@ None - Story was previously completed with ATDD approach. Verification run on 20
 - Created crates/tui/src/main.rs with placeholder main() and passing test
 
 **Task 4: Set up GitHub Actions CI/CD**
+
 - Created .github/workflows/ci-typescript.yml with Node 20.x, pnpm cache, lint/typecheck/test/build steps
 - Created .github/workflows/ci-rust.yml with Rust stable, cargo cache, fmt/clippy/test/build steps
 - Both workflows trigger on push and pull_request events
 - Both workflows configured with fail-fast behavior
 
 **Task 5: Create empty placeholder directories**
+
 - Created skills/ directory with .gitkeep
 - Created agents/ directory with .gitkeep
 - Created docker/ directory with .gitkeep
 
 **Task 6: Verify workspace builds and tests pass**
+
 - Verified pnpm install resolves all 3 packages successfully
 - Verified pnpm build produces ESM (.js), CJS (.cjs), and TypeScript declarations (.d.ts, .d.cts)
 - Verified cargo build compiles to target/debug/sigil-tui binary
@@ -481,6 +498,7 @@ None - Story was previously completed with ATDD approach. Verification run on 20
 ### File List
 
 **Created:**
+
 - pnpm-workspace.yaml
 - package.json
 - tsconfig.base.json
@@ -517,14 +535,17 @@ None - Story was previously completed with ATDD approach. Verification run on 20
 - test-story-1-1.sh
 
 **Modified:**
+
 - .gitignore (appended workspace exclusions)
 
 **Deleted:**
+
 - None
 
 ### Change Log
 
 **2026-02-26 - Story 1.1 Implementation Complete**
+
 - Implemented full polyglot monorepo structure with TypeScript (pnpm workspace) and Rust (cargo workspace)
 - Created 3 TypeScript packages (@sigil/client, @sigil/mcp-server, @sigil/tui-backend) with dual ESM/CJS output
 - Created 1 Rust binary crate (sigil-tui) with ratatui dependencies
@@ -542,6 +563,7 @@ None - Story was previously completed with ATDD approach. Verification run on 20
 **Reviewer Model**: Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 
 **Issues Found by Severity**:
+
 - Critical: 1 - ESM module resolution failure (package.json declared .mjs but tsup produced .js)
 - High: 0
 - Medium: 1 - Main field pointed to wrong bundle format
@@ -555,6 +577,7 @@ None - Story was previously completed with ATDD approach. Verification run on 20
 **Reviewer Model**: Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 
 **Issues Found by Severity**:
+
 - Critical: 0
 - High: 1 - Security vulnerability in minimatch@9.0.3 (ReDoS) via @typescript-eslint packages
 - Medium: 3 - Missing license fields (3 TS packages + 1 Rust crate), missing package metadata
@@ -572,6 +595,7 @@ None - Story was previously completed with ATDD approach. Verification run on 20
 4. **LOW: Outdated dependencies** - TypeScript ESLint packages updated to v8.56.1 (latest stable). All builds, tests, lint, and typecheck verified passing post-update.
 
 **Verification**:
+
 - `pnpm audit`: 0 vulnerabilities (was 1 high)
 - `pnpm lint`: Passes with updated ESLint v8
 - `pnpm typecheck`: All packages pass
@@ -583,6 +607,7 @@ None - Story was previously completed with ATDD approach. Verification run on 20
 - `cargo clippy -- -D warnings`: Passes
 
 **Files Modified**:
+
 - `/Users/jonathangreen/Documents/BitCraftPublic/package.json` - Updated @typescript-eslint packages to ^8.56.1
 - `/Users/jonathangreen/Documents/BitCraftPublic/packages/client/package.json` - Added license, description, author, repository
 - `/Users/jonathangreen/Documents/BitCraftPublic/packages/mcp-server/package.json` - Added license, description, author, repository
@@ -596,6 +621,7 @@ None - Story was previously completed with ATDD approach. Verification run on 20
 **Reviewer Model**: Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 
 **Issues Found by Severity**:
+
 - Critical: 0
 - High: 0
 - Medium: 1 - Clippy warning (assertion on constant) in Rust integration test
@@ -603,6 +629,7 @@ None - Story was previously completed with ATDD approach. Verification run on 20
 - **Total**: 3 issues found and fixed
 
 **Security Audit Results** (OWASP Top 10 + Additional Checks):
+
 - A01 (Broken Access Control): N/A - no auth logic yet
 - A02 (Cryptographic Failures): ✓ Passed - secrets properly excluded, no hardcoded credentials
 - A03 (Injection): ✓ Passed - no eval(), no SQL injection vectors
@@ -623,6 +650,7 @@ None - Story was previously completed with ATDD approach. Verification run on 20
 3. **LOW: Missing engine version constraints** - Added `engines` field to all package.json files specifying Node.js >=20.0.0 (and pnpm >=9.0.0 for root). Added `rust-version = "1.70"` to Cargo.toml for MSRV enforcement.
 
 **Verification**:
+
 - `pnpm audit`: 0 vulnerabilities (info: 0, low: 0, moderate: 0, high: 0, critical: 0)
 - `cargo audit`: 0 vulnerabilities
 - `cargo clippy -- -D warnings`: Passes (all targets)
@@ -635,6 +663,7 @@ None - Story was previously completed with ATDD approach. Verification run on 20
 - GitHub Actions workflows: Valid YAML with security permissions
 
 **Files Modified**:
+
 - `/Users/jonathangreen/Documents/BitCraftPublic/crates/tui/tests/integration_test.rs` - Fixed assertion on constant
 - `/Users/jonathangreen/Documents/BitCraftPublic/.github/workflows/ci-typescript.yml` - Added permissions
 - `/Users/jonathangreen/Documents/BitCraftPublic/.github/workflows/ci-rust.yml` - Added permissions

@@ -62,23 +62,23 @@ Every action is responsive — event-driven architecture (multi-source event loo
 
 ## Journey Requirements Summary
 
-| Capability Area | Journeys |
-|----------------|----------|
-| Declarative skill files + Agent.md parser | Priya, Anika |
-| SpacetimeDB read client (table subscriptions) | All |
-| Crosstown relay subscriptions (read path) | All |
-| Crosstown/ILP write client | All |
-| Nostr keypair identity (no passwords) | All |
-| BLS identity propagation to SpacetimeDB | All |
-| Decision logger (JSONL) | Priya |
-| Multi-agent launcher | Priya |
-| LLM backend swapping | Priya |
-| ratatui TUI client (hex map, panels, input) | Marcus |
-| 30+ FPS event-driven rendering | Marcus |
-| SSH-compatible terminal play | Marcus |
-| World-agnostic skill file format | Anika |
-| Crosstown BLS handler registration | Anika, Jonathan |
-| Docker deployment (game server) | Jonathan, Priya |
-| ILP fee schedule configuration | Jonathan |
-| Monitoring/observability | Jonathan |
-| Scalability under multi-agent load | Jonathan |
+| Capability Area                               | Journeys        |
+| --------------------------------------------- | --------------- |
+| Declarative skill files + Agent.md parser     | Priya, Anika    |
+| SpacetimeDB read client (table subscriptions) | All             |
+| Crosstown relay subscriptions (read path)     | All             |
+| Crosstown/ILP write client                    | All             |
+| Nostr keypair identity (no passwords)         | All             |
+| BLS identity propagation to SpacetimeDB       | All             |
+| Decision logger (JSONL)                       | Priya           |
+| Multi-agent launcher                          | Priya           |
+| LLM backend swapping                          | Priya           |
+| ratatui TUI client (hex map, panels, input)   | Marcus          |
+| 30+ FPS event-driven rendering                | Marcus          |
+| SSH-compatible terminal play                  | Marcus          |
+| World-agnostic skill file format              | Anika           |
+| Crosstown BLS handler registration            | Anika, Jonathan |
+| Docker deployment (game server)               | Jonathan, Priya |
+| ILP fee schedule configuration                | Jonathan        |
+| Monitoring/observability                      | Jonathan        |
+| Scalability under multi-agent load            | Jonathan        |

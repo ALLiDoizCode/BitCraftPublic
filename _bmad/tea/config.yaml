@@ -3,7 +3,7 @@
 # Version: 6.0.3
 # Date: 2026-02-24T20:59:29.034Z
 
-test_artifacts: "{project-root}/_bmad-output/test-artifacts"
+test_artifacts: '{project-root}/_bmad-output/test-artifacts'
 tea_use_playwright_utils: true
 tea_browser_automation: auto
 test_stack_type: auto
@@ -18,4 +18,4 @@ trace_output: _bmad-output/test-artifacts/traceability
 user_name: Jonathan
 communication_language: English
 document_output_language: English
-output_folder: "{project-root}/_bmad-output"
+output_folder: '{project-root}/_bmad-output'

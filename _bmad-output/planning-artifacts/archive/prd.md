@@ -1,5 +1,21 @@
 ---
-stepsCompleted: ['step-01-init', 'step-02-discovery', 'step-02b-vision', 'step-02c-executive-summary', 'step-03-success', 'step-04-journeys', 'step-05-domain', 'step-06-innovation', 'step-07-project-type', 'step-08-scoping', 'step-09-functional', 'step-10-nonfunctional', 'step-11-polish', 'step-12-complete']
+stepsCompleted:
+  [
+    'step-01-init',
+    'step-02-discovery',
+    'step-02b-vision',
+    'step-02c-executive-summary',
+    'step-03-success',
+    'step-04-journeys',
+    'step-05-domain',
+    'step-06-innovation',
+    'step-07-project-type',
+    'step-08-scoping',
+    'step-09-functional',
+    'step-10-nonfunctional',
+    'step-11-polish',
+    'step-12-complete',
+  ]
 inputDocuments:
   - '_bmad-output/planning-artifacts/architecture.md'
   - 'HANDOFF.md'
@@ -96,14 +112,14 @@ Target users: AI researchers studying multi-agent behavior in constrained enviro
 
 ### Measurable Outcomes
 
-| Metric | MVP Target | Growth Target |
-|--------|-----------|---------------|
-| Agent setup time (no code) | < 30 min | < 5 min |
-| Reducers accessible via skills | Top 20 (movement, combat, crafting, trading) | 100% of public reducers |
-| TUI game coverage | Movement, map, chat, inventory | Full BitCraft feature parity |
-| Concurrent agents supported | 2 | 50+ |
-| ILP fee collection | Functional | Profitable |
-| SpacetimeDB worlds supported | 1 (BitCraft) | 3+ |
+| Metric                         | MVP Target                                   | Growth Target                |
+| ------------------------------ | -------------------------------------------- | ---------------------------- |
+| Agent setup time (no code)     | < 30 min                                     | < 5 min                      |
+| Reducers accessible via skills | Top 20 (movement, combat, crafting, trading) | 100% of public reducers      |
+| TUI game coverage              | Movement, map, chat, inventory               | Full BitCraft feature parity |
+| Concurrent agents supported    | 2                                            | 50+                          |
+| ILP fee collection             | Functional                                   | Profitable                   |
+| SpacetimeDB worlds supported   | 1 (BitCraft)                                 | 3+                           |
 
 ## User Journeys
 
@@ -169,26 +185,26 @@ Every action is responsive — event-driven architecture (multi-source event loo
 
 ### Journey Requirements Summary
 
-| Capability Area | Journeys |
-|----------------|----------|
-| Declarative skill files + Agent.md parser | Priya, Anika |
-| SpacetimeDB read client (table subscriptions) | All |
-| Crosstown relay subscriptions (read path) | All |
-| Crosstown/ILP write client | All |
-| Nostr keypair identity (no passwords) | All |
-| BLS identity propagation to SpacetimeDB | All |
-| Decision logger (JSONL) | Priya |
-| Multi-agent launcher | Priya |
-| LLM backend swapping | Priya |
-| ratatui TUI client (hex map, panels, input) | Marcus |
-| 30+ FPS event-driven rendering | Marcus |
-| SSH-compatible terminal play | Marcus |
-| World-agnostic skill file format | Anika |
-| Crosstown BLS handler registration | Anika, Jonathan |
-| Docker deployment (game server) | Jonathan, Priya |
-| ILP fee schedule configuration | Jonathan |
-| Monitoring/observability | Jonathan |
-| Scalability under multi-agent load | Jonathan |
+| Capability Area                               | Journeys        |
+| --------------------------------------------- | --------------- |
+| Declarative skill files + Agent.md parser     | Priya, Anika    |
+| SpacetimeDB read client (table subscriptions) | All             |
+| Crosstown relay subscriptions (read path)     | All             |
+| Crosstown/ILP write client                    | All             |
+| Nostr keypair identity (no passwords)         | All             |
+| BLS identity propagation to SpacetimeDB       | All             |
+| Decision logger (JSONL)                       | Priya           |
+| Multi-agent launcher                          | Priya           |
+| LLM backend swapping                          | Priya           |
+| ratatui TUI client (hex map, panels, input)   | Marcus          |
+| 30+ FPS event-driven rendering                | Marcus          |
+| SSH-compatible terminal play                  | Marcus          |
+| World-agnostic skill file format              | Anika           |
+| Crosstown BLS handler registration            | Anika, Jonathan |
+| Docker deployment (game server)               | Jonathan, Priya |
+| ILP fee schedule configuration                | Jonathan        |
+| Monitoring/observability                      | Jonathan        |
+| Scalability under multi-agent load            | Jonathan        |
 
 ## Domain-Specific Requirements
 
@@ -248,23 +264,23 @@ No direct competitor combines declarative agents + real economic constraints + p
 
 ### Innovation Validation
 
-| Innovation | Validation Method |
-|-----------|------------------|
-| Declarative agent definitions | Can a non-programmer create and deploy a functioning agent in < 30 min using only markdown? |
-| Single SDK, multiple frontends | Do MCP agents and TUI players have equivalent access to game actions through `@sigil/client`? |
-| ILP micropayments as constraints | Do agents make meaningfully different decisions when actions have real costs vs. free? |
-| Cryptographic identity propagation | Does BLS correctly attribute actions to the authoring Nostr key across 100% of reducer calls? |
-| World-agnostic architecture | Can a new SpacetimeDB game become agent-accessible by writing only skill files, zero SDK changes? |
+| Innovation                         | Validation Method                                                                                 |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Declarative agent definitions      | Can a non-programmer create and deploy a functioning agent in < 30 min using only markdown?       |
+| Single SDK, multiple frontends     | Do MCP agents and TUI players have equivalent access to game actions through `@sigil/client`?     |
+| ILP micropayments as constraints   | Do agents make meaningfully different decisions when actions have real costs vs. free?            |
+| Cryptographic identity propagation | Does BLS correctly attribute actions to the authoring Nostr key across 100% of reducer calls?     |
+| World-agnostic architecture        | Can a new SpacetimeDB game become agent-accessible by writing only skill files, zero SDK changes? |
 
 ## Developer Tool Specific Requirements
 
 ### Language Matrix
 
-| Runtime | Language | Primary Users | Package Manager | Key Dependencies |
-|---------|----------|--------------|----------------|-----------------|
-| SDK + Backends | TypeScript/Node.js | All (via wrappers) | pnpm | SpacetimeDB TS client, nostr-tools, ILP client |
-| TUI Frontend | Rust | Terminal players | cargo | ratatui, crossterm, tokio, serde_json |
-| Infrastructure | Docker | Platform operators | docker compose | Game server (WASM), Crosstown node |
+| Runtime        | Language           | Primary Users      | Package Manager | Key Dependencies                               |
+| -------------- | ------------------ | ------------------ | --------------- | ---------------------------------------------- |
+| SDK + Backends | TypeScript/Node.js | All (via wrappers) | pnpm            | SpacetimeDB TS client, nostr-tools, ILP client |
+| TUI Frontend   | Rust               | Terminal players   | cargo           | ratatui, crossterm, tokio, serde_json          |
+| Infrastructure | Docker             | Platform operators | docker compose  | Game server (WASM), Crosstown node             |
 
 ### Installation Methods
 
@@ -276,10 +292,12 @@ No direct competitor combines declarative agents + real economic constraints + p
 ### API Surface
 
 **Declarative Layer (no code):**
+
 - `Agent.md` — Agent configuration: name, personality, skill selection, budget limits, LLM backend, logging preferences
 - Skill files (`.md`) — One per game action: reducer name, parameters, ILP cost, required table subscriptions, natural-language description, usage guidance
 
 **SDK Runtime Layer (TypeScript):**
+
 - `SpacetimeDBClient` — Table subscription management, query interface, reconnection handling
 - `CrosstownClient` — Relay subscription for events (read), ILP packet construction/signing/submission (write), fee tracking
 - `SkillParser` — Load and validate Agent.md + skill files, build action registry
@@ -287,6 +305,7 @@ No direct competitor combines declarative agents + real economic constraints + p
 - `DecisionLogger` — JSONL output with timestamps, world state, costs, outcomes
 
 **TUI Frontend (Rust — presentation layer only):**
+
 - `TuiApp` — ratatui application: event loop, screen management, input handling (rebels-in-the-sky patterns)
 - `HexRenderer` — Hex-grid map rendering with terrain, entities, players
 - `PanelSystem` — Chat, inventory, status, crafting panels with keyboard navigation
@@ -296,27 +315,41 @@ No direct competitor combines declarative agents + real economic constraints + p
 ### Code Examples
 
 **Example Agent.md:**
+
 ```markdown
 # Agent: Gatherer-01
+
 ## Personality: Cautious resource optimizer
+
 ## Skills: harvest_resource, check_prices, create_trade_offer, move_to_hex
+
 ## Budget: 0.05 USD/hour
+
 ## LLM: claude-sonnet-4-5-20250929
+
 ## Logging: decisions.jsonl
 ```
 
 **Example Skill File (`harvest_resource.md`):**
+
 ```markdown
 # Skill: Harvest Resource
+
 ## Reducer: harvest_resource
+
 ## Parameters: entity_id (u64), tool_id (u64)
+
 ## Cost: 0.001 USD
+
 ## Subscriptions: nearby_resources, player_inventory, player_position
+
 ## Description: Harvest a resource node within range. Requires appropriate tool in inventory.
+
 ## When to use: When a harvestable resource is nearby and inventory has space.
 ```
 
 **Quickstart paths:**
+
 1. AI Researcher: Clone → `docker compose up` → edit Agent.md → `npm start` (< 30 min)
 2. Terminal Player: `cargo install sigil-tui` → generate Nostr key → connect (spawns TypeScript backend automatically) → play (< 5 min)
 3. Game Developer: Write skill files for reducers → register BLS handler → publish (< 1 hour)
@@ -348,12 +381,14 @@ No direct competitor combines declarative agents + real economic constraints + p
 ### Phase 1 — MVP
 
 **User Journey Coverage:**
+
 - Priya (AI Researcher): Partial — single agent with basic skills, decision logs. No multi-agent launcher or LLM swapping.
 - Marcus (Terminal Player): Partial — movement, map, chat, inventory. No combat, crafting, building, empire management.
 - Jonathan (Infrastructure): Full — deploy locally, route ILP packets, collect fees, verify identity propagation.
 - Anika (Game Developer): Deferred to Phase 2.
 
 **`@sigil/client` (TypeScript SDK — the engine):**
+
 - SpacetimeDB client wrapper (read path — table subscriptions via WebSocket)
 - Crosstown client (read path — relay event subscriptions; write path — ILP packets for game actions)
 - Action cost registry (JSON config)
@@ -361,24 +396,29 @@ No direct competitor combines declarative agents + real economic constraints + p
 - Declarative skill file parser (`Agent.md` + skill definitions)
 
 **`@sigil/mcp-server` (MCP wrapper for AI agents):**
+
 - Exposes game world as MCP resources and game actions as MCP tools
 - AI agents (Claude, Vercel AI, OpenCode) connect via standard MCP protocol
 
 **`@sigil/tui-backend` (JSON-RPC IPC wrapper for Rust TUI):**
+
 - Bridges `@sigil/client` to the Rust TUI over stdio
 - Pushes real-time game state updates to the TUI, processes user action requests
 
 **Rust TUI (presentation layer only):**
+
 - ratatui TUI client: map view (hex grid), player status, movement, chat, inventory
 - Event-driven architecture (rebels-in-the-sky patterns: multi-source event loop, callback-based UI, tick scheduling)
 - No direct SpacetimeDB or Crosstown connections — all data flows through `@sigil/tui-backend`
 
 **Infrastructure:**
+
 - Docker compose for game server + Crosstown node (local dev)
 - Crosstown BLS game action handler (receive ILP packet → extract Nostr public key + game action → call SpacetimeDB reducer with identity propagation)
 - ILP fee collection on all routed game actions
 
 **Identity:**
+
 - Nostr keypair as sole identity (no username/password)
 - BLS verifies ILP packet signature → extracts author Nostr public key → propagates to SpacetimeDB
 - SpacetimeDB credits correct player entity based on Nostr public key
@@ -423,43 +463,43 @@ No direct competitor combines declarative agents + real economic constraints + p
 
 **Technical Risks:**
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|-----------|--------|------------|
-| BLS identity propagation infeasible with SpacetimeDB | Medium | Critical | Spike first. If `ctx.sender` cannot be overridden, explore dedicated identity table or signed payloads verified in-reducer. |
-| SpacetimeDB subscription performance under multi-agent load | Low | High | Designed for real-time subscriptions. Test with 10+ concurrent connections early. |
-| Skill file format too rigid for complex game actions | Medium | Medium | Start simple, iterate. Support optional code hooks as escape hatch. |
-| Markdown DSL insufficient for complex agent behavior | Medium | Medium | Hybrid mode: Agent.md for configuration + optional code hooks for custom logic. |
-| ratatui hex-grid rendering too slow at scale | Low | Medium | rebels-in-the-sky proves ratatui handles complex real-time UIs. Hex rendering is computationally simpler. |
-| ILP latency too high for real-time gameplay | Low | Medium | Local action queue with optimistic execution, settle ILP asynchronously. |
-| World-agnostic abstraction too leaky | Medium | Medium | Ship game-specific first, generalize iteratively based on second world. |
-| Dual-runtime maintenance burden | High | Medium | Prioritize one runtime per release cycle, keep shared skill format stable. |
+| Risk                                                        | Likelihood | Impact   | Mitigation                                                                                                                  |
+| ----------------------------------------------------------- | ---------- | -------- | --------------------------------------------------------------------------------------------------------------------------- |
+| BLS identity propagation infeasible with SpacetimeDB        | Medium     | Critical | Spike first. If `ctx.sender` cannot be overridden, explore dedicated identity table or signed payloads verified in-reducer. |
+| SpacetimeDB subscription performance under multi-agent load | Low        | High     | Designed for real-time subscriptions. Test with 10+ concurrent connections early.                                           |
+| Skill file format too rigid for complex game actions        | Medium     | Medium   | Start simple, iterate. Support optional code hooks as escape hatch.                                                         |
+| Markdown DSL insufficient for complex agent behavior        | Medium     | Medium   | Hybrid mode: Agent.md for configuration + optional code hooks for custom logic.                                             |
+| ratatui hex-grid rendering too slow at scale                | Low        | Medium   | rebels-in-the-sky proves ratatui handles complex real-time UIs. Hex rendering is computationally simpler.                   |
+| ILP latency too high for real-time gameplay                 | Low        | Medium   | Local action queue with optimistic execution, settle ILP asynchronously.                                                    |
+| World-agnostic abstraction too leaky                        | Medium     | Medium   | Ship game-specific first, generalize iteratively based on second world.                                                     |
+| Dual-runtime maintenance burden                             | High       | Medium   | Prioritize one runtime per release cycle, keep shared skill format stable.                                                  |
 
 **Market Risks:**
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|-----------|--------|------------|
-| No researchers interested in MMO agent benchmarks | Medium | High | Publish demo video + decision logs. "Real economic constraints" angle is novel. |
-| Terminal players too niche | Low | Low | Small but passionate community. Even modest adoption generates ILP traffic. |
-| SpacetimeDB changes break SDK | Medium | Medium | Pin version, test against stable releases, maintain compatibility matrix. |
+| Risk                                              | Likelihood | Impact | Mitigation                                                                      |
+| ------------------------------------------------- | ---------- | ------ | ------------------------------------------------------------------------------- |
+| No researchers interested in MMO agent benchmarks | Medium     | High   | Publish demo video + decision logs. "Real economic constraints" angle is novel. |
+| Terminal players too niche                        | Low        | Low    | Small but passionate community. Even modest adoption generates ILP traffic.     |
+| SpacetimeDB changes break SDK                     | Medium     | Medium | Pin version, test against stable releases, maintain compatibility matrix.       |
 
 **Resource Risks:**
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|-----------|--------|------------|
-| Solo developer bottleneck | High | High | AI-assisted development. Prioritize ruthlessly per critical path. |
-| Scope creep across polyglot monorepo | High | Medium | Ship `@sigil/client` and MCP server before TUI. TypeScript backend is the priority. |
-| Infrastructure costs exceed fee revenue | Medium | Medium | Local Docker dev is free. Single Crosstown node for production. 10 agents covers a small VPS. |
+| Risk                                    | Likelihood | Impact | Mitigation                                                                                    |
+| --------------------------------------- | ---------- | ------ | --------------------------------------------------------------------------------------------- |
+| Solo developer bottleneck               | High       | High   | AI-assisted development. Prioritize ruthlessly per critical path.                             |
+| Scope creep across polyglot monorepo    | High       | Medium | Ship `@sigil/client` and MCP server before TUI. TypeScript backend is the priority.           |
+| Infrastructure costs exceed fee revenue | Medium     | Medium | Local Docker dev is free. Single Crosstown node for production. 10 agents covers a small VPS. |
 
 **Domain Risks:**
 
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Nostr key loss = permanent identity loss | High | Seed phrase backup, key export/import, clear onboarding guidance |
-| Stale world state in agent perception | Medium | Subscription health monitoring, reconnection with state replay |
-| ILP cost overruns during experiments | Medium | Budget caps in Agent.md, cost estimation before action, balance alerts |
-| BLS identity propagation failure | Critical | Cryptographic verification at every layer, reject unattributable actions |
-| BitCraft name used in marketing/code | Legal | Establish own brand name early, audit all user-facing strings |
-| License incompatibility in dependency chain | Medium | License audit of all dependencies before v1 |
+| Risk                                        | Impact   | Mitigation                                                               |
+| ------------------------------------------- | -------- | ------------------------------------------------------------------------ |
+| Nostr key loss = permanent identity loss    | High     | Seed phrase backup, key export/import, clear onboarding guidance         |
+| Stale world state in agent perception       | Medium   | Subscription health monitoring, reconnection with state replay           |
+| ILP cost overruns during experiments        | Medium   | Budget caps in Agent.md, cost estimation before action, balance alerts   |
+| BLS identity propagation failure            | Critical | Cryptographic verification at every layer, reject unattributable actions |
+| BitCraft name used in marketing/code        | Legal    | Establish own brand name early, audit all user-facing strings            |
+| License incompatibility in dependency chain | Medium   | License audit of all dependencies before v1                              |
 
 ## Functional Requirements
 

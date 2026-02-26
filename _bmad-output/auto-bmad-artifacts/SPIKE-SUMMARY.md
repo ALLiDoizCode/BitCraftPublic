@@ -26,28 +26,32 @@ Can SpacetimeDB 2.0.x TypeScript client connect to a 1.6.x server?
 ## Actions Taken
 
 ### 1. Spike Test Created
+
 - Directory: `.spike-test-spacetimedb/` (removed after analysis)
 - Test script: Connection test with error analysis
 - Result: Could not install SDK 2.0.0 due to broken dependencies
 
 ### 2. Research Conducted
+
 - Reviewed SpacetimeDB migration guide
 - Confirmed WebSocket protocol v2 incompatibility
 - Verified BitCraft server version (1.6.0)
 - Checked npm package versions and dependencies
 
 ### 3. Documentation Updated
+
 Updated 5 architecture files to correct SDK version:
 
-| File | Changes |
-|------|---------|
-| `starter-template-technology-foundation.md` | SDK version table + version strategy section |
-| `architecture-validation-results.md` | 4 references to SDK version |
-| `core-architectural-decisions.md` | 3 references to protocol and SDK version |
-| `project-structure-boundaries.md` | 3 references to WebSocket protocol |
-| `spike-spacetimedb-compatibility-updates.md` | Summary of all changes |
+| File                                         | Changes                                      |
+| -------------------------------------------- | -------------------------------------------- |
+| `starter-template-technology-foundation.md`  | SDK version table + version strategy section |
+| `architecture-validation-results.md`         | 4 references to SDK version                  |
+| `core-architectural-decisions.md`            | 3 references to protocol and SDK version     |
+| `project-structure-boundaries.md`            | 3 references to WebSocket protocol           |
+| `spike-spacetimedb-compatibility-updates.md` | Summary of all changes                       |
 
 ### 4. Spike Report Created
+
 - File: `spike-spacetimedb-compatibility.md`
 - Comprehensive analysis with:
   - Test setup and findings
@@ -59,6 +63,7 @@ Updated 5 architecture files to correct SDK version:
 ## Impact on Implementation
 
 **Low Impact** - Architecture is sound, only SDK version changed:
+
 - Use `@clockworklabs/spacetimedb-sdk@^1.3.3` instead of 2.0.x
 - Use global reducer callbacks (1.x pattern) instead of event tables
 - All architectural patterns remain valid
@@ -69,6 +74,7 @@ Updated 5 architecture files to correct SDK version:
 **When can we use SDK 2.0?**
 
 Two conditions must be met:
+
 1. SpacetimeDB 2.0.x npm package is fixed (currently broken)
 2. BitCraft server upgrades to SpacetimeDB 2.x
 

@@ -14,6 +14,7 @@
 **File:** `_bmad-output/test-artifacts/atdd-checklist-1-2.md`
 
 **Contents:**
+
 - Story summary and acceptance criteria breakdown
 - Test strategy with 30 failing tests across 3 test levels
 - Test prioritization (all P0/P1 for security-critical crypto operations)
@@ -28,16 +29,20 @@
 ### 2. Failing Test Files (TDD RED Phase)
 
 #### Unit Tests: Keypair Generation/Import/Export
+
 **File:** `packages/client/src/nostr/keypair.test.ts`
 **Tests:** 15 tests covering:
+
 - Key generation (2 tests)
 - Import from hex/nsec formats (4 tests)
 - Import from BIP-39 seed phrases (5 tests)
 - Export in all formats (4 tests)
 
 #### Integration Tests: Encrypted Storage
+
 **File:** `packages/client/src/nostr/storage.test.ts`
 **Tests:** 8 tests covering:
+
 - Save/load roundtrip
 - Wrong passphrase rejection
 - File permissions (Unix)
@@ -45,8 +50,10 @@
 - Encryption algorithm verification
 
 #### Integration Tests: Client Identity API
+
 **File:** `packages/client/src/nostr/client-identity.test.ts`
 **Tests:** 7 tests covering:
+
 - Public key exposure (hex + npub)
 - Signature generation and verification
 - Private key never exposed (security)
@@ -59,8 +66,10 @@
 ### 3. Test Infrastructure
 
 #### Data Factories
+
 **File:** `packages/client/src/nostr/test-utils/keypair.factory.ts`
 **Exports:**
+
 - `createMockKeypair()` - Mock keypair for testing
 - `createValidHexPrivateKey()` - Valid hex key generation
 - `createValidNsecPrivateKey()` - Valid nsec key generation
@@ -68,8 +77,10 @@
 - `createInvalidSeedPhrase()` - Invalid phrases for error testing
 
 #### Test Fixtures
+
 **File:** `packages/client/src/nostr/test-utils/fs.fixture.ts`
 **Exports:**
+
 - `tempIdentityDir` fixture - Isolated temp directories with auto-cleanup
 
 ---
@@ -82,7 +93,7 @@
 $ pnpm --filter @sigil/client test keypair.test.ts
 
  FAIL  src/nostr/keypair.test.ts
-Error: Cannot find module './keypair' imported from 
+Error: Cannot find module './keypair' imported from
 '/Users/jonathangreen/Documents/BitCraftPublic/packages/client/src/nostr/keypair.test.ts'
 
 Test Files  1 failed (1)
@@ -91,6 +102,7 @@ Test Files  1 failed (1)
 ```
 
 **Status:** ✅ RED phase verified
+
 - Tests fail because modules don't exist yet
 - This is INTENTIONAL (TDD red phase)
 - Tests define expected behavior for implementation
@@ -102,6 +114,7 @@ Test Files  1 failed (1)
 ### Stack Detection
 
 **Detected:** Fullstack (TypeScript SDK + Rust TUI)
+
 - Frontend indicators: `package.json` with TypeScript
 - Backend indicators: `Cargo.toml` in multiple locations
 - Test framework: Vitest (configured in `packages/client/vitest.config.ts`)
@@ -111,6 +124,7 @@ Test Files  1 failed (1)
 **Primary Levels:** Unit + Integration (no E2E needed)
 
 **Rationale:**
+
 - Pure backend SDK feature (no browser UI)
 - Cryptographic operations (unit tests for pure functions)
 - File I/O and client integration (integration tests)
@@ -148,6 +162,7 @@ Test Files  1 failed (1)
 ### 1. Review ATDD Checklist
 
 Read the full ATDD checklist to understand test architecture:
+
 ```bash
 cat _bmad-output/test-artifacts/atdd-checklist-1-2.md
 ```
@@ -155,6 +170,7 @@ cat _bmad-output/test-artifacts/atdd-checklist-1-2.md
 ### 2. Begin GREEN Phase (Implementation)
 
 Start with Task Group 1 (Keypair Generation):
+
 ```bash
 # Create the keypair module
 touch packages/client/src/nostr/keypair.ts
@@ -168,6 +184,7 @@ Work through all 8 task groups sequentially, running tests after each implementa
 ### 3. Verify All Tests Pass
 
 When implementation complete, verify all 30 tests pass:
+
 ```bash
 pnpm --filter @sigil/client test
 # Expected: 30 passed, 0 failed
@@ -183,6 +200,7 @@ pnpm --filter @sigil/client test
 ### 5. Story Completion
 
 Mark Story 1.2 as 'done' when:
+
 - ✅ All 30 tests pass
 - ✅ Test coverage >90%
 - ✅ Security requirements validated (NFR9, NFR11, NFR13)
@@ -194,18 +212,22 @@ Mark Story 1.2 as 'done' when:
 ## Files Created
 
 ### Test Architecture (1 file)
+
 - `_bmad-output/test-artifacts/atdd-checklist-1-2.md` (comprehensive checklist)
 
 ### Test Files (3 files)
+
 - `packages/client/src/nostr/keypair.test.ts` (15 unit tests)
 - `packages/client/src/nostr/storage.test.ts` (8 integration tests)
 - `packages/client/src/nostr/client-identity.test.ts` (7 integration tests)
 
 ### Test Infrastructure (2 files)
+
 - `packages/client/src/nostr/test-utils/keypair.factory.ts` (data factories)
 - `packages/client/src/nostr/test-utils/fs.fixture.ts` (temp directory fixture)
 
 ### Documentation (1 file)
+
 - `_bmad-output/test-artifacts/atdd-summary-1-2.md` (this file)
 
 **Total:** 7 files created
@@ -215,17 +237,20 @@ Mark Story 1.2 as 'done' when:
 ## Security Requirements Validated
 
 ### NFR9: Private Keys Never Transmitted
+
 - ✅ Tests verify `client.identity` has NO private key property
 - ✅ Tests verify private keys never in error logs
 - ✅ Only signatures transmitted, never raw keys
 
 ### NFR11: Encryption at Rest
+
 - ✅ Tests verify scrypt key derivation (N=32768, r=8, p=1)
 - ✅ Tests verify AES-256-GCM encryption
 - ✅ Tests verify file permissions (0o600 on Unix)
 - ✅ Tests verify wrong passphrase rejection
 
 ### NFR13: All Actions Require Signature
+
 - ✅ Tests verify `client.identity.sign()` produces valid signatures
 - ✅ Tests verify signatures are cryptographically verifiable
 - ✅ Foundation for future reducer signature validation (Story 2.5)
@@ -237,6 +262,7 @@ Mark Story 1.2 as 'done' when:
 **Mode:** YOLO (autonomous execution, no user prompts)
 
 **Execution Time:** ~3 minutes
+
 - Step 1: Preflight and context loading
 - Step 2: Generation mode selection (AI generation, no browser recording)
 - Step 3: Test strategy (30 tests across 3 levels)
@@ -244,6 +270,7 @@ Mark Story 1.2 as 'done' when:
 - Step 5: Validation and completion
 
 **Output Quality:**
+
 - ✅ Comprehensive test coverage (30 tests)
 - ✅ Security-focused design (3 NFRs validated)
 - ✅ Clear implementation guidance (8 task groups)
@@ -254,6 +281,7 @@ Mark Story 1.2 as 'done' when:
 ## Summary
 
 ✅ **ATDD workflow complete for Story 1.2**
+
 - 30 failing tests generated (TDD red phase)
 - Comprehensive implementation checklist created
 - Test infrastructure (factories + fixtures) ready

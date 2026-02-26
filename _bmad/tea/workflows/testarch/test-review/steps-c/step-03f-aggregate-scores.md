@@ -110,7 +110,7 @@ const allViolations = dimensions.flatMap((dim) =>
   results[dim].violations.map((v) => ({
     ...v,
     dimension: dim,
-  })),
+  }))
 );
 
 // Group by severity
@@ -138,11 +138,13 @@ const allRecommendations = dimensions.flatMap((dim) =>
     dimension: dim,
     recommendation: rec,
     impact: results[dim].score < 70 ? 'HIGH' : 'MEDIUM',
-  })),
+  }))
 );
 
 // Sort by impact (HIGH first)
-const prioritizedRecommendations = allRecommendations.sort((a, b) => (a.impact === 'HIGH' ? -1 : 1)).slice(0, 10); // Top 10 recommendations
+const prioritizedRecommendations = allRecommendations
+  .sort((a, b) => (a.impact === 'HIGH' ? -1 : 1))
+  .slice(0, 10); // Top 10 recommendations
 ```
 
 ---
@@ -184,7 +186,11 @@ const reviewSummary = {
 };
 
 // Save for Step 4 (report generation)
-fs.writeFileSync(`/tmp/tea-test-review-summary-${timestamp}.json`, JSON.stringify(reviewSummary, null, 2), 'utf8');
+fs.writeFileSync(
+  `/tmp/tea-test-review-summary-${timestamp}.json`,
+  JSON.stringify(reviewSummary, null, 2),
+  'utf8'
+);
 ```
 
 ---

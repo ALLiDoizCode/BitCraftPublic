@@ -1,6 +1,7 @@
 # SpacetimeDB CLI & Deployment Reference
 
 ## Table of Contents
+
 - [Installation](#installation)
 - [CLI Commands](#cli-commands)
 - [Local Development](#local-development)
@@ -27,6 +28,7 @@ spacetime version
 ```
 
 ### Interactive Development
+
 ```bash
 spacetime dev                               # Auto-rebuild, republish, generate bindings
 spacetime dev --template basic-rs           # Create project from template (basic-rs, basic-cs, basic-ts, react-ts)
@@ -39,6 +41,7 @@ spacetime dev --server-only                 # Skip client initialization
 ## CLI Commands
 
 ### Project Management
+
 ```bash
 spacetime init --lang <rust|csharp|typescript> --project-path <path> <name>
 spacetime build                          # Build module to WASM
@@ -53,6 +56,7 @@ spacetime rename <OLD> <NEW>             # Rename database
 ```
 
 ### Development
+
 ```bash
 spacetime start                          # Start local server (port 3000)
 spacetime dev                            # Interactive dev mode (auto-rebuild)
@@ -62,6 +66,7 @@ spacetime logout                         # Clear authentication
 ```
 
 ### Database Operations
+
 ```bash
 spacetime logs <NAME>                    # View module logs
 spacetime logs --follow <NAME>           # Stream logs in real-time
@@ -74,6 +79,7 @@ spacetime subscribe <NAME> <QUERY>       # Monitor subscription updates
 ```
 
 ### Code Generation
+
 ```bash
 spacetime generate --lang rust --out-dir <path> --project-path <module-path>
 spacetime generate --lang csharp --out-dir <path> --project-path <module-path>
@@ -83,6 +89,7 @@ spacetime generate --include-private ...    # Include private tables/functions i
 ```
 
 ### Server Management
+
 ```bash
 spacetime server add <name> --url <url>  # Add a server
 spacetime server list                    # List configured servers
@@ -92,6 +99,7 @@ spacetime server fingerprint             # Get server fingerprint
 ```
 
 ### Energy
+
 ```bash
 spacetime energy balance                 # Check energy/budget
 ```
@@ -123,6 +131,7 @@ spacetime publish my-app
 ```
 
 ### MainCloud Details
+
 - **URL:** `https://maincloud.spacetimedb.com`
 - **Dashboard:** `https://spacetimedb.com/profile` (metrics, tables, logs, access controls)
 - **Pricing:** Free tier: 2,500 TeV/month; Pro: $25/month with 100,000 TeV
@@ -158,12 +167,14 @@ spacetime server add self-hosted --url https://example.com
 Configure Nginx as a reverse proxy to restrict access. By default, expose only `/v1/database/[name]/subscribe` (WebSocket) and `/v1/identity` (required for TypeScript SDK). Optionally enable full publishing, reducer calls, and SQL endpoints.
 
 ### HTTPS with Certbot
+
 ```bash
 sudo apt install certbot python3-certbot-nginx -y
 sudo certbot --nginx -d example.com
 ```
 
 ### Version Updates
+
 ```bash
 sudo systemctl stop spacetimedb
 spacetime --root-dir=/stdb version upgrade
@@ -174,34 +185,38 @@ sudo systemctl start spacetimedb
 
 ### Key Endpoints
 
-| Method | Endpoint | Purpose |
-|--------|----------|---------|
-| POST | `/v1/identity` | Request new identity/token |
-| POST | `/v1/database` | Publish database |
-| POST | `/v1/database/:name/call/:reducer` | Call reducer |
-| POST | `/v1/database/:name/sql` | Execute SQL |
-| GET | `/v1/database/:name/subscribe` | WebSocket connection |
-| GET | `/v1/database/:name/schema` | Fetch schema |
-| GET | `/v1/database/:name/logs` | Retrieve logs |
-| DELETE | `/v1/database/:name` | Delete database |
-| GET | `/v1/ping` | Health check |
-| GET | `/v1/database/:name/names` | List database identifiers |
-| POST | `/v1/database/:name/names` | Add database name |
-| GET | `/v1/database/:name/identity` | Get database identity hex |
+| Method | Endpoint                           | Purpose                    |
+| ------ | ---------------------------------- | -------------------------- |
+| POST   | `/v1/identity`                     | Request new identity/token |
+| POST   | `/v1/database`                     | Publish database           |
+| POST   | `/v1/database/:name/call/:reducer` | Call reducer               |
+| POST   | `/v1/database/:name/sql`           | Execute SQL                |
+| GET    | `/v1/database/:name/subscribe`     | WebSocket connection       |
+| GET    | `/v1/database/:name/schema`        | Fetch schema               |
+| GET    | `/v1/database/:name/logs`          | Retrieve logs              |
+| DELETE | `/v1/database/:name`               | Delete database            |
+| GET    | `/v1/ping`                         | Health check               |
+| GET    | `/v1/database/:name/names`         | List database identifiers  |
+| POST   | `/v1/database/:name/names`         | Add database name          |
+| GET    | `/v1/database/:name/identity`      | Get database identity hex  |
 
 ### Authentication
+
 ```
 Authorization: Bearer <token>
 ```
+
 Tokens are OpenID Connect-compliant JWTs.
 
 ### WebSocket Protocols
+
 - Binary: `v1.bsatn.spacetimedb`
 - JSON: `v1.json.spacetimedb`
 
 ## SQL Reference
 
 ### Subscription SQL (real-time replication)
+
 ```sql
 -- Basic subscription
 SELECT * FROM player
@@ -216,6 +231,7 @@ WHERE t.active = true
 ```
 
 **Subscription limitations:**
+
 - Only `SELECT *` projections (full rows)
 - Max 2-table INNER JOINs
 - Join columns must be indexed
@@ -223,6 +239,7 @@ WHERE t.active = true
 - Operators: `=`, `<`, `>`, `<=`, `>=`, `!=`, `<>`, `AND`, `OR`
 
 ### Query/DML SQL (CLI and HTTP)
+
 ```sql
 -- Extended SELECT
 SELECT col1, col2 FROM table WHERE condition LIMIT 100
@@ -248,6 +265,7 @@ SHOW row_limit
 ## Configuration
 
 ### Local Config (config.toml)
+
 Located at `~/.local/share/spacetime/data/config.toml` (Linux/macOS).
 Windows: `%LOCALAPPDATA%\SpacetimeDB\data\config.toml`
 

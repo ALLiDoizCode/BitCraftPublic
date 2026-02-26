@@ -1,5 +1,12 @@
 ---
-stepsCompleted: ['step-01-preflight-and-context', 'step-02-generation-mode', 'step-03-test-strategy', 'step-04-generate-tests', 'step-05-validate-and-complete']
+stepsCompleted:
+  [
+    'step-01-preflight-and-context',
+    'step-02-generation-mode',
+    'step-03-test-strategy',
+    'step-04-generate-tests',
+    'step-05-validate-and-complete',
+  ]
 lastStep: 'step-05-validate-and-complete'
 lastSaved: '2026-02-26'
 workflowType: 'testarch-atdd'
@@ -74,6 +81,7 @@ As a user, I want to generate, import, and export Nostr keypairs as my sole cryp
 **Primary Test Levels:** Unit + Integration (API)
 
 **Rationale:**
+
 - This is a pure backend SDK feature (no UI)
 - No browser automation needed
 - Focus on cryptographic operations, file I/O, and security validation
@@ -81,25 +89,26 @@ As a user, I want to generate, import, and export Nostr keypairs as my sole cryp
 - Integration tests for storage encryption and client API integration
 
 **Test Breakdown:**
+
 - **Unit Tests (60%)**: Pure functions (key generation, derivation, encoding, validation)
 - **Integration Tests (40%)**: Encrypted storage, client integration, security validations
 
 ### Scenario Prioritization
 
-| Scenario | Test Level | Priority | Rationale |
-|----------|------------|----------|-----------|
-| Generate new keypair | Unit + Integration | P0 | Core functionality, security-critical |
-| Import hex private key | Unit | P0 | Core functionality, input validation critical |
-| Import nsec private key | Unit | P0 | Core functionality, encoding validation |
-| Import from seed phrase | Unit | P0 | Core functionality, BIP-39 compliance |
-| Export in all formats | Unit | P1 | Core functionality, format validation |
-| Encrypted storage roundtrip | Integration | P0 | Security-critical (NFR11) |
-| Wrong passphrase rejection | Integration | P0 | Security-critical |
-| File permissions (0600) | Integration | P0 | Security-critical (NFR11) |
-| Client identity access | Integration | P0 | Core API, security-critical (NFR9) |
-| Signature validation | Integration | P0 | Cryptographic correctness (NFR13) |
-| Private key never logged | Integration | P0 | Security-critical (NFR9) |
-| Invalid input rejection | Unit | P1 | Error handling, UX |
+| Scenario                    | Test Level         | Priority | Rationale                                     |
+| --------------------------- | ------------------ | -------- | --------------------------------------------- |
+| Generate new keypair        | Unit + Integration | P0       | Core functionality, security-critical         |
+| Import hex private key      | Unit               | P0       | Core functionality, input validation critical |
+| Import nsec private key     | Unit               | P0       | Core functionality, encoding validation       |
+| Import from seed phrase     | Unit               | P0       | Core functionality, BIP-39 compliance         |
+| Export in all formats       | Unit               | P1       | Core functionality, format validation         |
+| Encrypted storage roundtrip | Integration        | P0       | Security-critical (NFR11)                     |
+| Wrong passphrase rejection  | Integration        | P0       | Security-critical                             |
+| File permissions (0600)     | Integration        | P0       | Security-critical (NFR11)                     |
+| Client identity access      | Integration        | P0       | Core API, security-critical (NFR9)            |
+| Signature validation        | Integration        | P0       | Cryptographic correctness (NFR13)             |
+| Private key never logged    | Integration        | P0       | Security-critical (NFR9)                      |
+| Invalid input rejection     | Unit               | P1       | Error handling, UX                            |
 
 ### TDD Red Phase Requirements
 
@@ -118,62 +127,77 @@ All tests will be generated with **assertions for expected behavior** but will *
 **File:** `packages/client/src/nostr/keypair.test.ts` (~350 lines)
 
 #### 1. ✅ **Test:** `generateKeypair() should return valid 32-byte Nostr keypair`
+
 - **Status:** RED - Function not implemented yet
 - **Verifies:** Key generation produces correct byte length and format
 
 #### 2. ✅ **Test:** `generateKeypair() should return unique keypairs on each call`
+
 - **Status:** RED - Function not implemented yet
 - **Verifies:** Cryptographically secure random generation
 
 #### 3. ✅ **Test:** `importPrivateKey() should import valid hex private key (64 chars)`
+
 - **Status:** RED - Function not implemented yet
 - **Verifies:** Hex format validation and public key derivation
 
 #### 4. ✅ **Test:** `importPrivateKey() should import valid nsec format private key`
+
 - **Status:** RED - Function not implemented yet
 - **Verifies:** Bech32 (nsec) decoding and key derivation
 
 #### 5. ✅ **Test:** `importPrivateKey() should throw error for invalid hex length`
+
 - **Status:** RED - Function not implemented yet
 - **Verifies:** Input validation rejects wrong-length hex strings
 
 #### 6. ✅ **Test:** `importPrivateKey() should throw error for invalid nsec encoding`
+
 - **Status:** RED - Function not implemented yet
 - **Verifies:** Bech32 validation catches malformed input
 
 #### 7. ✅ **Test:** `importFromSeedPhrase() should derive keypair from valid 24-word BIP-39 phrase`
+
 - **Status:** RED - Function not implemented yet
 - **Verifies:** BIP-39 compliance and deterministic derivation
 
 #### 8. ✅ **Test:** `importFromSeedPhrase() should derive same keypair for same seed (deterministic)`
+
 - **Status:** RED - Function not implemented yet
 - **Verifies:** Deterministic key derivation
 
 #### 9. ✅ **Test:** `importFromSeedPhrase() should throw error for invalid word count (not 24)`
+
 - **Status:** RED - Function not implemented yet
 - **Verifies:** BIP-39 word count validation
 
 #### 10. ✅ **Test:** `importFromSeedPhrase() should throw error for invalid BIP-39 words`
+
 - **Status:** RED - Function not implemented yet
 - **Verifies:** BIP-39 word list validation
 
 #### 11. ✅ **Test:** `importFromSeedPhrase() should throw error for bad BIP-39 checksum`
+
 - **Status:** RED - Function not implemented yet
 - **Verifies:** BIP-39 checksum validation
 
 #### 12. ✅ **Test:** `exportKeypair() should return all four formats (nsec, hex private, npub, hex public)`
+
 - **Status:** RED - Function not implemented yet
 - **Verifies:** Export completeness and encoding correctness
 
 #### 13. ✅ **Test:** `exportKeypair() should encode nsec and npub correctly (bech32)`
+
 - **Status:** RED - Function not implemented yet
 - **Verifies:** Bech32 encoding follows Nostr NIP-19 spec
 
 #### 14. ✅ **Test:** `exportKeypair() should encode hex formats correctly (64 chars)`
+
 - **Status:** RED - Function not implemented yet
 - **Verifies:** Hex encoding is lowercase and correct length
 
 #### 15. ✅ **Test:** `exportKeypair() exported private key should re-import successfully`
+
 - **Status:** RED - Function not implemented yet
 - **Verifies:** Roundtrip compatibility (export → import)
 
@@ -184,34 +208,42 @@ All tests will be generated with **assertions for expected behavior** but will *
 **File:** `packages/client/src/nostr/storage.test.ts` (~400 lines)
 
 #### 16. ✅ **Test:** `saveKeypair() and loadKeypair() roundtrip with correct passphrase`
+
 - **Status:** RED - Functions not implemented yet
 - **Verifies:** Encryption/decryption correctness
 
 #### 17. ✅ **Test:** `loadKeypair() throws error with incorrect passphrase`
+
 - **Status:** RED - Function not implemented yet
 - **Verifies:** Authentication tag validation fails on wrong key
 
 #### 18. ✅ **Test:** `saveKeypair() creates ~/.sigil/ directory if missing with mode 0o700`
+
 - **Status:** RED - Function not implemented yet
 - **Verifies:** Directory creation and permissions (Unix only)
 
 #### 19. ✅ **Test:** `saveKeypair() sets file permissions to 0o600 (Unix only)`
+
 - **Status:** RED - Function not implemented yet
 - **Verifies:** File permissions restrict access to owner only
 
 #### 20. ✅ **Test:** `saveKeypair() creates file with all required fields (version, salt, iv, encryptedData, authTag)`
+
 - **Status:** RED - Function not implemented yet
 - **Verifies:** Storage format compliance
 
 #### 21. ✅ **Test:** `saveKeypair() does not store plaintext private key in file`
+
 - **Status:** RED - Function not implemented yet
 - **Verifies:** Encryption at rest (no plaintext leakage)
 
 #### 22. ✅ **Test:** `saveKeypair() uses scrypt with correct parameters (N=32768, r=8, p=1)`
+
 - **Status:** RED - Function not implemented yet
 - **Verifies:** Key derivation algorithm compliance
 
 #### 23. ✅ **Test:** `saveKeypair() uses AES-256-GCM with 12-byte IV`
+
 - **Status:** RED - Function not implemented yet
 - **Verifies:** Encryption algorithm compliance (AEAD)
 
@@ -222,30 +254,37 @@ All tests will be generated with **assertions for expected behavior** but will *
 **File:** `packages/client/src/client.test.ts` (additions, ~300 lines)
 
 #### 24. ✅ **Test:** `client.identity.publicKey returns correct hex format (64 chars lowercase)`
+
 - **Status:** RED - Property not implemented yet
 - **Verifies:** Public key exposure format
 
 #### 25. ✅ **Test:** `client.identity.publicKey returns correct npub format (bech32)`
+
 - **Status:** RED - Property not implemented yet
 - **Verifies:** Bech32 encoding correctness
 
 #### 26. ✅ **Test:** `client.identity.sign() produces valid Nostr signature`
+
 - **Status:** RED - Method not implemented yet
 - **Verifies:** Signature generation correctness (nostr-tools.signEvent)
 
 #### 27. ✅ **Test:** `client.identity.sign() signature is verifiable by nostr-tools.verifyEvent()`
+
 - **Status:** RED - Method not implemented yet
 - **Verifies:** Cryptographic correctness (NFR13)
 
 #### 28. ✅ **Test:** `client.identity does NOT expose private key property`
+
 - **Status:** RED - Property not implemented yet
 - **Verifies:** Security requirement (NFR9)
 
 #### 29. ✅ **Test:** `client.identity never logs private key in error messages`
+
 - **Status:** RED - Property not implemented yet
 - **Verifies:** Security requirement (NFR9) - log safety
 
 #### 30. ✅ **Test:** `client.identity.sign() throws error if keypair not loaded`
+
 - **Status:** RED - Method not implemented yet
 - **Verifies:** Error handling for missing identity
 
@@ -324,6 +363,7 @@ test('should save keypair to identity file', async ({ tempIdentityDir }) => {
 - File system: Use temp directories for test isolation (fixture handles cleanup)
 
 **Why no mocks needed:**
+
 - Pure cryptographic functions (deterministic, fast)
 - No network calls or external APIs
 - File system operations use temp dirs (isolated, cleanup automatic)
@@ -494,6 +534,7 @@ Future UI integration (Story 4.2 MCP Server, Story 3.1 TUI) will require UI test
   }
   ```
 - [ ] Add `identity` property to `SigilClient` class:
+
   ```typescript
   private _keypair: NostrKeypair | null = null;
 
@@ -513,6 +554,7 @@ Future UI integration (Story 4.2 MCP Server, Story 3.1 TUI) will require UI test
     };
   }
   ```
+
 - [ ] Implement `loadIdentity(passphrase: string): Promise<void>` method
   - Call `loadKeypair(passphrase)` from storage.ts
   - Store result in `this._keypair`
@@ -561,13 +603,18 @@ Future UI integration (Story 4.2 MCP Server, Story 3.1 TUI) will require UI test
 
 - [ ] Update `packages/client/src/index.ts` to export:
   ```typescript
-  export { generateKeypair, importPrivateKey, importFromSeedPhrase, exportKeypair } from './nostr/keypair';
+  export {
+    generateKeypair,
+    importPrivateKey,
+    importFromSeedPhrase,
+    exportKeypair,
+  } from './nostr/keypair';
   export { saveKeypair, loadKeypair } from './nostr/storage';
   export type { NostrKeypair, ExportedKeypair } from './nostr/keypair';
   ```
 - [ ] Verify type safety: No `any` types in public exports
 - [ ] Add JSDoc examples to all public functions:
-  ```typescript
+  ````typescript
   /**
    * Generate a new Nostr keypair.
    *
@@ -577,8 +624,8 @@ Future UI integration (Story 4.2 MCP Server, Story 3.1 TUI) will require UI test
    * console.log('Generated npub:', nip19.npubEncode(keypair.publicKey));
    * ```
    */
-  export async function generateKeypair(): Promise<NostrKeypair>
-  ```
+  export async function generateKeypair(): Promise<NostrKeypair>;
+  ````
 - [ ] Build package: `pnpm --filter @sigil/client build`
   - Verify no TypeScript errors
   - Verify tsup generates ESM and CJS outputs

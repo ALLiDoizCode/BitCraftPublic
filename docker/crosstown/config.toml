@@ -1,0 +1,45 @@
+# Crosstown Node Configuration
+# This is a placeholder configuration for the Crosstown node (Nostr relay + BLS proxy)
+
+[relay]
+# Nostr relay settings (NIP-01 compliance)
+# Accept all event kinds for development
+accepted_event_kinds = "all"
+# No authentication required for development
+require_auth = false
+# Event retention: 10000 events (reasonable default to prevent memory issues)
+# WARNING: Setting to 0 (unlimited) can cause memory exhaustion in dev
+# Increase for production based on system resources
+max_events = 10000
+# Event storage path
+storage_path = "/var/lib/crosstown/events"
+
+[http]
+# HTTP API endpoints
+# /health - Health check endpoint
+# /metrics - Prometheus metrics (dev mode)
+
+[bls_proxy]
+# BLS (Blockchain-Like Signing) proxy configuration
+# Handles kind 30078 events containing ILP packets for game actions
+# Full implementation in Story 2.5 - currently stubbed
+
+# SpacetimeDB connection
+bitcraft_database = "bitcraft"
+# Identity propagation mode: "stub" (logs only) or "full" (forward to SpacetimeDB)
+identity_propagation = "stub"
+
+# Stub mode behavior (Story 1.3):
+# - Subscribe to kind 30078 events on built-in relay
+# - Parse event content as JSON: { reducer: string, args: any[], fee: number }
+# - Log to stdout: [BLS STUB] Received kind 30078 from {pubkey}: reducer={reducer}, args_count={args.length}, fee={fee}
+# - Store event normally but do NOT call SpacetimeDB reducer
+# - Return success to relay
+
+# Full mode behavior (Story 2.5 - not yet implemented):
+# - Parse ILP packet from event content
+# - Validate BLS signature
+# - Extract Nostr pubkey from event.pubkey
+# - Call SpacetimeDB reducer with identity propagation:
+#   spacetime call bitcraft {reducer} --identity {pubkey} {args...}
+# - Forward result back to Nostr relay as kind 30078 response

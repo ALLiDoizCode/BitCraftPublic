@@ -79,12 +79,16 @@ const e2eTestsOutput = JSON.parse(fs.readFileSync(e2eTestsPath, 'utf8'));
 apiTestsOutput.tests.forEach((test) => {
   // Verify test.skip() is present
   if (!test.content.includes('test.skip(')) {
-    throw new Error(`ATDD ERROR: ${test.file} missing test.skip() - tests MUST be skipped in red phase!`);
+    throw new Error(
+      `ATDD ERROR: ${test.file} missing test.skip() - tests MUST be skipped in red phase!`
+    );
   }
 
   // Verify not placeholder assertions
   if (test.content.includes('expect(true).toBe(true)')) {
-    throw new Error(`ATDD ERROR: ${test.file} has placeholder assertions - must assert EXPECTED behavior!`);
+    throw new Error(
+      `ATDD ERROR: ${test.file} has placeholder assertions - must assert EXPECTED behavior!`
+    );
   }
 
   // Verify expected_to_fail flag
@@ -100,7 +104,9 @@ apiTestsOutput.tests.forEach((test) => {
 e2eTestsOutput.tests.forEach((test) => {
   // Same validation as API tests
   if (!test.content.includes('test.skip(')) {
-    throw new Error(`ATDD ERROR: ${test.file} missing test.skip() - tests MUST be skipped in red phase!`);
+    throw new Error(
+      `ATDD ERROR: ${test.file} missing test.skip() - tests MUST be skipped in red phase!`
+    );
   }
 
   if (test.content.includes('expect(true).toBe(true)')) {
@@ -242,7 +248,10 @@ const summary = {
     ...apiTestsOutput.tests.flatMap((t) => t.acceptance_criteria_covered),
     ...e2eTestsOutput.tests.flatMap((t) => t.acceptance_criteria_covered),
   ],
-  knowledge_fragments_used: [...apiTestsOutput.knowledge_fragments_used, ...e2eTestsOutput.knowledge_fragments_used],
+  knowledge_fragments_used: [
+    ...apiTestsOutput.knowledge_fragments_used,
+    ...e2eTestsOutput.knowledge_fragments_used,
+  ],
   subprocess_execution: 'PARALLEL (API + E2E)',
   performance_gain: '~50% faster than sequential',
 };
@@ -251,7 +260,11 @@ const summary = {
 **Store summary for Step 5:**
 
 ```javascript
-fs.writeFileSync('/tmp/tea-atdd-summary-{{timestamp}}.json', JSON.stringify(summary, null, 2), 'utf8');
+fs.writeFileSync(
+  '/tmp/tea-atdd-summary-{{timestamp}}.json',
+  JSON.stringify(summary, null, 2),
+  'utf8'
+);
 ```
 
 ---

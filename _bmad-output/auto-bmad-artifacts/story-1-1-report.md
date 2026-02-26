@@ -1,6 +1,7 @@
 # Story 1-1 Report
 
 ## Overview
+
 - **Story file**: `_bmad-output/implementation-artifacts/1-1-monorepo-scaffolding-and-build-infrastructure.md`
 - **Git start**: `9302d86`
 - **Duration**: Approximately 90 minutes (wall-clock time from start to finish of the pipeline)
@@ -8,6 +9,7 @@
 - **Migrations**: None
 
 ## What Was Built
+
 Story 1-1 implemented the foundational polyglot monorepo infrastructure for the Sigil SDK project. This includes complete workspace configuration for both TypeScript (pnpm) and Rust (cargo) projects, with three TypeScript packages (@sigil/client, @sigil/mcp-server, @sigil/tui-backend) and one Rust crate (sigil-tui). The implementation includes full CI/CD pipeline configuration, comprehensive test infrastructure, and all required build tooling with dual ESM/CJS output for TypeScript packages.
 
 ## Acceptance Criteria Coverage
@@ -15,7 +17,7 @@ Story 1-1 implemented the foundational polyglot monorepo infrastructure for the 
 - [x] **AC1: pnpm workspace resolution works** — covered by: test-story-1-1.sh (12 tests), test-story-1-1-integration.test.ts (workspace tests)
 - [x] **AC2: Cargo workspace builds successfully** — covered by: test-story-1-1.sh (21 tests), crates/tui/tests/integration_test.rs (7 tests)
 - [x] **AC3: Root configuration files present and valid** — covered by: test-story-1-1.sh (17 tests), test-story-1-1-integration.test.ts (config validation)
-- [x] **AC4: CI workflows execute successfully** — covered by: test-story-1-1.sh (20 tests), .github/workflows/ci-*.yml (validated in CI)
+- [x] **AC4: CI workflows execute successfully** — covered by: test-story-1-1.sh (20 tests), .github/workflows/ci-\*.yml (validated in CI)
 - [x] **AC5: TypeScript packages configured correctly** — covered by: test-story-1-1.sh (36 tests), test-story-1-1-integration.test.ts (build verification)
 
 **Coverage: 5/5 acceptance criteria (100%)**
@@ -23,6 +25,7 @@ Story 1-1 implemented the foundational polyglot monorepo infrastructure for the 
 ## Files Changed
 
 ### Root Configuration (8 files created)
+
 - `package.json` - Root workspace package with scripts and tooling
 - `pnpm-workspace.yaml` - pnpm workspace configuration
 - `tsconfig.base.json` - Shared TypeScript configuration
@@ -33,7 +36,9 @@ Story 1-1 implemented the foundational polyglot monorepo infrastructure for the 
 - `rustfmt.toml` - Rust code formatter configuration
 
 ### TypeScript Packages (18 files created)
+
 **@sigil/client** (6 files):
+
 - `packages/client/package.json` - Package manifest with dual ESM/CJS exports
 - `packages/client/tsconfig.json` - TypeScript configuration
 - `packages/client/tsup.config.ts` - Build configuration
@@ -42,6 +47,7 @@ Story 1-1 implemented the foundational polyglot monorepo infrastructure for the 
 - `packages/client/src/index.test.ts` - Unit test
 
 **@sigil/mcp-server** (6 files):
+
 - `packages/mcp-server/package.json`
 - `packages/mcp-server/tsconfig.json`
 - `packages/mcp-server/tsup.config.ts`
@@ -50,6 +56,7 @@ Story 1-1 implemented the foundational polyglot monorepo infrastructure for the 
 - `packages/mcp-server/src/index.test.ts`
 
 **@sigil/tui-backend** (6 files):
+
 - `packages/tui-backend/package.json`
 - `packages/tui-backend/tsconfig.json`
 - `packages/tui-backend/tsup.config.ts`
@@ -58,14 +65,17 @@ Story 1-1 implemented the foundational polyglot monorepo infrastructure for the 
 - `packages/tui-backend/src/index.test.ts`
 
 ### Rust Crate (2 files created)
+
 - `crates/tui/Cargo.toml` - Crate manifest with ratatui dependencies
 - `crates/tui/src/main.rs` - Placeholder binary
 
 ### CI/CD (2 files created)
+
 - `.github/workflows/ci-typescript.yml` - TypeScript CI pipeline
 - `.github/workflows/ci-rust.yml` - Rust CI pipeline
 
 ### Test Infrastructure (5 files created)
+
 - `test-story-1-1.sh` - ATDD acceptance test suite (77 tests)
 - `test-story-1-1-nfr.sh` - Non-functional requirements validation (42 tests)
 - `test-story-1-1-integration.test.ts` - TypeScript integration tests (28 tests)
@@ -73,17 +83,20 @@ Story 1-1 implemented the foundational polyglot monorepo infrastructure for the 
 - `crates/tui/tests/integration_test.rs` - Rust integration tests (7 tests)
 
 ### Placeholder Directories (3 created)
+
 - `skills/.gitkeep` - Future game action skills
 - `agents/.gitkeep` - Future AI agent configurations
 - `docker/.gitkeep` - Future Docker configurations
 
 ### Documentation (4 files created)
+
 - `TEST_STORY_1_1.md` - Test coverage documentation
 - `_bmad-output/implementation-artifacts/tea-report-story-1-1-nfr.md` - NFR analysis report
 - `_bmad-output/implementation-artifacts/tea-summary-story-1-1.md` - TEA executive summary
 - `_bmad-output/implementation-artifacts/nfr-traceability-matrix.md` - NFR traceability matrix
 
 ### Modified Files (1)
+
 - `.gitignore` - Added workspace build artifacts and local files
 
 **Total: 43 files created, 1 file modified**
@@ -91,6 +104,7 @@ Story 1-1 implemented the foundational polyglot monorepo infrastructure for the 
 ## Pipeline Steps
 
 ### Step 1: Story 1-1 Create
+
 - **Status**: Success
 - **Duration**: ~5 minutes
 - **What changed**: Created story file with comprehensive implementation context
@@ -99,6 +113,7 @@ Story 1-1 implemented the foundational polyglot monorepo infrastructure for the 
 - **Remaining concerns**: None
 
 ### Step 2: Story 1-1 Validate
+
 - **Status**: Success
 - **Duration**: ~8 minutes
 - **What changed**: Enhanced story file with 20 improvements (8 critical, 5 enhancements, 5 LLM optimizations)
@@ -107,6 +122,7 @@ Story 1-1 implemented the foundational polyglot monorepo infrastructure for the 
 - **Remaining concerns**: None
 
 ### Step 3: Story 1-1 ATDD
+
 - **Status**: Success
 - **Duration**: ~15 minutes
 - **What changed**: Created full monorepo infrastructure with 43 files (configs, packages, CI workflows, tests)
@@ -115,6 +131,7 @@ Story 1-1 implemented the foundational polyglot monorepo infrastructure for the 
 - **Remaining concerns**: None
 
 ### Step 4: Story 1-1 Develop
+
 - **Status**: Success
 - **Duration**: ~5 minutes
 - **What changed**: Updated story file Status to "complete" and filled in Dev Agent Record
@@ -123,6 +140,7 @@ Story 1-1 implemented the foundational polyglot monorepo infrastructure for the 
 - **Remaining concerns**: None
 
 ### Step 5: Story 1-1 Post-Dev Artifact Verify
+
 - **Status**: Success
 - **Duration**: ~2 minutes
 - **What changed**: Updated story file Status to "review" and sprint-status.yaml to "review", marked all tasks complete
@@ -131,10 +149,12 @@ Story 1-1 implemented the foundational polyglot monorepo infrastructure for the 
 - **Remaining concerns**: None
 
 ### Step 6: Frontend Polish
+
 - **Status**: Skipped
 - **Reason**: No frontend polish needed — backend-only infrastructure story with no UI changes
 
 ### Step 7: Story 1-1 Post-Dev Lint & Typecheck
+
 - **Status**: Success
 - **Duration**: ~1 minute
 - **What changed**: No files modified (all checks passed)
@@ -143,6 +163,7 @@ Story 1-1 implemented the foundational polyglot monorepo infrastructure for the 
 - **Remaining concerns**: None
 
 ### Step 8: Story 1-1 Post-Dev Test Verification
+
 - **Status**: Success
 - **Duration**: ~2 minutes
 - **What changed**: No files modified (verification only)
@@ -151,6 +172,7 @@ Story 1-1 implemented the foundational polyglot monorepo infrastructure for the 
 - **Remaining concerns**: None
 
 ### Step 9: Story 1-1 NFR
+
 - **Status**: Success
 - **Duration**: ~25 minutes
 - **What changed**: Created NFR test suite (42 tests), analysis report, summary, and traceability matrix
@@ -159,6 +181,7 @@ Story 1-1 implemented the foundational polyglot monorepo infrastructure for the 
 - **Remaining concerns**: None
 
 ### Step 10: Story 1-1 Test Automate
+
 - **Status**: Success
 - **Duration**: ~15 minutes
 - **What changed**: Created TypeScript integration tests (28 tests), Rust integration tests (7 tests), test documentation
@@ -167,6 +190,7 @@ Story 1-1 implemented the foundational polyglot monorepo infrastructure for the 
 - **Remaining concerns**: None
 
 ### Step 11: Story 1-1 Test Review
+
 - **Status**: Success
 - **Duration**: ~8 minutes
 - **What changed**: Enhanced test-story-1-1.sh from 51 to 77 tests, fixed Rust formatting
@@ -175,6 +199,7 @@ Story 1-1 implemented the foundational polyglot monorepo infrastructure for the 
 - **Remaining concerns**: None
 
 ### Step 12: Story 1-1 Code Review #1
+
 - **Status**: Success
 - **Duration**: ~8 minutes
 - **What changed**: Fixed package.json exports in all 3 TypeScript packages
@@ -183,6 +208,7 @@ Story 1-1 implemented the foundational polyglot monorepo infrastructure for the 
 - **Remaining concerns**: None
 
 ### Step 13: Story 1-1 Review #1 Artifact Verify
+
 - **Status**: Success
 - **Duration**: ~2 minutes
 - **What changed**: Added Code Review Record section with Review Pass #1 entry
@@ -191,6 +217,7 @@ Story 1-1 implemented the foundational polyglot monorepo infrastructure for the 
 - **Remaining concerns**: None
 
 ### Step 14: Story 1-1 Code Review #2
+
 - **Status**: Success
 - **Duration**: ~12 minutes
 - **What changed**: Updated @typescript-eslint packages, added licenses and metadata to all packages
@@ -199,6 +226,7 @@ Story 1-1 implemented the foundational polyglot monorepo infrastructure for the 
 - **Remaining concerns**: None
 
 ### Step 15: Story 1-1 Review #2 Artifact Verify
+
 - **Status**: Success
 - **Duration**: <1 minute
 - **What changed**: None (Code Review Record already had Review Pass #2 entry)
@@ -207,6 +235,7 @@ Story 1-1 implemented the foundational polyglot monorepo infrastructure for the 
 - **Remaining concerns**: None
 
 ### Step 16: Story 1-1 Code Review #3
+
 - **Status**: Success
 - **Duration**: ~15 minutes
 - **What changed**: Fixed clippy warning, added GitHub Actions permissions, added engine version constraints
@@ -215,6 +244,7 @@ Story 1-1 implemented the foundational polyglot monorepo infrastructure for the 
 - **Remaining concerns**: None
 
 ### Step 17: Story 1-1 Review #3 Artifact Verify
+
 - **Status**: Success
 - **Duration**: ~2 minutes
 - **What changed**: Updated story file Status to "done", sprint-status.yaml to "done"
@@ -223,10 +253,12 @@ Story 1-1 implemented the foundational polyglot monorepo infrastructure for the 
 - **Remaining concerns**: None
 
 ### Step 18: Security Scan
+
 - **Status**: Skipped
 - **Reason**: semgrep not installed
 
 ### Step 19: Story 1-1 Regression Lint & Typecheck
+
 - **Status**: Success
 - **Duration**: ~3 minutes
 - **What changed**: Fixed test assertions in integration tests, Prettier reformatted file
@@ -235,6 +267,7 @@ Story 1-1 implemented the foundational polyglot monorepo infrastructure for the 
 - **Remaining concerns**: None
 
 ### Step 20: Story 1-1 Regression Test
+
 - **Status**: Success
 - **Duration**: ~3 minutes
 - **What changed**: None (test execution only)
@@ -243,10 +276,12 @@ Story 1-1 implemented the foundational polyglot monorepo infrastructure for the 
 - **Remaining concerns**: None
 
 ### Step 21: E2E
+
 - **Status**: Skipped
 - **Reason**: No E2E tests needed — backend-only infrastructure story with no UI
 
 ### Step 22: Story 1-1 Trace
+
 - **Status**: Success
 - **Duration**: ~4 minutes
 - **What changed**: Created traceability analysis report (25KB)
@@ -258,6 +293,7 @@ Story 1-1 implemented the foundational polyglot monorepo infrastructure for the 
 ## Test Coverage
 
 ### Tests Generated
+
 - **ATDD Shell Tests**: test-story-1-1.sh (77 tests)
 - **NFR Validation**: test-story-1-1-nfr.sh (42 tests)
 - **TypeScript Unit Tests**: 3 packages × 1 test each = 3 tests
@@ -266,7 +302,9 @@ Story 1-1 implemented the foundational polyglot monorepo infrastructure for the 
 - **Rust Integration Tests**: crates/tui/tests/integration_test.rs (7 tests)
 
 ### Coverage Summary
+
 All acceptance criteria are covered by comprehensive automated tests:
+
 - **AC1** (pnpm workspace): 12 tests - 100% covered ✓
 - **AC2** (Cargo workspace): 21 tests - 100% covered ✓
 - **AC3** (Root configs): 17 tests - 100% covered ✓
@@ -274,29 +312,34 @@ All acceptance criteria are covered by comprehensive automated tests:
 - **AC5** (TypeScript packages): 36 tests - 100% covered ✓
 
 ### Test Count
+
 - **Post-dev**: 55 tests
 - **Regression**: 158 tests
 - **Delta**: +103 tests (187% increase, no regression)
 
 ### Gaps
+
 None - all acceptance criteria have comprehensive test coverage across multiple test layers.
 
 ## Code Review Findings
 
-| Pass | Critical | High | Medium | Low | Total Found | Fixed | Remaining |
-|------|----------|------|--------|-----|-------------|-------|-----------|
-| #1   | 1        | 0    | 1      | 0   | 2           | 2     | 0         |
-| #2   | 0        | 1    | 3      | 1   | 5           | 5     | 0         |
-| #3   | 0        | 0    | 1      | 2   | 3           | 3     | 0         |
-| **Total** | **1** | **1** | **5** | **3** | **10** | **10** | **0** |
+| Pass      | Critical | High  | Medium | Low   | Total Found | Fixed  | Remaining |
+| --------- | -------- | ----- | ------ | ----- | ----------- | ------ | --------- |
+| #1        | 1        | 0     | 1      | 0     | 2           | 2      | 0         |
+| #2        | 0        | 1     | 3      | 1     | 5           | 5      | 0         |
+| #3        | 0        | 0     | 1      | 2     | 3           | 3      | 0         |
+| **Total** | **1**    | **1** | **5**  | **3** | **10**      | **10** | **0**     |
 
 ### Critical Issues (Pass #1)
+
 1. ESM module resolution failure - package.json declared .mjs but tsup produced .js
 
 ### High Issues (Pass #2)
+
 1. Security vulnerability in minimatch@9.0.3 (ReDoS) - fixed by updating @typescript-eslint to v8.56.1
 
 ### Medium Issues
+
 1. Inconsistent module entry points (Pass #1) - main field pointed to ESM instead of CJS
 2. Missing license field in TypeScript packages (Pass #2) - added Apache-2.0
 3. Missing license in Rust crate (Pass #2) - added Apache-2.0
@@ -304,6 +347,7 @@ None - all acceptance criteria have comprehensive test coverage across multiple 
 5. Clippy warning on assertion constant (Pass #3) - replaced placeholder test with meaningful assertion
 
 ### Low Issues
+
 1. Outdated @typescript-eslint packages (Pass #2) - updated to v8.56.1
 2. Missing GitHub Actions permissions (Pass #3) - added least-privilege permissions
 3. Missing engine version constraints (Pass #3) - added Node.js >=20.0.0, pnpm >=9.0.0, Rust 1.70
@@ -324,6 +368,7 @@ None - all acceptance criteria have comprehensive test coverage across multiple 
 **None identified.**
 
 The implementation is production-ready with:
+
 - Zero security vulnerabilities
 - Zero linting/formatting/type errors
 - 100% test pass rate (158/158 tests)
@@ -334,6 +379,7 @@ The implementation is production-ready with:
 - Comprehensive documentation and test infrastructure
 
 Minor recommendations for future stories:
+
 1. Add IPC latency telemetry (validates NFR1-2 in production)
 2. Monitor build times as workspace grows (scalability)
 3. Configure Dependabot for dependency updates (exclude SpacetimeDB SDK 1.3.3 pin)

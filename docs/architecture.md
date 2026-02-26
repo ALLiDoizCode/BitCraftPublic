@@ -42,10 +42,10 @@ BitCraft Server is a Rust-based game server for the BitCraft MMORPG, built on to
 
 The architecture is organized as a **monorepo with two SpacetimeDB WASM modules**:
 
-| Module | Role | Approx. Size | Crate Type |
-|--------|------|--------------|------------|
-| `game` | Regional game server -- handles all gameplay for a single world region | ~533 .rs files | `cdylib` |
-| `global_module` | Cross-region coordinator -- authentication, player accounts, empires, social features | ~150 .rs files | `cdylib` |
+| Module          | Role                                                                                  | Approx. Size   | Crate Type |
+| --------------- | ------------------------------------------------------------------------------------- | -------------- | ---------- |
+| `game`          | Regional game server -- handles all gameplay for a single world region                | ~533 .rs files | `cdylib`   |
+| `global_module` | Cross-region coordinator -- authentication, player accounts, empires, social features | ~150 .rs files | `cdylib`   |
 
 Both modules are compiled with Rust 2021 edition and target `wasm32-unknown-unknown`. The release profile uses `opt-level = 's'` with LTO enabled to minimize WASM binary size.
 
@@ -186,14 +186,14 @@ The `global_module` manages state that must be consistent across all regions:
 
 Several directories are shared between `game` and `global_module` via filesystem symlinks:
 
-| Shared Path | Contents |
-|-------------|----------|
-| `messages/` | All SpacetimeDB table definitions and type declarations |
-| `macros/` | Shared macro utilities |
-| `utils/` | Shared utility functions |
-| `i18n.rs` | Internationalization module |
-| `build_shared.rs` | Shared build script logic |
-| `bitcraft-macro/` | Procedural macro crate |
+| Shared Path       | Contents                                                |
+| ----------------- | ------------------------------------------------------- |
+| `messages/`       | All SpacetimeDB table definitions and type declarations |
+| `macros/`         | Shared macro utilities                                  |
+| `utils/`          | Shared utility functions                                |
+| `i18n.rs`         | Internationalization module                             |
+| `build_shared.rs` | Shared build script logic                               |
+| `bitcraft-macro/` | Procedural macro crate                                  |
 
 This ensures both modules use identical table schemas and type definitions, which is critical for inter-module communication.
 
@@ -205,13 +205,13 @@ This ensures both modules use identical table schemas and type definitions, whic
 
 Tables are defined using the `#[spacetimedb::table(...)]` attribute macro. They fall into several categories:
 
-| Category | Location | Description | Example |
-|----------|----------|-------------|---------|
-| Entity State | `messages/components.rs` | Runtime game entity state (~80 tables) | `PlayerState`, `BuildingState`, `EnemyState` |
-| Static Data | `messages/static_data.rs` | Game content definitions (~148 tables) | `BuildingDesc`, `ItemDesc`, `RecipeDesc` |
-| Shared Tables | Various `messages/*.rs` | Replicated between modules via `#[shared_table]` | `IdentityRole`, `EmpireState` |
-| Inter-Module | `messages/inter_module.rs` | Message passing tables | `InterModuleMessageV4` |
-| Generic | `messages/generic.rs` | Singleton config/state | `Config`, `Globals`, `AdminBroadcast` |
+| Category      | Location                   | Description                                      | Example                                      |
+| ------------- | -------------------------- | ------------------------------------------------ | -------------------------------------------- |
+| Entity State  | `messages/components.rs`   | Runtime game entity state (~80 tables)           | `PlayerState`, `BuildingState`, `EnemyState` |
+| Static Data   | `messages/static_data.rs`  | Game content definitions (~148 tables)           | `BuildingDesc`, `ItemDesc`, `RecipeDesc`     |
+| Shared Tables | Various `messages/*.rs`    | Replicated between modules via `#[shared_table]` | `IdentityRole`, `EmpireState`                |
+| Inter-Module  | `messages/inter_module.rs` | Message passing tables                           | `InterModuleMessageV4`                       |
+| Generic       | `messages/generic.rs`      | Singleton config/state                           | `Config`, `Globals`, `AdminBroadcast`        |
 
 Table access follows SpacetimeDB conventions:
 
@@ -249,6 +249,7 @@ pub fn player_move(ctx: &ReducerContext, x: f32, z: f32, ...) -> Result<(), Stri
 ```
 
 Special reducer types:
+
 - `#[spacetimedb::reducer(init)]` -- Called once when the module is first published
 - `#[spacetimedb::reducer(client_connected)]` -- Called when a client connects
 - `#[spacetimedb::reducer(client_disconnected)]` -- Called when a client disconnects
@@ -278,6 +279,7 @@ pub fn create_entity(ctx: &ReducerContext) -> u64 {
 ```
 
 This design enables:
+
 - Globally unique entity IDs across all regions without coordination
 - Quick identification of which region owns an entity by inspecting the upper byte
 - Safe cross-region entity references
@@ -292,19 +294,20 @@ Entity deletion is auto-generated by `build.rs`, which scans `messages/component
 
 BitCraft uses a multi-layered hexagonal coordinate system. All coordinate types are defined in `game/coordinates/` with backing message types in `messages/util.rs`:
 
-| Type | Granularity | Usage |
-|------|-------------|-------|
-| `OffsetCoordinatesFloat` | Sub-tile float precision | Player positions, mobile entities |
-| `FloatHexTile` | Hex tile with float offset | Movement targets, precise positions |
-| `SmallHexTile` | Single hex tile (integer) | Building placement, resource positions, claim tiles |
-| `LargeHexTile` | Cluster of small hex tiles | Large-scale spatial queries |
-| `ChunkCoordinates` | Terrain chunk (grid of tiles) | Terrain data, biome assignment |
-| `RegionCoordinates` | World region | Multi-region world layout |
-| `HexDirection` | 6 cardinal hex directions | Movement, building orientation |
-| `OffsetCoordinatesSmall` | Small offset coordinates (x, z, dimension) | General entity locations |
-| `OffsetCoordinatesLarge` | Large offset coordinates | Dimension-level positioning |
+| Type                     | Granularity                                | Usage                                               |
+| ------------------------ | ------------------------------------------ | --------------------------------------------------- |
+| `OffsetCoordinatesFloat` | Sub-tile float precision                   | Player positions, mobile entities                   |
+| `FloatHexTile`           | Hex tile with float offset                 | Movement targets, precise positions                 |
+| `SmallHexTile`           | Single hex tile (integer)                  | Building placement, resource positions, claim tiles |
+| `LargeHexTile`           | Cluster of small hex tiles                 | Large-scale spatial queries                         |
+| `ChunkCoordinates`       | Terrain chunk (grid of tiles)              | Terrain data, biome assignment                      |
+| `RegionCoordinates`      | World region                               | Multi-region world layout                           |
+| `HexDirection`           | 6 cardinal hex directions                  | Movement, building orientation                      |
+| `OffsetCoordinatesSmall` | Small offset coordinates (x, z, dimension) | General entity locations                            |
+| `OffsetCoordinatesLarge` | Large offset coordinates                   | Dimension-level positioning                         |
 
 Entities are positioned via two tables:
+
 - `LocationState` -- For static entities (buildings, resources): stores `OffsetCoordinatesSmall`
 - `MobileEntityState` -- For moving entities (players, enemies): stores `OffsetCoordinatesFloat` with timestamp
 
@@ -318,51 +321,51 @@ Game logic is organized into handler modules under `game/handlers/`. Each handle
 
 ### Game Module Handlers
 
-| Domain | Path | Description |
-|--------|------|-------------|
-| `admin/` | `handlers/admin/` | Admin commands (broadcast, world management) |
-| `attack` | `handlers/attack.rs` | Combat attack logic |
-| `authentication` | `handlers/authentication.rs` | Role checks, identity validation |
-| `buildings/` | `handlers/buildings/` | Building placement, deconstruction, repair, signs, project sites |
-| `cheats/` | `handlers/cheats/` | Dev/cheat commands (creative mode) |
-| `claim/` | `handlers/claim/` | Land claim management, permissions |
-| `dev/` | `handlers/dev/` | Developer tools |
-| `empires/` | `handlers/empires/` | Empire operations (settlements, sieges, nodes, supplies) |
-| `inventory/` | `handlers/inventory/` | Inventory management |
-| `migration/` | `handlers/migration/` | Data migration reducers |
-| `player/` | `handlers/player/` | ~70+ player actions: movement, crafting, trading, eating, sleeping, quests, teleportation, etc. |
-| `player_craft/` | `handlers/player_craft/` | Crafting operations |
-| `player_inventory/` | `handlers/player_inventory/` | Player inventory operations |
-| `player_trade/` | `handlers/player_trade/` | Player-to-player trading |
-| `player_vault/` | `handlers/player_vault/` | Vault (persistent storage) operations |
-| `queue/` | `handlers/queue/` | Player login queue management |
-| `rentals/` | `handlers/rentals/` | Housing rental system |
-| `resource/` | `handlers/resource/` | Resource extraction and management |
-| `server/` | `handlers/server/` | Server lifecycle operations |
-| `stats/` | `handlers/stats/` | Player statistics tracking |
-| `world/` | `handlers/world/` | World state queries and operations |
+| Domain              | Path                         | Description                                                                                     |
+| ------------------- | ---------------------------- | ----------------------------------------------------------------------------------------------- |
+| `admin/`            | `handlers/admin/`            | Admin commands (broadcast, world management)                                                    |
+| `attack`            | `handlers/attack.rs`         | Combat attack logic                                                                             |
+| `authentication`    | `handlers/authentication.rs` | Role checks, identity validation                                                                |
+| `buildings/`        | `handlers/buildings/`        | Building placement, deconstruction, repair, signs, project sites                                |
+| `cheats/`           | `handlers/cheats/`           | Dev/cheat commands (creative mode)                                                              |
+| `claim/`            | `handlers/claim/`            | Land claim management, permissions                                                              |
+| `dev/`              | `handlers/dev/`              | Developer tools                                                                                 |
+| `empires/`          | `handlers/empires/`          | Empire operations (settlements, sieges, nodes, supplies)                                        |
+| `inventory/`        | `handlers/inventory/`        | Inventory management                                                                            |
+| `migration/`        | `handlers/migration/`        | Data migration reducers                                                                         |
+| `player/`           | `handlers/player/`           | ~70+ player actions: movement, crafting, trading, eating, sleeping, quests, teleportation, etc. |
+| `player_craft/`     | `handlers/player_craft/`     | Crafting operations                                                                             |
+| `player_inventory/` | `handlers/player_inventory/` | Player inventory operations                                                                     |
+| `player_trade/`     | `handlers/player_trade/`     | Player-to-player trading                                                                        |
+| `player_vault/`     | `handlers/player_vault/`     | Vault (persistent storage) operations                                                           |
+| `queue/`            | `handlers/queue/`            | Player login queue management                                                                   |
+| `rentals/`          | `handlers/rentals/`          | Housing rental system                                                                           |
+| `resource/`         | `handlers/resource/`         | Resource extraction and management                                                              |
+| `server/`           | `handlers/server/`           | Server lifecycle operations                                                                     |
+| `stats/`            | `handlers/stats/`            | Player statistics tracking                                                                      |
+| `world/`            | `handlers/world/`            | World state queries and operations                                                              |
 
 ### Reducer Helpers
 
 Common logic shared across handlers lives in `game/reducer_helpers/`:
 
-| Helper | Purpose |
-|--------|---------|
-| `building_helpers.rs` | Building creation, footprint, spawns, claims |
-| `cargo_helpers.rs` | Cargo item management |
-| `deployable_helpers.rs` | Deployable entity management (vehicles, siege engines) |
-| `dimension_helpers.rs` | Dimension creation and queries |
-| `distance_helpers.rs` | Distance calculations on hex grid |
-| `footprint_helpers.rs` | Building footprint tile management |
-| `health_helpers.rs` | Health manipulation |
-| `interior_helpers.rs` | Building interior creation |
-| `loot_chest_helpers.rs` | Loot chest generation |
-| `move_validation_helpers.rs` | Movement anti-cheat validation |
-| `player_action_helpers.rs` | Progressive action state management |
-| `restore_player_helpers.rs` | Player state restoration on sign-in |
-| `stats_helpers.rs` | Statistics calculation |
-| `timer_helpers.rs` | Scheduled timer utilities |
-| `user_text_input_helpers.rs` | Text input sanitization |
+| Helper                       | Purpose                                                |
+| ---------------------------- | ------------------------------------------------------ |
+| `building_helpers.rs`        | Building creation, footprint, spawns, claims           |
+| `cargo_helpers.rs`           | Cargo item management                                  |
+| `deployable_helpers.rs`      | Deployable entity management (vehicles, siege engines) |
+| `dimension_helpers.rs`       | Dimension creation and queries                         |
+| `distance_helpers.rs`        | Distance calculations on hex grid                      |
+| `footprint_helpers.rs`       | Building footprint tile management                     |
+| `health_helpers.rs`          | Health manipulation                                    |
+| `interior_helpers.rs`        | Building interior creation                             |
+| `loot_chest_helpers.rs`      | Loot chest generation                                  |
+| `move_validation_helpers.rs` | Movement anti-cheat validation                         |
+| `player_action_helpers.rs`   | Progressive action state management                    |
+| `restore_player_helpers.rs`  | Player state restoration on sign-in                    |
+| `stats_helpers.rs`           | Statistics calculation                                 |
+| `timer_helpers.rs`           | Scheduled timer utilities                              |
+| `user_text_input_helpers.rs` | Text input sanitization                                |
 
 ---
 
@@ -508,13 +511,13 @@ The discovery system tracks what each player has encountered or acquired. It is 
 
 There are ~20 knowledge tables, each tracking a different category. Tables are identified by annotations on their struct definitions in `messages/components.rs`:
 
-| Annotation | Type | ID Field | Example Table |
-|------------|------|----------|---------------|
-| `#[knowledge]` | Simple knowledge | `id: i32` | `KnowledgeItemState`, `KnowledgeBuildingState` |
-| `#[knowledge_entity]` | Entity knowledge | `entity_id: u64` | `KnowledgeEnemyState`, `KnowledgeNpcState` |
-| `#[knowledge_location]` | Location knowledge | `location_hash` | `KnowledgeRuinsState` |
-| `#[knowledge_recipe]` | Recipe knowledge | `id: i32` + auto-discovers components | `KnowledgeCraftState` |
-| `#[knowledge_on_acquire_callback]` | Knowledge with callback | `id: i32` | (triggers additional logic on acquire) |
+| Annotation                         | Type                    | ID Field                              | Example Table                                  |
+| ---------------------------------- | ----------------------- | ------------------------------------- | ---------------------------------------------- |
+| `#[knowledge]`                     | Simple knowledge        | `id: i32`                             | `KnowledgeItemState`, `KnowledgeBuildingState` |
+| `#[knowledge_entity]`              | Entity knowledge        | `entity_id: u64`                      | `KnowledgeEnemyState`, `KnowledgeNpcState`     |
+| `#[knowledge_location]`            | Location knowledge      | `location_hash`                       | `KnowledgeRuinsState`                          |
+| `#[knowledge_recipe]`              | Recipe knowledge        | `id: i32` + auto-discovers components | `KnowledgeCraftState`                          |
+| `#[knowledge_on_acquire_callback]` | Knowledge with callback | `id: i32`                             | (triggers additional logic on acquire)         |
 
 ### Generated API
 
@@ -537,6 +540,7 @@ impl Discovery {
 ### Knowledge States
 
 Each knowledge entry has a `KnowledgeState`:
+
 - **Discovered** -- The player has seen/encountered the thing
 - **Acquired** -- The player has obtained/mastered the thing
 
@@ -590,16 +594,17 @@ The permission check in `has_permission()` follows this priority:
 
 Buildings have an `interact_permission` and `build_permission` field in their description, using `BuildingInteractionLevel`:
 
-| Level | Behavior |
-|-------|----------|
-| `All` | Anyone can interact |
-| `None` | No one can interact |
+| Level    | Behavior                                                |
+| -------- | ------------------------------------------------------- |
+| `All`    | Anyone can interact                                     |
+| `None`   | No one can interact                                     |
 | `Empire` | Only empire members with appropriate empire permissions |
-| Default | Falls through to claim-based permission check |
+| Default  | Falls through to claim-based permission check           |
 
 ### Empire Overrides
 
 Empire buildings (watchtowers, hexite reserves, foundries) have special permission logic:
+
 - Watchtower `Usage` is open to everyone (for siege initiation)
 - Empire node operations require empire membership
 - Depleted watchtowers can be destroyed by any empire member on that influence area
@@ -611,12 +616,12 @@ Empire buildings (watchtowers, hexite reserves, foundries) have special permissi
 
 World generation creates terrain, biomes, buildings, resources, enemies, and NPCs. The system lives in `game/world_gen/` and supports multiple generation modes:
 
-| Mode | Reducer | Description |
-|------|---------|-------------|
-| Full procedural | `generate_world` | Uses `WorldDefinition` and `WorldGraph` for full procedural generation |
-| Dev island | `generate_dev_island` | Small test island for development |
-| Flat world | `generate_flat_world` | Flat terrain for testing |
-| External upload | `start_generating_world` + `insert_terrain_chunk` | Terrain uploaded chunk-by-chunk from external tool |
+| Mode            | Reducer                                           | Description                                                            |
+| --------------- | ------------------------------------------------- | ---------------------------------------------------------------------- |
+| Full procedural | `generate_world`                                  | Uses `WorldDefinition` and `WorldGraph` for full procedural generation |
+| Dev island      | `generate_dev_island`                             | Small test island for development                                      |
+| Flat world      | `generate_flat_world`                             | Flat terrain for testing                                               |
+| External upload | `start_generating_world` + `insert_terrain_chunk` | Terrain uploaded chunk-by-chunk from external tool                     |
 
 ### Generation Pipeline
 
@@ -638,32 +643,33 @@ The world is considered "loaded" when a `ResourcesLog` entry exists (`world_load
 
 Agents are scheduled background processes that drive world simulation. They are initialized after world generation and check `agents::should_run(ctx)` (which reads `Config.agents_enabled`) before executing.
 
-| Agent | File | Purpose |
-|-------|------|---------|
-| Auto-Logout | `auto_logout_agent.rs` | Signs out inactive players after timeout |
-| Building Decay | `building_decay_agent.rs` | Reduces building durability over time |
-| Chat Cleanup | `chat_cleanup_agent.rs` | Removes old chat messages |
-| Crumb Trail Cleanup | `crumb_trail_clean_up_agent.rs` | Cleans up player movement trail markers |
-| Day/Night Cycle | `day_night_agent.rs` | Advances the in-game time of day |
-| Duel | `duel_agent.rs` | Manages duel timeouts and resolution |
-| Enemy Regen | `enemy_regen_agent.rs` | Respawns enemies and regenerates health |
-| Environment Debuff | `environment_debuff_agent.rs` | Applies environmental damage/effects |
-| Growth | `growth_agent.rs` | Advances crop/plant growth stages |
-| NPC AI | `npc_ai_agent.rs` | Drives NPC behavior and movement |
-| Player Housing Income | `player_housing_income_agent.rs` | Distributes rental income to housing owners |
-| Player Regen | `player_regen_agent.rs` | Regenerates player health/stamina |
-| Region Population | `region_population_agent.rs` | Tracks and reports region player counts |
-| Rent Collector | `rent_collector_agent.rs` | Collects rent payments from tenants |
-| Resource Regen | `resources_regen.rs` | Respawns depleted resource deposits |
-| Starving | `starving_agent.rs` | Applies hunger damage to starving players |
-| Storage Log Cleanup | `storage_log_cleanup_agent.rs` | Cleans up old storage access logs |
-| Teleportation Energy Regen | `teleportation_energy_regen_agent.rs` | Regenerates teleportation energy |
-| Trade Sessions | `trade_sessions_agent.rs` | Times out inactive trade sessions |
-| Traveler Tasks | `traveler_task_agent.rs` | Manages NPC traveler task timers |
+| Agent                      | File                                  | Purpose                                     |
+| -------------------------- | ------------------------------------- | ------------------------------------------- |
+| Auto-Logout                | `auto_logout_agent.rs`                | Signs out inactive players after timeout    |
+| Building Decay             | `building_decay_agent.rs`             | Reduces building durability over time       |
+| Chat Cleanup               | `chat_cleanup_agent.rs`               | Removes old chat messages                   |
+| Crumb Trail Cleanup        | `crumb_trail_clean_up_agent.rs`       | Cleans up player movement trail markers     |
+| Day/Night Cycle            | `day_night_agent.rs`                  | Advances the in-game time of day            |
+| Duel                       | `duel_agent.rs`                       | Manages duel timeouts and resolution        |
+| Enemy Regen                | `enemy_regen_agent.rs`                | Respawns enemies and regenerates health     |
+| Environment Debuff         | `environment_debuff_agent.rs`         | Applies environmental damage/effects        |
+| Growth                     | `growth_agent.rs`                     | Advances crop/plant growth stages           |
+| NPC AI                     | `npc_ai_agent.rs`                     | Drives NPC behavior and movement            |
+| Player Housing Income      | `player_housing_income_agent.rs`      | Distributes rental income to housing owners |
+| Player Regen               | `player_regen_agent.rs`               | Regenerates player health/stamina           |
+| Region Population          | `region_population_agent.rs`          | Tracks and reports region player counts     |
+| Rent Collector             | `rent_collector_agent.rs`             | Collects rent payments from tenants         |
+| Resource Regen             | `resources_regen.rs`                  | Respawns depleted resource deposits         |
+| Starving                   | `starving_agent.rs`                   | Applies hunger damage to starving players   |
+| Storage Log Cleanup        | `storage_log_cleanup_agent.rs`        | Cleans up old storage access logs           |
+| Teleportation Energy Regen | `teleportation_energy_regen_agent.rs` | Regenerates teleportation energy            |
+| Trade Sessions             | `trade_sessions_agent.rs`             | Times out inactive trade sessions           |
+| Traveler Tasks             | `traveler_task_agent.rs`              | Manages NPC traveler task timers            |
 
 Agent tick rates are configured via static data parameters (`parameters_desc_v2` table) and can be updated at runtime via `update_scheduled_timers_from_static_data`.
 
 Admin controls:
+
 - `stop_agents` -- Pauses all agents (sets `Config.agents_enabled = false`)
 - `start_agents` -- Resumes agents (no re-initialization)
 - `force_start_agents` -- Re-initializes agents (warning: may cause duplicates)
@@ -676,16 +682,17 @@ Admin controls:
 
 The build system performs extensive code generation by parsing source files. It runs during `cargo build` and generates files in `src/game/autogen/` and `src/inter_module/`.
 
-| Generated File | Source Function | What It Generates |
-|----------------|-----------------|-------------------|
-| `game/handlers/**/mod.rs` | `build_all_handlers_mods()` | Auto-discovers handler files and generates `pub mod` declarations |
-| `game/autogen/_delete_entity.rs` | `build_gamestate_operations()` | `delete_entity()` and `clear_entity()` functions that delete from all relevant entity tables |
-| `game/autogen/_static_data.rs` | `build_static_data_staging_tables()` | `stage_*`, `clear_staged_static_data`, and `validate_staged_data` reducers |
-| `inter_module/_autogen.rs` | `build_shared_tables()` | `InterModuleTableUpdates` struct, per-table `Op` enums, `apply_updates()` |
-| `game/discovery/autogen/_discovery.rs` | `build_knowledge()` | `Knowledges` struct, `Discovery` impl with discover/acquire/commit methods |
-| `utils/version.rs` | `build_version_reducer()` | `current_version` reducer that logs the git commit hash |
+| Generated File                         | Source Function                      | What It Generates                                                                            |
+| -------------------------------------- | ------------------------------------ | -------------------------------------------------------------------------------------------- |
+| `game/handlers/**/mod.rs`              | `build_all_handlers_mods()`          | Auto-discovers handler files and generates `pub mod` declarations                            |
+| `game/autogen/_delete_entity.rs`       | `build_gamestate_operations()`       | `delete_entity()` and `clear_entity()` functions that delete from all relevant entity tables |
+| `game/autogen/_static_data.rs`         | `build_static_data_staging_tables()` | `stage_*`, `clear_staged_static_data`, and `validate_staged_data` reducers                   |
+| `inter_module/_autogen.rs`             | `build_shared_tables()`              | `InterModuleTableUpdates` struct, per-table `Op` enums, `apply_updates()`                    |
+| `game/discovery/autogen/_discovery.rs` | `build_knowledge()`                  | `Knowledges` struct, `Discovery` impl with discover/acquire/commit methods                   |
+| `utils/version.rs`                     | `build_version_reducer()`            | `current_version` reducer that logs the git commit hash                                      |
 
 The build script identifies tables by scanning for annotations in the Rust source:
+
 - `#[spacetimedb::table(...)]` -- Identifies SpacetimeDB tables
 - `#[delete]` -- Marks tables included in entity deletion
 - `#[shared_table]` -- Marks tables replicated between modules
@@ -697,13 +704,13 @@ The build script identifies tables by scanning for annotations in the Rust sourc
 
 The `bitcraft-macro` crate (in `packages/game/bitcraft-macro/`) provides procedural macros used throughout the codebase:
 
-| Macro | Usage | Purpose |
-|-------|-------|---------|
-| `#[shared_table]` | Table struct decoration | Marks a table for inter-module replication; generates insert/delete hooks that add operations to the `SharedTransactionAccumulator` |
-| `#[shared_table_reducer]` | Reducer function decoration | Wraps the reducer to initialize and finalize the `SharedTransactionAccumulator` (begin on entry, send on exit) |
-| `#[static_data_staging_table]` | Table struct decoration | Marks a table for static data staging pipeline |
-| `#[event_table]` | Table struct decoration | Marks a table as an event (transient data) |
-| `#[custom_inter_module_insert]` | Table struct decoration | Indicates the table has a custom `inter_module_insert()` method instead of using the default insert |
+| Macro                           | Usage                       | Purpose                                                                                                                             |
+| ------------------------------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `#[shared_table]`               | Table struct decoration     | Marks a table for inter-module replication; generates insert/delete hooks that add operations to the `SharedTransactionAccumulator` |
+| `#[shared_table_reducer]`       | Reducer function decoration | Wraps the reducer to initialize and finalize the `SharedTransactionAccumulator` (begin on entry, send on exit)                      |
+| `#[static_data_staging_table]`  | Table struct decoration     | Marks a table for static data staging pipeline                                                                                      |
+| `#[event_table]`                | Table struct decoration     | Marks a table as an event (transient data)                                                                                          |
+| `#[custom_inter_module_insert]` | Table struct decoration     | Indicates the table has a custom `inter_module_insert()` method instead of using the default insert                                 |
 
 Dependencies: `syn 2.0`, `quote 1.0`, `proc-macro2`.
 
@@ -729,6 +736,7 @@ pub struct Config {
 ```
 
 Environment names used in the project:
+
 - `dev` -- Default for new database instances; relaxed permissions
 - `local` -- Local development
 - `production` -- Live production servers
@@ -768,16 +776,17 @@ pub enum Role {
 
 Key authentication functions in `handlers/authentication.rs`:
 
-| Function | Purpose |
-|----------|---------|
-| `has_role(ctx, identity, role)` | Check if an identity has a specific role |
-| `is_authenticated(ctx, identity)` | Verify the identity is allowed to connect |
-| `ServerIdentity::validate_server_or_admin(ctx)` | Verify caller is server or admin |
-| `ServerIdentity::validate_server_only(ctx)` | Verify caller is the server identity |
+| Function                                        | Purpose                                   |
+| ----------------------------------------------- | ----------------------------------------- |
+| `has_role(ctx, identity, role)`                 | Check if an identity has a specific role  |
+| `is_authenticated(ctx, identity)`               | Verify the identity is allowed to connect |
+| `ServerIdentity::validate_server_or_admin(ctx)` | Verify caller is server or admin          |
+| `ServerIdentity::validate_server_only(ctx)`     | Verify caller is the server identity      |
 
 The `initialize` reducer (called on module creation) grants Admin role to both the deployer identity (`ctx.sender`) and the database identity (`ctx.identity()`).
 
 Connection flow:
+
 1. Client connects, triggering `identity_connected`
 2. Check if identity is a developer service account
 3. Check if identity has `SkipQueue` role
@@ -829,21 +838,21 @@ Connection flow:
 
 ## 18. Dependencies
 
-| Crate | Version | Purpose |
-|-------|---------|---------|
-| `spacetimedb` | =1.6.0 (unstable features) | Core database runtime, tables, reducers, scheduling |
-| `spacetimedb-bindings-sys` | =1.6.0 | Low-level WASM bindings |
-| `spacetimedb-bindings-macro` | =1.6.0 | Derive macros for SpacetimeDB types |
-| `bitcraft-macro` | path dependency | Project-specific proc macros |
-| `glam` | 0.30.9 | Math library (vectors, matrices) for game calculations |
-| `strum` / `strum_macros` | 0.24 | Enum iteration and string conversion |
-| `probability` | 0.20.3 | Probability distributions for loot tables, world gen |
-| `csv` | 1.1 | CSV parsing for data import |
-| `json` | * | JSON parsing for configuration |
-| `regex` | 1.10.4 | Text pattern matching (name validation, etc.) |
-| `lazy_static` | * | Lazy-initialized static values |
-| `queues` | 1.0 | Queue data structures |
-| `num-traits` | 0.2 | Numeric trait abstractions |
+| Crate                        | Version                    | Purpose                                                |
+| ---------------------------- | -------------------------- | ------------------------------------------------------ |
+| `spacetimedb`                | =1.6.0 (unstable features) | Core database runtime, tables, reducers, scheduling    |
+| `spacetimedb-bindings-sys`   | =1.6.0                     | Low-level WASM bindings                                |
+| `spacetimedb-bindings-macro` | =1.6.0                     | Derive macros for SpacetimeDB types                    |
+| `bitcraft-macro`             | path dependency            | Project-specific proc macros                           |
+| `glam`                       | 0.30.9                     | Math library (vectors, matrices) for game calculations |
+| `strum` / `strum_macros`     | 0.24                       | Enum iteration and string conversion                   |
+| `probability`                | 0.20.3                     | Probability distributions for loot tables, world gen   |
+| `csv`                        | 1.1                        | CSV parsing for data import                            |
+| `json`                       | \*                         | JSON parsing for configuration                         |
+| `regex`                      | 1.10.4                     | Text pattern matching (name validation, etc.)          |
+| `lazy_static`                | \*                         | Lazy-initialized static values                         |
+| `queues`                     | 1.0                        | Queue data structures                                  |
+| `num-traits`                 | 0.2                        | Numeric trait abstractions                             |
 
 Build dependencies:
 | Crate | Version | Purpose |
@@ -855,7 +864,7 @@ Proc macro dependencies (bitcraft-macro):
 |-------|---------|---------|
 | `syn` | 2.0 | Rust syntax parsing |
 | `quote` | 1.0 | Rust code generation |
-| `proc-macro2` | * | Procedural macro utilities |
+| `proc-macro2` | \* | Procedural macro utilities |
 
 ---
 
@@ -865,19 +874,19 @@ The project uses GitHub Actions for continuous integration and deployment.
 
 ### Workflows
 
-| Workflow | Trigger | Purpose |
-|----------|---------|---------|
-| `upload-module.yml` | Push to branch / PR | Publishes the WASM module to SpacetimeDB |
-| `delete-module.yml` | PR close | Cleans up PR-specific module instances |
-| `weekly-update-stable-branch.yml` | Weekly schedule | Updates the stable release branch |
+| Workflow                          | Trigger             | Purpose                                  |
+| --------------------------------- | ------------------- | ---------------------------------------- |
+| `upload-module.yml`               | Push to branch / PR | Publishes the WASM module to SpacetimeDB |
+| `delete-module.yml`               | PR close            | Cleans up PR-specific module instances   |
+| `weekly-update-stable-branch.yml` | Weekly schedule     | Updates the stable release branch        |
 
 ### Module Naming Convention
 
-| Branch | Module Name |
-|--------|-------------|
+| Branch   | Module Name       |
+| -------- | ----------------- |
 | `master` | `bitcraft-master` |
-| `qa` | `bitcraft-qa` |
-| PR #123 | `bitcraft-pr-123` |
+| `qa`     | `bitcraft-qa`     |
+| PR #123  | `bitcraft-pr-123` |
 
 ### Deployment Notes
 
@@ -945,16 +954,19 @@ The project uses GitHub Actions for continuous integration and deployment.
 ### Common Patterns
 
 **Singleton tables** use `version: i32` as primary key with value `0`:
+
 ```rust
 let config = ctx.db.config().version().find(&0).unwrap();
 ```
 
 **Entity state queries** use `entity_id` lookups:
+
 ```rust
 let health = ctx.db.health_state().entity_id().find(&entity_id);
 ```
 
 **Error handling** returns `Result<(), String>`:
+
 ```rust
 pub fn my_reducer(ctx: &ReducerContext) -> Result<(), String> {
     // Validate
@@ -966,6 +978,7 @@ pub fn my_reducer(ctx: &ReducerContext) -> Result<(), String> {
 ```
 
 **Logging** uses SpacetimeDB's log macro:
+
 ```rust
 use spacetimedb::log;
 log::info!("Player {} signed in", entity_id);

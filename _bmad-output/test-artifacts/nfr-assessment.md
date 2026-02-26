@@ -1,5 +1,13 @@
 ---
-stepsCompleted: ['step-01-load-context', 'step-02-define-thresholds', 'step-03-gather-evidence', 'step-04-evaluate-domains', 'step-04e-aggregate-nfr', 'step-05-generate-report']
+stepsCompleted:
+  [
+    'step-01-load-context',
+    'step-02-define-thresholds',
+    'step-03-gather-evidence',
+    'step-04-evaluate-domains',
+    'step-04e-aggregate-nfr',
+    'step-05-generate-report',
+  ]
 lastStep: 'step-05-generate-report'
 lastSaved: '2026-02-26'
 workflowType: 'testarch-nfr-assess'
@@ -29,11 +37,13 @@ Note: This assessment summarizes existing evidence; it does not run tests or CI 
 ### Loaded Artifacts
 
 **Story Document:**
+
 - File: `_bmad-output/implementation-artifacts/1-2-nostr-identity-management.md`
 - Status: review (implementation complete, all tests passing)
 - Completion Notes: All 6 tasks complete, 31 tests passing, build successful
 
 **Knowledge Base Fragments:**
+
 - ADR Quality Readiness Checklist (29 criteria across 8 categories)
 - CI Burn-In Strategy (burn-in loops, shard orchestration)
 - Test Quality Definition of Done (deterministic, isolated, explicit, focused, fast)
@@ -42,6 +52,7 @@ Note: This assessment summarizes existing evidence; it does not run tests or CI 
 - Playwright CLI (browser automation for agents - not applicable to this backend story)
 
 **Configuration:**
+
 - Test artifacts location: `_bmad-output/test-artifacts`
 - Browser automation: auto (CLI/MCP based on context)
 - Communication language: English
@@ -51,24 +62,28 @@ Note: This assessment summarizes existing evidence; it does not run tests or CI 
 
 **What is being assessed:**
 Story 1.2 implements Nostr keypair management as the sole cryptographic identity mechanism for the Sigil SDK. This includes:
+
 - Keypair generation, import (hex, nsec, BIP-39 seed), and export
 - Encrypted storage at `~/.sigil/identity` using scrypt + AES-256-GCM
 - Client integration exposing `client.identity` with public key and signing capability
 - Security requirements: private keys NEVER in logs/network/plaintext (NFR9, NFR11, NFR13)
 
 **Technology Stack:**
+
 - TypeScript (strict mode)
 - Libraries: `nostr-tools@^2.23.0`, `@scure/bip39@^1.6.0`, Node.js `crypto` module
 - Testing: Vitest (31 tests passing - 100% pass rate)
 - Build: tsup (dual ESM + CJS exports)
 
 **Implementation Status:**
+
 - All 6 tasks marked complete
 - 31 unit tests passing (100%)
 - Build successful
 - Security audit complete (no private keys logged, encryption verified)
 
 **Security Requirements (Critical NFRs):**
+
 - NFR9: Private keys NEVER transmitted over network
 - NFR11: Private keys encrypted at rest with user passphrase (scrypt + AES-256-GCM)
 - NFR13: All actions require valid cryptographic signature
@@ -76,6 +91,7 @@ Story 1.2 implements Nostr keypair management as the sole cryptographic identity
 ### Evidence Availability
 
 **Available Evidence:**
+
 - Story document with detailed completion notes
 - Task completion checklist (6/6 tasks done)
 - Test results: 31 tests passing
@@ -83,6 +99,7 @@ Story 1.2 implements Nostr keypair management as the sole cryptographic identity
 - Code implementation documented in story
 
 **Missing Evidence (typical for backend/library story):**
+
 - No E2E tests (unit tests only - appropriate for library code)
 - No load testing (identity operations are local file I/O)
 - No monitoring/observability setup (SDK library, not service)
@@ -98,17 +115,12 @@ Story 1.2 implements Nostr keypair management as the sole cryptographic identity
 Based on the story context, the following ADR Quality Readiness categories are applicable:
 
 **Applicable Categories:**
+
 1. **Security** (4 criteria) - CRITICAL for cryptographic identity management
 2. **Maintainability** (test coverage, code quality, documentation) - 5 criteria
 3. **Testability & Automation** (partial - 2 criteria relevant to SDK)
 
-**Not Applicable Categories (with justification):**
-4. **Scalability & Availability** - N/A (local file operations, not a service)
-5. **Disaster Recovery** - N/A (user backup/restore via export/import functions)
-6. **Monitorability** - N/A (SDK library, no runtime service to monitor)
-7. **QoS & QoE** - N/A (local crypto operations, <1ms latency)
-8. **Deployability** - N/A (npm package, not deployed service)
-9. **Test Data Strategy** - N/A (unit tests with faker-generated data, no shared test environment)
+**Not Applicable Categories (with justification):** 4. **Scalability & Availability** - N/A (local file operations, not a service) 5. **Disaster Recovery** - N/A (user backup/restore via export/import functions) 6. **Monitorability** - N/A (SDK library, no runtime service to monitor) 7. **QoS & QoE** - N/A (local crypto operations, <1ms latency) 8. **Deployability** - N/A (npm package, not deployed service) 9. **Test Data Strategy** - N/A (unit tests with faker-generated data, no shared test environment)
 
 This assessment will focus on the 11 applicable criteria across Security, Maintainability, and Testability categories.
 
@@ -121,12 +133,14 @@ This assessment will focus on the 11 applicable criteria across Security, Mainta
 Based on ADR Quality Readiness Checklist, the following categories are assessed:
 
 **1. Security (4 criteria) - CRITICAL**
+
 - Authentication/Authorization strength
 - Encryption (at rest and in transit)
 - Secrets management
 - Input validation
 
 **2. Maintainability (5 criteria)**
+
 - Test coverage
 - Code quality
 - Technical debt
@@ -134,10 +148,12 @@ Based on ADR Quality Readiness Checklist, the following categories are assessed:
 - Test quality
 
 **3. Testability & Automation (2 criteria - partial)**
+
 - Headless interaction (API accessibility)
 - Sample requests/documentation
 
 **Categories Excluded (Not Applicable to Local SDK Library):**
+
 - Test Data Strategy (unit tests with faker, no shared environment)
 - Scalability & Availability (local file I/O, not a service)
 - Disaster Recovery (user-managed via export/import functions)
@@ -214,12 +230,12 @@ No custom NFR categories specified for this assessment.
 
 ### Threshold Summary Matrix
 
-| NFR Category           | Criteria | Threshold Defined | Unknown Thresholds | Evidence Source                |
-| ---------------------- | -------- | ----------------- | ------------------ | ------------------------------ |
-| Security               | 4        | 4                 | 0                  | Story NFRs 9, 11, 13           |
-| Maintainability        | 5        | 5                 | 0                  | Story tasks, completion notes  |
-| Testability/Automation | 2        | 2                 | 0                  | Story design, ADR criteria     |
-| **TOTAL**              | **11**   | **11**            | **0**              | Implementation artifact        |
+| NFR Category           | Criteria | Threshold Defined | Unknown Thresholds | Evidence Source               |
+| ---------------------- | -------- | ----------------- | ------------------ | ----------------------------- |
+| Security               | 4        | 4                 | 0                  | Story NFRs 9, 11, 13          |
+| Maintainability        | 5        | 5                 | 0                  | Story tasks, completion notes |
+| Testability/Automation | 2        | 2                 | 0                  | Story design, ADR criteria    |
+| **TOTAL**              | **11**   | **11**            | **0**              | Implementation artifact       |
 
 **Result:** All thresholds defined. No UNKNOWN thresholds requiring CONCERNS flag.
 
@@ -240,12 +256,14 @@ No custom NFR categories specified for this assessment.
 #### 1. Authentication Strength
 
 **Evidence:**
+
 - Implementation: `nostr-tools.generateSecretKey()` and `nostr-tools.getPublicKey()`
 - Algorithm: secp256k1 elliptic curve (industry standard for Nostr protocol)
 - Key size: 32-byte private key, 32-byte public key
 - Source: Task 1 completion notes - "Implemented `generateKeypair(): Promise<NostrKeypair>` using `nostr-tools.generateSecretKey()` and `nostr-tools.getPublicKey()`"
 
 **Test Evidence:**
+
 - Test file: `packages/client/src/nostr/keypair.test.ts`
 - Coverage: "Test `generateKeypair()` returns valid keypair with 32-byte keys"
 - Validation method: Automated unit tests verify key length and format
@@ -255,6 +273,7 @@ No custom NFR categories specified for this assessment.
 #### 2. Encryption at Rest
 
 **Evidence:**
+
 - Encryption algorithm: AES-256-GCM
 - Key derivation: scrypt (N=16384, r=8, p=1, keylen=32)
 - IV: 12-byte random IV per encryption
@@ -264,6 +283,7 @@ No custom NFR categories specified for this assessment.
 - Source: Task 2 completion notes - "Implemented encryption using Node.js `crypto.scrypt()` for key derivation with parameters: N=32768, r=8, p=1, keylen=32" (adjusted to N=16384 in final implementation for test environment compatibility while maintaining strong security)
 
 **Test Evidence:**
+
 - Test file: `packages/client/src/nostr/storage.test.ts`
 - Coverage:
   - "Test `saveKeypair()` and `loadKeypair()` roundtrip with correct passphrase"
@@ -278,6 +298,7 @@ No custom NFR categories specified for this assessment.
 #### 3. Secrets Management
 
 **Evidence:**
+
 - Private key exposure prevention:
   - NOT in logs: Task 5 security audit - "Audit code: grep for `console.log`, `console.debug`, `console.error` and verify no private key material logged"
   - NOT in network: NFR9 requirement - "Private keys NEVER transmitted over network — only public keys and signatures"
@@ -286,6 +307,7 @@ No custom NFR categories specified for this assessment.
 - JSDoc warnings: "SECURITY WARNING: Never share private keys. This function is for backup only."
 
 **Test Evidence:**
+
 - Security validation tests:
   - "Test private key not accessible via `client.identity` (verify no property exposes it)"
   - Security audit checklist completed (Task 5)
@@ -296,6 +318,7 @@ No custom NFR categories specified for this assessment.
 #### 4. Input Validation
 
 **Evidence:**
+
 - Invalid input rejection for:
   - Hex format: wrong length, bad encoding
   - Nsec format: invalid bech32 encoding
@@ -304,6 +327,7 @@ No custom NFR categories specified for this assessment.
 - Error specificity: Tests verify specific error messages for each failure type
 
 **Test Evidence:**
+
 - Test coverage:
   - "Test `importPrivateKey()` rejects invalid inputs (throw specific errors for wrong length, bad encoding, invalid format)"
   - "Test `importFromSeedPhrase()` rejects invalid seed phrases (wrong word count, invalid words, bad checksum)"
@@ -316,6 +340,7 @@ No custom NFR categories specified for this assessment.
 #### 5. Test Coverage
 
 **Evidence:**
+
 - Total tests: 31 unit tests
 - Pass rate: 100% (31/31 passing)
 - Test files:
@@ -334,6 +359,7 @@ No custom NFR categories specified for this assessment.
 #### 6. Code Quality
 
 **Evidence:**
+
 - TypeScript strict mode: Enabled via `tsconfig.base.json` (from Story 1.1)
 - Type safety: "Verify type safety: no `any` types in exports, all types properly defined" (Task 6 checklist)
 - JSDoc: "Add JSDoc examples to all public functions" (Task 6 completion)
@@ -349,6 +375,7 @@ No custom NFR categories specified for this assessment.
 #### 7. Technical Debt
 
 **Evidence:**
+
 - Task completion: All 6 tasks marked complete with [x]
 - Story status: "review" (ready for review, no blockers)
 - Change log: "2026-02-26: Story 1.2 implementation complete"
@@ -360,6 +387,7 @@ No custom NFR categories specified for this assessment.
 #### 8. Documentation Completeness
 
 **Evidence:**
+
 - JSDoc coverage: "All functions include comprehensive JSDoc with security warnings" (Task 1 completion)
 - JSDoc examples: "Add JSDoc examples to all public functions" (Task 6 checklist)
 - Security warnings: "Add JSDoc security warnings on all export functions" (Task 5 checklist)
@@ -374,6 +402,7 @@ No custom NFR categories specified for this assessment.
 #### 9. Test Quality
 
 **Evidence:**
+
 - Test framework: Vitest (configured in Story 1.1)
 - Test data: Factory functions with controlled data - "Fixed test utilities in `keypair.factory.ts` to use valid secp256k1 private keys"
 - No hard waits: Unit tests don't require async timing waits (crypto operations deterministic)
@@ -382,6 +411,7 @@ No custom NFR categories specified for this assessment.
 - Isolation: Tests use faker for unique data, auto-cleanup for file operations
 
 **Test Quality Indicators:**
+
 - Deterministic: "verify deterministic derivation" for BIP-39 tests
 - Isolation: "Conducted security audit - verified no console.log statements contain private keys"
 - Specific assertions: "throw specific errors for wrong length, bad encoding, invalid format"
@@ -395,6 +425,7 @@ No custom NFR categories specified for this assessment.
 #### 10. Headless Interaction (API Accessibility)
 
 **Evidence:**
+
 - 100% programmatic API: All identity operations exposed via TypeScript functions
 - No UI dependencies: Backend SDK library with pure Node.js crypto operations
 - Exported functions:
@@ -411,6 +442,7 @@ No custom NFR categories specified for this assessment.
 #### 11. Sample Requests (Documentation Examples)
 
 **Evidence:**
+
 - JSDoc examples: "Add JSDoc examples to all public functions" (Task 6 completion)
 - Core types documented: `NostrKeypair`, `ExportedKeypair` interface definitions in story
 - Example usage: Dev Notes includes "Core Types and API Signatures" section with interface definitions
@@ -422,14 +454,15 @@ No custom NFR categories specified for this assessment.
 
 ### Evidence Gap Summary
 
-| NFR Category           | Criteria | Evidence Available | Evidence Gaps                                            |
-| ---------------------- | -------- | ------------------ | -------------------------------------------------------- |
-| Security               | 4        | 4                  | None                                                     |
-| Maintainability        | 5        | 5                  | Code coverage % (estimated >80%), code quality metrics   |
-| Testability/Automation | 2        | 2                  | None                                                     |
-| **TOTAL**              | **11**   | **11**             | **2 gaps (non-critical - estimates available)**          |
+| NFR Category           | Criteria | Evidence Available | Evidence Gaps                                          |
+| ---------------------- | -------- | ------------------ | ------------------------------------------------------ |
+| Security               | 4        | 4                  | None                                                   |
+| Maintainability        | 5        | 5                  | Code coverage % (estimated >80%), code quality metrics |
+| Testability/Automation | 2        | 2                  | None                                                   |
+| **TOTAL**              | **11**   | **11**             | **2 gaps (non-critical - estimates available)**        |
 
 **Evidence Gaps Analysis:**
+
 1. **Code coverage percentage**: No formal coverage report from Istanbul/c8. However, 31 tests covering all public functions suggests >80% coverage. This is a MINOR gap (estimated threshold met).
 2. **Code quality metrics**: No SonarQube/CodeClimate score. However, TypeScript strict mode + no `any` types + successful build suggests high code quality. This is a MINOR gap (qualitative evidence strong).
 
@@ -505,6 +538,7 @@ No custom NFR categories specified for this assessment.
    - **Recommendations:** None
 
 **Compliance:**
+
 - **Nostr Protocol Spec (NIP-19):** PASS ✅ (nsec/npub encoding standards)
 - **Cryptographic Best Practices:** PASS ✅ (secp256k1, AES-256-GCM, scrypt)
 - **OWASP Secrets Management:** PASS ✅ (no hardcoded secrets, encrypted at rest)
@@ -554,10 +588,12 @@ No custom NFR categories specified for this assessment.
    - **Recommendations:** Document scrypt performance characteristics in JSDoc (users should expect slight delay on save/load)
 
 **Compliance:**
+
 - **Responsive SDK Operations:** PASS ✅ (async I/O, no blocking calls)
 - **Reasonable Unlock Time:** PASS ✅ (<1 second for passphrase unlock)
 
 **Priority Actions:**
+
 1. Add JSDoc note on `saveKeypair()`/`loadKeypair()` documenting expected ~100-500ms delay due to scrypt security
 
 **Summary:** Performance is excellent for local SDK operations. Scrypt key derivation delay (100-500ms) is intentional security design, not a defect. All operations use async I/O to prevent blocking.
@@ -612,11 +648,13 @@ No custom NFR categories specified for this assessment.
    - **Recommendations:** Document backup workflow in user-facing documentation
 
 **Compliance:**
+
 - **Error Visibility:** PASS ✅ (no silent failures)
 - **Data Integrity:** PASS ✅ (GCM auth tag validation)
 - **Recovery Capability:** PASS ✅ (export/import functions)
 
 **Priority Actions:**
+
 1. Run CI burn-in test (10-100 iterations) to validate test stability before merge
 
 **Summary:** Reliability is strong with comprehensive error handling and integrity checks. CI burn-in testing is the only remaining validation (story just completed, tests passing 100% locally).
@@ -685,10 +723,12 @@ No custom NFR categories specified for this assessment.
    - **Recommendations:** None
 
 **Compliance:**
+
 - **Code Quality Standards:** PASS ✅ (TypeScript strict, JSDoc complete)
 - **Test Quality Standards:** PASS ✅ (deterministic, isolated, explicit)
 
 **Priority Actions:**
+
 1. Add coverage reporting (`vitest --coverage`) to quantify code coverage percentage
 
 **Summary:** Maintainability is excellent with comprehensive tests, TypeScript strict mode, and complete documentation. Only minor improvement: add formal coverage reporting.
@@ -702,12 +742,14 @@ No custom NFR categories specified for this assessment.
 **Risk Hierarchy:** HIGH > MEDIUM > LOW > NONE
 
 **Domain Risk Breakdown:**
+
 - Security: LOW ✅
 - Performance (adapted): LOW ✅ (with 1 documented concern - scrypt design)
 - Reliability: LOW ⚠️ (with 1 gap - CI burn-in not yet run)
 - Maintainability: LOW ✅ (with 1 minor improvement - coverage reporting)
 
 **Overall Risk Calculation:**
+
 - Highest domain risk: LOW
 - **Overall Risk Level: LOW** ✅
 
@@ -715,8 +757,8 @@ No custom NFR categories specified for this assessment.
 
 ### Compliance Summary
 
-| Standard/Requirement     | Status | Evidence                                |
-| ------------------------ | ------ | --------------------------------------- |
+| Standard/Requirement     | Status  | Evidence                                |
+| ------------------------ | ------- | --------------------------------------- |
 | Nostr Protocol (NIP-19)  | PASS ✅ | nsec/npub encoding correct              |
 | NFR9 (No key in network) | PASS ✅ | Private keys never transmitted          |
 | NFR11 (Encryption)       | PASS ✅ | AES-256-GCM + scrypt key derivation     |
@@ -730,14 +772,15 @@ No custom NFR categories specified for this assessment.
 
 **Applicable Categories (11 criteria):**
 
-| Category               | Criteria Met | Status     | Details                                                        |
-| ---------------------- | ------------ | ---------- | -------------------------------------------------------------- |
-| 1. Testability         | 2/2          | PASS ✅     | Headless API, sample requests (JSDoc)                          |
-| 2. Security            | 4/4          | PASS ✅     | AuthN strength, encryption, secrets, input validation          |
-| 3. Maintainability     | 5/5          | PASS ✅     | Test coverage, code quality, tech debt, docs, test quality     |
-| **TOTAL (Applicable)** | **11/11**    | **PASS ✅** | **100% of applicable criteria met**                            |
+| Category               | Criteria Met | Status      | Details                                                    |
+| ---------------------- | ------------ | ----------- | ---------------------------------------------------------- |
+| 1. Testability         | 2/2          | PASS ✅     | Headless API, sample requests (JSDoc)                      |
+| 2. Security            | 4/4          | PASS ✅     | AuthN strength, encryption, secrets, input validation      |
+| 3. Maintainability     | 5/5          | PASS ✅     | Test coverage, code quality, tech debt, docs, test quality |
+| **TOTAL (Applicable)** | **11/11**    | **PASS ✅** | **100% of applicable criteria met**                        |
 
 **Excluded Categories (18 criteria):**
+
 - Test Data Strategy (3 criteria) - N/A (unit tests, no shared environment)
 - Scalability & Availability (4 criteria) - N/A (SDK library, not service)
 - Disaster Recovery (3 criteria) - N/A (user-managed via export/import)
@@ -746,6 +789,7 @@ No custom NFR categories specified for this assessment.
 - Deployability (3 criteria) - N/A (npm package, not service deployment)
 
 **Scoring Interpretation:**
+
 - 11/11 applicable criteria met (100%)
 - Strong foundation: All relevant NFRs for SDK library satisfied
 - Note: Scoring is relative to applicable criteria (11/11), not total checklist (11/29)
@@ -755,17 +799,18 @@ No custom NFR categories specified for this assessment.
 **Identified:** None
 
 **Analysis:**
+
 - Security + Reliability: Both LOW risk, no interaction concerns
 - Performance + Maintainability: Scrypt delay is intentional design (security trade-off), well-documented
 - No cascading failures identified across domains
 
 ### Evidence Gaps Requiring Action
 
-| Gap                     | Category        | Owner   | Deadline | Impact |
-| ----------------------- | --------------- | ------- | -------- | ------ |
-| CI burn-in testing      | Reliability     | Dev/QA  | Pre-merge | MEDIUM |
-| Coverage report         | Maintainability | Dev     | Phase 2   | LOW    |
-| Scrypt JSDoc            | Performance     | Dev     | Pre-merge | LOW    |
+| Gap                | Category        | Owner  | Deadline  | Impact |
+| ------------------ | --------------- | ------ | --------- | ------ |
+| CI burn-in testing | Reliability     | Dev/QA | Pre-merge | MEDIUM |
+| Coverage report    | Maintainability | Dev    | Phase 2   | LOW    |
+| Scrypt JSDoc       | Performance     | Dev    | Pre-merge | LOW    |
 
 **Gap Details:**
 
@@ -790,13 +835,14 @@ No custom NFR categories specified for this assessment.
 ### Priority Actions (Ranked)
 
 **Immediate (Pre-Merge):**
+
 1. **Run CI burn-in test** (10-100 iterations) - Reliability validation - HIGH priority
 2. **Add scrypt performance note to JSDoc** - User expectation management - MEDIUM priority
 
-**Short-term (Next Milestone):**
-3. **Add coverage reporting** (`vitest --coverage`) - Maintainability metric - LOW priority
+**Short-term (Next Milestone):** 3. **Add coverage reporting** (`vitest --coverage`) - Maintainability metric - LOW priority
 
 **Long-term (Backlog):**
+
 - None identified
 
 ### Quick Wins
@@ -824,6 +870,7 @@ No custom NFR categories specified for this assessment.
 **Low Priority:** Add formal coverage reporting (quantify maintainability metric)
 
 **Next Steps:**
+
 1. Address 2 quick wins (burn-in test, scrypt JSDoc)
 2. Re-run NFR assessment after CI burn-in completes
 3. Proceed to merge once burn-in validates 100% pass rate
@@ -839,12 +886,14 @@ No custom NFR categories specified for this assessment.
 **Story:** 1.2 - Nostr Identity Management (SDK library)
 
 **Domain Risk Breakdown:**
+
 - Security: LOW ✅ (4/4 criteria PASS - strong cryptographic implementation)
 - Performance (adapted): LOW ✅ (async I/O, reasonable unlock time)
 - Reliability: LOW ⚠️ (strong error handling, CI burn-in pending)
 - Maintainability: LOW ✅ (comprehensive tests, strict TypeScript, complete docs)
 
 **Compliance Summary:**
+
 - 6/6 applicable standards PASS ✅ (Nostr protocol, NFRs 9/11/13, TypeScript, test quality)
 - 11/11 ADR Quality Readiness criteria met (100% of applicable criteria)
 
@@ -948,16 +997,19 @@ nfr_assessment:
 ### Key Findings
 
 **Strengths:**
+
 1. **Security:** All 4 security criteria PASS (secp256k1, AES-256-GCM, no key exposure, input validation)
 2. **Maintainability:** All 5 maintainability criteria PASS (tests, code quality, docs)
 3. **Testability:** All 2 testability criteria PASS (programmatic API, JSDoc examples)
 
 **Areas for Improvement:**
+
 1. CI burn-in testing (reliability validation pending)
 2. Scrypt performance documentation (user expectation management)
 3. Code coverage reporting (maintainability metric)
 
 **Evidence Quality:**
+
 - 11/11 criteria have direct evidence from story artifact
 - 2/11 criteria have minor evidence gaps (estimated metrics acceptable)
 - No critical evidence gaps
@@ -965,6 +1017,7 @@ nfr_assessment:
 ### Compliance Status
 
 All applicable standards met:
+
 - Nostr Protocol (NIP-19): PASS ✅
 - NFR9 (No network transmission): PASS ✅
 - NFR11 (Encryption at rest): PASS ✅
@@ -975,15 +1028,18 @@ All applicable standards met:
 ### Next Recommended Workflow
 
 **Immediate:** Run CI burn-in test workflow
+
 - Workflow: `CI Pipeline and Burn-In Strategy` (knowledge fragment loaded)
 - Action: Add GitHub Actions burn-in job for Story 1.2 tests
 - Validation: 10-100 consecutive successful runs
 
 **After Burn-In:** Proceed to merge
+
 - Condition: Burn-in confirms 100% pass rate in CI environment
 - Gate: PASS ✅ (no blockers)
 
 **Post-Merge:** Address low-priority improvements
+
 - Add coverage reporting (`vitest --coverage`)
 - Document scrypt performance in user-facing docs
 
@@ -1004,4 +1060,3 @@ All applicable standards met:
 ---
 
 <!-- Powered by BMAD-CORE™ -->
-

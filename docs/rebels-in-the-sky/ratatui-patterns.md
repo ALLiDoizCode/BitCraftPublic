@@ -20,11 +20,11 @@ pub trait WriterProxy: io::Write + std::fmt::Debug {
 
 Three backend configurations exist:
 
-| Type | Writer | Viewport | Use |
-|---|---|---|---|
-| `Local` | `io::Stdout` | Full terminal | Normal desktop play |
-| `Ssh` | `SSHWriterProxy` | Fixed 160x48 | Remote SSH sessions |
-| `Dummy` | `DummyWriter` | Fixed 160x48 | Headless testing/simulation |
+| Type    | Writer           | Viewport      | Use                         |
+| ------- | ---------------- | ------------- | --------------------------- |
+| `Local` | `io::Stdout`     | Full terminal | Normal desktop play         |
+| `Ssh`   | `SSHWriterProxy` | Fixed 160x48  | Remote SSH sessions         |
+| `Dummy` | `DummyWriter`    | Fixed 160x48  | Headless testing/simulation |
 
 `DummyWriter` absorbs all writes silently. `SSHWriterProxy` buffers writes and flushes them over an SSH channel via the async `send()` method.
 
@@ -57,6 +57,7 @@ fn init(&mut self) -> AppResult<()> {
 ```
 
 Key points for BitCraft:
+
 - Always install a panic hook that resets the terminal.
 - SSH backend uses `TerminalOptions` with `Viewport::Fixed` for consistent sizing.
 - The `WriterProxy` trait abstraction makes it easy to add new backends (e.g., a web terminal).
@@ -172,11 +173,13 @@ pub struct Button<'a> {
 ```
 
 Three constructor patterns:
+
 - `Button::new(text, callback)` -- boxed button (default_block on both normal and hover)
 - `Button::no_box(text, callback)` -- borderless, hover highlight only
 - `Button::box_on_hover(text, callback)` -- borderless normally, boxed on hover
 
 The `InteractiveWidget` implementation:
+
 1. `before_rendering()`: Sets `is_hovered` based on mouse position and layer. Registers mouse click callback at the button's `Rect`. Registers keyboard callback for hotkey.
 2. `hover_text()`: Returns the hover description (plus disabled reason if applicable).
 
@@ -201,6 +204,7 @@ pub struct ClickableList<'a> {
 ```
 
 The `before_rendering()` implementation:
+
 1. Checks if the list area is hovered and on the active layer.
 2. Registers scroll callbacks (`ScrollUp` -> `PreviousPanelIndex`, `ScrollDown` -> `NextPanelIndex`) as global (no rect).
 3. Iterates visible items, finds which row the mouse hovers over.
@@ -211,6 +215,7 @@ Auto-scroll: `get_items_bounds()` calculates the visible range ensuring the sele
 ### ClickableTable
 
 `ClickableTable<'a>` is a more complex table widget with:
+
 - `ClickableRow` containing `ClickableCell` elements
 - Column width constraints
 - Header row
@@ -279,6 +284,7 @@ pub fn render_interactive_widget<W: InteractiveWidget>(&mut self, mut widget: W,
 ```
 
 The flow for every interactive widget:
+
 1. Check if hovered (mouse position in rect AND correct layer)
 2. Call `before_rendering()` to register callbacks
 3. If hovered, clear and write hover text to the bottom bar
@@ -337,6 +343,7 @@ The main screen layout:
 ### Update Cycle
 
 `UiScreen::update()` is called every slow tick (10Hz):
+
 - In `UiState::Splash`: Updates splash screen only.
 - In `UiState::NewTeam`: Updates creation wizard only.
 - In `UiState::Main`: Updates ALL panels (my_team, teams, players, games, tournaments, galaxy, space_cove, swarm). This ensures data is fresh for cross-panel navigation.
@@ -388,6 +395,7 @@ impl UiStyled for f32 {
 ```
 
 Resource colors are RGB-specific:
+
 - GOLD: `(240, 230, 140)` -- warm yellow
 - SCRAPS: `(192, 192, 192)` -- silver
 - RUM: `(114, 47, 55)` -- dark red
@@ -488,6 +496,7 @@ The `ExtraImageUtils` trait on `RgbaImage` provides:
 - `apply_light_mask()` -- Procedural lighting via `LightMaskStyle`
 
 `LightMaskStyle` generates alpha masks procedurally:
+
 - `Horizontal` -- left-to-right gradient
 - `Vertical` -- top-to-bottom gradient
 - `Radial` -- center-to-edge gradient
@@ -574,24 +583,24 @@ This prevents scroll events from overwhelming the event queue during fast scroll
 
 ### Full-Screen Screens
 
-| Screen | File | Purpose |
-|---|---|---|
-| `SplashScreen` | `splash_screen.rs` | Title screen. Logo display, New/Continue/Quit buttons. Audio state display. Save file detection for Continue button. |
-| `NewTeamScreen` | `new_team_screen.rs` | Team creation wizard. Three-step state machine: `Players` -> `Ship` -> `Name`. Player draft selection, jersey color picker (3-channel with presets), spaceship prefab selection, team name text input. |
-| `SpaceScreen` | `space_screen.rs` | Real-time space adventure. Reads `SpaceAdventure` entity system, renders all entities as sprites via image-to-text. Key bindings: WASD movement, Space shoot, Q back to base, Z shield, X autofire, C release scraps. HUD overlay with durability, fuel, charge, storage bars. |
+| Screen          | File                 | Purpose                                                                                                                                                                                                                                                                        |
+| --------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `SplashScreen`  | `splash_screen.rs`   | Title screen. Logo display, New/Continue/Quit buttons. Audio state display. Save file detection for Continue button.                                                                                                                                                           |
+| `NewTeamScreen` | `new_team_screen.rs` | Team creation wizard. Three-step state machine: `Players` -> `Ship` -> `Name`. Player draft selection, jersey color picker (3-channel with presets), spaceship prefab selection, team name text input.                                                                         |
+| `SpaceScreen`   | `space_screen.rs`    | Real-time space adventure. Reads `SpaceAdventure` entity system, renders all entities as sprites via image-to-text. Key bindings: WASD movement, Space shoot, Q back to base, Z shield, X autofire, C release scraps. HUD overlay with durability, fuel, charge, storage bars. |
 
 ### Tabbed Panels (UiState::Main)
 
-| Panel | File | Trait | Sub-Views | Key Features |
-|---|---|---|---|---|
-| `MyTeamPanel` | `my_team_panel.rs` | Screen + SplitPanel | Info, Roster, Market, Shipyard, Asteroids, Strategy | Team info with spaceship image. Roster with drag-to-reorder. Resource market with buy/sell buttons. Spaceship upgrade comparison. Asteroid management. Strategy toggles. |
-| `TeamListPanel` | `team_panel.rs` | Screen + SplitPanel | OpenToChallenge, Ranking | Scrollable team list. Team detail with spaceship description. Challenge button (local/network). Elo rankings. |
-| `PlayerListPanel` | `player_panel.rs` | Screen + SplitPanel | AllPirates, FreePirates, OwnTeam, Trades | Player list with skill display. Player detail with animated sprite. Skills/Stats toggle view. Lock/compare two players. Hire/release/trade actions. |
-| `GamePanel` | `game_panel.rs` | Screen + SplitPanel | (live game / completed games) | Basketball court rendering with animated sprites. Big-number scoreboard. Play-by-play log. Player stats table. Pitch view toggle (top-down / side). |
-| `TournamentPanel` | `tournament_panel.rs` | Screen + SplitPanel | Active, Completed | Tournament list. Bracket display. Registration. Round results. |
-| `GalaxyPanel` | `galaxy_panel.rs` | Screen + SplitPanel | ZoomIn, ZoomOut | Planet list. Zoomed-in: planet GIF, teams present, travel/explore buttons. Zoomed-out: star map with planet positions, distance info. |
-| `SpaceCovePanel` | `space_cove_panel.rs` | Screen + SplitPanel | (base view) | Asteroid base overview. Building upgrades. Resource production. Conditional on having a constructed space cove. |
-| `SwarmPanel` | `swarm_panel.rs` | Screen + SplitPanel | Chat, Logs, TeamRanking, PlayerRanking | P2P chat with TextArea input. Event logs. Leaderboards. Unread message counter on tab. |
+| Panel             | File                  | Trait               | Sub-Views                                           | Key Features                                                                                                                                                             |
+| ----------------- | --------------------- | ------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `MyTeamPanel`     | `my_team_panel.rs`    | Screen + SplitPanel | Info, Roster, Market, Shipyard, Asteroids, Strategy | Team info with spaceship image. Roster with drag-to-reorder. Resource market with buy/sell buttons. Spaceship upgrade comparison. Asteroid management. Strategy toggles. |
+| `TeamListPanel`   | `team_panel.rs`       | Screen + SplitPanel | OpenToChallenge, Ranking                            | Scrollable team list. Team detail with spaceship description. Challenge button (local/network). Elo rankings.                                                            |
+| `PlayerListPanel` | `player_panel.rs`     | Screen + SplitPanel | AllPirates, FreePirates, OwnTeam, Trades            | Player list with skill display. Player detail with animated sprite. Skills/Stats toggle view. Lock/compare two players. Hire/release/trade actions.                      |
+| `GamePanel`       | `game_panel.rs`       | Screen + SplitPanel | (live game / completed games)                       | Basketball court rendering with animated sprites. Big-number scoreboard. Play-by-play log. Player stats table. Pitch view toggle (top-down / side).                      |
+| `TournamentPanel` | `tournament_panel.rs` | Screen + SplitPanel | Active, Completed                                   | Tournament list. Bracket display. Registration. Round results.                                                                                                           |
+| `GalaxyPanel`     | `galaxy_panel.rs`     | Screen + SplitPanel | ZoomIn, ZoomOut                                     | Planet list. Zoomed-in: planet GIF, teams present, travel/explore buttons. Zoomed-out: star map with planet positions, distance info.                                    |
+| `SpaceCovePanel`  | `space_cove_panel.rs` | Screen + SplitPanel | (base view)                                         | Asteroid base overview. Building upgrades. Resource production. Conditional on having a constructed space cove.                                                          |
+| `SwarmPanel`      | `swarm_panel.rs`      | Screen + SplitPanel | Chat, Logs, TeamRanking, PlayerRanking              | P2P chat with TextArea input. Event logs. Leaderboards. Unread message counter on tab.                                                                                   |
 
 ### Popup System
 

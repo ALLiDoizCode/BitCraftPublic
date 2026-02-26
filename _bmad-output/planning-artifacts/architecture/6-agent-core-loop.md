@@ -2,8 +2,8 @@
 
 ```typescript
 class BitCraftAgent {
-  private gameClient: SpacetimeDBClient;    // Direct subscription (free reads)
-  private actionClient: CrosstownClient;     // Nostr → BLS → reducer (paid writes)
+  private gameClient: SpacetimeDBClient; // Direct subscription (free reads)
+  private actionClient: CrosstownClient; // Nostr → BLS → reducer (paid writes)
   private plugins: CognitionStack;
   private logger: DecisionLogger;
   private config: AgentConfig;
@@ -18,8 +18,8 @@ class BitCraftAgent {
 
     // Subscribe to game state updates
     this.gameClient.subscribe([
-      "SELECT * FROM player_state WHERE player_id = ?",
-      "SELECT * FROM entity WHERE distance(pos, ?) < 100",
+      'SELECT * FROM player_state WHERE player_id = ?',
+      'SELECT * FROM entity WHERE distance(pos, ?) < 100',
       // ... configured subscriptions
     ]);
 
@@ -32,23 +32,27 @@ class BitCraftAgent {
       const events = await this.plugins.interpreter.process(rawUpdates, this.context);
 
       // 3. REMEMBER — store important events, recall relevant memories (Layer 3)
-      for (const event of events.filter(e => e.importance >= 5)) {
+      for (const event of events.filter((e) => e.importance >= 5)) {
         await this.plugins.memory.record(event);
       }
       const memories = await this.plugins.memory.recall(this.context);
 
       // 4. DETECT — what can I do here? (Layer 4)
       const affordances = await this.plugins.affordances.process(
-        this.gameClient.currentState, this.context
+        this.gameClient.currentState,
+        this.context
       );
 
       // 5. DECIDE — choose action based on goals + memories + affordances (Layer 5)
-      const decision = await this.plugins.planner.process({
-        affordances,
-        memories,
-        goals: this.config.goals,
-        budget: this.getBudgetState(),
-      }, this.context);
+      const decision = await this.plugins.planner.process(
+        {
+          affordances,
+          memories,
+          goals: this.config.goals,
+          budget: this.getBudgetState(),
+        },
+        this.context
+      );
 
       // 6. ACT — execute via Crosstown payment
       const result = await this.executeAction(decision);
@@ -67,9 +71,10 @@ class BitCraftAgent {
       });
 
       // 8. LEARN — record outcome for future recall
-      await this.plugins.memory.record(
-        { ...decision.affordance, outcome: result } as SemanticEvent
-      );
+      await this.plugins.memory.record({
+        ...decision.affordance,
+        outcome: result,
+      } as SemanticEvent);
 
       await this.sleep(this.config.tickInterval);
     }
@@ -87,20 +92,23 @@ class BitCraftAgent {
   }
 
   private buildGameActionEvent(affordance: Affordance): NostrEvent {
-    return finalizeEvent({
-      kind: 30078,
-      content: JSON.stringify({
-        reducer: affordance.reducer,
-        args: affordance.args,
-      }),
-      tags: [
-        ['d', 'bitcraft-action'],
-        ['game', 'bitcraft'],
-        ['reducer', affordance.reducer],
-        ['cost', String(affordance.cost)],
-      ],
-      created_at: Math.floor(Date.now() / 1000),
-    }, this.config.secretKey);
+    return finalizeEvent(
+      {
+        kind: 30078,
+        content: JSON.stringify({
+          reducer: affordance.reducer,
+          args: affordance.args,
+        }),
+        tags: [
+          ['d', 'bitcraft-action'],
+          ['game', 'bitcraft'],
+          ['reducer', affordance.reducer],
+          ['cost', String(affordance.cost)],
+        ],
+        created_at: Math.floor(Date.now() / 1000),
+      },
+      this.config.secretKey
+    );
   }
 }
 ```

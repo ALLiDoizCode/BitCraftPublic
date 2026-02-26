@@ -189,9 +189,9 @@ agents/ (scheduled)  --->  Automated maintenance (decay, respawn, ticks)
 
 The game uses a hex-grid world with multiple coordinate scales:
 
-| Type | Purpose |
-|---|---|
-| `FloatHexTile` | Sub-tile precision for smooth movement |
-| `SmallHexTile` | Individual gameplay tiles |
-| `LargeHexTile` | Chunk-scale tiles for spatial partitioning |
-| `ChunkCoordinates` | Chunk addressing for data streaming |
+| Type               | Purpose                                    |
+| ------------------ | ------------------------------------------ |
+| `FloatHexTile`     | Sub-tile precision for smooth movement     |
+| `SmallHexTile`     | Individual gameplay tiles                  |
+| `LargeHexTile`     | Chunk-scale tiles for spatial partitioning |
+| `ChunkCoordinates` | Chunk addressing for data streaming        |

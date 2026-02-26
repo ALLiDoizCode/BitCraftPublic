@@ -17,12 +17,14 @@ The Sigil client SDK needs to connect to BitCraft's SpacetimeDB 1.6.0 server mod
 ## Test Setup
 
 ### Environment
+
 - **BitCraft Server:** SpacetimeDB 1.6.0 modules (confirmed in `BitCraftServer/packages/game/Cargo.toml`)
 - **Client SDK Versions Investigated:**
   - `@clockworklabs/spacetimedb-sdk@2.0.0` (latest major version)
   - `@clockworklabs/spacetimedb-sdk@1.3.3` (latest 1.x stable)
 
 ### Test Approach
+
 1. Check BitCraft server module version
 2. Review SpacetimeDB SDK version history
 3. Attempt to install SDK 2.0.0
@@ -40,6 +42,7 @@ npm install @clockworklabs/spacetimedb-sdk@2.0.0
 **Result:** Installation FAILED
 
 **Error:**
+
 ```
 npm error notarget No matching version found for spacetimedb@next
 ```
@@ -60,18 +63,20 @@ Even if SDK 2.0.0 installation worked, the protocol is fundamentally incompatibl
 
 **Key Breaking Changes:**
 
-| Change | Impact on Compatibility |
-|--------|------------------------|
-| **New WebSocket Protocol (v2)** | Fundamental protocol-level incompatibility |
-| **Reducer Callbacks Removed** | 1.0 global callback mechanism no longer exists |
-| **Event Model Restructured** | Success notifications contain different data structures |
-| **Connection API Changes** | Method signatures changed (e.g., `withModuleName()` → `withDatabaseName()`) |
-| **Table Naming Changes** | `name` parameter changed to `accessor` |
+| Change                          | Impact on Compatibility                                                     |
+| ------------------------------- | --------------------------------------------------------------------------- |
+| **New WebSocket Protocol (v2)** | Fundamental protocol-level incompatibility                                  |
+| **Reducer Callbacks Removed**   | 1.0 global callback mechanism no longer exists                              |
+| **Event Model Restructured**    | Success notifications contain different data structures                     |
+| **Connection API Changes**      | Method signatures changed (e.g., `withModuleName()` → `withDatabaseName()`) |
+| **Table Naming Changes**        | `name` parameter changed to `accessor`                                      |
 
 **Official Documentation Quote:**
+
 > "The version of the client SDK you are using must match the version of spacetime generate that produced your bindings. Additionally, you should use the same version of the SpacetimeDB module library... as the version of the SpacetimeDB host you are publishing to."
 
 **Interpretation:**
+
 - BitCraft server uses SpacetimeDB 1.6.0
 - Client SDK must use 1.x version to match
 - 2.0 client introduces WebSocket protocol v2 which is incompatible with 1.6.0 server's protocol
@@ -87,6 +92,7 @@ Available versions of `@clockworklabs/spacetimedb-sdk`:
 **Latest Stable 1.x:** `1.3.3`
 
 **Dependencies:**
+
 ```bash
 $ npm view @clockworklabs/spacetimedb-sdk@1.3.3 dependencies
 { 'base64-js': '^1.5.1', '@zxing/text-encoding': '^0.9.0' }
@@ -120,6 +126,7 @@ spacetimedb-bindings-macro = "=1.6.0"
 ```
 
 **Rationale:**
+
 1. **Protocol Compatibility:** 1.x client works with 1.6.0 server
 2. **Stable & Installable:** Unlike 2.0.0, it has no broken dependencies
 3. **Future-Proof Within 1.x:** Using `^1.3.3` allows patch/minor updates within 1.x
@@ -133,6 +140,7 @@ spacetimedb-bindings-macro = "=1.6.0"
 2. **BitCraft server is upgraded to SpacetimeDB 2.x** (currently locked at 1.6.0)
 
 **Migration Path:**
+
 - Monitor BitCraft server repo for SpacetimeDB version updates
 - When server upgrades to 2.x, coordinate client SDK upgrade
 - Expect breaking changes requiring client code refactoring (see migration guide)
@@ -144,6 +152,7 @@ spacetimedb-bindings-macro = "=1.6.0"
 From `_bmad-output/planning-artifacts/architecture.md`:
 
 **Client SDK:**
+
 - Use `@clockworklabs/spacetimedb-sdk@1.3.3` for TypeScript client
 - Generates bindings from BitCraft server schema using `spacetime generate`
 
@@ -177,11 +186,13 @@ Add to Client SDK section:
 ### Why Test Was Not Executed
 
 The practical connection test could not be run because:
+
 1. SDK 2.0.0 cannot be installed (broken dependency)
 2. SpacetimeDB CLI is not installed locally (`spacetime` command not found)
 3. BitCraft server is not running locally
 
 However, **this does not affect the conclusion** because:
+
 - Official documentation confirms protocol incompatibility
 - SDK 2.0.0 is broken regardless of protocol compatibility
 - Version mismatch between client (2.x) and server (1.6.0) is explicitly prohibited by SpacetimeDB
@@ -206,6 +217,7 @@ However, **this does not affect the conclusion** because:
 **The spike definitively answers the compatibility question: NO, SpacetimeDB 2.0 clients cannot connect to 1.6.x servers.**
 
 This result is based on:
+
 1. Official migration documentation confirming protocol incompatibility
 2. Version matching requirement from SpacetimeDB documentation
 3. Broken npm package for SDK 2.0.0 (dependency issue)

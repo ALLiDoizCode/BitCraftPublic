@@ -152,7 +152,9 @@ recommendations.push({
 
 ```javascript
 const totalRequirements = traceabilityMatrix.length;
-const coveredRequirements = traceabilityMatrix.filter((r) => r.coverage === 'FULL' || r.coverage === 'PARTIAL').length;
+const coveredRequirements = traceabilityMatrix.filter(
+  (r) => r.coverage === 'FULL' || r.coverage === 'PARTIAL'
+).length;
 const fullyCovered = traceabilityMatrix.filter((r) => r.coverage === 'FULL').length;
 
 const safePct = (covered, total) => (total > 0 ? Math.round((covered / total) * 100) : 100);
@@ -160,13 +162,21 @@ const coveragePercentage = safePct(fullyCovered, totalRequirements);
 
 // Priority-specific coverage
 const p0Total = traceabilityMatrix.filter((r) => r.priority === 'P0').length;
-const p0Covered = traceabilityMatrix.filter((r) => r.priority === 'P0' && r.coverage === 'FULL').length;
+const p0Covered = traceabilityMatrix.filter(
+  (r) => r.priority === 'P0' && r.coverage === 'FULL'
+).length;
 const p1Total = traceabilityMatrix.filter((r) => r.priority === 'P1').length;
-const p1Covered = traceabilityMatrix.filter((r) => r.priority === 'P1' && r.coverage === 'FULL').length;
+const p1Covered = traceabilityMatrix.filter(
+  (r) => r.priority === 'P1' && r.coverage === 'FULL'
+).length;
 const p2Total = traceabilityMatrix.filter((r) => r.priority === 'P2').length;
-const p2Covered = traceabilityMatrix.filter((r) => r.priority === 'P2' && r.coverage === 'FULL').length;
+const p2Covered = traceabilityMatrix.filter(
+  (r) => r.priority === 'P2' && r.coverage === 'FULL'
+).length;
 const p3Total = traceabilityMatrix.filter((r) => r.priority === 'P3').length;
-const p3Covered = traceabilityMatrix.filter((r) => r.priority === 'P3' && r.coverage === 'FULL').length;
+const p3Covered = traceabilityMatrix.filter(
+  (r) => r.priority === 'P3' && r.coverage === 'FULL'
+).length;
 
 const p0CoveragePercentage = safePct(p0Covered, p0Total);
 const p1CoveragePercentage = safePct(p1Covered, p1Total);

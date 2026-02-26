@@ -2,11 +2,11 @@
 
 ## Language Matrix
 
-| Runtime | Language | Primary Users | Package Manager | Key Dependencies |
-|---------|----------|--------------|----------------|-----------------|
-| SDK + Backends | TypeScript/Node.js | All (via wrappers) | pnpm | SpacetimeDB TS client, nostr-tools, ILP client |
-| TUI Frontend | Rust | Terminal players | cargo | ratatui, crossterm, tokio, serde_json |
-| Infrastructure | Docker | Platform operators | docker compose | Game server (WASM), Crosstown node |
+| Runtime        | Language           | Primary Users      | Package Manager | Key Dependencies                               |
+| -------------- | ------------------ | ------------------ | --------------- | ---------------------------------------------- |
+| SDK + Backends | TypeScript/Node.js | All (via wrappers) | pnpm            | SpacetimeDB TS client, nostr-tools, ILP client |
+| TUI Frontend   | Rust               | Terminal players   | cargo           | ratatui, crossterm, tokio, serde_json          |
+| Infrastructure | Docker             | Platform operators | docker compose  | Game server (WASM), Crosstown node             |
 
 ## Installation Methods
 
@@ -18,10 +18,12 @@
 ## API Surface
 
 **Declarative Layer (no code):**
+
 - `Agent.md` — Agent configuration: name, personality, skill selection, budget limits, LLM backend, logging preferences
 - Skill files (`.md`) — One per game action: reducer name, parameters, ILP cost, required table subscriptions, natural-language description, usage guidance
 
 **SDK Runtime Layer (TypeScript):**
+
 - `SpacetimeDBClient` — Table subscription management, query interface, reconnection handling
 - `CrosstownClient` — Relay subscription for events (read), ILP packet construction/signing/submission (write), fee tracking
 - `SkillParser` — Load and validate Agent.md + skill files, build action registry
@@ -29,6 +31,7 @@
 - `DecisionLogger` — JSONL output with timestamps, world state, costs, outcomes
 
 **TUI Frontend (Rust — presentation layer only):**
+
 - `TuiApp` — ratatui application: event loop, screen management, input handling (rebels-in-the-sky patterns)
 - `HexRenderer` — Hex-grid map rendering with terrain, entities, players
 - `PanelSystem` — Chat, inventory, status, crafting panels with keyboard navigation
@@ -38,27 +41,41 @@
 ## Code Examples
 
 **Example Agent.md:**
+
 ```markdown
 # Agent: Gatherer-01
+
 ## Personality: Cautious resource optimizer
+
 ## Skills: harvest_resource, check_prices, create_trade_offer, move_to_hex
+
 ## Budget: 0.05 USD/hour
+
 ## LLM: claude-sonnet-4-5-20250929
+
 ## Logging: decisions.jsonl
 ```
 
 **Example Skill File (`harvest_resource.md`):**
+
 ```markdown
 # Skill: Harvest Resource
+
 ## Reducer: harvest_resource
+
 ## Parameters: entity_id (u64), tool_id (u64)
+
 ## Cost: 0.001 USD
+
 ## Subscriptions: nearby_resources, player_inventory, player_position
+
 ## Description: Harvest a resource node within range. Requires appropriate tool in inventory.
+
 ## When to use: When a harvestable resource is nearby and inventory has space.
 ```
 
 **Quickstart paths:**
+
 1. AI Researcher: Clone → `docker compose up` → edit Agent.md → `npm start` (< 30 min)
 2. Terminal Player: `cargo install sigil-tui` → generate Nostr key → connect (spawns TypeScript backend automatically) → play (< 5 min)
 3. Game Developer: Write skill files for reducers → register BLS handler → publish (< 1 hour)

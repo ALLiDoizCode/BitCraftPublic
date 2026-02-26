@@ -96,17 +96,21 @@ interface GameEncyclopedia {
 }
 
 // Layer 2: Event Interpretation
-interface EventInterpreter extends CognitionPlugin<RawTableUpdate[], SemanticEvent[], EventInterpreterState> {
+interface EventInterpreter extends CognitionPlugin<
+  RawTableUpdate[],
+  SemanticEvent[],
+  EventInterpreterState
+> {
   // Transforms raw SpacetimeDB callbacks into narrative events
 }
 
 interface SemanticEvent {
   timestamp: number;
   category: 'combat' | 'movement' | 'resource' | 'social' | 'building' | 'environment';
-  narrative: string;          // "Forest Wolf attacked you for 15 damage"
-  entities: EntityRef[];      // Referenced game entities
-  importance: number;         // 1-10 scale for memory filtering
-  raw: RawTableUpdate;        // Original data preserved
+  narrative: string; // "Forest Wolf attacked you for 15 damage"
+  entities: EntityRef[]; // Referenced game entities
+  importance: number; // 1-10 scale for memory filtering
+  raw: RawTableUpdate; // Original data preserved
 }
 
 // Layer 3: Memory
@@ -132,13 +136,13 @@ interface AffordanceEngine extends CognitionPlugin<GameState, Affordance[], Affo
 }
 
 interface Affordance {
-  action: string;             // "gather_wood"
-  reducer: string;            // "harvest_start"
+  action: string; // "gather_wood"
+  reducer: string; // "harvest_start"
   args: Record<string, unknown>;
-  cost: number;               // ILP token cost
-  estimatedReward: string;    // "Wood x10"
-  confidence: number;         // 0-1 success probability
-  priority: number;           // Suggested priority
+  cost: number; // ILP token cost
+  estimatedReward: string; // "Wood x10"
+  confidence: number; // 0-1 success probability
+  priority: number; // Suggested priority
 }
 
 // Layer 5: Goal Planning
@@ -147,10 +151,10 @@ interface GoalPlanner extends CognitionPlugin<PlanningInput, PlannedAction, Goal
 }
 
 interface PlannedAction {
-  affordance: Affordance;     // The chosen action
-  reasoning: string;          // Why this action (for logging/research)
-  goalContribution: string;   // Which goal this serves
-  confidence: number;         // Decision confidence
+  affordance: Affordance; // The chosen action
+  reasoning: string; // Why this action (for logging/research)
+  goalContribution: string; // Which goal this serves
+  confidence: number; // Decision confidence
 }
 
 interface PlanningInput {
@@ -165,8 +169,8 @@ interface Goal {
   type: string;
   priority: number;
   conditions: string[];
-  progress: number;           // 0-1
-  deadline?: number;          // Optional time pressure
+  progress: number; // 0-1
+  deadline?: number; // Optional time pressure
 }
 ```
 

@@ -28,10 +28,10 @@ No direct competitor combines declarative agents + real economic constraints + p
 
 ## Innovation Validation
 
-| Innovation | Validation Method |
-|-----------|------------------|
-| Declarative agent definitions | Can a non-programmer create and deploy a functioning agent in < 30 min using only markdown? |
-| Single SDK, multiple frontends | Do MCP agents and TUI players have equivalent access to game actions through `@sigil/client`? |
-| ILP micropayments as constraints | Do agents make meaningfully different decisions when actions have real costs vs. free? |
-| Cryptographic identity propagation | Does BLS correctly attribute actions to the authoring Nostr key across 100% of reducer calls? |
-| World-agnostic architecture | Can a new SpacetimeDB game become agent-accessible by writing only skill files, zero SDK changes? |
+| Innovation                         | Validation Method                                                                                 |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Declarative agent definitions      | Can a non-programmer create and deploy a functioning agent in < 30 min using only markdown?       |
+| Single SDK, multiple frontends     | Do MCP agents and TUI players have equivalent access to game actions through `@sigil/client`?     |
+| ILP micropayments as constraints   | Do agents make meaningfully different decisions when actions have real costs vs. free?            |
+| Cryptographic identity propagation | Does BLS correctly attribute actions to the authoring Nostr key across 100% of reducer calls?     |
+| World-agnostic architecture        | Can a new SpacetimeDB game become agent-accessible by writing only skill files, zero SDK changes? |

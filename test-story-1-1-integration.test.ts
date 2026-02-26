@@ -6,7 +6,7 @@
  * script by testing actual build/runtime behavior.
  */
 
-import { describe, test, expect, beforeAll } from 'vitest';
+import { describe, test, expect } from 'vitest';
 import { execSync } from 'child_process';
 import { existsSync, readdirSync, readFileSync } from 'fs';
 import { join } from 'path';
@@ -18,8 +18,9 @@ function runCommand(cmd: string, cwd: string = REPO_ROOT): { stdout: string; suc
   try {
     const stdout = execSync(cmd, { cwd, encoding: 'utf8', stdio: 'pipe' });
     return { stdout, success: true };
-  } catch (error: any) {
-    return { stdout: error.stdout || '', success: false };
+  } catch (error: unknown) {
+    const err = error as { stdout?: string };
+    return { stdout: err.stdout || '', success: false };
   }
 }
 
@@ -111,10 +112,11 @@ describe('Story 1.1: Monorepo Scaffolding & Build Infrastructure - Integration T
       }
     });
 
-    test('ESLint configuration is valid', () => {
-      const eslintConfig = require(join(REPO_ROOT, '.eslintrc.cjs'));
-      expect(eslintConfig.parser).toBe('@typescript-eslint/parser');
-      expect(eslintConfig.extends).toContain('plugin:@typescript-eslint/recommended');
+    test('ESLint configuration is valid', async () => {
+      const eslintConfigPath = join(REPO_ROOT, '.eslintrc.cjs');
+      const eslintConfig = await import(eslintConfigPath);
+      expect(eslintConfig.default.parser).toBe('@typescript-eslint/parser');
+      expect(eslintConfig.default.extends).toContain('plugin:@typescript-eslint/recommended');
     });
 
     test('.prettierrc configuration is valid', () => {

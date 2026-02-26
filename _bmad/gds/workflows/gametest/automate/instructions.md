@@ -209,9 +209,11 @@ func test_{feature}_integration():
     # Cleanup
     scene.queue_free()
 ```
+
 ### E2E Journey Tests
 
 **Knowledge Base Reference**: `knowledge/e2e-testing.md`
+
 ```csharp
 public class {Feature}E2ETests : GameE2ETestFixture
 {
@@ -223,13 +225,13 @@ public class {Feature}E2ETests : GameE2ETestFixture
             .{SetupMethod1}()
             .{SetupMethod2}()
             .Build();
-        
+
         // WHEN
         yield return Input.{Action1}();
         yield return AsyncAssert.WaitUntil(
             () => {Condition1}, "{Description1}");
         yield return Input.{Action2}();
-        
+
         // THEN
         yield return AsyncAssert.WaitUntil(
             () => {FinalCondition}, "{FinalDescription}");
@@ -237,7 +239,6 @@ public class {Feature}E2ETests : GameE2ETestFixture
     }
 }
 ```
-
 
 ## Step 3.5: Generate E2E Infrastructure
 
@@ -267,6 +268,7 @@ Before generating E2E tests, scaffold the required infrastructure.
    - `WaitForState` for state machine transitions
 
 ### Generation Template
+
 ```csharp
 // GameE2ETestFixture.cs
 public abstract class GameE2ETestFixture
@@ -274,7 +276,7 @@ public abstract class GameE2ETestFixture
     protected {GameStateClass} GameState;
     protected {InputSimulatorClass} Input;
     protected {ScenarioBuilderClass} Scenario;
-    
+
     [UnitySetUp]
     public IEnumerator BaseSetUp()
     {
@@ -284,7 +286,7 @@ public abstract class GameE2ETestFixture
         Scenario = new {ScenarioBuilderClass}(GameState);
         yield return WaitForReady();
     }
-    
+
     // ... (fill from e2e-testing.md patterns)
 }
 ```

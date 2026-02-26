@@ -95,13 +95,13 @@ Create comprehensive test scenarios for game projects, covering gameplay mechani
 
 **Knowledge Base Reference**: `knowledge/e2e-testing.md`
 
-| Category | Focus | Priority |
-|----------|-------|----------|
-| Core Loop | Complete gameplay cycle | P0 |
-| Turn Lifecycle | Full turn from start to end | P0 |
-| Save/Load Round-trip | Save → quit → load → resume | P0 |
-| Scene Transitions | Menu → Game → Back | P1 |
-| Win/Lose Paths | Victory and defeat conditions | P1 |
+| Category             | Focus                         | Priority |
+| -------------------- | ----------------------------- | -------- |
+| Core Loop            | Complete gameplay cycle       | P0       |
+| Turn Lifecycle       | Full turn from start to end   | P0       |
+| Save/Load Round-trip | Save → quit → load → resume   | P0       |
+| Scene Transitions    | Menu → Game → Back            | P1       |
+| Win/Lose Paths       | Victory and defeat conditions | P1       |
 
 ---
 
@@ -168,6 +168,7 @@ SCENARIO: Gameplay Under High Latency
 ### E2E Scenario Format
 
 For player journey tests, use this extended format:
+
 ```
 E2E SCENARIO: [Player Journey Name]
   GIVEN [Initial game state - use ScenarioBuilder terms]
@@ -180,6 +181,7 @@ E2E SCENARIO: [Player Journey Name]
 ```
 
 ### Example E2E Scenario
+
 ```
 E2E SCENARIO: Complete Combat Encounter
   GIVEN game loaded with player unit adjacent to enemy
@@ -206,12 +208,12 @@ E2E SCENARIO: Complete Combat Encounter
 
 **Knowledge Base Reference**: `knowledge/test-priorities.md`
 
-| Priority | Criteria | Unit | Integration | E2E | Manual |
-|----------|----------|------|-------------|-----|--------|
-| P0 | Ship blockers | 100% | 80% | Core flows | Smoke |
-| P1 | Major features | 90% | 70% | Happy paths | Full |
-| P2 | Secondary | 80% | 50% | - | Targeted |
-| P3 | Edge cases | 60% | - | - | As needed |
+| Priority | Criteria       | Unit | Integration | E2E         | Manual    |
+| -------- | -------------- | ---- | ----------- | ----------- | --------- |
+| P0       | Ship blockers  | 100% | 80%         | Core flows  | Smoke     |
+| P1       | Major features | 90%  | 70%         | Happy paths | Full      |
+| P2       | Secondary      | 80%  | 50%         | -           | Targeted  |
+| P3       | Edge cases     | 60%  | -           | -           | As needed |
 
 ### Risk-Based Ordering
 

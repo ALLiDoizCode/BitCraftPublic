@@ -8,6 +8,7 @@
 ## Executive Summary
 
 Story 1.1 demonstrates **EXEMPLARY test coverage** with comprehensive traceability from acceptance criteria through to automated verification. All 5 acceptance criteria are covered by:
+
 - **77 ATDD tests** in test-story-1-1.sh (100% passing)
 - **3 unit tests** (TypeScript packages)
 - **8 integration tests** (Rust workspace)
@@ -48,6 +49,7 @@ Story 1.1 demonstrates **EXEMPLARY test coverage** with comprehensive traceabili
 ### AC1: pnpm workspace resolution
 
 **Acceptance Criteria Text**:
+
 > **Given** a fresh clone of the repository
 > **When** I run `pnpm install` (requires pnpm 9.0.0+ and Node.js 20.x)
 > **Then** the pnpm workspace resolves with `packages/client`, `packages/mcp-server`, and `packages/tui-backend` as workspace members
@@ -55,17 +57,17 @@ Story 1.1 demonstrates **EXEMPLARY test coverage** with comprehensive traceabili
 
 **Test Coverage**:
 
-| Test ID | Test Name | Type | Location | Status |
-|---------|-----------|------|----------|--------|
-| AC1-1 | pnpm-workspace.yaml exists | Static | test-story-1-1.sh:105 | ✅ Pass |
-| AC1-2 | pnpm-workspace.yaml contains packages/* | Static | test-story-1-1.sh:109 | ✅ Pass |
-| AC1-3 | tsconfig.base.json exists | Static | test-story-1-1.sh:112 | ✅ Pass |
-| AC1-4 | tsconfig.base.json has strict: true | Static | test-story-1-1.sh:115 | ✅ Pass |
-| AC1-5 | tsconfig.base.json has target: ES2022 | Static | test-story-1-1.sh:118 | ✅ Pass |
-| AC1-6 | packages/client directory exists | Static | test-story-1-1.sh:121 | ✅ Pass |
-| AC1-7 | packages/mcp-server directory exists | Static | test-story-1-1.sh:124 | ✅ Pass |
-| AC1-8 | packages/tui-backend directory exists | Static | test-story-1-1.sh:127 | ✅ Pass |
-| AC1-9 | pnpm install succeeds | Build | test-story-1-1.sh:302 | ✅ Pass |
+| Test ID | Test Name                                | Type   | Location              | Status  |
+| ------- | ---------------------------------------- | ------ | --------------------- | ------- |
+| AC1-1   | pnpm-workspace.yaml exists               | Static | test-story-1-1.sh:105 | ✅ Pass |
+| AC1-2   | pnpm-workspace.yaml contains packages/\* | Static | test-story-1-1.sh:109 | ✅ Pass |
+| AC1-3   | tsconfig.base.json exists                | Static | test-story-1-1.sh:112 | ✅ Pass |
+| AC1-4   | tsconfig.base.json has strict: true      | Static | test-story-1-1.sh:115 | ✅ Pass |
+| AC1-5   | tsconfig.base.json has target: ES2022    | Static | test-story-1-1.sh:118 | ✅ Pass |
+| AC1-6   | packages/client directory exists         | Static | test-story-1-1.sh:121 | ✅ Pass |
+| AC1-7   | packages/mcp-server directory exists     | Static | test-story-1-1.sh:124 | ✅ Pass |
+| AC1-8   | packages/tui-backend directory exists    | Static | test-story-1-1.sh:127 | ✅ Pass |
+| AC1-9   | pnpm install succeeds                    | Build  | test-story-1-1.sh:302 | ✅ Pass |
 
 **Traceability**: ✅ COMPLETE — All aspects of AC1 are covered by automated tests.
 
@@ -74,6 +76,7 @@ Story 1.1 demonstrates **EXEMPLARY test coverage** with comprehensive traceabili
 ### AC2: Cargo workspace builds
 
 **Acceptance Criteria Text**:
+
 > **Given** a fresh clone of the repository
 > **When** I run `cargo build` from the root
 > **Then** the cargo workspace builds with `crates/tui` as a workspace member
@@ -81,26 +84,26 @@ Story 1.1 demonstrates **EXEMPLARY test coverage** with comprehensive traceabili
 
 **Test Coverage**:
 
-| Test ID | Test Name | Type | Location | Status |
-|---------|-----------|------|----------|--------|
-| AC2-1 | Root Cargo.toml exists | Static | test-story-1-1.sh:133 | ✅ Pass |
-| AC2-2 | Root Cargo.toml has [workspace] | Static | test-story-1-1.sh:136 | ✅ Pass |
-| AC2-3 | Root Cargo.toml has crates/* members | Static | test-story-1-1.sh:139 | ✅ Pass |
-| AC2-4 | crates/tui directory exists | Static | test-story-1-1.sh:142 | ✅ Pass |
-| AC2-5 | crates/tui/Cargo.toml exists | Static | test-story-1-1.sh:145 | ✅ Pass |
-| AC2-6 | rustfmt.toml exists | Static | test-story-1-1.sh:148 | ✅ Pass |
-| AC2-7 | rustfmt.toml has edition = "2021" | Static | test-story-1-1.sh:151 | ✅ Pass |
-| AC2-8 | rustfmt.toml has max_width = 100 | Static | test-story-1-1.sh:154 | ✅ Pass |
-| AC2-9 | cargo build succeeds | Build | test-story-1-1.sh:328 | ✅ Pass |
-| AC2-10 | sigil-tui binary exists | Build | test-story-1-1.sh:336 | ✅ Pass |
-| AC2-INT-1 | Cargo workspace structure verified | Integration | crates/tui/tests/integration_test.rs:9 | ✅ Pass |
-| AC2-INT-2 | rustfmt config verified | Integration | crates/tui/tests/integration_test.rs:20 | ✅ Pass |
-| AC2-INT-3 | cargo build succeeds (integration) | Integration | crates/tui/tests/integration_test.rs:29 | ✅ Pass |
-| AC2-INT-4 | unit tests exist | Integration | crates/tui/tests/integration_test.rs:44 | ✅ Pass |
-| AC2-INT-5 | binary exists after build | Integration | crates/tui/tests/integration_test.rs:53 | ✅ Pass |
-| AC2-INT-6 | required dependencies present | Integration | crates/tui/tests/integration_test.rs:73 | ✅ Pass |
-| AC2-INT-7 | main function exists | Integration | crates/tui/tests/integration_test.rs:86 | ✅ Pass |
-| AC2-UNIT-1 | basic arithmetic test | Unit | crates/tui/src/main.rs:8 | ✅ Pass |
+| Test ID    | Test Name                             | Type        | Location                                | Status  |
+| ---------- | ------------------------------------- | ----------- | --------------------------------------- | ------- |
+| AC2-1      | Root Cargo.toml exists                | Static      | test-story-1-1.sh:133                   | ✅ Pass |
+| AC2-2      | Root Cargo.toml has [workspace]       | Static      | test-story-1-1.sh:136                   | ✅ Pass |
+| AC2-3      | Root Cargo.toml has crates/\* members | Static      | test-story-1-1.sh:139                   | ✅ Pass |
+| AC2-4      | crates/tui directory exists           | Static      | test-story-1-1.sh:142                   | ✅ Pass |
+| AC2-5      | crates/tui/Cargo.toml exists          | Static      | test-story-1-1.sh:145                   | ✅ Pass |
+| AC2-6      | rustfmt.toml exists                   | Static      | test-story-1-1.sh:148                   | ✅ Pass |
+| AC2-7      | rustfmt.toml has edition = "2021"     | Static      | test-story-1-1.sh:151                   | ✅ Pass |
+| AC2-8      | rustfmt.toml has max_width = 100      | Static      | test-story-1-1.sh:154                   | ✅ Pass |
+| AC2-9      | cargo build succeeds                  | Build       | test-story-1-1.sh:328                   | ✅ Pass |
+| AC2-10     | sigil-tui binary exists               | Build       | test-story-1-1.sh:336                   | ✅ Pass |
+| AC2-INT-1  | Cargo workspace structure verified    | Integration | crates/tui/tests/integration_test.rs:9  | ✅ Pass |
+| AC2-INT-2  | rustfmt config verified               | Integration | crates/tui/tests/integration_test.rs:20 | ✅ Pass |
+| AC2-INT-3  | cargo build succeeds (integration)    | Integration | crates/tui/tests/integration_test.rs:29 | ✅ Pass |
+| AC2-INT-4  | unit tests exist                      | Integration | crates/tui/tests/integration_test.rs:44 | ✅ Pass |
+| AC2-INT-5  | binary exists after build             | Integration | crates/tui/tests/integration_test.rs:53 | ✅ Pass |
+| AC2-INT-6  | required dependencies present         | Integration | crates/tui/tests/integration_test.rs:73 | ✅ Pass |
+| AC2-INT-7  | main function exists                  | Integration | crates/tui/tests/integration_test.rs:86 | ✅ Pass |
+| AC2-UNIT-1 | basic arithmetic test                 | Unit        | crates/tui/src/main.rs:8                | ✅ Pass |
 
 **Traceability**: ✅ COMPLETE — All aspects of AC2 are covered by ATDD, integration, and unit tests.
 
@@ -109,6 +112,7 @@ Story 1.1 demonstrates **EXEMPLARY test coverage** with comprehensive traceabili
 ### AC3: Root configuration files present
 
 **Acceptance Criteria Text**:
+
 > **Given** the monorepo is set up
 > **When** I check the root configuration files
 > **Then** ESLint config (`.eslintrc.cjs`), Prettier config (`.prettierrc`), and `.env.example` exist at root
@@ -116,21 +120,21 @@ Story 1.1 demonstrates **EXEMPLARY test coverage** with comprehensive traceabili
 
 **Test Coverage**:
 
-| Test ID | Test Name | Type | Location | Status |
-|---------|-----------|------|----------|--------|
-| AC3-1 | .eslintrc.cjs exists | Static | test-story-1-1.sh:160 | ✅ Pass |
-| AC3-2 | .prettierrc exists | Static | test-story-1-1.sh:163 | ✅ Pass |
-| AC3-3 | .env.example exists | Static | test-story-1-1.sh:166 | ✅ Pass |
-| AC3-4 | .gitignore exists | Static | test-story-1-1.sh:169 | ✅ Pass |
-| AC3-5 | .gitignore excludes node_modules/ | Static | test-story-1-1.sh:172 | ✅ Pass |
-| AC3-6 | .gitignore excludes target/ | Static | test-story-1-1.sh:175 | ✅ Pass |
-| AC3-7 | .gitignore excludes .env | Static | test-story-1-1.sh:178 | ✅ Pass |
-| AC3-8 | .gitignore excludes dist/ | Static | test-story-1-1.sh:181 | ✅ Pass |
-| AC3-9 | .gitignore excludes build/ | Static | test-story-1-1.sh:184 | ✅ Pass |
-| AC3-10 | .gitignore excludes *.tsbuildinfo | Static | test-story-1-1.sh:187 | ✅ Pass |
-| AC3-11 | .gitignore excludes .turbo/ | Static | test-story-1-1.sh:190 | ✅ Pass |
-| AC3-12 | .gitignore excludes *.local | Static | test-story-1-1.sh:193 | ✅ Pass |
-| AC3-13 | .gitignore excludes coverage/ | Static | test-story-1-1.sh:196 | ✅ Pass |
+| Test ID | Test Name                          | Type   | Location              | Status  |
+| ------- | ---------------------------------- | ------ | --------------------- | ------- |
+| AC3-1   | .eslintrc.cjs exists               | Static | test-story-1-1.sh:160 | ✅ Pass |
+| AC3-2   | .prettierrc exists                 | Static | test-story-1-1.sh:163 | ✅ Pass |
+| AC3-3   | .env.example exists                | Static | test-story-1-1.sh:166 | ✅ Pass |
+| AC3-4   | .gitignore exists                  | Static | test-story-1-1.sh:169 | ✅ Pass |
+| AC3-5   | .gitignore excludes node_modules/  | Static | test-story-1-1.sh:172 | ✅ Pass |
+| AC3-6   | .gitignore excludes target/        | Static | test-story-1-1.sh:175 | ✅ Pass |
+| AC3-7   | .gitignore excludes .env           | Static | test-story-1-1.sh:178 | ✅ Pass |
+| AC3-8   | .gitignore excludes dist/          | Static | test-story-1-1.sh:181 | ✅ Pass |
+| AC3-9   | .gitignore excludes build/         | Static | test-story-1-1.sh:184 | ✅ Pass |
+| AC3-10  | .gitignore excludes \*.tsbuildinfo | Static | test-story-1-1.sh:187 | ✅ Pass |
+| AC3-11  | .gitignore excludes .turbo/        | Static | test-story-1-1.sh:190 | ✅ Pass |
+| AC3-12  | .gitignore excludes \*.local       | Static | test-story-1-1.sh:193 | ✅ Pass |
+| AC3-13  | .gitignore excludes coverage/      | Static | test-story-1-1.sh:196 | ✅ Pass |
 
 **Traceability**: ✅ COMPLETE — All configuration files and gitignore patterns verified.
 
@@ -139,6 +143,7 @@ Story 1.1 demonstrates **EXEMPLARY test coverage** with comprehensive traceabili
 ### AC4: CI workflows execute successfully
 
 **Acceptance Criteria Text**:
+
 > **Given** a push or pull request to the repository
 > **When** CI runs
 > **Then** `.github/workflows/ci-typescript.yml` executes: lint, typecheck, test, build with pnpm cache enabled
@@ -146,23 +151,23 @@ Story 1.1 demonstrates **EXEMPLARY test coverage** with comprehensive traceabili
 
 **Test Coverage**:
 
-| Test ID | Test Name | Type | Location | Status |
-|---------|-----------|------|----------|--------|
-| AC4-1 | ci-typescript.yml exists | Static | test-story-1-1.sh:202 | ✅ Pass |
-| AC4-2 | ci-rust.yml exists | Static | test-story-1-1.sh:205 | ✅ Pass |
-| AC4-3 | ci-typescript.yml has pnpm install | Static | test-story-1-1.sh:208 | ✅ Pass |
-| AC4-4 | ci-typescript.yml has lint step | Static | test-story-1-1.sh:211 | ✅ Pass |
-| AC4-5 | ci-typescript.yml has typecheck step | Static | test-story-1-1.sh:214 | ✅ Pass |
-| AC4-6 | ci-typescript.yml has test step | Static | test-story-1-1.sh:217 | ✅ Pass |
-| AC4-7 | ci-typescript.yml has build step | Static | test-story-1-1.sh:220 | ✅ Pass |
-| AC4-8 | ci-rust.yml has fmt check | Static | test-story-1-1.sh:223 | ✅ Pass |
-| AC4-9 | ci-rust.yml has clippy | Static | test-story-1-1.sh:226 | ✅ Pass |
-| AC4-10 | ci-rust.yml has test | Static | test-story-1-1.sh:229 | ✅ Pass |
-| AC4-11 | ci-rust.yml has build | Static | test-story-1-1.sh:232 | ✅ Pass |
-| AC4-LOCAL-1 | pnpm lint succeeds | Local CI Sim | test-story-1-1.sh:373 | ✅ Pass |
-| AC4-LOCAL-2 | pnpm typecheck succeeds | Local CI Sim | test-story-1-1.sh:380 | ✅ Pass |
-| AC4-LOCAL-3 | cargo fmt check succeeds | Local CI Sim | test-story-1-1.sh:387 | ✅ Pass |
-| AC4-LOCAL-4 | cargo clippy succeeds | Local CI Sim | test-story-1-1.sh:394 | ✅ Pass |
+| Test ID     | Test Name                            | Type         | Location              | Status  |
+| ----------- | ------------------------------------ | ------------ | --------------------- | ------- |
+| AC4-1       | ci-typescript.yml exists             | Static       | test-story-1-1.sh:202 | ✅ Pass |
+| AC4-2       | ci-rust.yml exists                   | Static       | test-story-1-1.sh:205 | ✅ Pass |
+| AC4-3       | ci-typescript.yml has pnpm install   | Static       | test-story-1-1.sh:208 | ✅ Pass |
+| AC4-4       | ci-typescript.yml has lint step      | Static       | test-story-1-1.sh:211 | ✅ Pass |
+| AC4-5       | ci-typescript.yml has typecheck step | Static       | test-story-1-1.sh:214 | ✅ Pass |
+| AC4-6       | ci-typescript.yml has test step      | Static       | test-story-1-1.sh:217 | ✅ Pass |
+| AC4-7       | ci-typescript.yml has build step     | Static       | test-story-1-1.sh:220 | ✅ Pass |
+| AC4-8       | ci-rust.yml has fmt check            | Static       | test-story-1-1.sh:223 | ✅ Pass |
+| AC4-9       | ci-rust.yml has clippy               | Static       | test-story-1-1.sh:226 | ✅ Pass |
+| AC4-10      | ci-rust.yml has test                 | Static       | test-story-1-1.sh:229 | ✅ Pass |
+| AC4-11      | ci-rust.yml has build                | Static       | test-story-1-1.sh:232 | ✅ Pass |
+| AC4-LOCAL-1 | pnpm lint succeeds                   | Local CI Sim | test-story-1-1.sh:373 | ✅ Pass |
+| AC4-LOCAL-2 | pnpm typecheck succeeds              | Local CI Sim | test-story-1-1.sh:380 | ✅ Pass |
+| AC4-LOCAL-3 | cargo fmt check succeeds             | Local CI Sim | test-story-1-1.sh:387 | ✅ Pass |
+| AC4-LOCAL-4 | cargo clippy succeeds                | Local CI Sim | test-story-1-1.sh:394 | ✅ Pass |
 
 **Traceability**: ✅ COMPLETE — CI workflows verified for structure and local execution simulation.
 
@@ -173,6 +178,7 @@ Story 1.1 demonstrates **EXEMPLARY test coverage** with comprehensive traceabili
 ### AC5: TypeScript packages configured correctly
 
 **Acceptance Criteria Text**:
+
 > **Given** the `packages/client` workspace package
 > **When** I inspect its `package.json`
 > **Then** it is named `@sigil/client` with `"type": "module"` and workspace dependencies use `"workspace:*"` protocol
@@ -182,35 +188,35 @@ Story 1.1 demonstrates **EXEMPLARY test coverage** with comprehensive traceabili
 
 **Test Coverage**:
 
-| Test ID | Test Name | Type | Location | Status |
-|---------|-----------|------|----------|--------|
-| AC5-1 | packages/client/package.json exists | Static | test-story-1-1.sh:238 | ✅ Pass |
-| AC5-2 | package.json has name @sigil/client | Static | test-story-1-1.sh:241 | ✅ Pass |
-| AC5-3 | package.json has type: module | Static | test-story-1-1.sh:244 | ✅ Pass |
-| AC5-4 | mcp-server has workspace:* dependency | Static | test-story-1-1.sh:247 | ✅ Pass |
-| AC5-5 | tui-backend has workspace:* dependency | Static | test-story-1-1.sh:250 | ✅ Pass |
-| AC5-6 | client tsup.config.ts exists | Static | test-story-1-1.sh:253 | ✅ Pass |
-| AC5-7 | mcp-server tsup.config.ts exists | Static | test-story-1-1.sh:256 | ✅ Pass |
-| AC5-8 | tui-backend tsup.config.ts exists | Static | test-story-1-1.sh:259 | ✅ Pass |
-| AC5-9 | tsup has format: ["esm", "cjs"] | Static | test-story-1-1.sh:262 | ✅ Pass |
-| AC5-10 | tsup has dts: true | Static | test-story-1-1.sh:265 | ✅ Pass |
-| AC5-11 | tsup has outDir: "dist" | Static | test-story-1-1.sh:268 | ✅ Pass |
-| AC5-12 | package.json has vitest test script | Static | test-story-1-1.sh:271 | ✅ Pass |
-| AC5-13 | client src/index.ts exists | Static | test-story-1-1.sh:274 | ✅ Pass |
-| AC5-14 | index.ts exports placeholder constant | Static | test-story-1-1.sh:277 | ✅ Pass |
-| AC5-15 | mcp-server src/index.ts exists | Static | test-story-1-1.sh:280 | ✅ Pass |
-| AC5-16 | tui-backend src/index.ts exists | Static | test-story-1-1.sh:283 | ✅ Pass |
-| AC5-17 | pnpm build succeeds | Build | test-story-1-1.sh:309 | ✅ Pass |
-| AC5-18 | ESM build artifact exists | Build | test-story-1-1.sh:316 | ✅ Pass |
-| AC5-19 | CJS build artifact exists | Build | test-story-1-1.sh:324 | ✅ Pass |
-| AC5-20 | TypeScript declarations exist | Build | test-story-1-1.sh:326 | ✅ Pass |
-| AC5-21 | pnpm test succeeds | Test | test-story-1-1.sh:339 | ✅ Pass |
-| AC5-22 | client test file exists | Test | test-story-1-1.sh:361 | ✅ Pass |
-| AC5-23 | mcp-server test file exists | Test | test-story-1-1.sh:364 | ✅ Pass |
-| AC5-24 | tui-backend test file exists | Test | test-story-1-1.sh:367 | ✅ Pass |
-| AC5-UNIT-1 | client exports version | Unit | packages/client/src/index.test.ts:4 | ✅ Pass |
-| AC5-UNIT-2 | mcp-server exports version | Unit | packages/mcp-server/src/index.test.ts:4 | ✅ Pass |
-| AC5-UNIT-3 | tui-backend exports version | Unit | packages/tui-backend/src/index.test.ts:4 | ✅ Pass |
+| Test ID    | Test Name                               | Type   | Location                                 | Status  |
+| ---------- | --------------------------------------- | ------ | ---------------------------------------- | ------- |
+| AC5-1      | packages/client/package.json exists     | Static | test-story-1-1.sh:238                    | ✅ Pass |
+| AC5-2      | package.json has name @sigil/client     | Static | test-story-1-1.sh:241                    | ✅ Pass |
+| AC5-3      | package.json has type: module           | Static | test-story-1-1.sh:244                    | ✅ Pass |
+| AC5-4      | mcp-server has workspace:\* dependency  | Static | test-story-1-1.sh:247                    | ✅ Pass |
+| AC5-5      | tui-backend has workspace:\* dependency | Static | test-story-1-1.sh:250                    | ✅ Pass |
+| AC5-6      | client tsup.config.ts exists            | Static | test-story-1-1.sh:253                    | ✅ Pass |
+| AC5-7      | mcp-server tsup.config.ts exists        | Static | test-story-1-1.sh:256                    | ✅ Pass |
+| AC5-8      | tui-backend tsup.config.ts exists       | Static | test-story-1-1.sh:259                    | ✅ Pass |
+| AC5-9      | tsup has format: ["esm", "cjs"]         | Static | test-story-1-1.sh:262                    | ✅ Pass |
+| AC5-10     | tsup has dts: true                      | Static | test-story-1-1.sh:265                    | ✅ Pass |
+| AC5-11     | tsup has outDir: "dist"                 | Static | test-story-1-1.sh:268                    | ✅ Pass |
+| AC5-12     | package.json has vitest test script     | Static | test-story-1-1.sh:271                    | ✅ Pass |
+| AC5-13     | client src/index.ts exists              | Static | test-story-1-1.sh:274                    | ✅ Pass |
+| AC5-14     | index.ts exports placeholder constant   | Static | test-story-1-1.sh:277                    | ✅ Pass |
+| AC5-15     | mcp-server src/index.ts exists          | Static | test-story-1-1.sh:280                    | ✅ Pass |
+| AC5-16     | tui-backend src/index.ts exists         | Static | test-story-1-1.sh:283                    | ✅ Pass |
+| AC5-17     | pnpm build succeeds                     | Build  | test-story-1-1.sh:309                    | ✅ Pass |
+| AC5-18     | ESM build artifact exists               | Build  | test-story-1-1.sh:316                    | ✅ Pass |
+| AC5-19     | CJS build artifact exists               | Build  | test-story-1-1.sh:324                    | ✅ Pass |
+| AC5-20     | TypeScript declarations exist           | Build  | test-story-1-1.sh:326                    | ✅ Pass |
+| AC5-21     | pnpm test succeeds                      | Test   | test-story-1-1.sh:339                    | ✅ Pass |
+| AC5-22     | client test file exists                 | Test   | test-story-1-1.sh:361                    | ✅ Pass |
+| AC5-23     | mcp-server test file exists             | Test   | test-story-1-1.sh:364                    | ✅ Pass |
+| AC5-24     | tui-backend test file exists            | Test   | test-story-1-1.sh:367                    | ✅ Pass |
+| AC5-UNIT-1 | client exports version                  | Unit   | packages/client/src/index.test.ts:4      | ✅ Pass |
+| AC5-UNIT-2 | mcp-server exports version              | Unit   | packages/mcp-server/src/index.test.ts:4  | ✅ Pass |
+| AC5-UNIT-3 | tui-backend exports version             | Unit   | packages/tui-backend/src/index.test.ts:4 | ✅ Pass |
 
 **Traceability**: ✅ COMPLETE — All TypeScript package configuration aspects covered by static, build, and unit tests.
 
@@ -220,17 +226,17 @@ Story 1.1 demonstrates **EXEMPLARY test coverage** with comprehensive traceabili
 
 ### Architecture Requirements Verification
 
-| Test ID | Test Name | Type | Location | Status |
-|---------|-----------|------|----------|--------|
-| ARCH-1 | skills/ directory exists | Static | test-story-1-1.sh:289 | ✅ Pass |
-| ARCH-2 | agents/ directory exists | Static | test-story-1-1.sh:292 | ✅ Pass |
-| ARCH-3 | docker/ directory exists | Static | test-story-1-1.sh:295 | ✅ Pass |
+| Test ID | Test Name                | Type   | Location              | Status  |
+| ------- | ------------------------ | ------ | --------------------- | ------- |
+| ARCH-1  | skills/ directory exists | Static | test-story-1-1.sh:289 | ✅ Pass |
+| ARCH-2  | agents/ directory exists | Static | test-story-1-1.sh:292 | ✅ Pass |
+| ARCH-3  | docker/ directory exists | Static | test-story-1-1.sh:295 | ✅ Pass |
 
 ### Critical Technical Requirements
 
-| Test ID | Test Name | Type | Location | Status |
-|---------|-----------|------|----------|--------|
-| TECH-1 | SpacetimeDB SDK version is 1.3.3 | Static | test-story-1-1.sh:353 | ✅ Pass |
+| Test ID | Test Name                        | Type   | Location              | Status  |
+| ------- | -------------------------------- | ------ | --------------------- | ------- |
+| TECH-1  | SpacetimeDB SDK version is 1.3.3 | Static | test-story-1-1.sh:353 | ✅ Pass |
 
 ---
 
@@ -273,12 +279,14 @@ Total: 8 tests, 8 passed
 ### CI/CD Pipeline Status
 
 **TypeScript CI** (.github/workflows/ci-typescript.yml):
+
 - ✅ Lint (eslint)
 - ✅ Typecheck (tsc --noEmit)
 - ✅ Test (vitest)
 - ✅ Build (tsup)
 
 **Rust CI** (.github/workflows/ci-rust.yml):
+
 - ✅ Format check (rustfmt --check)
 - ✅ Clippy (clippy -- -D warnings)
 - ✅ Test (cargo test)
@@ -290,34 +298,34 @@ Total: 8 tests, 8 passed
 
 ### Acceptance Criteria Coverage Summary
 
-| AC | Description | ATDD Tests | Unit Tests | Integration Tests | CI Verification | Status |
-|----|-------------|------------|------------|-------------------|-----------------|--------|
-| AC1 | pnpm workspace resolution | 9 | 0 | 0 | Yes | ✅ 100% |
-| AC2 | Cargo workspace builds | 10 | 1 | 7 | Yes | ✅ 100% |
-| AC3 | Root config files present | 13 | 0 | 0 | Partial | ✅ 100% |
-| AC4 | CI workflows execute | 15 | 0 | 0 | Yes | ✅ 100% |
-| AC5 | TypeScript packages config | 27 | 3 | 0 | Yes | ✅ 100% |
+| AC  | Description                | ATDD Tests | Unit Tests | Integration Tests | CI Verification | Status  |
+| --- | -------------------------- | ---------- | ---------- | ----------------- | --------------- | ------- |
+| AC1 | pnpm workspace resolution  | 9          | 0          | 0                 | Yes             | ✅ 100% |
+| AC2 | Cargo workspace builds     | 10         | 1          | 7                 | Yes             | ✅ 100% |
+| AC3 | Root config files present  | 13         | 0          | 0                 | Partial         | ✅ 100% |
+| AC4 | CI workflows execute       | 15         | 0          | 0                 | Yes             | ✅ 100% |
+| AC5 | TypeScript packages config | 27         | 3          | 0                 | Yes             | ✅ 100% |
 
 **Overall Coverage**: ✅ **100%** — All acceptance criteria fully covered.
 
 ### Test Type Distribution
 
-| Test Type | Count | Percentage |
-|-----------|-------|------------|
-| ATDD Shell Tests | 77 | 87% |
-| TypeScript Unit Tests | 3 | 3% |
-| Rust Integration Tests | 7 | 8% |
-| Rust Unit Tests | 1 | 1% |
-| **Total** | **88** | **100%** |
+| Test Type              | Count  | Percentage |
+| ---------------------- | ------ | ---------- |
+| ATDD Shell Tests       | 77     | 87%        |
+| TypeScript Unit Tests  | 3      | 3%         |
+| Rust Integration Tests | 7      | 8%         |
+| Rust Unit Tests        | 1      | 1%         |
+| **Total**              | **88** | **100%**   |
 
 ### Coverage by Test Layer
 
-| Layer | Purpose | Coverage | Status |
-|-------|---------|----------|--------|
-| ATDD | Acceptance criteria verification | All 5 ACs | ✅ Complete |
-| Unit | Component behavior verification | Placeholder exports | ✅ Complete |
-| Integration | Workspace structure verification | Cargo workspace | ✅ Complete |
-| CI/CD | Quality gates + build verification | Both pipelines | ✅ Complete |
+| Layer       | Purpose                            | Coverage            | Status      |
+| ----------- | ---------------------------------- | ------------------- | ----------- |
+| ATDD        | Acceptance criteria verification   | All 5 ACs           | ✅ Complete |
+| Unit        | Component behavior verification    | Placeholder exports | ✅ Complete |
+| Integration | Workspace structure verification   | Cargo workspace     | ✅ Complete |
+| CI/CD       | Quality gates + build verification | Both pipelines      | ✅ Complete |
 
 ---
 
@@ -326,6 +334,7 @@ Total: 8 tests, 8 passed
 **NONE IDENTIFIED** ✅
 
 All acceptance criteria have comprehensive test coverage across multiple test layers:
+
 - AC1 (pnpm workspace): 9 ATDD tests
 - AC2 (Cargo workspace): 10 ATDD + 8 Rust tests
 - AC3 (Root configs): 13 ATDD tests
@@ -362,6 +371,7 @@ All acceptance criteria have comprehensive test coverage across multiple test la
 ### ATDD Script Design
 
 **Strengths**:
+
 - Single source of truth for AC verification
 - Clear test naming matches AC requirements
 - Color-coded output for easy readability
@@ -369,6 +379,7 @@ All acceptance criteria have comprehensive test coverage across multiple test la
 - Fails fast on critical issues
 
 **Maintenance Burden**: LOW
+
 - Self-documenting test names
 - No external test framework dependencies (pure Bash)
 - Quick execution (~45 seconds full suite)
@@ -376,24 +387,28 @@ All acceptance criteria have comprehensive test coverage across multiple test la
 ### Unit/Integration Tests
 
 **Strengths**:
+
 - Standard test frameworks (vitest, cargo test)
 - Fast execution (<5 seconds)
 - Clear test names match requirements
 - Minimal dependencies
 
 **Maintenance Burden**: LOW
+
 - Standard patterns easy to extend
 - No complex mocking or fixtures
 
 ### CI/CD Pipelines
 
 **Strengths**:
+
 - Minimal configuration
 - Standard GitHub Actions
 - Caching enabled for performance
 - Fail-fast enabled
 
 **Maintenance Burden**: LOW
+
 - Standard patterns
 - Stable action versions (v4)
 - Clear error messages
@@ -426,15 +441,15 @@ All acceptance criteria have comprehensive test coverage across multiple test la
 
 ### Full Requirements to Tests Mapping
 
-| Requirement ID | Requirement Text | Test IDs | Test Count | Status |
-|----------------|-----------------|----------|------------|--------|
-| AC1 | pnpm workspace resolution with 3 packages + tsconfig | AC1-1 to AC1-9 | 9 | ✅ |
-| AC2 | Cargo workspace builds with rustfmt config | AC2-1 to AC2-UNIT-1 | 18 | ✅ |
-| AC3 | Root config files (eslint, prettier, gitignore, env) | AC3-1 to AC3-13 | 13 | ✅ |
-| AC4 | CI workflows for TS and Rust with caching | AC4-1 to AC4-LOCAL-4 | 15 | ✅ |
-| AC5 | TypeScript packages with tsup, vitest, workspace deps | AC5-1 to AC5-UNIT-3 | 27 | ✅ |
-| ARCH | Architecture placeholder directories | ARCH-1 to ARCH-3 | 3 | ✅ |
-| TECH | SpacetimeDB SDK version constraint | TECH-1 | 1 | ✅ |
+| Requirement ID | Requirement Text                                      | Test IDs             | Test Count | Status |
+| -------------- | ----------------------------------------------------- | -------------------- | ---------- | ------ |
+| AC1            | pnpm workspace resolution with 3 packages + tsconfig  | AC1-1 to AC1-9       | 9          | ✅     |
+| AC2            | Cargo workspace builds with rustfmt config            | AC2-1 to AC2-UNIT-1  | 18         | ✅     |
+| AC3            | Root config files (eslint, prettier, gitignore, env)  | AC3-1 to AC3-13      | 13         | ✅     |
+| AC4            | CI workflows for TS and Rust with caching             | AC4-1 to AC4-LOCAL-4 | 15         | ✅     |
+| AC5            | TypeScript packages with tsup, vitest, workspace deps | AC5-1 to AC5-UNIT-3  | 27         | ✅     |
+| ARCH           | Architecture placeholder directories                  | ARCH-1 to ARCH-3     | 3          | ✅     |
+| TECH           | SpacetimeDB SDK version constraint                    | TECH-1               | 1          | ✅     |
 
 **Total Requirements**: 7
 **Total Tests**: 88
@@ -445,6 +460,7 @@ All acceptance criteria have comprehensive test coverage across multiple test la
 ## Conclusion
 
 Story 1.1 demonstrates **EXEMPLARY** test architecture with:
+
 - ✅ **100% AC coverage** — All 5 acceptance criteria fully tested
 - ✅ **Multi-layer testing** — ATDD, unit, integration, CI/CD
 - ✅ **88 automated tests** — 77 ATDD + 3 unit + 8 integration

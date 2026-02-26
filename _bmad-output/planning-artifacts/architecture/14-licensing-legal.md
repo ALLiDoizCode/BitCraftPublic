@@ -1,12 +1,14 @@
 # 14. Licensing & Legal
 
 **BitCraft Server (Apache 2.0)**
+
 - Commercial use, modification, and distribution: **Permitted**
 - Derivative works with different license terms: **Permitted** (Section 4)
-- Explicit README allowance: *"Make a game similar to BitCraft with your own IP using our code as a basis"*
-- Explicit README allowance: *"Use it as a reference for building your own projects"*
+- Explicit README allowance: _"Make a game similar to BitCraft with your own IP using our code as a basis"_
+- Explicit README allowance: _"Use it as a reference for building your own projects"_
 
 **Requirements:**
+
 - Retain Apache 2.0 license and copyright notices in the BitCraft Server code
 - Mark modified files with prominent change notices (if we modify — we don't plan to)
 - Do NOT use BitCraft trademarks, IP, art, or branding

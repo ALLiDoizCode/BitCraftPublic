@@ -26,6 +26,7 @@ cargo build --release --target wasm32-unknown-unknown
 ```
 
 The build process invokes a custom `build.rs` that auto-generates:
+
 - Handler/reducer registrations
 - Entity management code
 - Static data import reducers
@@ -55,14 +56,14 @@ For database migrations:
 
 Environment-specific JSON configs live in `packages/game/config/`:
 
-| File | Purpose |
-|---|---|
-| `default.json` | Base configuration (all environments) |
-| `local.json` | Local development overrides |
-| `production.json` | Production settings |
-| `qa.json` | QA environment settings |
-| `staging.json` | Staging environment settings |
-| `testing.json` | Test environment settings |
+| File              | Purpose                               |
+| ----------------- | ------------------------------------- |
+| `default.json`    | Base configuration (all environments) |
+| `local.json`      | Local development overrides           |
+| `production.json` | Production settings                   |
+| `qa.json`         | QA environment settings               |
+| `staging.json`    | Staging environment settings          |
+| `testing.json`    | Test environment settings             |
 
 Configuration is loaded at module initialization via the `load_config` system.
 
@@ -80,13 +81,13 @@ This produces typed client code that matches the server's table definitions and 
 
 ### Automated Publishing
 
-| Trigger | Action |
-|---|---|
-| Push to `master` | Publish to development SpacetimeDB instance |
-| Push to `qa` | Publish to QA SpacetimeDB instance |
-| Push to `stable` | Publish to production SpacetimeDB instance |
+| Trigger                     | Action                                           |
+| --------------------------- | ------------------------------------------------ |
+| Push to `master`            | Publish to development SpacetimeDB instance      |
+| Push to `qa`                | Publish to QA SpacetimeDB instance               |
+| Push to `stable`            | Publish to production SpacetimeDB instance       |
 | Pull request opened/updated | Publish preview module as `bitcraft-pr-{number}` |
-| Pull request closed | Delete the preview module (`delete-module.yml`) |
+| Pull request closed         | Delete the preview module (`delete-module.yml`)  |
 
 ### Branch Strategy
 

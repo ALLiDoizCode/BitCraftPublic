@@ -91,4 +91,3 @@ jobs:
                 repo: context.repo.repo,
                 body: '👋 Module `${{ steps.set_module_name.outputs.module_name }}` has been deleted because the PR was closed.'
                 })
-

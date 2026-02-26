@@ -127,14 +127,14 @@ Supporting emotional goals:
 
 ### Emotional Journey Mapping
 
-| Stage | Desired Emotion | Anti-Emotion to Avoid |
-|-------|----------------|----------------------|
-| **First launch** | Immediate capability — "I'm connected, I can act" | Confusion — "what do I do now?" |
-| **Core loop** | Flow and mastery — "I'm in control of this world" | Overwhelm — "there's too much data" |
-| **Action execution** | Confidence — "that worked, I can see the result" | Distrust — "did it actually happen?" |
-| **Cost/payment** | Awareness — "I know what this costs" | Anxiety — "am I spending too much?" |
-| **Error/failure** | Understanding — "I know what went wrong and how to fix it" | Helplessness — "something broke and I don't know why" |
-| **Return session** | Continuity — "I'm right back where I left off" | Disorientation — "what was I doing?" |
+| Stage                | Desired Emotion                                            | Anti-Emotion to Avoid                                 |
+| -------------------- | ---------------------------------------------------------- | ----------------------------------------------------- |
+| **First launch**     | Immediate capability — "I'm connected, I can act"          | Confusion — "what do I do now?"                       |
+| **Core loop**        | Flow and mastery — "I'm in control of this world"          | Overwhelm — "there's too much data"                   |
+| **Action execution** | Confidence — "that worked, I can see the result"           | Distrust — "did it actually happen?"                  |
+| **Cost/payment**     | Awareness — "I know what this costs"                       | Anxiety — "am I spending too much?"                   |
+| **Error/failure**    | Understanding — "I know what went wrong and how to fix it" | Helplessness — "something broke and I don't know why" |
+| **Return session**   | Continuity — "I'm right back where I left off"             | Disorientation — "what was I doing?"                  |
 
 ### Micro-Emotions
 
@@ -157,28 +157,32 @@ Supporting emotional goals:
 1. **Mastery scales with investment** — The interface should be usable immediately but reveal deeper capability as users invest time. First session: basic commands. Week two: keyboard shortcuts and custom workflows. Month one: the user feels like a virtuoso.
 2. **Never surprise with cost** — Financial transparency is an emotional safety net. Users should always be able to predict what an action will cost before executing it.
 3. **Errors are conversations, not dead ends** — Every error should explain what happened, why, and what the user can do about it. The emotional goal is "I understand" not "it broke."
-4. **Speed is an emotion** — Sub-second response times on the action loop don't just feel fast, they feel *powerful*. Latency is the enemy of mastery.
+4. **Speed is an emotion** — Sub-second response times on the action loop don't just feel fast, they feel _powerful_. Latency is the enemy of mastery.
 
 ## UX Pattern Analysis & Inspiration
 
 ### Inspiring Products Analysis
 
 **vim/neovim — Mastery Through Modal Composability**
+
 - Core strength: Composable command grammar (verb + modifier + object) creates an exponential capability curve. Users who invest time become dramatically faster than any alternative.
 - Onboarding: Intentionally steep — but the reward curve justifies it. Sigil should find a middle ground: usable on day one, but with the same depth of mastery available.
 - Key lesson: **Commands should compose.** A small set of well-designed primitives that combine into complex operations feels more powerful than a large set of single-purpose commands.
 
 **htop/btop — Data Density Done Right**
+
 - Core strength: Displays enormous amounts of real-time system data in a single terminal screen without feeling overwhelming. Color coding, sparklines, bar charts, and careful layout create instant comprehension.
 - Navigation: Minimal — the default view already shows what you need. Drill-down is available but rarely required.
 - Key lesson: **The default view should answer the most common question without any interaction.** Color and visual hierarchy do the heavy lifting, not user navigation.
 
 **lazygit — Complex Workflows Made Effortless**
+
 - Core strength: Takes git's notoriously complex CLI and presents it as contextual panels with keyboard navigation. Every action is visible, discoverable, and reversible.
 - Interaction model: Panel-based navigation with contextual actions. The current panel determines what keys do. Status bar shows available commands.
 - Key lesson: **Contextual action menus eliminate memorization.** Show what's possible right now, not everything that's possible ever.
 
 **rebels-in-the-sky — Reference TUI Architecture**
+
 - Core strength: Screen trait pattern with clean separation between UI state and render logic. Event-driven architecture with tick-based rendering.
 - Patterns already documented: `Screen` trait, widget composition, `EventLoop`, `AppState` management.
 - Key lesson: **Proven architecture patterns for our exact tech stack.** Not just inspiration — direct implementation reference.
@@ -186,15 +190,18 @@ Supporting emotional goals:
 ### Transferable UX Patterns
 
 **Navigation Patterns:**
+
 - **Panel-based layout** (lazygit) — Primary content + contextual sidebar + status bar. Panels resize and rearrange based on current activity. Maps directly to Sigil's game view + inventory + action panel needs.
 - **Modal context switching** (vim) — Different "modes" for different activities (exploring map, managing inventory, crafting, trading). Each mode optimizes the keyboard layout for that activity.
 
 **Interaction Patterns:**
+
 - **Contextual key hints** (lazygit) — Bottom status bar shows available keys for the current context. Eliminates the need to memorize keybindings while preserving speed for experts who already know them.
 - **Composable commands** (vim) — Rather than one key per action, allow command composition. E.g., `m` for move + direction, `c` for craft + recipe selection. Small grammar, large action space.
 - **Inline feedback** (htop) — Action results appear in-place, not in a separate log. When you kill a process in htop, it disappears from the list. When Sigil executes a move, the player position updates on the map.
 
 **Visual Patterns:**
+
 - **Color-as-information** (htop/btop) — Color encodes meaning: green = healthy, red = critical, yellow = warning. Apply to Sigil: wallet balance color shifts as budget depletes, connection status color, action cost severity.
 - **Sparklines and compact indicators** (btop) — Dense data in minimal space. Apply to wallet balance trend, subscription connection health, tick rate.
 
@@ -209,16 +216,19 @@ Supporting emotional goals:
 ### Design Inspiration Strategy
 
 **Adopt:**
+
 - Panel-based layout with contextual actions (lazygit model)
 - Contextual key hints in status bar
 - Color-as-information for system state (wallet, connection, data freshness)
 - rebels-in-the-sky Screen trait and event loop architecture directly
 
 **Adapt:**
+
 - vim's modal composability — simplified for game actions rather than text editing. Fewer modes, but each mode has its own optimized key layout.
 - htop's data density — applied to game state (228 tables distilled into meaningful views, not raw data dumps)
 
 **Avoid:**
+
 - Confirmation dialogs on routine game actions
 - Mouse-dependent interactions
 - Flat help screens / keybinding cheat sheets without context
@@ -245,26 +255,26 @@ Supporting emotional goals:
 
 **Layer 1 — ratatui Built-in Widgets (use directly):**
 
-| Widget | Sigil Use Case |
-|--------|---------------|
-| `Block` | Panel borders, titles, focus indicators |
-| `Paragraph` | Text content, descriptions, logs |
-| `Table` | Inventory, player stats, entity lists |
-| `List` | Action menus, skill lists, chat |
-| `Tabs` | Screen/mode switching |
-| `Gauge` | Wallet balance, health bars, progress |
-| `Sparkline` | Tick rate, connection latency trend |
-| `Layout` | Constraint-based panel arrangement |
+| Widget      | Sigil Use Case                          |
+| ----------- | --------------------------------------- |
+| `Block`     | Panel borders, titles, focus indicators |
+| `Paragraph` | Text content, descriptions, logs        |
+| `Table`     | Inventory, player stats, entity lists   |
+| `List`      | Action menus, skill lists, chat         |
+| `Tabs`      | Screen/mode switching                   |
+| `Gauge`     | Wallet balance, health bars, progress   |
+| `Sparkline` | Tick rate, connection latency trend     |
+| `Layout`    | Constraint-based panel arrangement      |
 
 **Layer 2 — Custom Game Widgets (build on primitives):**
 
-| Widget | Purpose | Base |
-|--------|---------|------|
-| `HexGrid` | Game world map rendering | `Canvas` or raw `Buffer` |
-| `ActionMenu` | Contextual skill/action list with costs and keybindings | `List` + custom rendering |
-| `WalletMeter` | ILP balance with color-coded threshold | `Gauge` + style tokens |
-| `ConnectionBadge` | SpacetimeDB/Crosstown connection status | `Span` + style tokens |
-| `CostPreview` | Inline action cost before execution | Custom `Span` composition |
+| Widget            | Purpose                                                 | Base                      |
+| ----------------- | ------------------------------------------------------- | ------------------------- |
+| `HexGrid`         | Game world map rendering                                | `Canvas` or raw `Buffer`  |
+| `ActionMenu`      | Contextual skill/action list with costs and keybindings | `List` + custom rendering |
+| `WalletMeter`     | ILP balance with color-coded threshold                  | `Gauge` + style tokens    |
+| `ConnectionBadge` | SpacetimeDB/Crosstown connection status                 | `Span` + style tokens     |
+| `CostPreview`     | Inline action cost before execution                     | Custom `Span` composition |
 
 **Layer 3 — Screen Composition (rebels-in-the-sky pattern):**
 
@@ -314,6 +324,7 @@ This is not a game client that happens to run in a terminal. It's a terminal pow
 **Primary mental model: Terminal power user** (vim, tmux, lazygit)
 
 Users approach Sigil with the expectation of:
+
 - **Panels** — Multiple panes of information visible simultaneously, with one focused/active
 - **Modal interaction** — Current mode determines what keys do. Mode is always visibly indicated.
 - **Keyboard commands** — Every action reachable by keyboard. No interaction requires a mouse.
@@ -321,6 +332,7 @@ Users approach Sigil with the expectation of:
 - **Configurability** — Keybindings, layouts, and workflows are customizable over time
 
 **What this mental model implies for design:**
+
 - Users expect `hjkl` or arrow keys for navigation between panels
 - Users expect a command/search palette (like `:` in vim or `ctrl-p` in lazygit)
 - Users expect tab/shift-tab or bracket keys to cycle between panels
@@ -329,13 +341,13 @@ Users approach Sigil with the expectation of:
 
 ### Success Criteria
 
-| Criterion | Measure |
-|-----------|---------|
-| **First action under 2 minutes** | From launch to first successful game command (identity auto-generated, default subscriptions connected) |
-| **Core loop under 3 keystrokes** | Navigate to target → execute action → see result. No intermediate confirmations. |
-| **Zero mouse dependency** | Every feature reachable by keyboard. Mouse support allowed but never required. |
+| Criterion                           | Measure                                                                                                                                  |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| **First action under 2 minutes**    | From launch to first successful game command (identity auto-generated, default subscriptions connected)                                  |
+| **Core loop under 3 keystrokes**    | Navigate to target → execute action → see result. No intermediate confirmations.                                                         |
+| **Zero mouse dependency**           | Every feature reachable by keyboard. Mouse support allowed but never required.                                                           |
 | **State comprehension at a glance** | Player position, wallet balance, connection status, and available actions visible on the default screen without scrolling or navigating. |
-| **Action cost always predictable** | Cost shown before execution (in action menu or status bar), never only after. |
+| **Action cost always predictable**  | Cost shown before execution (in action menu or status bar), never only after.                                                            |
 
 ### Novel UX Patterns
 
@@ -344,12 +356,14 @@ Users approach Sigil with the expectation of:
 This is established patterns applied to a novel domain. No new interaction paradigms need invention — the innovation is applying terminal power-user patterns to MMO gameplay.
 
 **Established patterns (adopt directly):**
+
 - Panel-based layout with focus management (tmux/lazygit)
 - Modal key contexts (vim)
 - Contextual key hints in status bar (lazygit)
 - Command palette for search/discovery (vim `:`, VSCode `ctrl-p`)
 
 **Novel adaptations (familiar pattern, new context):**
+
 - **Skill actions as command palette entries** — Skill files render as searchable, filterable actions with cost annotations. Like vim commands but for game actions.
 - **Hex grid in a terminal panel** — No established pattern exists for hex map rendering in a terminal. Custom widget, but navigation follows standard `hjkl`/arrow key expectations.
 - **Real-time subscription state as panel content** — Unlike static file content in vim, Sigil's panels update continuously from SpacetimeDB. The pattern is familiar (panels with data) but the data is live.
@@ -357,18 +371,21 @@ This is established patterns applied to a novel domain. No new interaction parad
 ### Experience Mechanics
 
 **1. Initiation — Entering the Loop:**
+
 - Launch `sigil-tui` → auto-generates Nostr identity on first run (or loads existing)
 - Connects to SpacetimeDB via WebSocket, subscribes to player state + nearby entities
 - Default screen renders: hex grid (center), player stats (sidebar), action menu (bottom), status bar (wallet + connection)
 - User is immediately in "navigation mode" — arrow keys move map focus
 
 **2. Interaction — Executing Actions:**
+
 - User navigates to a target (hex, entity, inventory item) using keyboard
 - Presses action key or opens command palette to see available actions
 - Action menu shows: action name, keybinding, ILP cost, prerequisites
 - User selects action → `client.publish()` fires ILP packet
 
 **3. Feedback — Confirming Results:**
+
 - Status bar flashes action confirmation with cost deducted
 - Game state updates arrive via SpacetimeDB subscription within milliseconds
 - Affected panel(s) re-render with new state (player position moves, inventory changes, etc.)
@@ -376,6 +393,7 @@ This is established patterns applied to a novel domain. No new interaction parad
 - If action fails: inline error message with reason, styled with `STYLE_ERROR`
 
 **4. Completion — Loop Continues:**
+
 - No "done" state — the loop is continuous
 - User is immediately ready for next action
 - Previous action result is visible as updated state, not as a notification to dismiss
@@ -398,13 +416,13 @@ Sigil's TUI inherits its visual foundation directly from rebels-in-the-sky. The 
 
 Only add new style tokens where Sigil has concepts rebels-in-the-sky doesn't:
 
-| Token | Color | Reason |
-|-------|-------|--------|
-| `COST` | RGB(64, 224, 208) — reuse rebels' FUEL teal | ILP micropayment amounts (no equivalent in rebels) |
-| `WALLET_OK` / `WALLET_LOW` / `WALLET_CRITICAL` | Green / Yellow / Red — reuse OK/WARNING/ERROR | Budget threshold indicators (no wallet in rebels) |
-| `IDENTITY` | LightMagenta — reuse rebels' SHIELD | Nostr pubkey display |
-| `CONNECTION_LIVE` / `CONNECTION_STALE` / `CONNECTION_DEAD` | Reuse OWN_TEAM / NETWORK / DISCONNECTED | SpacetimeDB connection status (rebels has similar pattern) |
-| `HINT` | DarkGray — reuse UNSELECTABLE | Keybinding hints in status bar |
+| Token                                                      | Color                                         | Reason                                                     |
+| ---------------------------------------------------------- | --------------------------------------------- | ---------------------------------------------------------- |
+| `COST`                                                     | RGB(64, 224, 208) — reuse rebels' FUEL teal   | ILP micropayment amounts (no equivalent in rebels)         |
+| `WALLET_OK` / `WALLET_LOW` / `WALLET_CRITICAL`             | Green / Yellow / Red — reuse OK/WARNING/ERROR | Budget threshold indicators (no wallet in rebels)          |
+| `IDENTITY`                                                 | LightMagenta — reuse rebels' SHIELD           | Nostr pubkey display                                       |
+| `CONNECTION_LIVE` / `CONNECTION_STALE` / `CONNECTION_DEAD` | Reuse OWN_TEAM / NETWORK / DISCONNECTED       | SpacetimeDB connection status (rebels has similar pattern) |
+| `HINT`                                                     | DarkGray — reuse UNSELECTABLE                 | Keybinding hints in status bar                             |
 
 ### What's NOT Reused
 
@@ -426,6 +444,7 @@ Sigil adopts rebels-in-the-sky's proven screen organization wholesale, adapting 
 **Fixed viewport:** 160x48 characters, centered in terminal.
 
 **Main layout (vertical):**
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  [Tab1] [Tab2] [Tab3] [Tab4] [Tab5] [Tab6]    (3 rows)    │
@@ -441,6 +460,7 @@ Sigil adopts rebels-in-the-sky's proven screen organization wholesale, adapting 
 ```
 
 **Matching rebels-in-the-sky constraints:**
+
 ```rust
 Layout::vertical([
     Constraint::Min(6),     // body (tabs + active panel)
@@ -480,21 +500,22 @@ pub trait SplitPanel {
 
 Mapped from rebels-in-the-sky's tabs to BitCraft game concepts:
 
-| rebels-in-the-sky Tab | Sigil Tab | Content |
-|----------------------|-----------|---------|
-| MyTeam | **Player** | Player stats, inventory, equipment, skills |
-| Crews | **Nearby** | Nearby entities, other players, NPCs |
-| Pirates | **World** | Entity browser (all players, buildings, etc.) |
-| Galaxy | **Map** | Hex grid world map with zoom |
-| Games | **Actions** | Action log, pending actions, history |
-| Tournaments | **Economy** | Market, trading, crafting recipes |
-| Swarm | **System** | Connection status, wallet, logs, settings |
+| rebels-in-the-sky Tab | Sigil Tab   | Content                                       |
+| --------------------- | ----------- | --------------------------------------------- |
+| MyTeam                | **Player**  | Player stats, inventory, equipment, skills    |
+| Crews                 | **Nearby**  | Nearby entities, other players, NPCs          |
+| Pirates               | **World**   | Entity browser (all players, buildings, etc.) |
+| Galaxy                | **Map**     | Hex grid world map with zoom                  |
+| Games                 | **Actions** | Action log, pending actions, history          |
+| Tournaments           | **Economy** | Market, trading, crafting recipes             |
+| Swarm                 | **System**  | Connection status, wallet, logs, settings     |
 
 Tabs use the same pattern: left-right split with list on left, detail on right. Each implements Screen + SplitPanel traits.
 
 ### Panel Layout Pattern (reused from rebels-in-the-sky)
 
 Most tabs follow the standard left-right split:
+
 ```rust
 Layout::horizontal([
     Constraint::Length(LEFT_PANEL_WIDTH),  // List
@@ -545,6 +566,7 @@ flowchart TD
 ```
 
 **Key UX decisions:**
+
 - Identity auto-generated on first launch — zero config
 - Crosstown SPSP handshake happens automatically after SpacetimeDB connects
 - Wallet funding via Genesis faucet is automatic when available
@@ -576,6 +598,7 @@ flowchart TD
 ```
 
 **Key UX decisions:**
+
 - Tab/BackTab cycles tabs (rebels' exact pattern)
 - Up/Down selects within list (SplitPanel trait)
 - Action keys shown in footer (rebels' `footer_spans()`)
@@ -609,6 +632,7 @@ flowchart TD
 ```
 
 **Key UX decisions:**
+
 - Agent uses same `@sigil/client` + `@crosstown/client` as TUI — identical write path
 - MCP tools use snake_case naming convention (per architecture decision)
 - Crosstown funding via Genesis faucet is automatic for agents
@@ -619,15 +643,15 @@ flowchart TD
 
 **Common across all journeys:**
 
-| Pattern | Implementation | Source |
-|---------|---------------|--------|
-| **State machine progression** | `UiState` enum drives screen flow | rebels-in-the-sky |
-| **List → Detail → Action** | SplitPanel left list, right detail, footer actions | rebels-in-the-sky |
-| **Non-blocking errors** | Errors in hover text row, user stays in context | Experience Principle #3 |
-| **Immediate state reflection** | SpacetimeDB subscription updates render automatically | Core loop design |
-| **Cost before commit** | Action cost shown in footer/hover before key press | Emotional Design Principle #2 |
-| **Single write path** | All writes: `client.publish()` → `@crosstown/client` ILP → BLS → SpacetimeDB | Architecture |
-| **Auto-fund from faucet** | Crosstown Genesis faucet funds wallets automatically when available | Infrastructure |
+| Pattern                        | Implementation                                                               | Source                        |
+| ------------------------------ | ---------------------------------------------------------------------------- | ----------------------------- |
+| **State machine progression**  | `UiState` enum drives screen flow                                            | rebels-in-the-sky             |
+| **List → Detail → Action**     | SplitPanel left list, right detail, footer actions                           | rebels-in-the-sky             |
+| **Non-blocking errors**        | Errors in hover text row, user stays in context                              | Experience Principle #3       |
+| **Immediate state reflection** | SpacetimeDB subscription updates render automatically                        | Core loop design              |
+| **Cost before commit**         | Action cost shown in footer/hover before key press                           | Emotional Design Principle #2 |
+| **Single write path**          | All writes: `client.publish()` → `@crosstown/client` ILP → BLS → SpacetimeDB | Architecture                  |
+| **Auto-fund from faucet**      | Crosstown Genesis faucet funds wallets automatically when available          | Infrastructure                |
 
 ### Flow Optimization Principles
 
@@ -640,18 +664,18 @@ flowchart TD
 
 ### Design System Components (reused from rebels-in-the-sky)
 
-| Component | rebels-in-the-sky Source | Sigil Usage |
-|-----------|------------------------|-------------|
-| Screen trait + SplitPanel | `ui/traits.rs` | All tab screens |
-| UiCallback + CallbackRegistry | `ui/ui_callback.rs` | Action dispatch, cross-tab navigation |
-| Tab bar rendering | `ui/ui_screen.rs` | Main screen tab row |
-| List with selection | SplitPanel index management | Entity lists, inventory, action lists |
-| Table rendering | ratatui `Table` widget | Player stats, entity data, market prices |
-| Footer key hints | `footer_spans()` on Screen trait | Contextual keybinding display |
-| Hover text row | `ui/ui_screen.rs` render | Action descriptions, cost preview, errors |
-| Popup/modal | Popup pattern in rebels | Confirmation dialogs (quit, dangerous actions) |
-| Left-right split panel | `Layout::horizontal` pattern | List + detail view on most tabs |
-| Block borders with focus | `UiStyle::SELECTED` border | Active vs inactive panel indication |
+| Component                     | rebels-in-the-sky Source         | Sigil Usage                                    |
+| ----------------------------- | -------------------------------- | ---------------------------------------------- |
+| Screen trait + SplitPanel     | `ui/traits.rs`                   | All tab screens                                |
+| UiCallback + CallbackRegistry | `ui/ui_callback.rs`              | Action dispatch, cross-tab navigation          |
+| Tab bar rendering             | `ui/ui_screen.rs`                | Main screen tab row                            |
+| List with selection           | SplitPanel index management      | Entity lists, inventory, action lists          |
+| Table rendering               | ratatui `Table` widget           | Player stats, entity data, market prices       |
+| Footer key hints              | `footer_spans()` on Screen trait | Contextual keybinding display                  |
+| Hover text row                | `ui/ui_screen.rs` render         | Action descriptions, cost preview, errors      |
+| Popup/modal                   | Popup pattern in rebels          | Confirmation dialogs (quit, dangerous actions) |
+| Left-right split panel        | `Layout::horizontal` pattern     | List + detail view on most tabs                |
+| Block borders with focus      | `UiStyle::SELECTED` border       | Active vs inactive panel indication            |
 
 ### Custom Components (Sigil-specific)
 
@@ -696,6 +720,7 @@ rebels-in-the-sky is a reference implementation, not a library. Sigil reimplemen
 ### Implementation Roadmap
 
 **Phase 1 — MVP (required for first playable):**
+
 - Screen + SplitPanel traits (copied from rebels pattern)
 - UiStyle + UiStyled (copied from rebels, extended with Sigil tokens)
 - UiCallback + CallbackRegistry (copied from rebels pattern)
@@ -705,12 +730,14 @@ rebels-in-the-sky is a reference implementation, not a library. Sigil reimplemen
 - WalletMeter (need to see funded balance before acting)
 
 **Phase 2 — Core gameplay:**
+
 - Map tab + HexGrid widget (custom, most complex widget)
 - CostPreview (appears once actions are available)
 - Nearby tab, World tab (more SplitPanel implementations)
 - Actions tab (action log/history)
 
 **Phase 3 — Full experience:**
+
 - Economy tab (market, trading, crafting)
 - System tab (logs, settings, agent observation)
 - Popup/modal patterns (quit confirmation, dangerous action confirmation)
@@ -732,27 +759,27 @@ rebels-in-the-sky is a reference implementation, not a library. Sigil reimplemen
 
 ### Feedback Patterns
 
-| Feedback Type | Location | Style | Duration |
-|--------------|----------|-------|----------|
-| **Action success** | State updates in panels | No explicit message — panels reflect new state | Persistent (state change) |
-| **Action error** | Hover text row | `STYLE_ERROR` + reason text | Until next action or key press |
-| **Warning** | Hover text row | `STYLE_WARN` + message | Until next action or key press |
-| **Connection change** | ConnectionBadge in status bar | Color shift | Persistent until status changes |
-| **Wallet threshold** | WalletMeter in status bar | Color shift (OK → LOW → CRITICAL) | Persistent until balance changes |
-| **Informational** | Hover text row | Default style | Until next action or key press |
+| Feedback Type         | Location                      | Style                                          | Duration                         |
+| --------------------- | ----------------------------- | ---------------------------------------------- | -------------------------------- |
+| **Action success**    | State updates in panels       | No explicit message — panels reflect new state | Persistent (state change)        |
+| **Action error**      | Hover text row                | `STYLE_ERROR` + reason text                    | Until next action or key press   |
+| **Warning**           | Hover text row                | `STYLE_WARN` + message                         | Until next action or key press   |
+| **Connection change** | ConnectionBadge in status bar | Color shift                                    | Persistent until status changes  |
+| **Wallet threshold**  | WalletMeter in status bar     | Color shift (OK → LOW → CRITICAL)              | Persistent until balance changes |
+| **Informational**     | Hover text row                | Default style                                  | Until next action or key press   |
 
 **Consistency rule:** Success is silent (state updates speak for themselves). Only errors and warnings get explicit messages. The hover text row is the single location for transient messages.
 
 ### Navigation Patterns
 
-| Action | Keys | Behavior |
-|--------|------|----------|
-| Switch tabs | Tab / BackTab | Wrapping cycle through visible tabs |
-| Scroll list | Up / Down (or j/k) | Wrapping cycle through SplitPanel items |
-| Select item | Enter | Opens detail view or triggers primary action |
-| Back / Cancel | ESC | Close popup, or trigger quit confirmation |
-| Cross-tab jump | UiCallback | Selecting a linked entity jumps to its tab + selects it |
-| Help | ? | Show contextual help popup for current screen |
+| Action         | Keys               | Behavior                                                |
+| -------------- | ------------------ | ------------------------------------------------------- |
+| Switch tabs    | Tab / BackTab      | Wrapping cycle through visible tabs                     |
+| Scroll list    | Up / Down (or j/k) | Wrapping cycle through SplitPanel items                 |
+| Select item    | Enter              | Opens detail view or triggers primary action            |
+| Back / Cancel  | ESC                | Close popup, or trigger quit confirmation               |
+| Cross-tab jump | UiCallback         | Selecting a linked entity jumps to its tab + selects it |
+| Help           | ?                  | Show contextual help popup for current screen           |
 
 **Consistency rule:** Same keys always do the same category of thing. Arrow keys always navigate within content. Tab always switches between tabs. Enter always confirms/selects.
 
@@ -768,13 +795,13 @@ rebels-in-the-sky is a reference implementation, not a library. Sigil reimplemen
 
 ### Loading & Empty States
 
-| State | Display |
-|-------|---------|
-| **Connecting** | Centered "Connecting to SpacetimeDB..." with spinner character |
-| **Loading data** | Panel shows "Loading..." with `STYLE_MUTED` |
-| **Empty list** | Centered "No [items] found" with `STYLE_MUTED` |
-| **Disconnected** | ConnectionBadge turns gray, hover text shows reconnection attempts |
-| **Unfunded wallet** | WalletMeter empty + hover text with funding instructions |
+| State               | Display                                                            |
+| ------------------- | ------------------------------------------------------------------ |
+| **Connecting**      | Centered "Connecting to SpacetimeDB..." with spinner character     |
+| **Loading data**    | Panel shows "Loading..." with `STYLE_MUTED`                        |
+| **Empty list**      | Centered "No [items] found" with `STYLE_MUTED`                     |
+| **Disconnected**    | ConnectionBadge turns gray, hover text shows reconnection attempts |
+| **Unfunded wallet** | WalletMeter empty + hover text with funding instructions           |
 
 ### Popup/Modal Patterns
 
@@ -794,10 +821,10 @@ rebels-in-the-sky is a reference implementation, not a library. Sigil reimplemen
 
 **No breakpoints, no mobile, no touch.** Sigil is a terminal application with a fixed 160x48 viewport (from rebels-in-the-sky). The only "responsive" concern is terminal size.
 
-| Terminal Size | Behavior |
-|--------------|----------|
-| **>= 160x48** | Full viewport, centered in terminal (rebels-in-the-sky pattern) |
-| **< 160x48** | Show clear error message: "Terminal too small. Requires 160x48, current: {w}x{h}" |
+| Terminal Size | Behavior                                                                          |
+| ------------- | --------------------------------------------------------------------------------- |
+| **>= 160x48** | Full viewport, centered in terminal (rebels-in-the-sky pattern)                   |
+| **< 160x48**  | Show clear error message: "Terminal too small. Requires 160x48, current: {w}x{h}" |
 
 No layout reflow, no collapsing panels. The fixed viewport simplifies rendering and ensures consistent experience for all users.
 

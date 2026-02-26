@@ -1,6 +1,7 @@
 # SpacetimeDB C# Module Reference
 
 ## Table of Contents
+
 - [Project Setup](#project-setup)
 - [Tables](#tables)
 - [Reducers](#reducers)
@@ -25,6 +26,7 @@ cd server
 ```
 
 **Module structure:**
+
 ```csharp
 using SpacetimeDB;
 
@@ -35,6 +37,7 @@ public static partial class Module
 ```
 
 **Prerequisites:** Install the WASI workload (required once):
+
 ```bash
 dotnet workload install wasi-experimental
 ```
@@ -84,6 +87,7 @@ public partial struct Score
 ```
 
 **Table operations:**
+
 ```csharp
 // Insert (auto_inc fields use 0 as sentinel)
 ctx.Db.Player.Insert(new Player { Id = 0, Username = "Alice", Score = 0 });
@@ -301,6 +305,7 @@ public static readonly Filter ACCOUNT_FILTER = new Filter.Sql(
 ## API Signatures
 
 **ReducerContext:**
+
 ```csharp
 public sealed record ReducerContext : DbContext<Local>, Internal.IReducerContext
 {
@@ -314,6 +319,7 @@ public sealed record ReducerContext : DbContext<Local>, Internal.IReducerContext
 ```
 
 **UniqueIndex methods:**
+
 ```csharp
 Row? Find(Column key);
 Row Update(Row row);
@@ -321,6 +327,7 @@ bool Delete(Column key);
 ```
 
 **IndexBase methods:**
+
 ```csharp
 IEnumerable<Row> Filter(Column bound);
 IEnumerable<Row> Filter(Bound<Column> bound);
@@ -328,6 +335,7 @@ ulong Delete(Column bound);
 ```
 
 **Timestamp:**
+
 ```csharp
 public record struct Timestamp(long MicrosecondsSinceUnixEpoch)
 {

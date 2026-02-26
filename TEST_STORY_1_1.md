@@ -11,21 +11,27 @@ This document describes the comprehensive test coverage for Story 1.1 (Monorepo 
 ## Test Files
 
 ### 1. Shell ATDD Test Suite
+
 **File**: `test-story-1-1.sh`
+
 - **Purpose**: Validates file structure, configuration presence, and content patterns
 - **Tests**: 51 structural tests
 - **Execution**: `bash test-story-1-1.sh`
 - **Status**: ✅ All 51 tests passing
 
 ### 2. TypeScript Integration Tests
+
 **File**: `test-story-1-1-integration.test.ts`
+
 - **Purpose**: Validates runtime behavior, build outputs, and CI workflows
 - **Tests**: 28 integration tests
 - **Execution**: `pnpm test:integration`
 - **Status**: ✅ All 28 tests passing
 
 ### 3. Rust Integration Tests
+
 **File**: `crates/tui/tests/integration_test.rs`
+
 - **Purpose**: Validates Cargo workspace structure and build behavior
 - **Tests**: 7 integration tests
 - **Execution**: `cargo test --test integration_test`
@@ -36,8 +42,9 @@ This document describes the comprehensive test coverage for Story 1.1 (Monorepo 
 ### AC1: pnpm workspace resolution
 
 **Shell ATDD Tests** (8 tests):
+
 - ✅ pnpm-workspace.yaml exists
-- ✅ pnpm-workspace.yaml contains packages/*
+- ✅ pnpm-workspace.yaml contains packages/\*
 - ✅ tsconfig.base.json exists
 - ✅ tsconfig.base.json has strict: true
 - ✅ tsconfig.base.json has target: ES2022
@@ -46,8 +53,9 @@ This document describes the comprehensive test coverage for Story 1.1 (Monorepo 
 - ✅ packages/tui-backend directory exists
 
 **TypeScript Integration Tests** (3 tests):
+
 - ✅ pnpm install succeeds and resolves all workspace packages
-- ✅ workspace packages can import each other using workspace:* protocol
+- ✅ workspace packages can import each other using workspace:\* protocol
 - ✅ tsconfig.base.json is valid and has required compiler options
 
 **Coverage**: 100% - Both structural and runtime validation
@@ -55,9 +63,10 @@ This document describes the comprehensive test coverage for Story 1.1 (Monorepo 
 ### AC2: Cargo workspace builds
 
 **Shell ATDD Tests** (8 tests):
+
 - ✅ Root Cargo.toml exists
 - ✅ Root Cargo.toml has [workspace]
-- ✅ Root Cargo.toml has crates/* members
+- ✅ Root Cargo.toml has crates/\* members
 - ✅ crates/tui directory exists
 - ✅ crates/tui/Cargo.toml exists
 - ✅ rustfmt.toml exists
@@ -65,12 +74,14 @@ This document describes the comprehensive test coverage for Story 1.1 (Monorepo 
 - ✅ rustfmt.toml has max_width = 100
 
 **TypeScript Integration Tests** (4 tests):
+
 - ✅ cargo build succeeds and produces sigil-tui binary
 - ✅ cargo test succeeds with all tests passing
 - ✅ rustfmt.toml configuration is valid
 - ✅ Cargo workspace includes crates/tui
 
 **Rust Integration Tests** (7 tests):
+
 - ✅ test_cargo_workspace_structure
 - ✅ test_rustfmt_config_exists
 - ✅ test_cargo_build_succeeds
@@ -84,6 +95,7 @@ This document describes the comprehensive test coverage for Story 1.1 (Monorepo 
 ### AC3: Root configuration files present
 
 **Shell ATDD Tests** (13 tests):
+
 - ✅ .eslintrc.cjs exists
 - ✅ .prettierrc exists
 - ✅ .env.example exists
@@ -93,12 +105,13 @@ This document describes the comprehensive test coverage for Story 1.1 (Monorepo 
 - ✅ .gitignore excludes .env
 - ✅ .gitignore excludes dist/
 - ✅ .gitignore excludes build/
-- ✅ .gitignore excludes *.tsbuildinfo
+- ✅ .gitignore excludes \*.tsbuildinfo
 - ✅ .gitignore excludes .turbo/
-- ✅ .gitignore excludes *.local
+- ✅ .gitignore excludes \*.local
 - ✅ .gitignore excludes coverage/
 
 **TypeScript Integration Tests** (4 tests):
+
 - ✅ .gitignore contains all required exclusions
 - ✅ ESLint configuration is valid
 - ✅ .prettierrc configuration is valid
@@ -109,6 +122,7 @@ This document describes the comprehensive test coverage for Story 1.1 (Monorepo 
 ### AC4: CI workflows execute successfully
 
 **Shell ATDD Tests** (11 tests):
+
 - ✅ .github/workflows/ci-typescript.yml exists
 - ✅ .github/workflows/ci-rust.yml exists
 - ✅ ci-typescript.yml has pnpm install step
@@ -122,6 +136,7 @@ This document describes the comprehensive test coverage for Story 1.1 (Monorepo 
 - ✅ ci-rust.yml has build
 
 **TypeScript Integration Tests** (5 tests):
+
 - ✅ TypeScript CI workflow is valid YAML
 - ✅ Rust CI workflow is valid YAML
 - ✅ pnpm lint succeeds on all packages
@@ -133,10 +148,11 @@ This document describes the comprehensive test coverage for Story 1.1 (Monorepo 
 ### AC5: TypeScript packages configured correctly
 
 **Shell ATDD Tests** (11 tests):
+
 - ✅ packages/client/package.json exists
 - ✅ packages/client/package.json has name @sigil/client
 - ✅ packages/client/package.json has type: module
-- ✅ packages/client/package.json has workspace:* dependencies
+- ✅ packages/client/package.json has workspace:\* dependencies
 - ✅ packages/client/tsup.config.ts exists
 - ✅ tsup.config.ts has format: ["esm", "cjs"]
 - ✅ tsup.config.ts has dts: true
@@ -146,6 +162,7 @@ This document describes the comprehensive test coverage for Story 1.1 (Monorepo 
 - ✅ packages/client/src/index.ts exports placeholder constant
 
 **TypeScript Integration Tests** (7 tests):
+
 - ✅ @sigil/client package.json has correct configuration
 - ✅ @sigil/client build produces ESM, CJS, and TypeScript declarations
 - ✅ tsup.config.ts has correct build configuration
@@ -160,21 +177,25 @@ This document describes the comprehensive test coverage for Story 1.1 (Monorepo 
 ## Additional Architecture Requirements
 
 **TypeScript Integration Tests** (4 tests):
+
 - ✅ placeholder directories exist for future implementation
-- ✅ pnpm-workspace.yaml includes packages/*
+- ✅ pnpm-workspace.yaml includes packages/\*
 - ✅ root package.json has build, test, lint, and typecheck scripts
 - ✅ root package.json is marked as private
 
 ## Test Execution Summary
 
 ### Quick Test (Structural only)
+
 ```bash
 bash test-story-1-1.sh
 ```
+
 **Duration**: ~1 second
 **Tests**: 51 structural tests
 
 ### Full Integration Test Suite
+
 ```bash
 # TypeScript integration tests
 pnpm test:integration
@@ -193,19 +214,23 @@ pnpm test && pnpm test:integration
 **Total Tests**: 86 automated tests (51 shell + 28 TypeScript + 7 Rust)
 
 ### CI/CD Test Execution
+
 The GitHub Actions workflows automatically run:
+
 - TypeScript: lint, typecheck, test, build
 - Rust: fmt --check, clippy, test, build --release
 
 ## Coverage Analysis
 
 ### By Test Type
+
 - **Structural Tests**: 51 (Shell ATDD)
 - **Runtime Behavior Tests**: 28 (TypeScript Integration)
 - **Build Validation Tests**: 7 (Rust Integration)
 - **Total**: 86 automated tests
 
 ### By Acceptance Criterion
+
 - **AC1** (pnpm workspace): 11 tests (8 structural + 3 runtime)
 - **AC2** (Cargo workspace): 19 tests (8 structural + 4 runtime + 7 Rust)
 - **AC3** (Config files): 17 tests (13 structural + 4 runtime)
@@ -214,6 +239,7 @@ The GitHub Actions workflows automatically run:
 - **Additional**: 5 tests (architecture requirements)
 
 ### Coverage Metrics
+
 - **Acceptance Criteria**: 5/5 (100%)
 - **Line Coverage**: All critical configuration files validated
 - **Build Coverage**: All build targets tested (ESM, CJS, TypeScript declarations, Rust binary)
@@ -243,16 +269,19 @@ This test suite follows the **Test Automation Pyramid** approach:
 ### Adding New Tests
 
 **For new TypeScript packages:**
+
 1. Add structural tests to `test-story-1-1.sh`
 2. Add build validation to `test-story-1-1-integration.test.ts`
 3. Ensure package has its own unit tests
 
 **For new Rust crates:**
+
 1. Add structural tests to `test-story-1-1.sh`
 2. Add workspace member to `integration_test.rs`
 3. Ensure crate has its own unit tests
 
 **For new configuration files:**
+
 1. Add existence check to `test-story-1-1.sh`
 2. Add content validation to `test-story-1-1-integration.test.ts`
 
@@ -267,6 +296,7 @@ This test suite follows the **Test Automation Pyramid** approach:
 ## Success Criteria
 
 All tests passing indicates:
+
 - ✅ Monorepo structure is correct
 - ✅ All workspace packages resolve successfully
 - ✅ All builds produce expected outputs

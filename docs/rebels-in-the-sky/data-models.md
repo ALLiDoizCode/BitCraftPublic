@@ -76,11 +76,11 @@ The World uses four tick intervals for different simulation frequencies. `handle
 
 ### Dirty Flags
 
-| Flag | Set by | Checked by | Action when true |
-|---|---|---|---|
-| `dirty` | Callbacks that change persistent state | `handle_world_slow_tick_events()` | `save_world()`, then reset |
+| Flag            | Set by                                   | Checked by                        | Action when true                                        |
+| --------------- | ---------------------------------------- | --------------------------------- | ------------------------------------------------------- |
+| `dirty`         | Callbacks that change persistent state   | `handle_world_slow_tick_events()` | `save_world()`, then reset                              |
 | `dirty_network` | Callbacks that change team-visible state | `handle_world_slow_tick_events()` | `send_own_team()`, resend trades/challenges/tournaments |
-| `dirty_ui` | Callbacks, tick events | `UiScreen::update()` | Recalculate dynamic tab visibility, then reset |
+| `dirty_ui`      | Callbacks, tick events                   | `UiScreen::update()`              | Recalculate dynamic tab visibility, then reset          |
 
 ---
 
@@ -437,15 +437,15 @@ pub trait GameEntity: Sprite + Body + Collider {
 
 ### Entity Types
 
-| Entity | Purpose |
-|---|---|
+| Entity            | Purpose                                                                         |
+| ----------------- | ------------------------------------------------------------------------------- |
 | `SpaceshipEntity` | Player-controlled ship. Movement, shooting, shield, autofire, resource storage. |
-| `Asteroid` | Destructible obstacle. Drops fragments on destruction. |
-| `Fragment` | Resource pickup (GOLD, SCRAPS, RUM, FUEL). Collectible on contact. |
-| `Collector` | Tractor beam target. |
-| `Projectile` | Bullet with origin tracking and shield filtering. |
-| `Shield` | Damage absorption entity attached to player. |
-| `Particle` | Visual-only (explosions, trails). |
+| `Asteroid`        | Destructible obstacle. Drops fragments on destruction.                          |
+| `Fragment`        | Resource pickup (GOLD, SCRAPS, RUM, FUEL). Collectible on contact.              |
+| `Collector`       | Tractor beam target.                                                            |
+| `Projectile`      | Bullet with origin tracking and shield filtering.                               |
+| `Shield`          | Damage absorption entity attached to player.                                    |
+| `Particle`        | Visual-only (explosions, trails).                                               |
 
 ### SpaceCallback
 
@@ -532,12 +532,14 @@ if self.world.dirty {
 ```
 
 Games and tournaments are saved individually to separate files:
+
 - `games/game_{id}.json.gz`
 - `tournaments/tournament_{id}.json.gz`
 
 ### Legacy Migration
 
 The store layer handles migration from older formats:
+
 1. First tries `.json.gz` (current format)
 2. Falls back to `.json.compressed` (legacy zlib), migrates on load
 3. Falls back to `.json` (uncompressed), migrates on load

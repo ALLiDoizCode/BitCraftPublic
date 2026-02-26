@@ -7,6 +7,7 @@
 
 **Non-Functional Requirements:**
 27 NFRs with critical constraints:
+
 - Performance: TUI at 30+ FPS, ILP round-trip < 2s, agent decision cycle < 5s (simple) / < 30s (LLM)
 - Security: All ILP packets signed, private keys never transmitted, BLS validates every reducer call
 - Scalability: 10 concurrent agents MVP, 50+ Phase 2
@@ -14,22 +15,23 @@
 - Reliability: Auto-reconnect within 10s, zero silent identity propagation failures
 
 **Scale & Complexity:**
+
 - Primary domain: TypeScript SDK + Rust TUI + Real-time Systems + Payment Infrastructure
 - Complexity level: High
 - Estimated architectural components: 15+ (`@sigil/client`, `@sigil/mcp-server`, `@sigil/tui-backend`, Rust TUI, SpacetimeDB client, Crosstown client, skill parser, IPC layer, TUI app, experiment harness, decision logger, Docker environment, BLS handler, action cost registry, snapshot system, analysis tools)
 
 ## Technical Constraints & Dependencies
 
-| Constraint | Impact | Source |
-|-----------|--------|--------|
-| SpacetimeDB 1.6.x protocol | Pins subscription API surface | `@sigil/client` |
-| Crosstown consumed as dependency | No modifications to payment layer | Write path |
-| BitCraft server unmodified | Must work with vanilla reducers | All game interactions |
-| Nostr public key = sole identity | No username/password fallback | Identity system |
-| ILP payment on every write | Zero bypass paths allowed | Business model |
-| Skill file format parsed by `@sigil/client` | Single parser in TypeScript, served to TUI via IPC | Core interoperability |
-| ratatui/crossterm for TUI | Terminal rendering constraints | Rust TUI client |
-| rebels-in-the-sky patterns | Reference architecture for TUI | Event loop, Screen trait, widgets |
+| Constraint                                  | Impact                                             | Source                            |
+| ------------------------------------------- | -------------------------------------------------- | --------------------------------- |
+| SpacetimeDB 1.6.x protocol                  | Pins subscription API surface                      | `@sigil/client`                   |
+| Crosstown consumed as dependency            | No modifications to payment layer                  | Write path                        |
+| BitCraft server unmodified                  | Must work with vanilla reducers                    | All game interactions             |
+| Nostr public key = sole identity            | No username/password fallback                      | Identity system                   |
+| ILP payment on every write                  | Zero bypass paths allowed                          | Business model                    |
+| Skill file format parsed by `@sigil/client` | Single parser in TypeScript, served to TUI via IPC | Core interoperability             |
+| ratatui/crossterm for TUI                   | Terminal rendering constraints                     | Rust TUI client                   |
+| rebels-in-the-sky patterns                  | Reference architecture for TUI                     | Event loop, Screen trait, widgets |
 
 ## Cross-Cutting Concerns Identified
 

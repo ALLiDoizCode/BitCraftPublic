@@ -186,24 +186,28 @@ sigil/
 ## Architectural Boundaries
 
 **Boundary 1: `@sigil/client` → External Services**
+
 - SpacetimeDB: WebSocket connection (subscription + reducer calls, SDK 1.x)
 - Crosstown: ILP packet routing (payment + BLS identity)
 - Agent SDKs: HTTP to LLM providers (Anthropic API, OpenAI-compatible)
 - All external errors wrapped with `boundary` field at this layer
 
 **Boundary 2: TUI Backend → Rust TUI (IPC)**
+
 - JSON-RPC 2.0 over stdio pipes
 - TUI backend is the only TS process the Rust TUI communicates with
 - All game state and actions flow through this single boundary
 - Schema defined in `packages/client/schemas/ipc-messages.json`
 
 **Boundary 3: MCP Server → MCP Clients**
+
 - Standard MCP protocol (stdio transport)
 - Claude, OpenCode, or any MCP-compatible client connects here
 - MCP server uses `@sigil/client` internally for all game operations
 - Tools = game actions, Resources = game state
 
 **Boundary 4: `@sigil/client` → Consumers**
+
 - Three consumers: tui-backend, headless-agent, harness
 - All use the same `SigilClient` API
 - Event-driven: consumers subscribe to typed events
@@ -211,27 +215,27 @@ sigil/
 
 ## Requirements to Structure Mapping
 
-| FR Domain | Package/Crate | Key Files |
-|-----------|--------------|-----------|
-| **FR1-FR5: Identity** | `packages/client/src/identity/` | `keypair.ts`, `signer.ts` |
-| **FR6-FR10: Perception** | `packages/client/src/perception/` | `spacetimedb-client.ts`, `static-data.ts`, `reconnect.ts` |
-| **FR11-FR16: Agent Config** | `packages/client/src/agent/` | `agent-config.ts`, `skill-loader.ts`, `budget-tracker.ts` |
+| FR Domain                       | Package/Crate                                   | Key Files                                                                       |
+| ------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------- |
+| **FR1-FR5: Identity**           | `packages/client/src/identity/`                 | `keypair.ts`, `signer.ts`                                                       |
+| **FR6-FR10: Perception**        | `packages/client/src/perception/`               | `spacetimedb-client.ts`, `static-data.ts`, `reconnect.ts`                       |
+| **FR11-FR16: Agent Config**     | `packages/client/src/agent/`                    | `agent-config.ts`, `skill-loader.ts`, `budget-tracker.ts`                       |
 | **FR17-FR22: Actions/Payments** | `packages/client/src/actions/`, `src/payments/` | `action-executor.ts`, `crosstown-client.ts`, `bls-proxy.ts`, `cost-registry.ts` |
-| **FR23-FR27: Cognition** | External agent SDKs via `@sigil/mcp-server` | MCP tools + `@sigil/client` direct import |
-| **FR28-FR38: TUI** | `crates/tui/`, `packages/tui-backend/` | `src/ui/panels/*.rs`, `src/methods/*.ts` |
-| **FR39-FR43: Experiments** | External tooling consuming `@sigil/client` | Phase 2 — JSONL logging built into client |
-| **FR44-FR47: Infrastructure** | `docker/` | `docker-compose.yml`, Dockerfiles |
-| **FR48-FR50: Extensibility** | `skills/` | Skill files per world, `README.md` authoring guide |
+| **FR23-FR27: Cognition**        | External agent SDKs via `@sigil/mcp-server`     | MCP tools + `@sigil/client` direct import                                       |
+| **FR28-FR38: TUI**              | `crates/tui/`, `packages/tui-backend/`          | `src/ui/panels/*.rs`, `src/methods/*.ts`                                        |
+| **FR39-FR43: Experiments**      | External tooling consuming `@sigil/client`      | Phase 2 — JSONL logging built into client                                       |
+| **FR44-FR47: Infrastructure**   | `docker/`                                       | `docker-compose.yml`, Dockerfiles                                               |
+| **FR48-FR50: Extensibility**    | `skills/`                                       | Skill files per world, `README.md` authoring guide                              |
 
 ## Cross-Cutting Concerns Mapping
 
-| Concern | Locations |
-|---------|-----------|
-| **Identity propagation** | `client/src/identity/` → `client/src/payments/bls-proxy.ts` → `client/src/actions/action-executor.ts` |
-| **Error handling** | `client/src/errors.ts` (defines) → all `client/src/*/` (throws) → `tui-backend/src/ipc-server.ts` (wraps as JSON-RPC error) → `crates/tui/src/ui/popup_message.rs` (displays) |
-| **Logging** | `headless-agent/src/logger.ts` (decision JSONL) + `client/src/` (system logs via structured JSONL) |
-| **Budget tracking** | `client/src/agent/budget-tracker.ts` → `client/src/actions/action-executor.ts` (enforces) → `crates/tui/src/ui/panels/status_bar.rs` (displays) |
-| **Connection lifecycle** | `client/src/perception/reconnect.ts` → events emitted to all consumers → `tui-backend/` relays to TUI → `crates/tui/src/ui/panels/status_bar.rs` (displays) |
+| Concern                  | Locations                                                                                                                                                                     |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Identity propagation** | `client/src/identity/` → `client/src/payments/bls-proxy.ts` → `client/src/actions/action-executor.ts`                                                                         |
+| **Error handling**       | `client/src/errors.ts` (defines) → all `client/src/*/` (throws) → `tui-backend/src/ipc-server.ts` (wraps as JSON-RPC error) → `crates/tui/src/ui/popup_message.rs` (displays) |
+| **Logging**              | `headless-agent/src/logger.ts` (decision JSONL) + `client/src/` (system logs via structured JSONL)                                                                            |
+| **Budget tracking**      | `client/src/agent/budget-tracker.ts` → `client/src/actions/action-executor.ts` (enforces) → `crates/tui/src/ui/panels/status_bar.rs` (displays)                               |
+| **Connection lifecycle** | `client/src/perception/reconnect.ts` → events emitted to all consumers → `tui-backend/` relays to TUI → `crates/tui/src/ui/panels/status_bar.rs` (displays)                   |
 
 ## Data Flow
 
@@ -267,6 +271,7 @@ sigil/
 ## Development Workflow
 
 **First-time setup:**
+
 ```bash
 pnpm install                    # Install all TS dependencies
 cargo build                     # Build Rust TUI
@@ -274,4 +279,7 @@ docker compose -f docker/docker-compose.dev.yml up  # Start BitCraft + Crosstown
 ```
 
 **Development (TUI):**
+
 ```bash
+
+```

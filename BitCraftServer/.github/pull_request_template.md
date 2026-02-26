@@ -1,10 +1,9 @@
 ### Goals (what does this PR do from a user perspective):
 
-- 
 -
+- ### Dev (what does this PR do from a technical perspective, include side affects of changes this PR introduces)
 
- ### Dev (what does this PR do from a technical perspective, include side affects of changes this PR introduces)
- *Include screenshots/gifs if needed to communicate as much as possible*
+  _Include screenshots/gifs if needed to communicate as much as possible_
 
 -
 -

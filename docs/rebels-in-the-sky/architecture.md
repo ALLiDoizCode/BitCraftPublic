@@ -219,12 +219,12 @@ All state changes flow through `UiCallback::call(&self, &mut App)`. This gives c
 
 ### Multiple Tick Frequencies
 
-| Source | Frequency | Interval | Purpose |
-|---|---|---|---|
-| `slow_ticker` | 10 Hz | 100ms | World simulation, UI update, save triggers, network sync |
-| `fast_ticker` | 40 Hz | 25ms | Space adventure entity updates, animation frames |
-| `crossterm_event_handler` | 100 Hz | 10ms | Input polling (not a tick, but a poll interval) |
-| `MAX_DRAW_FPS` | 40 Hz | 25ms | Frame rate cap in `Tui::draw()` |
+| Source                    | Frequency | Interval | Purpose                                                  |
+| ------------------------- | --------- | -------- | -------------------------------------------------------- |
+| `slow_ticker`             | 10 Hz     | 100ms    | World simulation, UI update, save triggers, network sync |
+| `fast_ticker`             | 40 Hz     | 25ms     | Space adventure entity updates, animation frames         |
+| `crossterm_event_handler` | 100 Hz    | 10ms     | Input polling (not a tick, but a poll interval)          |
+| `MAX_DRAW_FPS`            | 40 Hz     | 25ms     | Frame rate cap in `Tui::draw()`                          |
 
 ### World Tick Intervals
 
