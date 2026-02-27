@@ -11,7 +11,11 @@ permissions:
 
 jobs:
   rust:
-    runs-on: ubuntu-latest
+    name: Rust (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
     steps:
       - uses: actions/checkout@v4
 

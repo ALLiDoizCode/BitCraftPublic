@@ -334,12 +334,32 @@ On Linux, volume mounts may have permission issues. The containers run as non-ro
 - BitCraft: UID 1000 (user: `spacetime` from base image)
 - Crosstown: UID 1000 (user: `crosstown`)
 
-Fix permissions:
+**Why this happens:**
+- Docker on Linux mounts volumes with the host filesystem directly
+- If your host user has a different UID (e.g., 1001), the container cannot write to the volume
+- macOS Docker Desktop handles this automatically with osxfs, so macOS users don't see this issue
+
+**Fix permissions:**
 
 ```bash
+# From docker/ directory
 sudo chown -R 1000:1000 volumes/spacetimedb
 sudo chown -R 1000:1000 volumes/crosstown
+
+# Restart services
+docker compose restart
 ```
+
+**Alternative (change volume directory ownership to your user):**
+
+```bash
+# If you want the volumes owned by your user on the host
+sudo chown -R $USER:$USER volumes/
+
+# Then modify Dockerfile to run as your UID (advanced, not recommended)
+```
+
+**Note:** This is a Linux-only issue. macOS and Windows Docker Desktop handle permissions transparently.
 
 ### Healthcheck Failures
 

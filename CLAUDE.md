@@ -53,8 +53,8 @@ The Five-Layer Cognition Architecture documented in the architecture was SUPERSE
 - Auto-reconnection with state recovery
 
 **Epic 2: PREPARATION PHASE** (5 prep tasks before kickoff)
-- Must complete subscription recovery (PREP-1)
-- Must validate Linux compatibility (PREP-2)
+- ✅ Complete subscription recovery (PREP-1)
+- ✅ Validate Linux compatibility (PREP-2) - CI now runs on Ubuntu + macOS
 - Must research Crosstown protocols (PREP-4)
 - Must spike BLS handler architecture (PREP-5)
 

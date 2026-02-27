@@ -41,6 +41,14 @@ This repository contains the **server-side code** for **BitCraft**, a community 
 BitCraft blends cooperative gameplay, city-building, crafting, exploration, and survival — all in a single seamless world shared by players around the globe.
 This repository represents the first phase of our open source initiative. It is being made available for public inspection, experimentation, and contribution.
 
+## CI Status
+
+![TypeScript CI](https://github.com/bitcraftlabs/BitCraftPublic/workflows/CI%20-%20TypeScript/badge.svg)
+![Rust CI](https://github.com/bitcraftlabs/BitCraftPublic/workflows/CI%20-%20Rust/badge.svg)
+
+**Platforms:** Ubuntu 24.04, macOS (latest)
+**Integration Tests:** Docker-based (Ubuntu only)
+
 In this first phase we are only open sourcing the server side code. You can read more about our decision to open source the game here:
 
 - [Open Sourcing BitCraft Online](https://bitcraftonline.com/news/open-sourcing-bitcraft-online)
@@ -79,6 +87,22 @@ The Docker environment includes:
 - Crosstown node (Nostr relay with BLS proxy)
 - Health checks, logging, and volume persistence
 - Cross-platform support (macOS, Linux)
+
+### Platform Requirements
+
+**Supported Platforms:**
+- Linux (Ubuntu 24.04 LTS or later, kernel 3.10+)
+- macOS (10.15 Catalina or later, Intel and Apple Silicon)
+
+**Prerequisites:**
+- Node.js >= 20.0.0
+- pnpm >= 9.0.0
+- Rust >= 1.70.0 (for TUI development)
+- Docker Engine >= 20.10 (Linux) or Docker Desktop >= 4.0 (macOS)
+
+**Linux-Specific Notes:**
+- Docker volume permissions: Run `sudo chown -R 1000:1000 docker/volumes/` if you encounter permission errors
+- See [Linux Validation Checklist](_bmad-output/implementation-artifacts/prep-2-linux-validation-checklist.md) for detailed setup instructions
 
 ## Contributing
 

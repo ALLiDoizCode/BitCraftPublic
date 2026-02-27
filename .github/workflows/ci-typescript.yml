@@ -10,8 +10,12 @@ permissions:
   contents: read
 
 jobs:
-  typescript:
-    runs-on: ubuntu-latest
+  unit-tests:
+    name: Unit Tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
     steps:
       - uses: actions/checkout@v4
 
@@ -47,8 +51,74 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
-      - name: Test
-        run: pnpm test
+      - name: Test (Unit Only)
+        run: pnpm --filter @sigil/client test:unit
 
       - name: Build
         run: pnpm build
+
+  integration-tests:
+    name: Integration Tests (Docker)
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build
+        run: pnpm build
+
+      - name: Start Docker services
+        run: |
+          docker compose -f docker/docker-compose.yml up -d
+          docker compose -f docker/docker-compose.yml ps
+
+      - name: Wait for services to be healthy
+        run: |
+          echo "Waiting for BitCraft server..."
+          timeout 60 bash -c 'until curl -f http://localhost:3000/database/bitcraft/info; do sleep 2; done'
+
+          echo "Waiting for Crosstown node..."
+          timeout 60 bash -c 'until curl -f http://localhost:4041/health; do sleep 2; done'
+
+          echo "All services healthy!"
+
+      - name: Test (Integration Only)
+        run: pnpm --filter @sigil/client test:integration
+
+      - name: Show Docker logs on failure
+        if: failure()
+        run: |
+          echo "=== BitCraft Server Logs ==="
+          docker compose -f docker/docker-compose.yml logs bitcraft-server
+          echo "=== Crosstown Node Logs ==="
+          docker compose -f docker/docker-compose.yml logs crosstown-node
+
+      - name: Stop Docker services
+        if: always()
+        run: docker compose -f docker/docker-compose.yml down -v
