@@ -15,8 +15,8 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from
 import { SigilClient } from '../../client';
 
 describe('Static Data Loader - Integration Tests', () => {
-  // Only run these tests if INTEGRATION env var is set
-  const shouldRun = process.env.INTEGRATION === 'true' || process.env.CI === 'true';
+  // Only run these tests if explicitly requested (requires Docker stack)
+  const shouldRun = process.env.INTEGRATION === 'true' || process.env.RUN_INTEGRATION_TESTS === 'true';
 
   if (!shouldRun) {
     it.skip('Skipping integration tests (set INTEGRATION=true to run)', () => {});
