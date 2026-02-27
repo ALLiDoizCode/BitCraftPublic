@@ -1,4 +1,4 @@
-FROM clockworklabs/spacetime:1.0.0
+FROM clockworklabs/spacetime:latest
 
 # Note: Base image runs as spacetime user (UID 1000) by default
 # Switch to root temporarily for setup

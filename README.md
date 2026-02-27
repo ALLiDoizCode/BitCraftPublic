@@ -91,16 +91,19 @@ The Docker environment includes:
 ### Platform Requirements
 
 **Supported Platforms:**
+
 - Linux (Ubuntu 24.04 LTS or later, kernel 3.10+)
 - macOS (10.15 Catalina or later, Intel and Apple Silicon)
 
 **Prerequisites:**
+
 - Node.js >= 20.0.0
 - pnpm >= 9.0.0
 - Rust >= 1.70.0 (for TUI development)
 - Docker Engine >= 20.10 (Linux) or Docker Desktop >= 4.0 (macOS)
 
 **Linux-Specific Notes:**
+
 - Docker volume permissions: Run `sudo chown -R 1000:1000 docker/volumes/` if you encounter permission errors
 - See [Linux Validation Checklist](_bmad-output/implementation-artifacts/prep-2-linux-validation-checklist.md) for detailed setup instructions
 

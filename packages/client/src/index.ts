@@ -37,5 +37,22 @@ export {
   type LatencyStats,
 } from './spacetimedb';
 
+// Action cost registry (Story 2.2)
+export {
+  type ActionCostRegistry,
+  type ActionCostEntry,
+  type ActionCostRegistryOptions,
+  type CategoryEnum,
+  type FrequencyEnum,
+} from './publish/action-cost-registry';
+
+// Wallet client (Story 2.2)
+export { WalletClient } from './wallet/wallet-client';
+
 // Sigil Client
-export { SigilClient, type ClientIdentity, type SigilClientConfig } from './client';
+export {
+  SigilClient,
+  type ClientIdentity,
+  type SigilClientConfig,
+  type PublishAPI,
+} from './client';

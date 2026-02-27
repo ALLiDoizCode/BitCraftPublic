@@ -52,7 +52,7 @@ epics:
         status: done
       - id: story-2.2
         title: 'Action Cost Registry & Wallet Balance'
-        status: backlog
+        status: done
       - id: story-2.3
         title: 'ILP Packet Construction & Signing'
         status: backlog
@@ -242,4 +242,4 @@ sprint_metadata:
   phase2_stories: 15
   phase3_stories: 1
   last_updated: 2026-02-27
-  current_sprint_focus: epic-2-prep
+  current_sprint_focus: epic-2

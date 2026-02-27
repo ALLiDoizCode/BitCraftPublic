@@ -32,6 +32,9 @@ import type {
 } from './spacetimedb/reconnection-types';
 import { NostrClient } from './nostr/nostr-client';
 import type { NostrRelayOptions } from './nostr/types';
+import { ActionCostRegistryLoader, type ActionCostRegistry } from './publish/action-cost-registry';
+import { WalletClient } from './wallet/wallet-client';
+import { SigilError } from './nostr/nostr-client';
 
 /**
  * Client identity interface
@@ -69,6 +72,60 @@ export interface SigilClientConfig {
   reconnection?: ReconnectionOptions;
   /** Nostr relay options (Story 2.1) */
   nostrRelay?: NostrRelayOptions;
+  /**
+   * Path to action cost registry JSON file (Story 2.2)
+   *
+   * Absolute or relative to process.cwd(). If not provided, cost queries will throw.
+   *
+   * @example './packages/client/config/default-action-costs.json'
+   */
+  actionCostRegistryPath?: string;
+  /**
+   * Crosstown connector HTTP URL (Story 2.2)
+   *
+   * Used for wallet balance queries. Defaults to 'http://localhost:4041'.
+   *
+   * @example 'http://localhost:4041'
+   */
+  crosstownConnectorUrl?: string;
+}
+
+/**
+ * Publish API namespace
+ *
+ * Provides action cost queries and affordability checks (Story 2.2).
+ */
+export interface PublishAPI {
+  /**
+   * Get ILP cost for a game action
+   *
+   * @param actionName - Reducer name (e.g., "player_move")
+   * @returns Action cost (non-negative number)
+   * @throws SigilError with code REGISTRY_NOT_LOADED if registry not configured
+   *
+   * @example
+   * ```typescript
+   * const cost = client.publish.getCost('player_move'); // Returns 1
+   * ```
+   */
+  getCost(actionName: string): number;
+
+  /**
+   * Check if current wallet balance can afford an action
+   *
+   * @param actionName - Reducer name (e.g., "player_move")
+   * @returns Promise resolving to true if balance >= cost, false otherwise
+   * @throws SigilError if cost registry not loaded or balance query fails
+   *
+   * @example
+   * ```typescript
+   * const canAfford = await client.publish.canAfford('player_move');
+   * if (canAfford) {
+   *   console.log('Can afford action!');
+   * }
+   * ```
+   */
+  canAfford(actionName: string): Promise<boolean>;
 }
 
 /**
@@ -82,9 +139,16 @@ export class SigilClient extends EventEmitter {
   private _nostr: NostrClient;
   private autoLoadStaticData: boolean;
   private reconnectionManager: ReconnectionManager | null = null;
+  private actionCostRegistry: ActionCostRegistry | null = null;
+  private _wallet: WalletClient | null = null;
+  private _publish: PublishAPI;
+  private crosstownConnectorUrl: string;
 
   constructor(config?: SigilClientConfig) {
     super();
+
+    // Store Crosstown connector URL (default: http://localhost:4041)
+    this.crosstownConnectorUrl = config?.crosstownConnectorUrl || 'http://localhost:4041';
 
     // Initialize SpacetimeDB surface
     this._spacetimedb = createSpacetimeDBSurface(config?.spacetimedb, this);
@@ -131,6 +195,97 @@ export class SigilClient extends EventEmitter {
     this._nostr.on('eose', (subscriptionId) => {
       this.emit('nostrEose', subscriptionId);
     });
+
+    // Load action cost registry if path provided (Story 2.2)
+    if (config?.actionCostRegistryPath) {
+      const loader = new ActionCostRegistryLoader();
+      // Loader throws on error, preventing partial client initialization
+      this.actionCostRegistry = loader.load(config.actionCostRegistryPath);
+    }
+
+    // Initialize wallet client (Story 2.2)
+    // Note: Wallet client requires identity to be loaded first for public key
+    // We'll initialize it lazily in the wallet getter
+
+    // Initialize publish API (Story 2.2)
+    this._publish = {
+      getCost: (actionName: string): number => {
+        if (!this.actionCostRegistry) {
+          throw new SigilError(
+            'Action cost registry not loaded. Provide actionCostRegistryPath in SigilClientConfig.',
+            'REGISTRY_NOT_LOADED',
+            'action-cost-registry'
+          );
+        }
+
+        // Check if action exists in registry
+        if (actionName in this.actionCostRegistry.actions) {
+          return this.actionCostRegistry.actions[actionName].cost;
+        }
+
+        // Action not found, return defaultCost with warning
+        console.warn(
+          `Action "${actionName}" not found in cost registry. Using defaultCost: ${this.actionCostRegistry.defaultCost}`
+        );
+        return this.actionCostRegistry.defaultCost;
+      },
+
+      canAfford: async (actionName: string): Promise<boolean> => {
+        // getCost will throw if registry not loaded
+        const cost = this._publish.getCost(actionName);
+
+        // getBalance will throw if network error or invalid response
+        const balance = await this.wallet.getBalance();
+
+        return balance >= cost;
+      },
+    };
+  }
+
+  /**
+   * Access wallet client (Story 2.2)
+   *
+   * Provides wallet balance queries via Crosstown connector HTTP API.
+   *
+   * @throws Error if identity not loaded (call loadIdentity first)
+   *
+   * @example
+   * ```typescript
+   * const client = new SigilClient({
+   *   crosstownConnectorUrl: 'http://localhost:4041'
+   * });
+   * await client.loadIdentity('passphrase');
+   *
+   * const balance = await client.wallet.getBalance(); // Returns 10000
+   * ```
+   */
+  get wallet(): WalletClient {
+    if (!this._wallet) {
+      // Initialize wallet client lazily (requires identity)
+      if (!this.keypair) {
+        throw new Error('Identity not loaded. Call loadIdentity() first.');
+      }
+
+      const publicKeyHex = bytesToHex(this.keypair.publicKey);
+      this._wallet = new WalletClient(this.crosstownConnectorUrl, publicKeyHex);
+    }
+
+    return this._wallet;
+  }
+
+  /**
+   * Access publish API (Story 2.2)
+   *
+   * Provides action cost queries and affordability checks.
+   *
+   * @example
+   * ```typescript
+   * const cost = client.publish.getCost('player_move'); // Returns 1
+   * const canAfford = await client.publish.canAfford('player_move'); // Returns true/false
+   * ```
+   */
+  get publish(): PublishAPI {
+    return this._publish;
   }
 
   /**

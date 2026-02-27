@@ -45,6 +45,7 @@ The Five-Layer Cognition Architecture documented in the architecture was SUPERSE
 ### 3. Current Project Status
 
 **Epic 1: COMPLETE** (6/6 stories, 937 tests passing)
+
 - Monorepo scaffolding (TypeScript + Rust)
 - Nostr keypair identity management
 - Docker development environment (BitCraft + Crosstown)
@@ -53,6 +54,7 @@ The Five-Layer Cognition Architecture documented in the architecture was SUPERSE
 - Auto-reconnection with state recovery
 
 **Epic 2: PREPARATION PHASE** (5 prep tasks before kickoff)
+
 - ✅ Complete subscription recovery (PREP-1)
 - ✅ Validate Linux compatibility (PREP-2) - CI now runs on Ubuntu + macOS
 - Must research Crosstown protocols (PREP-4)
@@ -187,18 +189,21 @@ You have access to BMAD (Build-Measure-Analyze-Deploy) workflow skills:
 ### Naming Conventions
 
 **TypeScript:**
+
 - Files: `kebab-case.ts`
 - Functions/variables: `camelCase`
 - Types/interfaces: `PascalCase`
 - Constants: `SCREAMING_SNAKE_CASE`
 
 **Rust:**
+
 - Files: `snake_case.rs`
 - Functions/variables: `snake_case`
 - Types/structs: `PascalCase`
 - Constants: `SCREAMING_SNAKE_CASE`
 
 **Cross-Language:**
+
 - JSON fields (IPC): `camelCase`
 - MCP tool names: `snake_case`
 - Rust serde: `#[serde(rename_all = "camelCase")]`
@@ -206,6 +211,7 @@ You have access to BMAD (Build-Measure-Analyze-Deploy) workflow skills:
 ### API Patterns
 
 **Client API Design:**
+
 ```typescript
 // Identity (Story 1.2)
 await client.loadIdentity('/path/to/keypair.json');
@@ -227,6 +233,7 @@ await client.publish({ reducer: 'move_player', args: [x, y] });
 ### Testing Patterns
 
 **Test-Driven Development (TDD):**
+
 - **AGREEMENT-1:** Write tests BEFORE implementation for features with >3 acceptance criteria
 - Co-located tests: `*.test.ts` for TypeScript, `#[cfg(test)]` for Rust
 - Test names: Descriptive (what is tested, expected outcome)
