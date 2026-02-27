@@ -16,7 +16,8 @@ import { SigilClient } from '../../client';
 
 describe('Static Data Loader - Integration Tests', () => {
   // Only run these tests if explicitly requested (requires Docker stack)
-  const shouldRun = process.env.INTEGRATION === 'true' || process.env.RUN_INTEGRATION_TESTS === 'true';
+  const shouldRun =
+    process.env.INTEGRATION === 'true' || process.env.RUN_INTEGRATION_TESTS === 'true';
 
   if (!shouldRun) {
     it.skip('Skipping integration tests (set INTEGRATION=true to run)', () => {});
