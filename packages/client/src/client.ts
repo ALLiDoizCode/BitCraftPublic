@@ -3,11 +3,12 @@
  *
  * Provides the main client interface for interacting with Sigil:
  * - Nostr identity management (client.identity)
- * - SpacetimeDB integration (future: client.spacetimedb)
+ * - SpacetimeDB integration (client.spacetimedb)
  * - Nostr event publishing (future: client.nostr)
  * - ILP packet publishing (future: client.publish())
  */
 
+import { EventEmitter } from 'events';
 import {
   finalizeEvent,
   verifyEvent,
@@ -18,6 +19,11 @@ import * as nip19 from 'nostr-tools/nip19';
 import { bytesToHex } from '@noble/hashes/utils';
 import type { NostrKeypair } from './nostr/keypair';
 import { loadKeypair } from './nostr/storage';
+import {
+  createSpacetimeDBSurface,
+  type SpacetimeDBSurface,
+  type SpacetimeDBConnectionOptions,
+} from './spacetimedb';
 
 /**
  * Client identity interface
@@ -46,9 +52,9 @@ export interface ClientIdentity {
 /**
  * Sigil Client configuration
  */
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface SigilClientConfig {
-  // Future: SpacetimeDB connection options
+  /** SpacetimeDB connection options */
+  spacetimedb?: SpacetimeDBConnectionOptions;
   // Future: Nostr relay list
 }
 
@@ -57,13 +63,95 @@ export interface SigilClientConfig {
  *
  * Coordinates all SDK functionality: identity, SpacetimeDB, Nostr, and ILP.
  */
-export class SigilClient {
+export class SigilClient extends EventEmitter {
   private keypair: NostrKeypair | null = null;
+  private _spacetimedb: SpacetimeDBSurface;
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  constructor(_config?: SigilClientConfig) {
-    // Future: Initialize SpacetimeDB connection
+  constructor(config?: SigilClientConfig) {
+    super();
+
+    // Initialize SpacetimeDB surface
+    this._spacetimedb = createSpacetimeDBSurface(config?.spacetimedb, this);
+
     // Future: Initialize Nostr relay pool
+  }
+
+  /**
+   * Access SpacetimeDB surface
+   *
+   * Provides connection, subscriptions, table accessors, and latency monitoring.
+   *
+   * @example
+   * ```typescript
+   * const client = new SigilClient({
+   *   spacetimedb: { host: 'localhost', port: 3000, database: 'bitcraft' }
+   * });
+   *
+   * await client.connect();
+   * const handle = await client.spacetimedb.subscribe('player_state', {});
+   * const players = client.spacetimedb.tables.player_state.getAll();
+   * ```
+   */
+  get spacetimedb(): SpacetimeDBSurface {
+    return this._spacetimedb;
+  }
+
+  /**
+   * Connect to SpacetimeDB server
+   *
+   * Establishes WebSocket connection to SpacetimeDB.
+   *
+   * @example
+   * ```typescript
+   * const client = new SigilClient({
+   *   spacetimedb: { host: 'localhost', port: 3000, database: 'bitcraft' }
+   * });
+   * await client.connect();
+   * ```
+   */
+  async connect(): Promise<void> {
+    await this._spacetimedb.connection.connect();
+  }
+
+  /**
+   * Disconnect from SpacetimeDB server
+   *
+   * Cleanly closes connection and unsubscribes from all tables.
+   *
+   * @example
+   * ```typescript
+   * await client.disconnect();
+   * ```
+   */
+  async disconnect(): Promise<void> {
+    // Unsubscribe from all tables
+    this._spacetimedb.subscriptions.unsubscribeAll();
+
+    // Clear table caches (internal method from createSpacetimeDBSurface)
+    const surface = this._spacetimedb as SpacetimeDBSurface & { _clearTableCache?: () => void };
+    if (surface._clearTableCache) {
+      surface._clearTableCache();
+    }
+
+    // Disconnect
+    await this._spacetimedb.connection.disconnect();
+  }
+
+  /**
+   * Subscribe to table updates (convenience method)
+   *
+   * @param tableName - Name of table to subscribe to
+   * @param query - Query filter (empty object {} for all rows)
+   * @returns Promise resolving to subscription handle
+   *
+   * @example
+   * ```typescript
+   * const handle = await client.spacetimedb.subscribe('player_state', {});
+   * ```
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async subscribe(tableName: string, query: any): Promise<any> {
+    return this._spacetimedb.subscriptions.subscribe(tableName, query);
   }
 
   /**

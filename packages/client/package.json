@@ -26,6 +26,8 @@
   "scripts": {
     "build": "tsup",
     "test": "vitest run",
+    "test:unit": "vitest run --exclude '**/integration.test.ts'",
+    "test:integration": "RUN_INTEGRATION_TESTS=true vitest run --include '**/integration.test.ts'",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest"
   },

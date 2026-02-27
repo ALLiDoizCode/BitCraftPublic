@@ -12,5 +12,17 @@ export {
 
 export { saveKeypair, loadKeypair } from './nostr/storage';
 
+// SpacetimeDB integration
+export {
+  type SpacetimeDBSurface,
+  type SpacetimeDBConnectionOptions,
+  type ConnectionState,
+  type ConnectionChangeEvent,
+  type TableQuery,
+  type SubscriptionHandle,
+  type TableAccessors,
+  type LatencyStats,
+} from './spacetimedb';
+
 // Sigil Client
 export { SigilClient, type ClientIdentity, type SigilClientConfig } from './client';
