@@ -10,12 +10,12 @@ This document maps acceptance criteria from Story 1.5 to automated test coverage
 
 ## Test Suite Summary
 
-| Test Suite | File | Tests | Purpose |
-|------------|------|-------|---------|
-| Unit Tests | `static-data-loader.test.ts` | 31 | Core functionality with mocks |
-| Acceptance Criteria Tests | `static-data-acceptance-criteria.test.ts` | 9 | ATDD-style AC validation |
-| Comprehensive Coverage | `static-data-comprehensive.test.ts` | 25 | Gap-filling detailed scenarios |
-| Integration Tests | `static-data-integration.test.ts` | 14+ | Live server validation (requires Docker) |
+| Test Suite                | File                                      | Tests | Purpose                                  |
+| ------------------------- | ----------------------------------------- | ----- | ---------------------------------------- |
+| Unit Tests                | `static-data-loader.test.ts`              | 31    | Core functionality with mocks            |
+| Acceptance Criteria Tests | `static-data-acceptance-criteria.test.ts` | 9     | ATDD-style AC validation                 |
+| Comprehensive Coverage    | `static-data-comprehensive.test.ts`       | 25    | Gap-filling detailed scenarios           |
+| Integration Tests         | `static-data-integration.test.ts`         | 14+   | Live server validation (requires Docker) |
 
 **Total Automated Tests**: 79+
 **All Tests Status**: ✅ Passing (289/289 unit tests pass)
@@ -32,18 +32,21 @@ This document maps acceptance criteria from Story 1.5 to automated test coverage
 #### Test Coverage:
 
 **Unit Tests** (`static-data-loader.test.ts`):
+
 - ✅ `should throw if connection not established` - validates connection guard
 - ✅ `should skip loading if already cached` - validates cache reuse
 - ✅ `should return row data if found` - validates lookup map queries
 - ✅ `should return all rows for a table` - validates getAll() functionality
 
 **Comprehensive Tests** (`static-data-comprehensive.test.ts`):
+
 - ✅ `should verify STATIC_DATA_TABLES constant contains expected table list` - validates table list structure
 - ✅ `should build lookup maps keyed by primary ID for different key patterns` - validates id, desc_id, type_id patterns
 - ✅ `should handle tables with missing or null primary keys gracefully` - validates error handling
 - ✅ `should detect and warn about duplicate primary keys` - validates duplicate key handling
 
 **Integration Tests** (`static-data-integration.test.ts`):
+
 - ✅ `should connect to live BitCraft server and load all *_desc tables` - validates live loading
 - ✅ `should build queryable lookup maps with actual game data` - validates real data queries
 - ✅ `should handle actual table count from BitCraft schema` - validates against live server
@@ -63,10 +66,12 @@ This document maps acceptance criteria from Story 1.5 to automated test coverage
 #### Test Coverage:
 
 **Unit Tests** (`static-data-loader.test.ts`):
+
 - ✅ `should return null if not loaded` - validates metrics before load
 - ✅ `should return metrics after successful load` - validates metrics structure
 
 **Comprehensive Tests** (`static-data-comprehensive.test.ts`):
+
 - ✅ `should validate loadingProgress event structure` - validates event schema
 - ✅ `should emit staticDataLoaded event with metrics after successful load` - validates completion event
 - ✅ `should emit loadingMetrics event with performance data` - validates timing metrics
@@ -74,6 +79,7 @@ This document maps acceptance criteria from Story 1.5 to automated test coverage
 - ✅ `should log warning if loading exceeds 10 second NFR6 threshold` - validates NFR6 compliance check
 
 **Integration Tests** (`static-data-integration.test.ts`):
+
 - ✅ `should complete static data loading within 10 seconds (NFR6)` - validates real-world performance
 - ✅ `should emit staticDataLoaded event after live server load` - validates event emission
 - ✅ `should provide accurate metrics after live load` - validates real metrics
@@ -92,6 +98,7 @@ This document maps acceptance criteria from Story 1.5 to automated test coverage
 #### Test Coverage:
 
 **Unit Tests** (`static-data-loader.test.ts`):
+
 - ✅ `should throw if data not loaded` - validates state guards
 - ✅ `should throw if table does not exist` - validates table existence
 - ✅ `should return row data if found` - validates get() success path
@@ -101,6 +108,7 @@ This document maps acceptance criteria from Story 1.5 to automated test coverage
 - ✅ `should filter rows with predicate` - validates query() filtering
 
 **Comprehensive Tests** (`static-data-comprehensive.test.ts`):
+
 - ✅ `should return correctly typed data with get<T>()` - validates type parameters
 - ✅ `should return undefined for non-existent IDs without throwing` - validates graceful not-found
 - ✅ `should handle string IDs correctly` - validates string key support
@@ -110,6 +118,7 @@ This document maps acceptance criteria from Story 1.5 to automated test coverage
 - ✅ `should throw Error when accessing data before loading` - validates state guards
 
 **Integration Tests** (`static-data-integration.test.ts`):
+
 - ✅ `should return actual game data with get() method` - validates real data access
 - ✅ `should return all rows for a table with getAll()` - validates full table access
 - ✅ `should support filtering with query() on live data` - validates live filtering
@@ -129,6 +138,7 @@ This document maps acceptance criteria from Story 1.5 to automated test coverage
 #### Test Coverage:
 
 **Unit Tests** (`static-data-loader.test.ts`):
+
 - ✅ `should skip loading if already cached` - validates cache reuse
 - ✅ `should return false if state is not loaded` - validates isCached() state check
 - ✅ `should return false if cache is empty` - validates isCached() empty check
@@ -137,6 +147,7 @@ This document maps acceptance criteria from Story 1.5 to automated test coverage
 - ✅ `should clear cache and reset state` - validates clear()
 
 **Comprehensive Tests** (`static-data-comprehensive.test.ts`):
+
 - ✅ `should persist cache across simulated connection loss and reconnection` - validates persistence
 - ✅ `should not reload on subsequent load() calls when already cached` - validates cache skip
 - ✅ `should clear cache and reload with forceReload()` - validates manual refresh
@@ -145,6 +156,7 @@ This document maps acceptance criteria from Story 1.5 to automated test coverage
 - ✅ `should track cache timestamp in metrics` - validates timestamp tracking
 
 **Integration Tests** (`static-data-integration.test.ts`):
+
 - ✅ `should persist cache across disconnect and reconnect` - validates real reconnection
 - ✅ `should reload data with forceReload()` - validates forced refresh on live server
 - ✅ `should auto-load static data when autoLoadStaticData is true` - validates auto-load
@@ -183,6 +195,7 @@ Integration tests (`static-data-integration.test.ts`) require:
 3. Environment variable: `INTEGRATION=true` or `CI=true`
 
 **Run integration tests**:
+
 ```bash
 cd docker && docker compose up -d
 INTEGRATION=true pnpm --filter @sigil/client test
@@ -204,13 +217,13 @@ Duration:   3.40s
 
 ### Coverage by Acceptance Criteria:
 
-| AC | Unit Tests | Comprehensive Tests | Integration Tests | Total Coverage |
-|----|-----------|-------------------|------------------|----------------|
-| AC1 | 4 tests | 4 tests | 3 tests | **11 tests** ✅ |
-| AC2 | 2 tests | 5 tests | 3 tests | **10 tests** ✅ |
-| AC3 | 7 tests | 7 tests | 4 tests | **18 tests** ✅ |
-| AC4 | 6 tests | 6 tests | 4 tests | **16 tests** ✅ |
-| **Edge Cases** | - | 4 tests | 2 tests | **6 tests** ✅ |
+| AC             | Unit Tests | Comprehensive Tests | Integration Tests | Total Coverage  |
+| -------------- | ---------- | ------------------- | ----------------- | --------------- |
+| AC1            | 4 tests    | 4 tests             | 3 tests           | **11 tests** ✅ |
+| AC2            | 2 tests    | 5 tests             | 3 tests           | **10 tests** ✅ |
+| AC3            | 7 tests    | 7 tests             | 4 tests           | **18 tests** ✅ |
+| AC4            | 6 tests    | 6 tests             | 4 tests           | **16 tests** ✅ |
+| **Edge Cases** | -          | 4 tests             | 2 tests           | **6 tests** ✅  |
 
 **Total Test Coverage**: **61+ tests** across all acceptance criteria and edge cases
 

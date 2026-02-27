@@ -79,7 +79,9 @@ Comprehensive ATDD test architecture implemented for Story 1.4, covering all 6 a
 ## Acceptance Criteria Coverage
 
 ### AC1: SigilClient connects to SpacetimeDB ✅
+
 **Tests**:
+
 - `should establish WebSocket v1 connection when connect() is called`
 - `should make spacetimedb surface available after connection`
 - `should emit connectionChange event with connected state`
@@ -88,7 +90,9 @@ Comprehensive ATDD test architecture implemented for Story 1.4, covering all 6 a
 **Coverage**: Connection establishment, state management, event emission
 
 ### AC2: Subscribe to table updates with real-time push ✅
+
 **Tests**:
+
 - `should receive initial state snapshot for matching rows`
 - `should push subsequent updates in real-time`
 - `should return SubscriptionHandle with unsubscribe capability`
@@ -96,7 +100,9 @@ Comprehensive ATDD test architecture implemented for Story 1.4, covering all 6 a
 **Coverage**: Subscription lifecycle, real-time updates, cleanup
 
 ### AC3: Real-time update latency requirement (NFR5) ✅
+
 **Tests**:
+
 - `should reflect updates within 500ms of database commit`
 - `should log warning if latency exceeds 500ms threshold`
 - `should expose latency statistics via getStats()`
@@ -104,7 +110,9 @@ Comprehensive ATDD test architecture implemented for Story 1.4, covering all 6 a
 **Coverage**: Latency monitoring, NFR5 compliance, statistics
 
 ### AC4: Type-safe table accessors ✅
+
 **Tests**:
+
 - `should provide generated type-safe table accessors`
 - `should provide get, getAll, and query methods`
 - `should return cached table data from getAll()`
@@ -113,14 +121,18 @@ Comprehensive ATDD test architecture implemented for Story 1.4, covering all 6 a
 **Coverage**: Type safety, cache access, query functionality
 
 ### AC5: Game state update events ✅
+
 **Tests**:
+
 - `should emit gameStateUpdate events from subscription updates`
 - `should aggregate multiple row events from same transaction`
 
 **Coverage**: Event aggregation, game state updates
 
 ### AC6: SDK backwards compatibility (NFR18) ✅
+
 **Tests**:
+
 - `should use SpacetimeDB SDK version 1.3.3 (NOT 2.0+)`
 - `should successfully connect to BitCraft server running module 1.6.x`
 - `should use WebSocket protocol v1 (not v2)`
@@ -130,14 +142,18 @@ Comprehensive ATDD test architecture implemented for Story 1.4, covering all 6 a
 ## Non-Functional Requirements
 
 ### NFR5: Real-time updates <500ms ✅
+
 **Validation**:
+
 - Unit tests: Latency monitoring infrastructure
 - Integration tests: Actual latency measurements
 - Statistics: p95, p99 tracking
 - Warning: Threshold violation detection
 
 ### NFR18: SDK 1.3.3 backwards compatibility ✅
+
 **Validation**:
+
 - Package.json version check
 - Live server connection test
 - Protocol v1 verification
@@ -145,6 +161,7 @@ Comprehensive ATDD test architecture implemented for Story 1.4, covering all 6 a
 ## Test Organization
 
 ### Test Pyramid Structure
+
 ```
          /\
         /  \      Integration (25 tests)
@@ -190,6 +207,7 @@ Comprehensive ATDD test architecture implemented for Story 1.4, covering all 6 a
 ## Test Patterns
 
 ### BDD Given/When/Then
+
 ```typescript
 it('should receive initial snapshot', async () => {
   // Given: an active SpacetimeDB connection
@@ -204,6 +222,7 @@ it('should receive initial snapshot', async () => {
 ```
 
 ### Isolated Unit Tests
+
 ```typescript
 describe('TableAccessor', () => {
   let accessor: TableAccessor<PlayerRow>;
@@ -224,39 +243,40 @@ describe('TableAccessor', () => {
 ```
 
 ### Integration Tests with Prerequisites
-```typescript
-describe.skipIf(!process.env.RUN_INTEGRATION_TESTS)(
-  'Integration: Live Server',
-  () => {
-    beforeAll(async () => {
-      // Verify Docker stack running
-      const isRunning = await isDockerStackRunning();
-      if (!isRunning) {
-        throw new Error('Docker stack not running');
-      }
-    });
 
-    it('should connect to live server', async () => {
-      await client.connect();
-      expect(client.spacetimedb.connection.connectionState).toBe('connected');
-    });
-  }
-);
+```typescript
+describe.skipIf(!process.env.RUN_INTEGRATION_TESTS)('Integration: Live Server', () => {
+  beforeAll(async () => {
+    // Verify Docker stack running
+    const isRunning = await isDockerStackRunning();
+    if (!isRunning) {
+      throw new Error('Docker stack not running');
+    }
+  });
+
+  it('should connect to live server', async () => {
+    await client.connect();
+    expect(client.spacetimedb.connection.connectionState).toBe('connected');
+  });
+});
 ```
 
 ## Performance Benchmarks
 
 ### Table Cache Performance
+
 - **10k rows**: Insert <100ms, Lookup <1ms
 - **Query 1k rows**: <10ms
 - **Memory overhead**: <50MB for 100k rows
 
 ### Latency Monitoring Performance
+
 - **10k measurements**: Record <100ms
 - **Stats calculation**: <50ms for 100 calls
 - **Percentile calculation**: <10ms for 1k values
 
 ### Subscription Management
+
 - **50 concurrent subscriptions**: Supported
 - **1000 updates/sec**: Handled without backpressure
 - **Event aggregation**: Batches from same transaction
@@ -280,11 +300,13 @@ describe.skipIf(!process.env.RUN_INTEGRATION_TESTS)(
 ## Running Tests
 
 ### Unit Tests Only (Fast)
+
 ```bash
 pnpm test:unit
 ```
 
 ### Integration Tests (Requires Docker)
+
 ```bash
 cd docker && docker compose up -d
 export RUN_INTEGRATION_TESTS=true
@@ -292,16 +314,19 @@ pnpm test:integration
 ```
 
 ### All Tests
+
 ```bash
 pnpm test
 ```
 
 ### With Coverage
+
 ```bash
 pnpm test:coverage
 ```
 
 ### Watch Mode
+
 ```bash
 pnpm test:watch
 ```
@@ -309,16 +334,19 @@ pnpm test:watch
 ## CI/CD Integration
 
 ### Pre-commit Hook
+
 - Run unit tests
 - Run linter
 - Check TypeScript types
 
 ### PR Checks
+
 - Unit tests (required)
 - Integration tests (required if Docker available)
 - Coverage report (aim for 100%)
 
 ### Pre-merge
+
 - Full test suite
 - Coverage threshold (95%+)
 - No skipped tests
@@ -326,6 +354,7 @@ pnpm test:watch
 ## Test Utilities
 
 ### Mock Factories
+
 - `createMockSpacetimeDBClient()`: SDK mock
 - `createMockWebSocket()`: WebSocket mock
 - `createMockPlayerState()`: Test data
@@ -333,6 +362,7 @@ pnpm test:watch
 - `createMockInventoryItem()`: Test data
 
 ### Async Helpers
+
 - `waitFor()`: Condition polling
 - `waitForEvent()`: Event waiting
 - `delay()`: Promise delay
@@ -340,6 +370,7 @@ pnpm test:watch
 - `retryWithBackoff()`: Retry logic
 
 ### Utilities
+
 - `measureExecutionTime()`: Performance measurement
 - `generateLargeDataset()`: Bulk test data
 - `captureConsole()`: Console capture
@@ -348,6 +379,7 @@ pnpm test:watch
 ## Documentation
 
 ### README.md
+
 - Test structure explanation
 - Running instructions
 - Philosophy and principles
@@ -356,6 +388,7 @@ pnpm test:watch
 - Contributing guidelines
 
 ### Inline Documentation
+
 - JSDoc comments on test files
 - Clear test names
 - Given/When/Then structure
@@ -364,6 +397,7 @@ pnpm test:watch
 ## Next Steps
 
 ### Implementation Phase
+
 1. Run tests (will fail - no implementation yet)
 2. Implement connection manager
 3. Implement subscription manager
@@ -373,6 +407,7 @@ pnpm test:watch
 7. Iterate until all tests pass
 
 ### Future Enhancements
+
 - **Story 1.5**: Add static data tests
 - **Story 1.6**: Add reconnection tests
 - **Performance**: Add load testing suite

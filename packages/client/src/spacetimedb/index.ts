@@ -198,3 +198,18 @@ export {
   LatencyMonitor,
   StaticDataLoader,
 };
+
+// Re-export reconnection types and manager
+export type {
+  ConnectionState as ReconnectionConnectionState,
+  ConnectionChangeEvent as ReconnectionChangeEvent,
+  SubscriptionsRecoveredEvent,
+  ReconnectionMetrics,
+  ReconnectionOptions,
+  ReconnectionErrorEvent,
+  SubscriptionRestoreErrorEvent,
+  SubscriptionRecoveryTimeoutEvent,
+  NFR23ViolationEvent,
+} from './reconnection-types';
+
+export { ReconnectionManager } from './reconnection-manager';

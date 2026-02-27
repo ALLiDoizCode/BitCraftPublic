@@ -61,10 +61,7 @@ const allItems = client.staticData.getAll('item_desc');
 console.log(`Total items: ${allItems.length}`);
 
 // Query with filter
-const legendaryItems = client.staticData.query(
-  'item_desc',
-  (item) => item.rarity === 'legendary'
-);
+const legendaryItems = client.staticData.query('item_desc', (item) => item.rarity === 'legendary');
 
 // Check if loaded
 console.log('Static data loaded:', client.isStaticDataLoaded);
@@ -364,6 +361,7 @@ curl http://localhost:3000/database/bitcraft/info
 **Problem**: `Connection timeout after 10000ms`
 
 **Solution**:
+
 - Verify Docker stack is running: `docker compose ps`
 - Check server is accessible: `curl http://localhost:3000/database/bitcraft/info`
 - Increase timeout in connection options if needed
@@ -373,6 +371,7 @@ curl http://localhost:3000/database/bitcraft/info
 **Problem**: `WebSocket connection failed`
 
 **Solution**:
+
 - For local dev, use `protocol: 'ws'` (not 'wss')
 - For production, use `protocol: 'wss'` with valid SSL certificate
 - Check firewall allows WebSocket connections
@@ -382,6 +381,7 @@ curl http://localhost:3000/database/bitcraft/info
 **Problem**: Update latency exceeds 500ms (NFR5)
 
 **Solution**:
+
 - Check network conditions
 - Verify SpacetimeDB server performance
 - Monitor latency stats: `client.spacetimedb.latency.getStats()`
@@ -391,6 +391,7 @@ curl http://localhost:3000/database/bitcraft/info
 **Problem**: TypeScript errors with table types
 
 **Solution**:
+
 - Current implementation uses minimal stub types
 - Full type generation will be implemented in future story
 - Use `any` type assertions if needed: `as any`

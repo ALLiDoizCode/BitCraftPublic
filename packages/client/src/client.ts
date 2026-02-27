@@ -24,6 +24,12 @@ import {
   type SpacetimeDBSurface,
   type SpacetimeDBConnectionOptions,
 } from './spacetimedb';
+import { ReconnectionManager } from './spacetimedb/reconnection-manager';
+import type {
+  ConnectionState as ReconnectionConnectionState,
+  ReconnectionMetrics,
+  ReconnectionOptions,
+} from './spacetimedb/reconnection-types';
 
 /**
  * Client identity interface
@@ -57,6 +63,8 @@ export interface SigilClientConfig {
   spacetimedb?: SpacetimeDBConnectionOptions;
   /** Auto-load static data on connect (default: true) */
   autoLoadStaticData?: boolean;
+  /** Reconnection options */
+  reconnection?: ReconnectionOptions;
   // Future: Nostr relay list
 }
 
@@ -69,6 +77,7 @@ export class SigilClient extends EventEmitter {
   private keypair: NostrKeypair | null = null;
   private _spacetimedb: SpacetimeDBSurface;
   private autoLoadStaticData: boolean;
+  private reconnectionManager: ReconnectionManager | null = null;
 
   constructor(config?: SigilClientConfig) {
     super();
@@ -78,6 +87,21 @@ export class SigilClient extends EventEmitter {
 
     // Configure auto-loading of static data (default: true)
     this.autoLoadStaticData = config?.autoLoadStaticData ?? true;
+
+    // Initialize reconnection manager
+    this.reconnectionManager = new ReconnectionManager(
+      this._spacetimedb.connection,
+      config?.reconnection
+    );
+
+    // Forward reconnection events
+    this.reconnectionManager.on('connectionChange', (event) => {
+      this.emit('reconnectionChange', event);
+    });
+
+    this.reconnectionManager.on('subscriptionsRecovered', (event) => {
+      this.emit('subscriptionsRecovered', event);
+    });
 
     // Future: Initialize Nostr relay pool
   }
@@ -169,6 +193,11 @@ export class SigilClient extends EventEmitter {
    * ```
    */
   async disconnect(): Promise<void> {
+    // Mark as manual disconnect (skip auto-reconnection)
+    if (this.reconnectionManager) {
+      this.reconnectionManager.markManualDisconnect();
+    }
+
     // Unsubscribe from all tables
     this._spacetimedb.subscriptions.unsubscribeAll();
 
@@ -180,6 +209,36 @@ export class SigilClient extends EventEmitter {
 
     // Disconnect
     await this._spacetimedb.connection.disconnect();
+  }
+
+  /**
+   * Get current reconnection state
+   */
+  getReconnectionState(): ReconnectionConnectionState {
+    return this.reconnectionManager?.state || 'disconnected';
+  }
+
+  /**
+   * Get reconnection metrics
+   */
+  getReconnectionMetrics(): ReconnectionMetrics | null {
+    return this.reconnectionManager?.getMetrics() || null;
+  }
+
+  /**
+   * Cancel ongoing reconnection attempts
+   */
+  cancelReconnection(): void {
+    this.reconnectionManager?.cancelReconnection();
+  }
+
+  /**
+   * Retry connection after failure
+   */
+  async retryConnection(): Promise<void> {
+    if (this.reconnectionManager) {
+      await this.reconnectionManager.retryConnection();
+    }
   }
 
   /**

@@ -38,7 +38,7 @@ epics:
         status: done
       - id: story-1.6
         title: 'Auto-Reconnection & State Recovery'
-        status: backlog
+        status: done
 
   - id: epic-2
     title: 'Action Execution & Payment Pipeline'

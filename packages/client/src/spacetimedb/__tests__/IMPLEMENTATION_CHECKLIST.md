@@ -15,6 +15,7 @@ This checklist maps test files to implementation tasks. Use it to track progress
 ## Implementation Tasks
 
 ### Task 1: Connection Manager
+
 **File**: `src/spacetimedb/connection.ts`
 **Tests**: `__tests__/connection.test.ts` (368 tests)
 **Coverage**: AC1, AC6
@@ -31,6 +32,7 @@ This checklist maps test files to implementation tasks. Use it to track progress
 - [ ] Add JSDoc documentation
 
 **Test Validation**:
+
 ```bash
 pnpm test connection.test.ts
 ```
@@ -38,6 +40,7 @@ pnpm test connection.test.ts
 Expected: All connection tests passing
 
 ### Task 2: Subscription Manager
+
 **File**: `src/spacetimedb/subscriptions.ts`
 **Tests**: `__tests__/subscriptions.test.ts` (398 tests)
 **Coverage**: AC2, AC5
@@ -55,6 +58,7 @@ Expected: All connection tests passing
 - [ ] Add JSDoc documentation
 
 **Test Validation**:
+
 ```bash
 pnpm test subscriptions.test.ts
 ```
@@ -62,6 +66,7 @@ pnpm test subscriptions.test.ts
 Expected: All subscription tests passing
 
 ### Task 3: Table Accessors
+
 **File**: `src/spacetimedb/tables.ts`
 **Tests**: `__tests__/tables.test.ts` (418 tests)
 **Coverage**: AC4
@@ -78,6 +83,7 @@ Expected: All subscription tests passing
 - [ ] Optimize for large tables (10k+ rows)
 
 **Test Validation**:
+
 ```bash
 pnpm test tables.test.ts
 ```
@@ -85,6 +91,7 @@ pnpm test tables.test.ts
 Expected: All table accessor tests passing, performance benchmarks met
 
 ### Task 4: Latency Monitor
+
 **File**: `src/spacetimedb/latency.ts`
 **Tests**: `__tests__/latency.test.ts` (405 tests)
 **Coverage**: AC3, NFR5
@@ -101,6 +108,7 @@ Expected: All table accessor tests passing, performance benchmarks met
 - [ ] Add JSDoc documentation
 
 **Test Validation**:
+
 ```bash
 pnpm test latency.test.ts
 ```
@@ -108,6 +116,7 @@ pnpm test latency.test.ts
 Expected: All latency monitoring tests passing, NFR5 compliance validated
 
 ### Task 5: SpacetimeDB Surface Integration
+
 **File**: `src/index.ts`, `src/client.ts`
 **Tests**: `__tests__/acceptance-criteria.test.ts` (546 tests)
 **Coverage**: All ACs
@@ -127,6 +136,7 @@ Expected: All latency monitoring tests passing, NFR5 compliance validated
 - [ ] Update JSDoc documentation
 
 **Test Validation**:
+
 ```bash
 pnpm test acceptance-criteria.test.ts
 ```
@@ -134,12 +144,14 @@ pnpm test acceptance-criteria.test.ts
 Expected: All acceptance criteria tests passing
 
 ### Task 6: Type Generation (Optional - depends on SDK capabilities)
+
 **File**: `src/spacetimedb/generated/index.ts` or `scripts/generate-types.sh`
 **Coverage**: AC4
 
 Research SpacetimeDB SDK 1.3.3 capabilities:
 
 **Option A: CLI tool exists**
+
 - [ ] Create `scripts/generate-types.sh`
 - [ ] Run codegen against BitCraft module
 - [ ] Output to `src/spacetimedb/generated/`
@@ -148,6 +160,7 @@ Research SpacetimeDB SDK 1.3.3 capabilities:
 - [ ] Document in README
 
 **Option B: Programmatic generation**
+
 - [ ] Create `src/spacetimedb/codegen.ts`
 - [ ] Implement type generation from schema
 - [ ] Run on module connection
@@ -155,12 +168,14 @@ Research SpacetimeDB SDK 1.3.3 capabilities:
 - [ ] Document in README
 
 **Option C: Manual type definitions**
+
 - [ ] Define common table types manually
 - [ ] Create `src/spacetimedb/types.ts`
 - [ ] Export table row interfaces
 - [ ] Document known tables
 
 **Test Validation**:
+
 ```bash
 # Verify type-safe accessors work
 pnpm typecheck
@@ -169,15 +184,18 @@ pnpm typecheck
 Expected: No TypeScript errors, type safety validated
 
 ### Task 7: Integration Testing
+
 **Tests**: `__tests__/integration.test.ts` (453 tests)
 **Coverage**: All ACs against live server
 
 Prerequisites:
+
 - [ ] Docker stack from Story 1.3 running
 - [ ] BitCraft server accessible at ws://localhost:3000
 - [ ] RUN_INTEGRATION_TESTS env var set
 
 Tasks:
+
 - [ ] Run integration tests
 - [ ] Verify live connection works
 - [ ] Verify real subscriptions work
@@ -187,6 +205,7 @@ Tasks:
 - [ ] Document integration test setup
 
 **Test Validation**:
+
 ```bash
 cd docker && docker compose up -d
 export RUN_INTEGRATION_TESTS=true
@@ -196,6 +215,7 @@ pnpm test:integration
 Expected: All integration tests passing, NFR5 and NFR18 validated
 
 ### Task 8: Edge Case Handling
+
 **Tests**: `__tests__/edge-cases.test.ts` (473 tests)
 **Coverage**: Robustness, error recovery
 
@@ -210,6 +230,7 @@ Expected: All integration tests passing, NFR5 and NFR18 validated
 - [ ] Document error handling strategy
 
 **Test Validation**:
+
 ```bash
 pnpm test edge-cases.test.ts
 ```
@@ -217,6 +238,7 @@ pnpm test edge-cases.test.ts
 Expected: All edge case tests passing, robust error handling
 
 ### Task 9: Documentation
+
 **Files**: `README.md`, JSDoc comments
 **Coverage**: Usage, examples, API reference
 
@@ -232,11 +254,13 @@ Expected: All edge case tests passing, robust error handling
 - [ ] Document troubleshooting
 
 **Validation**:
+
 - [ ] Review README for completeness
 - [ ] Verify examples run
 - [ ] Check JSDoc coverage
 
 ### Task 10: Example Script
+
 **File**: `examples/subscribe-to-game-state.ts`
 **Coverage**: End-to-end usage demonstration
 
@@ -251,6 +275,7 @@ Expected: All edge case tests passing, robust error handling
 - [ ] Document how to run
 
 **Validation**:
+
 ```bash
 tsx examples/subscribe-to-game-state.ts
 ```
@@ -258,6 +283,7 @@ tsx examples/subscribe-to-game-state.ts
 Expected: Example runs successfully, demonstrates all features
 
 ### Task 11: Final Validation
+
 **Coverage**: All ACs, all NFRs, full test suite
 
 - [ ] Run all unit tests: `pnpm test:unit`
@@ -274,6 +300,7 @@ Expected: Example runs successfully, demonstrates all features
 - [ ] Verify NFR18 (SDK 1.3.3 compatibility)
 
 **Final Checklist**:
+
 - [ ] ✅ AC1: Connection to SpacetimeDB works
 - [ ] ✅ AC2: Table subscriptions work with real-time push
 - [ ] ✅ AC3: Latency monitoring validates <500ms (NFR5)
@@ -282,12 +309,14 @@ Expected: Example runs successfully, demonstrates all features
 - [ ] ✅ AC6: SDK 1.3.3 backwards compatibility (NFR18)
 
 ### Task 12: Commit
+
 **Coverage**: Story completion, git commit
 
 - [ ] Stage changes: `git add .`
 - [ ] Verify clean working directory
 - [ ] Run pre-commit checks (tests, lint, types)
 - [ ] Commit with message:
+
   ```
   feat(1-4): spacetimedb connection and table subscriptions complete
 
@@ -299,6 +328,7 @@ Expected: Example runs successfully, demonstrates all features
 **Overall Progress**: 0% (tests written, implementation pending)
 
 ### By Component
+
 - [ ] Connection Manager: 0/10 subtasks
 - [ ] Subscription Manager: 0/11 subtasks
 - [ ] Table Accessors: 0/10 subtasks
@@ -313,6 +343,7 @@ Expected: Example runs successfully, demonstrates all features
 - [ ] Commit: 0/4 subtasks
 
 ### By Acceptance Criteria
+
 - [ ] AC1: SigilClient connects (Tasks 1, 5)
 - [ ] AC2: Table subscriptions (Tasks 2, 5)
 - [ ] AC3: Latency monitoring (Tasks 4, 5)
@@ -325,25 +356,31 @@ Expected: Example runs successfully, demonstrates all features
 ### Red-Green-Refactor Cycle
 
 1. **RED**: Run tests (they fail - no implementation)
+
    ```bash
    pnpm test connection.test.ts
    # ❌ All tests fail
    ```
 
 2. **GREEN**: Implement minimal code to pass tests
+
    ```typescript
    // src/spacetimedb/connection.ts
    export class SpacetimeDBConnection extends EventEmitter {
-     async connect() { /* minimal implementation */ }
+     async connect() {
+       /* minimal implementation */
+     }
    }
    ```
 
 3. **REFACTOR**: Improve code quality, add optimizations
+
    ```typescript
    // Add error handling, improve performance, add docs
    ```
 
 4. **VERIFY**: Tests still pass
+
    ```bash
    pnpm test connection.test.ts
    # ✅ All tests pass
@@ -367,10 +404,12 @@ Expected: Example runs successfully, demonstrates all features
 ### Parallel Implementation
 
 These can be implemented in parallel (independent):
+
 - Connection Manager
 - Latency Monitor
 
 These must be sequential:
+
 - Connection → Subscriptions → Tables → Integration
 - All components → SigilClient Integration
 
