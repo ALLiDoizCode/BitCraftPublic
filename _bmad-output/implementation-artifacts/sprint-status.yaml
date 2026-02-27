@@ -19,7 +19,9 @@ epics:
   - id: epic-1
     title: 'Project Foundation & Game World Connection'
     phase: mvp
-    status: in-progress
+    status: done
+    retrospective_status: done
+    retrospective_date: 2026-02-27
     stories:
       - id: story-1.1
         title: 'Monorepo Scaffolding & Build Infrastructure'
@@ -239,5 +241,5 @@ sprint_metadata:
   mvp_stories: 34
   phase2_stories: 15
   phase3_stories: 1
-  last_updated: 2026-02-26
-  current_sprint_focus: epic-1
+  last_updated: 2026-02-27
+  current_sprint_focus: epic-2-prep
