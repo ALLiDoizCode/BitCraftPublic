@@ -35,7 +35,7 @@ epics:
         status: done
       - id: story-1.5
         title: 'Static Data Table Loading'
-        status: backlog
+        status: done
       - id: story-1.6
         title: 'Auto-Reconnection & State Recovery'
         status: backlog

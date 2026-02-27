@@ -14,7 +14,10 @@ import { join } from 'path';
 const REPO_ROOT = '/Users/jonathangreen/Documents/BitCraftPublic';
 
 // Helper to run shell commands and capture output
-function runCommand(cmd: string, cwd: string = REPO_ROOT): { stdout: string; stderr: string; success: boolean } {
+function runCommand(
+  cmd: string,
+  cwd: string = REPO_ROOT
+): { stdout: string; stderr: string; success: boolean } {
   try {
     const stdout = execSync(cmd, { cwd, encoding: 'utf8', stdio: 'pipe' });
     return { stdout, stderr: '', success: true };
@@ -186,7 +189,9 @@ describe('Story 1.1: Monorepo Scaffolding & Build Infrastructure - Integration T
     test('pnpm test succeeds on all packages', () => {
       const result = runCommand('pnpm test');
       // Check that tests passed (allow for exit code 0 or successful test output)
-      expect(result.success || result.stdout.includes('Test Files') && result.stdout.includes('passed')).toBe(true);
+      expect(
+        result.success || (result.stdout.includes('Test Files') && result.stdout.includes('passed'))
+      ).toBe(true);
       // Verify each package has passing tests
       expect(result.stdout).toContain('packages/client test:');
       expect(result.stdout).toContain('packages/mcp-server test:');
@@ -271,7 +276,9 @@ describe('Story 1.1: Monorepo Scaffolding & Build Infrastructure - Integration T
       // Run tests
       const result = runCommand('pnpm --filter @sigil/client test');
       // Check that tests passed (allow for exit code 0 or successful test output)
-      expect(result.success || result.stdout.includes('Test Files') && result.stdout.includes('passed')).toBe(true);
+      expect(
+        result.success || (result.stdout.includes('Test Files') && result.stdout.includes('passed'))
+      ).toBe(true);
     });
 
     test('all TypeScript packages extend tsconfig.base.json', () => {

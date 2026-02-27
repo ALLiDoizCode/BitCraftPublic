@@ -15,6 +15,7 @@ import {
 import { SubscriptionManager, type TableQuery, type SubscriptionHandle } from './subscriptions';
 import { TableManager, type TableAccessors } from './tables';
 import { LatencyMonitor, type LatencyStats } from './latency';
+import { StaticDataLoader } from './static-data-loader';
 
 /** Delay in milliseconds for batching game state updates */
 const GAME_STATE_UPDATE_BATCH_MS = 50;
@@ -37,6 +38,8 @@ export interface SpacetimeDBSurface extends EventEmitter {
   tables: TableAccessors;
   /** Latency monitor */
   latency: LatencyMonitor;
+  /** Static data loader */
+  staticData: StaticDataLoader;
   /** Subscribe to a table (convenience method) */
   subscribe(tableName: string, query: TableQuery): Promise<SubscriptionHandle>;
 }
@@ -61,6 +64,7 @@ export function createSpacetimeDBSurface(
   const subscriptions = new SubscriptionManager(connection);
   const tableManager = new TableManager(subscriptions);
   const latency = new LatencyMonitor();
+  const staticData = new StaticDataLoader(connection, subscriptions);
 
   // Forward connection events to main event emitter
   connection.on('connectionChange', (event: ConnectionChangeEvent) => {
@@ -70,6 +74,17 @@ export function createSpacetimeDBSurface(
   // Forward latency events
   latency.on('updateLatency', (event) => {
     eventEmitter.emit('updateLatency', event);
+  });
+
+  // Forward static data events
+  staticData.on('loadingProgress', (event) => {
+    eventEmitter.emit('loadingProgress', event);
+  });
+  staticData.on('staticDataLoaded', (event) => {
+    eventEmitter.emit('staticDataLoaded', event);
+  });
+  staticData.on('loadingMetrics', (event) => {
+    eventEmitter.emit('loadingMetrics', event);
   });
 
   // Aggregate row events into gameStateUpdate events
@@ -110,16 +125,59 @@ export function createSpacetimeDBSurface(
   subscriptions.on('rowDeleted', (data) => recordUpdate('delete', data));
 
   // Create extended surface with convenience methods
-  const surfaceEmitter = Object.assign(eventEmitter, {
-    connection,
-    subscriptions,
-    tables: tableManager.accessors,
-    latency,
-    subscribe: (tableName: string, query: TableQuery) => subscriptions.subscribe(tableName, query),
-    _clearTableCache: () => tableManager.clearAll(),
+  // Use defineProperty to avoid conflicts with existing getters
+  const surfaceEmitter = eventEmitter as unknown as SpacetimeDBSurface & {
+    _clearTableCache?: () => void;
+  };
+
+  // Define properties without overwriting existing getters
+  Object.defineProperty(surfaceEmitter, 'connection', {
+    value: connection,
+    writable: true,
+    enumerable: true,
+    configurable: true,
+  });
+  Object.defineProperty(surfaceEmitter, 'subscriptions', {
+    value: subscriptions,
+    writable: true,
+    enumerable: true,
+    configurable: true,
+  });
+  Object.defineProperty(surfaceEmitter, 'tables', {
+    value: tableManager.accessors,
+    writable: true,
+    enumerable: true,
+    configurable: true,
+  });
+  Object.defineProperty(surfaceEmitter, 'latency', {
+    value: latency,
+    writable: true,
+    enumerable: true,
+    configurable: true,
+  });
+  // Only set staticData if it doesn't already exist as a getter
+  if (!Object.getOwnPropertyDescriptor(surfaceEmitter, 'staticData')?.get) {
+    Object.defineProperty(surfaceEmitter, 'staticData', {
+      value: staticData,
+      writable: true,
+      enumerable: true,
+      configurable: true,
+    });
+  }
+  Object.defineProperty(surfaceEmitter, 'subscribe', {
+    value: (tableName: string, query: TableQuery) => subscriptions.subscribe(tableName, query),
+    writable: true,
+    enumerable: true,
+    configurable: true,
+  });
+  Object.defineProperty(surfaceEmitter, '_clearTableCache', {
+    value: () => tableManager.clearAll(),
+    writable: true,
+    enumerable: false,
+    configurable: true,
   });
 
-  return surfaceEmitter as unknown as SpacetimeDBSurface;
+  return surfaceEmitter;
 }
 
 // Re-export types
@@ -133,4 +191,10 @@ export type {
   LatencyStats,
 };
 
-export { SpacetimeDBConnection, SubscriptionManager, TableManager, LatencyMonitor };
+export {
+  SpacetimeDBConnection,
+  SubscriptionManager,
+  TableManager,
+  LatencyMonitor,
+  StaticDataLoader,
+};

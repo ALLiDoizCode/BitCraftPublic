@@ -55,6 +55,8 @@ export interface ClientIdentity {
 export interface SigilClientConfig {
   /** SpacetimeDB connection options */
   spacetimedb?: SpacetimeDBConnectionOptions;
+  /** Auto-load static data on connect (default: true) */
+  autoLoadStaticData?: boolean;
   // Future: Nostr relay list
 }
 
@@ -66,6 +68,7 @@ export interface SigilClientConfig {
 export class SigilClient extends EventEmitter {
   private keypair: NostrKeypair | null = null;
   private _spacetimedb: SpacetimeDBSurface;
+  private autoLoadStaticData: boolean;
 
   constructor(config?: SigilClientConfig) {
     super();
@@ -73,13 +76,16 @@ export class SigilClient extends EventEmitter {
     // Initialize SpacetimeDB surface
     this._spacetimedb = createSpacetimeDBSurface(config?.spacetimedb, this);
 
+    // Configure auto-loading of static data (default: true)
+    this.autoLoadStaticData = config?.autoLoadStaticData ?? true;
+
     // Future: Initialize Nostr relay pool
   }
 
   /**
    * Access SpacetimeDB surface
    *
-   * Provides connection, subscriptions, table accessors, and latency monitoring.
+   * Provides connection, subscriptions, table accessors, static data, and latency monitoring.
    *
    * @example
    * ```typescript
@@ -90,6 +96,9 @@ export class SigilClient extends EventEmitter {
    * await client.connect();
    * const handle = await client.spacetimedb.subscribe('player_state', {});
    * const players = client.spacetimedb.tables.player_state.getAll();
+   *
+   * // Access static data
+   * const item = client.spacetimedb.staticData.get('item_desc', 1);
    * ```
    */
   get spacetimedb(): SpacetimeDBSurface {
@@ -97,9 +106,33 @@ export class SigilClient extends EventEmitter {
   }
 
   /**
+   * Access static data loader (convenience accessor)
+   *
+   * Provides quick access to static data queries.
+   * Same as `client.spacetimedb.staticData`.
+   *
+   * @example
+   * ```typescript
+   * const item = client.staticData.get('item_desc', 1);
+   * const allItems = client.staticData.getAll('item_desc');
+   * ```
+   */
+  get staticData() {
+    return this._spacetimedb.staticData;
+  }
+
+  /**
+   * Check if static data is loaded
+   */
+  get isStaticDataLoaded(): boolean {
+    return this._spacetimedb.staticData.loadingState === 'loaded';
+  }
+
+  /**
    * Connect to SpacetimeDB server
    *
    * Establishes WebSocket connection to SpacetimeDB.
+   * If autoLoadStaticData is true (default), static data loads automatically.
    *
    * @example
    * ```typescript
@@ -107,10 +140,22 @@ export class SigilClient extends EventEmitter {
    *   spacetimedb: { host: 'localhost', port: 3000, database: 'bitcraft' }
    * });
    * await client.connect();
+   * // Static data is now loaded automatically
    * ```
    */
   async connect(): Promise<void> {
     await this._spacetimedb.connection.connect();
+
+    // Auto-load static data if configured
+    if (this.autoLoadStaticData) {
+      try {
+        await this._spacetimedb.staticData.load();
+      } catch (error) {
+        console.error('Failed to auto-load static data:', error);
+        // Don't fail connection if static data loading fails
+        // User can manually retry with client.staticData.load()
+      }
+    }
   }
 
   /**

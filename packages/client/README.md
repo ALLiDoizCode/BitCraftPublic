@@ -6,6 +6,7 @@ Core client library for Sigil - SpacetimeDB and Nostr integration for BitCraft g
 
 - **Nostr Identity Management**: Cryptographic identity with BIP-39 seed phrases
 - **SpacetimeDB Integration**: Real-time game world subscriptions via WebSocket
+- **Static Data Loading**: Fast O(1) lookups for game definitions (items, recipes, terrain)
 - **Type-Safe Table Access**: Generated TypeScript types for all game tables
 - **Latency Monitoring**: NFR5 compliance with <500ms update latency tracking
 - **Event-Driven API**: React to game state changes in real-time
@@ -41,6 +42,90 @@ client.on('connectionChange', ({ state, error }) => {
 
 // Connect to SpacetimeDB
 await client.connect();
+```
+
+### Static Data Loading
+
+Static data tables (all `*_desc` tables) are loaded automatically on `connect()` by default:
+
+```typescript
+// Static data loads automatically on connect
+await client.connect();
+
+// Access static data
+const item = client.staticData.get('item_desc', 1);
+console.log('Item:', item);
+
+// Get all items
+const allItems = client.staticData.getAll('item_desc');
+console.log(`Total items: ${allItems.length}`);
+
+// Query with filter
+const legendaryItems = client.staticData.query(
+  'item_desc',
+  (item) => item.rarity === 'legendary'
+);
+
+// Check if loaded
+console.log('Static data loaded:', client.isStaticDataLoaded);
+
+// Get loading metrics
+const metrics = client.staticData.getMetrics();
+console.log('Load time:', metrics?.loadTime, 'ms');
+```
+
+#### Manual Static Data Loading
+
+Disable auto-loading and load manually:
+
+```typescript
+const client = new SigilClient({
+  spacetimedb: { host: 'localhost', port: 3000, database: 'bitcraft' },
+  autoLoadStaticData: false, // Disable auto-loading
+});
+
+await client.connect();
+
+// Load manually
+await client.staticData.load();
+```
+
+#### Static Data Events
+
+```typescript
+// Loading progress
+client.on('loadingProgress', ({ loaded, total, tableName }) => {
+  console.log(`Loading ${tableName} (${loaded}/${total})`);
+});
+
+// Loading complete
+client.on('staticDataLoaded', ({ cached, metrics }) => {
+  console.log('Static data loaded!');
+  console.log('Load time:', metrics?.loadTime, 'ms');
+});
+
+// Loading metrics
+client.on('loadingMetrics', ({ totalTime, tableCount, avgTimePerTable }) => {
+  console.log(`Loaded ${tableCount} tables in ${totalTime}ms`);
+});
+```
+
+#### Cache Persistence
+
+Static data cache persists across reconnections (static tables don't change at runtime):
+
+```typescript
+// First connection: loads all static data
+await client.connect();
+// ... static data loaded ...
+
+// Disconnect and reconnect
+await client.disconnect();
+await client.connect();
+// Cache persists - no reload!
+
+// Force reload if needed
+await client.staticData.forceReload();
 ```
 
 ### Table Subscriptions
@@ -186,6 +271,15 @@ Via `client.spacetimedb.latency`:
 - `updateLatency`: Update latency measured
   - Payload: `{ latency: number, timestamp: number, tableName?: string }`
 
+### Static Data Events
+
+- `loadingProgress`: Static data loading progress
+  - Payload: `{ loaded: number, total: number, tableName: string }`
+- `staticDataLoaded`: Static data loading complete
+  - Payload: `{ cached: boolean, metrics?: StaticDataMetrics }`
+- `loadingMetrics`: Static data loading metrics
+  - Payload: `{ totalTime: number, tableCount: number, avgTimePerTable: number, failedTables: string[] }`
+
 ## Type Generation
 
 Types are generated from the BitCraft SpacetimeDB module schema. Currently using minimal stub types in `src/spacetimedb/generated/index.ts`.
@@ -206,16 +300,30 @@ Do not upgrade to SDK 2.0+ until the BitCraft module is upgraded to SpacetimeDB 
 
 Real-time updates must arrive within 500ms of database commit. The latency monitor tracks this and logs warnings if the threshold is exceeded.
 
+### NFR6: Static Data Loading Performance
+
+Static data loading (all `*_desc` tables) must complete within 10 seconds on first connection. The static data loader tracks this and logs warnings if the threshold is exceeded.
+
 ### NFR18: Compatibility
 
 SpacetimeDB SDK 1.3.3 is required for backwards compatibility with BitCraft module 1.6.x.
 
 ## Examples
 
-See `examples/subscribe-to-game-state.ts` for a complete example:
+### Subscribe to Game State
+
+See `examples/subscribe-to-game-state.ts`:
 
 ```bash
 tsx packages/client/examples/subscribe-to-game-state.ts
+```
+
+### Load Static Data
+
+See `examples/load-static-data.ts`:
+
+```bash
+tsx packages/client/examples/load-static-data.ts
 ```
 
 ## Testing
