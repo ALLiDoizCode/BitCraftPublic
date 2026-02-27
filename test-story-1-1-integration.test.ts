@@ -150,7 +150,7 @@ describe('Story 1.1: Monorepo Scaffolding & Build Infrastructure - Integration T
       expect(workflow).toContain('pnpm install');
       expect(workflow).toContain('pnpm lint');
       expect(workflow).toContain('pnpm typecheck');
-      expect(workflow).toContain('pnpm test');
+      expect(workflow).toMatch(/pnpm.*test/); // Can be "pnpm test" or "pnpm --filter @sigil/client test:unit"
       expect(workflow).toContain('pnpm build');
 
       // Check for Node.js 20.x

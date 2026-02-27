@@ -36,7 +36,9 @@ describe('ReconnectionManager - Unit Tests', () => {
 
     // Mock SubscriptionManager that syncs with connection.subscriptions
     mockSubscriptionManager = {
-      subscribe: vi.fn().mockResolvedValue({ id: 'test-sub', tableName: 'test', unsubscribe: vi.fn() }),
+      subscribe: vi
+        .fn()
+        .mockResolvedValue({ id: 'test-sub', tableName: 'test', unsubscribe: vi.fn() }),
       getActiveSubscriptions: vi.fn(() => {
         // Convert connection.subscriptions Map to array of subscription objects
         // Include query in the subscription handle (for reconnection recovery)
@@ -56,10 +58,14 @@ describe('ReconnectionManager - Unit Tests', () => {
 
   describe('AC1: Connection loss detection and reconnection initiation', () => {
     it('should detect unexpected connection loss and emit disconnected event', async () => {
-      manager = new ReconnectionManager(mockConnection, {
-        autoReconnect: true,
-        maxReconnectAttempts: 10,
-      }, mockSubscriptionManager);
+      manager = new ReconnectionManager(
+        mockConnection,
+        {
+          autoReconnect: true,
+          maxReconnectAttempts: 10,
+        },
+        mockSubscriptionManager
+      );
 
       const events: ConnectionChangeEvent[] = [];
       manager.on('connectionChange', (event: ConnectionChangeEvent) => {
@@ -80,9 +86,13 @@ describe('ReconnectionManager - Unit Tests', () => {
     });
 
     it('should include disconnect reason in event payload', async () => {
-      manager = new ReconnectionManager(mockConnection, {
-        autoReconnect: true,
-      }, mockSubscriptionManager);
+      manager = new ReconnectionManager(
+        mockConnection,
+        {
+          autoReconnect: true,
+        },
+        mockSubscriptionManager
+      );
 
       const events: ConnectionChangeEvent[] = [];
       manager.on('connectionChange', (event: ConnectionChangeEvent) => {
@@ -104,9 +114,13 @@ describe('ReconnectionManager - Unit Tests', () => {
     });
 
     it('should NOT trigger reconnection on manual disconnect', async () => {
-      manager = new ReconnectionManager(mockConnection, {
-        autoReconnect: true,
-      }, mockSubscriptionManager);
+      manager = new ReconnectionManager(
+        mockConnection,
+        {
+          autoReconnect: true,
+        },
+        mockSubscriptionManager
+      );
 
       const events: ConnectionChangeEvent[] = [];
       manager.on('connectionChange', (event: ConnectionChangeEvent) => {
@@ -128,10 +142,14 @@ describe('ReconnectionManager - Unit Tests', () => {
     });
 
     it('should start reconnection within 1 second of disconnect', async () => {
-      manager = new ReconnectionManager(mockConnection, {
-        autoReconnect: true,
-        initialDelay: 500,
-      }, mockSubscriptionManager);
+      manager = new ReconnectionManager(
+        mockConnection,
+        {
+          autoReconnect: true,
+          initialDelay: 500,
+        },
+        mockSubscriptionManager
+      );
 
       const events: ConnectionChangeEvent[] = [];
       manager.on('connectionChange', (event: ConnectionChangeEvent) => {
@@ -158,10 +176,14 @@ describe('ReconnectionManager - Unit Tests', () => {
 
   describe('AC2: Exponential backoff with cap', () => {
     it('should calculate exponential backoff correctly (1s, 2s, 4s, 8s, 16s, 30s)', () => {
-      manager = new ReconnectionManager(mockConnection, {
-        initialDelay: 1000,
-        maxDelay: 30000,
-      }, mockSubscriptionManager);
+      manager = new ReconnectionManager(
+        mockConnection,
+        {
+          initialDelay: 1000,
+          maxDelay: 30000,
+        },
+        mockSubscriptionManager
+      );
 
       const delays = [
         manager.calculateBackoffDelay(0),
@@ -192,10 +214,14 @@ describe('ReconnectionManager - Unit Tests', () => {
     });
 
     it('should apply jitter (±10%) to backoff delays', () => {
-      manager = new ReconnectionManager(mockConnection, {
-        initialDelay: 1000,
-        jitterPercent: 10,
-      }, mockSubscriptionManager);
+      manager = new ReconnectionManager(
+        mockConnection,
+        {
+          initialDelay: 1000,
+          jitterPercent: 10,
+        },
+        mockSubscriptionManager
+      );
 
       // Generate 100 delays and verify they vary
       const delays = Array.from({ length: 100 }, () => manager.calculateBackoffDelay(0));
@@ -212,10 +238,14 @@ describe('ReconnectionManager - Unit Tests', () => {
     });
 
     it('should cap backoff delay at 30 seconds (NFR10)', () => {
-      manager = new ReconnectionManager(mockConnection, {
-        initialDelay: 1000,
-        maxDelay: 30000,
-      }, mockSubscriptionManager);
+      manager = new ReconnectionManager(
+        mockConnection,
+        {
+          initialDelay: 1000,
+          maxDelay: 30000,
+        },
+        mockSubscriptionManager
+      );
 
       // Attempt 100 should still cap at 30s
       const delay = manager.calculateBackoffDelay(100);
@@ -223,11 +253,15 @@ describe('ReconnectionManager - Unit Tests', () => {
     });
 
     it('should emit reconnecting status before each attempt with attempt number', async () => {
-      manager = new ReconnectionManager(mockConnection, {
-        autoReconnect: true,
-        maxReconnectAttempts: 3,
-        initialDelay: 100, // Fast for testing
-      }, mockSubscriptionManager);
+      manager = new ReconnectionManager(
+        mockConnection,
+        {
+          autoReconnect: true,
+          maxReconnectAttempts: 3,
+          initialDelay: 100, // Fast for testing
+        },
+        mockSubscriptionManager
+      );
 
       const events: ConnectionChangeEvent[] = [];
       manager.on('connectionChange', (event: ConnectionChangeEvent) => {
@@ -256,10 +290,14 @@ describe('ReconnectionManager - Unit Tests', () => {
 
   describe('AC3: Successful reconnection and subscription recovery', () => {
     it('should successfully reconnect and emit connected status', async () => {
-      manager = new ReconnectionManager(mockConnection, {
-        autoReconnect: true,
-        initialDelay: 100,
-      }, mockSubscriptionManager);
+      manager = new ReconnectionManager(
+        mockConnection,
+        {
+          autoReconnect: true,
+          initialDelay: 100,
+        },
+        mockSubscriptionManager
+      );
 
       const events: ConnectionChangeEvent[] = [];
       manager.on('connectionChange', (event: ConnectionChangeEvent) => {
@@ -283,9 +321,13 @@ describe('ReconnectionManager - Unit Tests', () => {
     });
 
     it('should restore all subscriptions with original filters after reconnection', async () => {
-      manager = new ReconnectionManager(mockConnection, {
-        autoReconnect: true,
-      }, mockSubscriptionManager);
+      manager = new ReconnectionManager(
+        mockConnection,
+        {
+          autoReconnect: true,
+        },
+        mockSubscriptionManager
+      );
 
       // Setup subscriptions before disconnect
       const subscriptions = [
@@ -322,9 +364,13 @@ describe('ReconnectionManager - Unit Tests', () => {
     });
 
     it('should emit subscriptionsRecovered event with metadata', async () => {
-      manager = new ReconnectionManager(mockConnection, {
-        autoReconnect: true,
-      }, mockSubscriptionManager);
+      manager = new ReconnectionManager(
+        mockConnection,
+        {
+          autoReconnect: true,
+        },
+        mockSubscriptionManager
+      );
 
       const events: SubscriptionsRecoveredEvent[] = [];
       manager.on('subscriptionsRecovered', (event: SubscriptionsRecoveredEvent) => {
@@ -354,10 +400,14 @@ describe('ReconnectionManager - Unit Tests', () => {
     });
 
     it('should emit subscriptionsRecovered with correct timing', async () => {
-      manager = new ReconnectionManager(mockConnection, {
-        autoReconnect: true,
-        initialDelay: 100,
-      }, mockSubscriptionManager);
+      manager = new ReconnectionManager(
+        mockConnection,
+        {
+          autoReconnect: true,
+          initialDelay: 100,
+        },
+        mockSubscriptionManager
+      );
 
       const events: SubscriptionsRecoveredEvent[] = [];
       manager.on('subscriptionsRecovered', (event: SubscriptionsRecoveredEvent) => {
@@ -386,9 +436,13 @@ describe('ReconnectionManager - Unit Tests', () => {
     });
 
     it('should complete reconnection + subscription recovery within 10 seconds (NFR23)', async () => {
-      manager = new ReconnectionManager(mockConnection, {
-        autoReconnect: true,
-      }, mockSubscriptionManager);
+      manager = new ReconnectionManager(
+        mockConnection,
+        {
+          autoReconnect: true,
+        },
+        mockSubscriptionManager
+      );
 
       // Setup multiple subscriptions
       for (let i = 0; i < 10; i++) {
@@ -420,9 +474,13 @@ describe('ReconnectionManager - Unit Tests', () => {
 
   describe('AC4: State snapshot recovery', () => {
     it('should capture subscription metadata before disconnect', async () => {
-      manager = new ReconnectionManager(mockConnection, {
-        autoReconnect: true,
-      }, mockSubscriptionManager);
+      manager = new ReconnectionManager(
+        mockConnection,
+        {
+          autoReconnect: true,
+        },
+        mockSubscriptionManager
+      );
 
       // Setup subscriptions
       mockConnection.subscriptions.set('player', { id: 1 });
@@ -453,9 +511,13 @@ describe('ReconnectionManager - Unit Tests', () => {
     });
 
     it('should emit subscriptionRestore events during recovery', async () => {
-      manager = new ReconnectionManager(mockConnection, {
-        autoReconnect: true,
-      }, mockSubscriptionManager);
+      manager = new ReconnectionManager(
+        mockConnection,
+        {
+          autoReconnect: true,
+        },
+        mockSubscriptionManager
+      );
 
       // Setup subscriptions before disconnect
       mockConnection.subscriptions.set('player', {});
@@ -486,9 +548,13 @@ describe('ReconnectionManager - Unit Tests', () => {
     });
 
     it('should preserve static data cache across reconnection', async () => {
-      manager = new ReconnectionManager(mockConnection, {
-        autoReconnect: true,
-      }, mockSubscriptionManager);
+      manager = new ReconnectionManager(
+        mockConnection,
+        {
+          autoReconnect: true,
+        },
+        mockSubscriptionManager
+      );
 
       let staticDataReloadCount = 0;
       manager.on('staticDataLoad', () => {
@@ -513,11 +579,15 @@ describe('ReconnectionManager - Unit Tests', () => {
 
   describe('AC5: Reconnection failure handling', () => {
     it('should stop reconnection after retry limit exhausted', async () => {
-      manager = new ReconnectionManager(mockConnection, {
-        autoReconnect: true,
-        maxReconnectAttempts: 3,
-        initialDelay: 100,
-      }, mockSubscriptionManager);
+      manager = new ReconnectionManager(
+        mockConnection,
+        {
+          autoReconnect: true,
+          maxReconnectAttempts: 3,
+          initialDelay: 100,
+        },
+        mockSubscriptionManager
+      );
 
       mockConnection.connect.mockRejectedValue(new Error('Connection refused'));
 
@@ -543,11 +613,15 @@ describe('ReconnectionManager - Unit Tests', () => {
     }, 5000);
 
     it('should emit failed status with comprehensive error details', async () => {
-      manager = new ReconnectionManager(mockConnection, {
-        autoReconnect: true,
-        maxReconnectAttempts: 2,
-        initialDelay: 100,
-      }, mockSubscriptionManager);
+      manager = new ReconnectionManager(
+        mockConnection,
+        {
+          autoReconnect: true,
+          maxReconnectAttempts: 2,
+          initialDelay: 100,
+        },
+        mockSubscriptionManager
+      );
 
       mockConnection.connect.mockRejectedValue(new Error('ECONNREFUSED'));
 
@@ -572,11 +646,15 @@ describe('ReconnectionManager - Unit Tests', () => {
     }, 5000);
 
     it('should include total attempts in error details', async () => {
-      manager = new ReconnectionManager(mockConnection, {
-        autoReconnect: true,
-        maxReconnectAttempts: 3,
-        initialDelay: 100,
-      }, mockSubscriptionManager);
+      manager = new ReconnectionManager(
+        mockConnection,
+        {
+          autoReconnect: true,
+          maxReconnectAttempts: 3,
+          initialDelay: 100,
+        },
+        mockSubscriptionManager
+      );
 
       mockConnection.connect.mockRejectedValue(new Error('Connection failed'));
 
@@ -603,11 +681,15 @@ describe('ReconnectionManager - Unit Tests', () => {
     }, 5000);
 
     it('should allow manual retry via retryConnection() after failure', async () => {
-      manager = new ReconnectionManager(mockConnection, {
-        autoReconnect: true,
-        maxReconnectAttempts: 1,
-        initialDelay: 100,
-      }, mockSubscriptionManager);
+      manager = new ReconnectionManager(
+        mockConnection,
+        {
+          autoReconnect: true,
+          maxReconnectAttempts: 1,
+          initialDelay: 100,
+        },
+        mockSubscriptionManager
+      );
 
       mockConnection.connect.mockRejectedValueOnce(new Error('Connection refused'));
 
@@ -639,10 +721,14 @@ describe('ReconnectionManager - Unit Tests', () => {
     }, 5000);
 
     it('should reset attempt counter on manual retry', async () => {
-      manager = new ReconnectionManager(mockConnection, {
-        maxReconnectAttempts: 2,
-        initialDelay: 100,
-      }, mockSubscriptionManager);
+      manager = new ReconnectionManager(
+        mockConnection,
+        {
+          maxReconnectAttempts: 2,
+          initialDelay: 100,
+        },
+        mockSubscriptionManager
+      );
 
       mockConnection.connect.mockRejectedValue(new Error('Connection refused'));
 
@@ -664,11 +750,15 @@ describe('ReconnectionManager - Unit Tests', () => {
 
   describe('Additional Coverage: Edge Cases and Metrics', () => {
     it('should cancel reconnection and clean up timers via cancelReconnection()', async () => {
-      manager = new ReconnectionManager(mockConnection, {
-        autoReconnect: true,
-        maxReconnectAttempts: 10,
-        initialDelay: 100,
-      }, mockSubscriptionManager);
+      manager = new ReconnectionManager(
+        mockConnection,
+        {
+          autoReconnect: true,
+          maxReconnectAttempts: 10,
+          initialDelay: 100,
+        },
+        mockSubscriptionManager
+      );
 
       mockConnection.connect.mockRejectedValue(new Error('Connection refused'));
 
@@ -703,10 +793,14 @@ describe('ReconnectionManager - Unit Tests', () => {
     });
 
     it('should track reconnection metrics correctly', async () => {
-      manager = new ReconnectionManager(mockConnection, {
-        autoReconnect: true,
-        initialDelay: 100,
-      }, mockSubscriptionManager);
+      manager = new ReconnectionManager(
+        mockConnection,
+        {
+          autoReconnect: true,
+          initialDelay: 100,
+        },
+        mockSubscriptionManager
+      );
 
       // Simulate successful reconnection
       mockConnection.emit('connectionChange', {
@@ -728,10 +822,14 @@ describe('ReconnectionManager - Unit Tests', () => {
     });
 
     it('should handle multiple successive reconnections', async () => {
-      manager = new ReconnectionManager(mockConnection, {
-        autoReconnect: true,
-        initialDelay: 100,
-      }, mockSubscriptionManager);
+      manager = new ReconnectionManager(
+        mockConnection,
+        {
+          autoReconnect: true,
+          initialDelay: 100,
+        },
+        mockSubscriptionManager
+      );
 
       // First disconnect and reconnect
       mockConnection.emit('connectionChange', {
@@ -760,9 +858,13 @@ describe('ReconnectionManager - Unit Tests', () => {
     });
 
     it('should handle zero subscriptions gracefully', async () => {
-      manager = new ReconnectionManager(mockConnection, {
-        autoReconnect: true,
-      }, mockSubscriptionManager);
+      manager = new ReconnectionManager(
+        mockConnection,
+        {
+          autoReconnect: true,
+        },
+        mockSubscriptionManager
+      );
 
       const events: SubscriptionsRecoveredEvent[] = [];
       manager.on('subscriptionsRecovered', (event: SubscriptionsRecoveredEvent) => {
@@ -787,10 +889,14 @@ describe('ReconnectionManager - Unit Tests', () => {
     });
 
     it('should emit warning when reconnection exceeds 10 seconds (NFR23)', async () => {
-      manager = new ReconnectionManager(mockConnection, {
-        autoReconnect: false, // Manual control
-        initialDelay: 100,
-      }, mockSubscriptionManager);
+      manager = new ReconnectionManager(
+        mockConnection,
+        {
+          autoReconnect: false, // Manual control
+          initialDelay: 100,
+        },
+        mockSubscriptionManager
+      );
 
       const nfr23Events: any[] = [];
       manager.on('nfr23Violation', (event: any) => {
@@ -812,10 +918,14 @@ describe('ReconnectionManager - Unit Tests', () => {
     });
 
     it('should prevent concurrent reconnection attempts', async () => {
-      manager = new ReconnectionManager(mockConnection, {
-        autoReconnect: true,
-        initialDelay: 200,
-      }, mockSubscriptionManager);
+      manager = new ReconnectionManager(
+        mockConnection,
+        {
+          autoReconnect: true,
+          initialDelay: 200,
+        },
+        mockSubscriptionManager
+      );
 
       let connectCallCount = 0;
       mockConnection.connect.mockImplementation(async () => {
@@ -850,9 +960,13 @@ describe('ReconnectionManager - Unit Tests', () => {
     });
 
     it('should dispose and clean up resources', async () => {
-      manager = new ReconnectionManager(mockConnection, {
-        autoReconnect: true,
-      }, mockSubscriptionManager);
+      manager = new ReconnectionManager(
+        mockConnection,
+        {
+          autoReconnect: true,
+        },
+        mockSubscriptionManager
+      );
 
       // Start a reconnection
       mockConnection.emit('connectionChange', {
@@ -871,11 +985,15 @@ describe('ReconnectionManager - Unit Tests', () => {
     });
 
     it('should handle connection timeout during reconnection attempt', async () => {
-      manager = new ReconnectionManager(mockConnection, {
-        autoReconnect: true,
-        maxReconnectAttempts: 2,
-        initialDelay: 100,
-      }, mockSubscriptionManager);
+      manager = new ReconnectionManager(
+        mockConnection,
+        {
+          autoReconnect: true,
+          maxReconnectAttempts: 2,
+          initialDelay: 100,
+        },
+        mockSubscriptionManager
+      );
 
       // Mock connection that times out
       mockConnection.connect.mockImplementation(
@@ -901,21 +1019,29 @@ describe('ReconnectionManager - Unit Tests', () => {
 
     it('should accept custom configuration options', () => {
       // Test with custom values
-      const manager1 = new ReconnectionManager(mockConnection, {
-        initialDelay: 500,
-        maxDelay: 60000,
-        maxReconnectAttempts: 5,
-        jitterPercent: 20,
-      }, mockSubscriptionManager);
+      const manager1 = new ReconnectionManager(
+        mockConnection,
+        {
+          initialDelay: 500,
+          maxDelay: 60000,
+          maxReconnectAttempts: 5,
+          jitterPercent: 20,
+        },
+        mockSubscriptionManager
+      );
 
       const delay = manager1.calculateBackoffDelay(0);
       expect(delay).toBeGreaterThan(0);
       expect(delay).toBeLessThan(1000); // 500ms ± 20% jitter
 
       // Test with zero max attempts (infinite retries)
-      const manager2 = new ReconnectionManager(mockConnection, {
-        maxReconnectAttempts: 0,
-      }, mockSubscriptionManager);
+      const manager2 = new ReconnectionManager(
+        mockConnection,
+        {
+          maxReconnectAttempts: 0,
+        },
+        mockSubscriptionManager
+      );
 
       expect(manager2).toBeDefined();
       expect(manager2.state).toBe('disconnected');
@@ -923,9 +1049,13 @@ describe('ReconnectionManager - Unit Tests', () => {
     });
 
     it('should handle missing event handlers gracefully', async () => {
-      manager = new ReconnectionManager(mockConnection, {
-        autoReconnect: true,
-      }, mockSubscriptionManager);
+      manager = new ReconnectionManager(
+        mockConnection,
+        {
+          autoReconnect: true,
+        },
+        mockSubscriptionManager
+      );
 
       // Don't attach any event handlers - should not crash
 
@@ -946,10 +1076,14 @@ describe('ReconnectionManager - Unit Tests', () => {
     });
 
     it('should handle rapid state changes without race conditions', async () => {
-      manager = new ReconnectionManager(mockConnection, {
-        autoReconnect: true,
-        initialDelay: 100,
-      }, mockSubscriptionManager);
+      manager = new ReconnectionManager(
+        mockConnection,
+        {
+          autoReconnect: true,
+          initialDelay: 100,
+        },
+        mockSubscriptionManager
+      );
 
       // Emit multiple state changes rapidly
       mockConnection.emit('connectionChange', {

@@ -12,6 +12,19 @@ export {
 
 export { saveKeypair, loadKeypair } from './nostr/storage';
 
+// Nostr relay client (Story 2.1)
+export { NostrClient, SigilError } from './nostr/nostr-client';
+export type {
+  NostrEvent,
+  Filter,
+  Subscription,
+  ILPPacket,
+  ActionConfirmation,
+  NostrRelayOptions,
+  NostrConnectionState,
+  NostrConnectionChangeEvent,
+} from './nostr/types';
+
 // SpacetimeDB integration
 export {
   type SpacetimeDBSurface,

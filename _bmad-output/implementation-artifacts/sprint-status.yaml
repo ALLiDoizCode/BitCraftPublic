@@ -49,7 +49,7 @@ epics:
     stories:
       - id: story-2.1
         title: 'Crosstown Relay Connection & Event Subscriptions'
-        status: backlog
+        status: done
       - id: story-2.2
         title: 'Action Cost Registry & Wallet Balance'
         status: backlog

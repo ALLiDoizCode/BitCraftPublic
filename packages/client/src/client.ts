@@ -30,6 +30,8 @@ import type {
   ReconnectionMetrics,
   ReconnectionOptions,
 } from './spacetimedb/reconnection-types';
+import { NostrClient } from './nostr/nostr-client';
+import type { NostrRelayOptions } from './nostr/types';
 
 /**
  * Client identity interface
@@ -63,9 +65,10 @@ export interface SigilClientConfig {
   spacetimedb?: SpacetimeDBConnectionOptions;
   /** Auto-load static data on connect (default: true) */
   autoLoadStaticData?: boolean;
-  /** Reconnection options */
+  /** Reconnection options (SpacetimeDB) */
   reconnection?: ReconnectionOptions;
-  // Future: Nostr relay list
+  /** Nostr relay options (Story 2.1) */
+  nostrRelay?: NostrRelayOptions;
 }
 
 /**
@@ -76,6 +79,7 @@ export interface SigilClientConfig {
 export class SigilClient extends EventEmitter {
   private keypair: NostrKeypair | null = null;
   private _spacetimedb: SpacetimeDBSurface;
+  private _nostr: NostrClient;
   private autoLoadStaticData: boolean;
   private reconnectionManager: ReconnectionManager | null = null;
 
@@ -104,7 +108,29 @@ export class SigilClient extends EventEmitter {
       this.emit('subscriptionsRecovered', event);
     });
 
-    // Future: Initialize Nostr relay pool
+    // Initialize Nostr client (Story 2.1)
+    this._nostr = new NostrClient(config?.nostrRelay);
+
+    // Forward Nostr events to SigilClient
+    this._nostr.on('connectionChange', (event) => {
+      this.emit('nostrConnectionChange', event);
+    });
+
+    this._nostr.on('actionConfirmed', (confirmation) => {
+      this.emit('actionConfirmed', confirmation);
+    });
+
+    this._nostr.on('notice', (message) => {
+      this.emit('nostrNotice', message);
+    });
+
+    this._nostr.on('error', (error) => {
+      this.emit('nostrError', error);
+    });
+
+    this._nostr.on('eose', (subscriptionId) => {
+      this.emit('nostrEose', subscriptionId);
+    });
   }
 
   /**
@@ -131,6 +157,32 @@ export class SigilClient extends EventEmitter {
   }
 
   /**
+   * Access Nostr client
+   *
+   * Provides Nostr relay connection, subscriptions, and event publishing (Story 2.1+).
+   *
+   * @example
+   * ```typescript
+   * const client = new SigilClient({
+   *   nostrRelay: { url: 'ws://localhost:4040' }
+   * });
+   *
+   * await client.connect();
+   *
+   * // Subscribe to action confirmations
+   * const sub = client.nostr.subscribe([{ kinds: [30078] }], (event) => {
+   *   console.log('Action confirmed:', event);
+   * });
+   *
+   * // Later...
+   * sub.unsubscribe();
+   * ```
+   */
+  get nostr(): NostrClient {
+    return this._nostr;
+  }
+
+  /**
    * Access static data loader (convenience accessor)
    *
    * Provides quick access to static data queries.
@@ -154,29 +206,32 @@ export class SigilClient extends EventEmitter {
   }
 
   /**
-   * Connect to SpacetimeDB server
+   * Connect to SpacetimeDB server and Nostr relay
    *
-   * Establishes WebSocket connection to SpacetimeDB.
+   * Establishes WebSocket connections to both services.
    * If autoLoadStaticData is true (default), static data loads automatically.
    *
    * @example
    * ```typescript
    * const client = new SigilClient({
-   *   spacetimedb: { host: 'localhost', port: 3000, database: 'bitcraft' }
+   *   spacetimedb: { host: 'localhost', port: 3000, database: 'bitcraft' },
+   *   nostrRelay: { url: 'ws://localhost:4040' }
    * });
    * await client.connect();
-   * // Static data is now loaded automatically
+   * // Both SpacetimeDB and Nostr relay are now connected
    * ```
    */
   async connect(): Promise<void> {
-    await this._spacetimedb.connection.connect();
+    // Connect to both SpacetimeDB and Nostr relay in parallel
+    await Promise.all([this._spacetimedb.connection.connect(), this._nostr.connect()]);
 
     // Auto-load static data if configured
     if (this.autoLoadStaticData) {
       try {
         await this._spacetimedb.staticData.load();
       } catch (error) {
-        console.error('Failed to auto-load static data:', error);
+        // Emit error event instead of console.error for proper error handling
+        this.emit('staticDataLoadError', error);
         // Don't fail connection if static data loading fails
         // User can manually retry with client.staticData.load()
       }
@@ -184,9 +239,9 @@ export class SigilClient extends EventEmitter {
   }
 
   /**
-   * Disconnect from SpacetimeDB server
+   * Disconnect from SpacetimeDB server and Nostr relay
    *
-   * Cleanly closes connection and unsubscribes from all tables.
+   * Cleanly closes both connections and unsubscribes from all tables/subscriptions.
    *
    * @example
    * ```typescript
@@ -203,13 +258,16 @@ export class SigilClient extends EventEmitter {
     this._spacetimedb.subscriptions.unsubscribeAll();
 
     // Clear table caches (internal method from createSpacetimeDBSurface)
-    const surface = this._spacetimedb as SpacetimeDBSurface & { _clearTableCache?: () => void };
+    // Type assertion is safe because we know createSpacetimeDBSurface adds this method
+    const surface = this._spacetimedb as SpacetimeDBSurface & {
+      _clearTableCache?: () => void;
+    };
     if (surface._clearTableCache) {
       surface._clearTableCache();
     }
 
-    // Disconnect
-    await this._spacetimedb.connection.disconnect();
+    // Disconnect from both services in parallel
+    await Promise.all([this._spacetimedb.connection.disconnect(), this._nostr.disconnect()]);
   }
 
   /**

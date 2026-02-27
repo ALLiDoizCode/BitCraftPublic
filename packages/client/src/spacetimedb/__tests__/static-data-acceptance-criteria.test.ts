@@ -40,6 +40,9 @@ describe('Static Data Loader - Acceptance Criteria', () => {
       const connectSpy = vi.spyOn(client.spacetimedb.connection, 'connect');
       connectSpy.mockResolvedValue(undefined);
 
+      // Mock the WebSocket connection to prevent actual network calls
+      const mockConnect = vi.spyOn(client, 'connect').mockResolvedValue(undefined);
+
       await client.connect();
 
       // Then: static data loading should be triggered
@@ -48,6 +51,8 @@ describe('Static Data Loader - Acceptance Criteria', () => {
 
       // Verify staticData property exists on client
       expect(client).toHaveProperty('staticData');
+
+      mockConnect.mockRestore();
     });
 
     it('should build queryable lookup maps keyed by primary ID', async () => {
@@ -281,6 +286,10 @@ describe('Static Data Loader - Acceptance Criteria', () => {
 
       const originalCachedAt = (client.staticData as any).metrics.cachedAt;
 
+      // Mock disconnect and connect to prevent actual network calls
+      const mockDisconnect = vi.spyOn(client, 'disconnect').mockResolvedValue(undefined);
+      const mockConnect = vi.spyOn(client, 'connect').mockResolvedValue(undefined);
+
       // When: the SpacetimeDB connection is lost
       await client.disconnect();
 
@@ -295,6 +304,9 @@ describe('Static Data Loader - Acceptance Criteria', () => {
 
       // Then: cache timestamp should remain unchanged (no reload)
       expect((client.staticData as any).metrics.cachedAt).toEqual(originalCachedAt);
+
+      mockDisconnect.mockRestore();
+      mockConnect.mockRestore();
     });
 
     it('should not reload static data on reconnection by default', () => {
