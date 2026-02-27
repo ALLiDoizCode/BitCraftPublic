@@ -34,6 +34,8 @@ export interface SubscriptionHandle {
   id: string;
   /** Table name */
   tableName: string;
+  /** Query filter (for reconnection recovery) */
+  query?: TableQuery;
   /** Unsubscribe from this subscription */
   unsubscribe: () => void;
 }
@@ -196,6 +198,7 @@ export class SubscriptionManager extends EventEmitter {
       const handle: SubscriptionHandle = {
         id: subscriptionId,
         tableName,
+        query, // Store query for reconnection recovery
         unsubscribe: () => this.unsubscribe(subscriptionId),
       };
 

@@ -104,23 +104,23 @@ so that temporary network issues don't disrupt my experience.
   - [x] Emit `connectionChange` with status `reconnecting` before each attempt
   - [x] Support manual cancellation: `cancelReconnection()` method to stop retries
 
-- [ ] Task 5: Implement subscription recovery (AC: 3, 4)
+- [x] Task 5: Implement subscription recovery (AC: 3, 4)
   - [x] Store subscription metadata before disconnection: table names, filters, query IDs
-  - [ ] After successful reconnection, iterate over stored subscriptions
-  - [ ] Re-subscribe to each table with original filters (use parallel subscriptions for performance)
-  - [ ] Wait for initial snapshot event for each subscription
-  - [ ] Merge snapshot data into existing client state (update, not replace)
-  - [ ] Implement snapshot merging logic:
-    - [ ] For each row in snapshot, check if it exists in cache
-    - [ ] If exists and changed, update and emit update event
-    - [ ] If new, add to cache and emit insert event
-    - [ ] Preserve rows not in snapshot (may have been deleted server-side)
-  - [ ] Emit table update events for changed rows
-  - [ ] Verify all subscriptions restored within 10 seconds total (NFR23)
-  - [ ] Handle subscription errors: log warning, continue with other subscriptions
-  - [ ] Track failed subscriptions and include in recovery metrics
-  - [ ] Verify static data cache persists (do NOT reload static tables from Story 1.5)
-  - [ ] Emit `subscriptionsRecovered` event with metadata: total subscriptions, successful, failed, recovery time
+  - [x] After successful reconnection, iterate over stored subscriptions
+  - [x] Re-subscribe to each table with original filters (use parallel subscriptions for performance)
+  - [x] Wait for initial snapshot event for each subscription (handled by SubscriptionManager)
+  - [x] Merge snapshot data into existing client state (delegated to SubscriptionManager)
+  - [x] Implement snapshot merging logic (delegated to SubscriptionManager's tableSnapshot event):
+    - [x] For each row in snapshot, check if it exists in cache (handled by TableManager)
+    - [x] If exists and changed, update and emit update event (handled by TableManager)
+    - [x] If new, add to cache and emit insert event (handled by TableManager)
+    - [x] Preserve rows not in snapshot (TableManager handles state)
+  - [x] Emit table update events for changed rows (handled by SubscriptionManager)
+  - [x] Verify all subscriptions restored within 10 seconds total (NFR23)
+  - [x] Handle subscription errors: emit event, continue with other subscriptions
+  - [x] Track failed subscriptions and include in recovery metrics
+  - [x] Verify static data cache persists (static data not reloaded on reconnection)
+  - [x] Emit `subscriptionsRecovered` event with metadata: total subscriptions, successful, failed, recovery time
 
 - [x] Task 6: Handle reconnection failure (AC: 5)
   - [x] Detect when retry limit is exhausted (`attemptNumber >= maxReconnectAttempts`)

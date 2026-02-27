@@ -88,10 +88,11 @@ export class SigilClient extends EventEmitter {
     // Configure auto-loading of static data (default: true)
     this.autoLoadStaticData = config?.autoLoadStaticData ?? true;
 
-    // Initialize reconnection manager
+    // Initialize reconnection manager with SubscriptionManager
     this.reconnectionManager = new ReconnectionManager(
       this._spacetimedb.connection,
-      config?.reconnection
+      config?.reconnection,
+      this._spacetimedb.subscriptions
     );
 
     // Forward reconnection events

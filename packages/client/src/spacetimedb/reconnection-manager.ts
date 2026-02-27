@@ -64,6 +64,10 @@ export class ReconnectionManager extends EventEmitter {
     on(event: string, listener: (event: unknown) => void): void;
     subscriptions?: Map<string, Record<string, unknown>>;
   };
+  private subscriptionManager: {
+    subscribe(tableName: string, query: Record<string, unknown>): Promise<unknown>;
+    getActiveSubscriptions(): Array<{ id: string; tableName: string }>;
+  } | null = null;
   private options: Required<ReconnectionOptions>;
   private _state: ConnectionState = 'disconnected';
   private attemptNumber = 0;
@@ -90,10 +94,15 @@ export class ReconnectionManager extends EventEmitter {
       on(event: string, listener: (event: unknown) => void): void;
       subscriptions?: Map<string, Record<string, unknown>>;
     },
-    options?: ReconnectionOptions
+    options?: ReconnectionOptions,
+    subscriptionManager?: {
+      subscribe(tableName: string, query: Record<string, unknown>): Promise<unknown>;
+      getActiveSubscriptions(): Array<{ id: string; tableName: string }>;
+    }
   ) {
     super();
     this.connection = connection;
+    this.subscriptionManager = subscriptionManager || null;
     this.options = { ...DEFAULT_OPTIONS, ...options };
 
     // Listen to connection events
@@ -172,16 +181,24 @@ export class ReconnectionManager extends EventEmitter {
    * Capture current subscription state for recovery
    */
   private captureSubscriptionState(): void {
-    // Capture subscriptions from connection if available
+    // Capture subscriptions from SubscriptionManager if available
     this.subscriptionSnapshots = [];
-    if (this.connection.subscriptions) {
-      this.connection.subscriptions.forEach((query, tableName) => {
-        this.subscriptionSnapshots.push({
-          id: `${tableName}-recovery`,
-          tableName,
-          query: query || {},
-        });
-      });
+    if (this.subscriptionManager) {
+      const activeSubscriptions = this.subscriptionManager.getActiveSubscriptions();
+      // Store the subscription metadata for later recovery
+      // We capture tableName and query for each subscription
+      const uniqueTables = new Set<string>();
+      for (const sub of activeSubscriptions) {
+        if (!uniqueTables.has(sub.tableName)) {
+          uniqueTables.add(sub.tableName);
+          this.subscriptionSnapshots.push({
+            id: sub.id,
+            tableName: sub.tableName,
+            // Use query from subscription handle, default to empty object if not available
+            query: (sub as unknown as { query?: Record<string, unknown> }).query || {},
+          });
+        }
+      }
     }
   }
 
@@ -341,31 +358,50 @@ export class ReconnectionManager extends EventEmitter {
   /**
    * Recover subscriptions after reconnection
    * Includes timeout to prevent hanging (NFR23 compliance)
+   *
+   * Implements actual re-subscription using SubscriptionManager.
+   * Subscriptions are restored in parallel for performance (NFR23).
    */
   private async recoverSubscriptions(): Promise<void> {
     const startTime = Date.now();
     let successCount = 0;
     let failCount = 0;
 
+    // Early exit if no subscriptions or no subscription manager
+    if (this.subscriptionSnapshots.length === 0 || !this.subscriptionManager) {
+      this.emit('subscriptionsRecovered', {
+        totalSubscriptions: 0,
+        successfulSubscriptions: 0,
+        failedSubscriptions: 0,
+        recoveryTimeMs: 0,
+      } as SubscriptionsRecoveredEvent);
+      return;
+    }
+
     try {
       // Add timeout for subscription recovery
       await Promise.race([
         (async () => {
-          // Restore each subscription
-          for (const sub of this.subscriptionSnapshots) {
+          // Restore subscriptions in parallel for performance (NFR23)
+          const subscribePromises = this.subscriptionSnapshots.map(async (sub) => {
             try {
-              // Emit subscriptionRestore event for each subscription
-              this.emit('subscriptionRestore', sub);
+              // Actually re-subscribe using SubscriptionManager
+              await this.subscriptionManager!.subscribe(sub.tableName, sub.query);
               successCount++;
+              // Emit subscriptionRestore event for each successful subscription
+              this.emit('subscriptionRestore', sub);
             } catch (error) {
+              failCount++;
               // Emit error event instead of console.error
               this.emit('subscriptionRestoreError', {
                 tableName: sub.tableName,
                 error: error instanceof Error ? error : new Error(String(error)),
               });
-              failCount++;
             }
-          }
+          });
+
+          // Wait for all subscriptions to complete
+          await Promise.all(subscribePromises);
         })(),
         new Promise<void>((_, reject) => {
           setTimeout(
