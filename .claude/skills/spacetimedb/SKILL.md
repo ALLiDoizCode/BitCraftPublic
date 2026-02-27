@@ -18,18 +18,22 @@ SpacetimeDB is a serverless database where server logic (modules) runs inside th
 Determine the task type and consult the appropriate reference:
 
 **Writing server module code?**
+
 - Rust module -> See [references/rust-modules.md](references/rust-modules.md)
 - C# module -> See [references/csharp-modules.md](references/csharp-modules.md)
 - TypeScript module -> Use patterns from [references/cheat-sheet.md](references/cheat-sheet.md) TypeScript sections
 - Quick lookup across languages -> See [references/cheat-sheet.md](references/cheat-sheet.md)
 
 **Writing client code?**
+
 - Any SDK (TypeScript, C#, Rust, Unreal) -> See [references/client-sdks.md](references/client-sdks.md)
 
 **CLI, deployment, SQL, or HTTP API?**
+
 - See [references/cli-and-deployment.md](references/cli-and-deployment.md)
 
 **Scaffolding a new project?**
+
 - Recommended: `spacetime dev --template <template>` (basic-rs, basic-cs, basic-ts, react-ts) -- auto-rebuilds, republishes, and generates bindings
 - Or run `scripts/scaffold-project.sh <name> <server-lang> [client-lang]`
 - Or use `spacetime init --lang <lang> --project-path <path> <name>` for module only
@@ -37,7 +41,9 @@ Determine the task type and consult the appropriate reference:
 ## Core Concepts
 
 ### Tables
+
 Tables store data. Define with language-specific attributes. Key decorators:
+
 - **primary_key** - Unique row identity; enables update/delete semantics
 - **unique** - Unique constraint; enables `.find()` lookups
 - **auto_inc** - Auto-incrementing integer (insert with 0 to auto-assign)
@@ -45,24 +51,31 @@ Tables store data. Define with language-specific attributes. Key decorators:
 - **public** - Visible to clients (private by default)
 
 ### Reducers
+
 Transactional server functions. All changes roll back on error. No network I/O allowed. Called by clients or scheduled.
 
 ### Procedures (Beta)
+
 Like reducers but can make HTTP requests to external services. Require manual transaction management via `ctx.with_tx()`. Available in Rust and TypeScript (C# coming soon).
 
 ### Views
+
 Read-only computed queries over tables, accessible to clients.
 
 ### Event Tables (2.0)
+
 Transient tables that emit events to subscribed clients without persistent storage. Excluded from `subscribe_to_all_tables()` -- must be explicitly subscribed.
 
 ### Subscriptions
+
 Clients subscribe to table data using SQL-like queries. Subscriptions maintain a local cache that auto-updates. Max 2-table JOINs; join columns must be indexed.
 
 ### Schedule Tables
+
 Tables that trigger reducers at specific times or intervals via `ScheduleAt` column.
 
 ### Identity & Authentication
+
 Each client gets an `Identity` (persists across connections) and `ConnectionId` (per session). Auth tokens are OpenID Connect-compliant JWTs. Store tokens locally for reconnection.
 
 ## Quick Start Pattern
@@ -143,7 +156,8 @@ const conn = DbConnection.builder()
   .withModuleName('my-app')
   .onConnect((conn, identity, token) => {
     localStorage.setItem('token', token);
-    conn.subscriptionBuilder()
+    conn
+      .subscriptionBuilder()
       .onApplied(() => console.log('Ready'))
       .subscribe(['SELECT * FROM user', 'SELECT * FROM message']);
   })
@@ -155,26 +169,27 @@ conn.reducers.sendMessage('Hello!');
 
 ## Module Languages
 
-| Language | Maturity | Best For |
-|----------|----------|----------|
-| Rust | Stable | Performance-critical, systems programming (WASM) |
-| C# | Stable | Unity games, .NET ecosystem (WASM) |
-| TypeScript | Stable | Web developers, rapid prototyping (V8, not WASM) |
-| C++ | Beta | Unreal Engine (pinned to v1.12.0 for SpacetimeDB 2.0) |
+| Language   | Maturity | Best For                                              |
+| ---------- | -------- | ----------------------------------------------------- |
+| Rust       | Stable   | Performance-critical, systems programming (WASM)      |
+| C#         | Stable   | Unity games, .NET ecosystem (WASM)                    |
+| TypeScript | Stable   | Web developers, rapid prototyping (V8, not WASM)      |
+| C++        | Beta     | Unreal Engine (pinned to v1.12.0 for SpacetimeDB 2.0) |
 
 ## Supported Client SDKs
 
-| SDK | Package | Notes |
-|-----|---------|-------|
-| TypeScript | `spacetimedb` (npm) | Browser/Node.js; auto event loop; React hooks via `spacetimedb/react` |
-| C# | `SpacetimeDB.ClientSDK` (NuGet) | .NET; requires `FrameTick()` calls |
-| C# (Unity) | Git URL `com.clockworklabs.spacetimedbsdk` | Unity Package Manager; requires `FrameTick()` |
-| Rust | `spacetimedb-sdk` (crate) | Auto event loop via `run_threaded()` or `run_async()` |
-| Unreal | Plugin | C++; requires `FrameTick()` in Tick |
+| SDK        | Package                                    | Notes                                                                 |
+| ---------- | ------------------------------------------ | --------------------------------------------------------------------- |
+| TypeScript | `spacetimedb` (npm)                        | Browser/Node.js; auto event loop; React hooks via `spacetimedb/react` |
+| C#         | `SpacetimeDB.ClientSDK` (NuGet)            | .NET; requires `FrameTick()` calls                                    |
+| C# (Unity) | Git URL `com.clockworklabs.spacetimedbsdk` | Unity Package Manager; requires `FrameTick()`                         |
+| Rust       | `spacetimedb-sdk` (crate)                  | Auto event loop via `run_threaded()` or `run_async()`                 |
+| Unreal     | Plugin                                     | C++; requires `FrameTick()` in Tick                                   |
 
 ## Resources
 
 ### references/
+
 - **[cheat-sheet.md](references/cheat-sheet.md)** - Quick reference with code examples for all languages (tables, reducers, types, CLI commands)
 - **[rust-modules.md](references/rust-modules.md)** - Detailed Rust server module development guide
 - **[csharp-modules.md](references/csharp-modules.md)** - Detailed C# server module development guide
@@ -182,4 +197,5 @@ conn.reducers.sendMessage('Hello!');
 - **[cli-and-deployment.md](references/cli-and-deployment.md)** - CLI commands, deployment, self-hosting, HTTP API, SQL reference
 
 ### scripts/
+
 - **[scaffold-project.sh](scripts/scaffold-project.sh)** - Create a full-stack SpacetimeDB project with server module and client

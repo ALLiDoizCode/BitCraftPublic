@@ -20,14 +20,15 @@ documentsIncluded:
 
 ## 1. Document Inventory
 
-| Document | Format | Location | Files |
-|---|---|---|---|
-| PRD | Sharded | `prd/` | 11 files (index + 10 sections) |
-| Architecture | Sharded | `architecture/` | 23 files (index + 22 sections) |
-| Epics & Stories | Whole | `epics.md` | 1 file (94KB) |
-| UX Design | Whole | `ux-design-specification.md` | 1 file (48KB) |
+| Document        | Format  | Location                     | Files                          |
+| --------------- | ------- | ---------------------------- | ------------------------------ |
+| PRD             | Sharded | `prd/`                       | 11 files (index + 10 sections) |
+| Architecture    | Sharded | `architecture/`              | 23 files (index + 22 sections) |
+| Epics & Stories | Whole   | `epics.md`                   | 1 file (94KB)                  |
+| UX Design       | Whole   | `ux-design-specification.md` | 1 file (48KB)                  |
 
 **Notes:**
+
 - Archive folder contains pre-shard whole versions of PRD and Architecture (no conflicts)
 - All 4 required document types present
 
@@ -36,6 +37,7 @@ documentsIncluded:
 ### Functional Requirements
 
 **Identity & Key Management (FR1-FR5)**
+
 - FR1: Users can generate a new Nostr keypair for use as their sole identity across all SDK interactions
 - FR2: Users can import an existing Nostr keypair from a file or seed phrase
 - FR3: Users can export their Nostr keypair for backup and recovery
@@ -43,6 +45,7 @@ documentsIncluded:
 - FR5: Users can verify their identity ownership is cryptographically intact end-to-end (signed ILP packet → BLS verification → reducer attribution)
 
 **World Perception (FR6-FR10)**
+
 - FR6: All consumers of `@sigil/client` can subscribe to SpacetimeDB table updates in real-time via WebSocket
 - FR7: All consumers of `@sigil/client` can subscribe to Crosstown relay events (via its built-in Nostr relay) for action confirmations and system notifications
 - FR8: Agents can load static data tables (`*_desc` tables) and build queryable lookup maps (Layer 1: StaticDataLoader)
@@ -50,6 +53,7 @@ documentsIncluded:
 - FR10: The system automatically reconnects and recovers subscription state after disconnections
 
 **Agent Configuration & Skills (FR11-FR16)**
+
 - FR11: Researchers can define agent behavior entirely through an `Agent.md` configuration file with zero application code
 - FR12: Researchers can select which skills an agent uses by referencing skill files in Agent.md
 - FR13: Skill files can declare the target reducer, parameters, ILP cost, required table subscriptions, and natural-language usage guidance
@@ -58,6 +62,7 @@ documentsIncluded:
 - FR16: Researchers can configure which LLM backend an agent uses in Agent.md (Phase 2)
 
 **Action Execution & Payments (FR17-FR22)**
+
 - FR17: All consumers of `@sigil/client` can execute game actions by sending signed ILP packets through the Crosstown connector (via `client.publish()`)
 - FR18: The system constructs ILP packets containing the game action, signs them with the user's Nostr key, and routes them through the Crosstown node
 - FR19: The BLS handler receives ILP packets, validates signatures, extracts the Nostr public key and game action, and calls the corresponding SpacetimeDB reducer with identity propagation
@@ -66,6 +71,7 @@ documentsIncluded:
 - FR22: Users can view the cost of any action before executing it via the action cost registry
 
 **Agent Cognition (FR23-FR27)**
+
 - FR23: Agents can make autonomous decisions using a rule-based priority queue planner (Layer 5: GoalsSimple)
 - FR24: Agents can make autonomous decisions using LLM-powered reasoning with configurable providers (Layer 5: GoalsLLM — Phase 2)
 - FR25: Agents can maintain persistent memory across sessions (Layer 3: MemorySystem — Phase 2)
@@ -73,6 +79,7 @@ documentsIncluded:
 - FR27: Researchers can swap individual cognition layers independently without affecting other layers
 
 **Terminal Game Client — TUI (FR28-FR38)**
+
 - FR28: Players can view the game world as a rendered hex-grid map with terrain, resources, and other players in their terminal
 - FR29: Players can move their character across the hex grid using keyboard controls
 - FR30: Players can send and receive chat messages with other players
@@ -86,6 +93,7 @@ documentsIncluded:
 - FR38: The TUI renders at 30+ FPS and works over SSH connections
 
 **Experiment & Analysis (FR39-FR43)**
+
 - FR39: Agents produce structured decision logs (JSONL) capturing observations, deliberations, actions, costs, and outcomes with timestamps
 - FR40: Researchers can run multiple agents concurrently against the same world (Phase 2)
 - FR41: Researchers can configure and launch experiments from YAML configuration files (Phase 2)
@@ -93,12 +101,14 @@ documentsIncluded:
 - FR43: Researchers can compare decision logs across experiment runs with different agent configurations or LLM backends (Phase 2)
 
 **Infrastructure & Deployment (FR44-FR47)**
+
 - FR44: Operators can deploy a local development environment (game server + Crosstown node) via Docker compose
 - FR45: Operators can configure ILP fee schedules for different action types
 - FR46: Operators can monitor system health: ILP packets per second, fee revenue, BLS validation latency, SpacetimeDB load, identity propagation success rate
 - FR47: The BLS game action handler maps incoming ILP packets to the correct SpacetimeDB reducers with identity propagation
 
 **World Extensibility (FR48-FR50)**
+
 - FR48: Game developers can make a new SpacetimeDB world agent-accessible by writing skill files for its public reducers and table subscriptions — no SDK code changes required (Phase 2)
 - FR49: Game developers can register a Crosstown BLS handler for their SpacetimeDB module's reducers (Phase 2)
 - FR50: The system can auto-generate skeleton skill files from a SpacetimeDB module's published schema (Phase 3)
@@ -108,6 +118,7 @@ documentsIncluded:
 ### Non-Functional Requirements
 
 **Performance (NFR1-NFR7)**
+
 - NFR1: TUI client renders at 30+ FPS in a standard 80x24 terminal with hex map, status panels, and chat visible simultaneously
 - NFR2: TUI client remains responsive (< 50ms input-to-render latency) over SSH connections with up to 200ms network latency
 - NFR3: ILP packet round-trip (SDK sends → Crosstown routes → BLS executes reducer → confirmation received) completes within 2 seconds under normal load
@@ -117,6 +128,7 @@ documentsIncluded:
 - NFR7: Skill file parsing and Agent.md validation completes within 1 second for up to 50 skills
 
 **Security (NFR8-NFR13)**
+
 - NFR8: All ILP packets signed with the user's Nostr private key; unsigned or incorrectly signed packets rejected by BLS before reducer execution
 - NFR9: Nostr private keys never transmitted over the network; only public keys and signatures leave the local system
 - NFR10: BLS validates identity on every reducer call — no reducer executes without verified Nostr public key attribution
@@ -125,12 +137,14 @@ documentsIncluded:
 - NFR13: No game action attributed to a Nostr public key without a valid cryptographic signature from the corresponding private key
 
 **Scalability (NFR14-NFR17)**
+
 - NFR14: A single Crosstown node supports at least 10 concurrent agents and 5 concurrent TUI players at MVP, scaling to 50+ agents at Phase 2
 - NFR15: SpacetimeDB subscriptions remain performant with up to 50 concurrent connected clients on a single game server instance
 - NFR16: Decision log file size remains manageable: JSONL rotation or archival when logs exceed 100MB per agent
 - NFR17: ILP fee collection maintains accurate accounting under concurrent multi-agent load with no lost or double-counted transactions
 
 **Integration (NFR18-NFR22)**
+
 - NFR18: `@sigil/client` uses SpacetimeDB 2.0 TypeScript client SDK (backwards-compatible with 1.6.x server modules). The Rust TUI has no direct SpacetimeDB dependency — it connects via the TypeScript backend.
 - NFR19: `@sigil/client` connects to any standard Nostr relay implementing NIP-01; Crosstown's built-in relay is the default
 - NFR20: LLM integration (Phase 2) supports any provider exposing an OpenAI-compatible chat completions API
@@ -138,6 +152,7 @@ documentsIncluded:
 - NFR22: Docker compose dev environment runs on Linux and macOS with no platform-specific configuration
 
 **Reliability (NFR23-NFR27)**
+
 - NFR23: SpacetimeDB subscription automatically reconnects within 10 seconds after connection loss, with full state recovery
 - NFR24: Failed ILP packets (network timeout, insufficient balance) return clear error codes and do not leave the system in an inconsistent state
 - NFR25: Agent state persists across SDK restarts: decision logs are append-only, agent configuration is stateless (re-read from Agent.md on startup)
@@ -149,6 +164,7 @@ documentsIncluded:
 ### Additional Requirements
 
 **Domain-Specific Constraints:**
+
 - Reproducibility: experiment harness supports snapshot/restore, deterministic configs, versioned skill definitions
 - Key management: key loss = identity loss (no password fallback); seed phrase backup required
 - Payment security: ILP packets signed by Nostr key, BLS validates before execution
@@ -158,6 +174,7 @@ documentsIncluded:
 - Licensing: BitCraft (Apache 2.0, unmodified); SDK license TBD; dependency license audit required
 
 **Phase Classification:**
+
 - MVP (Phase 1): FR1-FR15, FR17-FR23, FR27-FR32, FR38-FR39, FR44-FR47 (34 FRs)
 - Phase 2: FR16, FR24-FR26, FR33-FR37, FR40-FR43, FR48-FR49 (15 FRs)
 - Phase 3: FR50 (1 FR)
@@ -165,6 +182,7 @@ documentsIncluded:
 ### PRD Completeness Assessment
 
 The PRD is well-structured and comprehensive:
+
 - 50 Functional Requirements cleanly numbered and categorized across 9 domains
 - 27 Non-Functional Requirements with specific measurable thresholds
 - Clear phase assignments (MVP/Phase 2/Phase 3) for every FR
@@ -177,58 +195,58 @@ The PRD is well-structured and comprehensive:
 
 ### Coverage Matrix
 
-| FR | PRD Requirement (summary) | Epic Coverage | Status |
-|---|---|---|---|
-| FR1 | Generate Nostr keypair | Epic 1, Story 1.2 | ✓ Covered |
-| FR2 | Import existing Nostr keypair | Epic 1, Story 1.2 | ✓ Covered |
-| FR3 | Export Nostr keypair for backup | Epic 1, Story 1.2 | ✓ Covered |
-| FR4 | BLS identity propagation to SpacetimeDB | Epic 2, Story 2.3 | ✓ Covered |
-| FR5 | End-to-end identity verification | Epic 2, Story 2.5 | ✓ Covered |
-| FR6 | SpacetimeDB table subscriptions via WebSocket | Epic 1, Story 1.4 | ✓ Covered |
-| FR7 | Crosstown relay event subscriptions | Epic 2, Story 2.1 | ✓ Covered |
-| FR8 | Static data table loading (*_desc tables) | Epic 1, Story 1.5 | ✓ Covered |
-| FR9 | Event interpretation as semantic narratives | Epic 3, Story 3.3 | ✓ Covered |
-| FR10 | Auto-reconnection and state recovery | Epic 1, Story 1.6 | ✓ Covered |
-| FR11 | Agent.md configuration (zero code) | Epic 3, Story 3.1 | ✓ Covered |
-| FR12 | Skill selection via Agent.md | Epic 3, Story 3.1 | ✓ Covered |
+| FR   | PRD Requirement (summary)                                | Epic Coverage     | Status    |
+| ---- | -------------------------------------------------------- | ----------------- | --------- |
+| FR1  | Generate Nostr keypair                                   | Epic 1, Story 1.2 | ✓ Covered |
+| FR2  | Import existing Nostr keypair                            | Epic 1, Story 1.2 | ✓ Covered |
+| FR3  | Export Nostr keypair for backup                          | Epic 1, Story 1.2 | ✓ Covered |
+| FR4  | BLS identity propagation to SpacetimeDB                  | Epic 2, Story 2.3 | ✓ Covered |
+| FR5  | End-to-end identity verification                         | Epic 2, Story 2.5 | ✓ Covered |
+| FR6  | SpacetimeDB table subscriptions via WebSocket            | Epic 1, Story 1.4 | ✓ Covered |
+| FR7  | Crosstown relay event subscriptions                      | Epic 2, Story 2.1 | ✓ Covered |
+| FR8  | Static data table loading (\*\_desc tables)              | Epic 1, Story 1.5 | ✓ Covered |
+| FR9  | Event interpretation as semantic narratives              | Epic 3, Story 3.3 | ✓ Covered |
+| FR10 | Auto-reconnection and state recovery                     | Epic 1, Story 1.6 | ✓ Covered |
+| FR11 | Agent.md configuration (zero code)                       | Epic 3, Story 3.1 | ✓ Covered |
+| FR12 | Skill selection via Agent.md                             | Epic 3, Story 3.1 | ✓ Covered |
 | FR13 | Skill file format (reducer, params, cost, subscriptions) | Epic 3, Story 3.2 | ✓ Covered |
-| FR14 | Validation against SpacetimeDB module | Epic 3, Story 3.4 | ✓ Covered |
-| FR15 | Budget limits per agent | Epic 3, Story 3.5 | ✓ Covered |
-| FR16 | LLM backend selection in Agent.md (Phase 2) | Epic 7 | ✓ Covered |
-| FR17 | Execute actions via client.publish() | Epic 2, Story 2.2 | ✓ Covered |
-| FR18 | ILP packet construction and signing | Epic 2, Story 2.2 | ✓ Covered |
-| FR19 | BLS handler validates and calls reducer | Epic 2, Story 2.3 | ✓ Covered |
-| FR20 | ILP fee collection | Epic 2, Story 2.4 | ✓ Covered |
-| FR21 | Wallet balance query | Epic 2, Story 2.4 | ✓ Covered |
-| FR22 | Action cost registry | Epic 2, Story 2.6 | ✓ Covered |
-| FR23 | Autonomous decisions via MCP tools | Epic 4 | ✓ Covered |
-| FR24 | LLM-powered goal planning (Phase 2) | Epic 7 | ✓ Covered |
-| FR25 | Persistent memory across sessions (Phase 2) | Epic 7 | ✓ Covered |
-| FR26 | Affordance detection with cost/reward (Phase 2) | Epic 7 | ✓ Covered |
-| FR27 | Swappable cognition via config/skill changes | Epic 3, Story 3.4 | ✓ Covered |
-| FR28 | Hex-grid map rendering in terminal | Epic 5, Story 5.3 | ✓ Covered |
-| FR29 | Character movement via keyboard | Epic 5, Story 5.4 | ✓ Covered |
-| FR30 | Chat messaging | Epic 5, Story 5.5 | ✓ Covered |
-| FR31 | Inventory management | Epic 5, Story 5.5 | ✓ Covered |
-| FR32 | Character status display | Epic 5, Story 5.5 | ✓ Covered |
-| FR33 | Combat system (Phase 2) | Epic 8 | ✓ Covered |
-| FR34 | Crafting system (Phase 2) | Epic 8 | ✓ Covered |
-| FR35 | Building/territory management (Phase 2) | Epic 8 | ✓ Covered |
-| FR36 | Trading marketplace (Phase 2) | Epic 8 | ✓ Covered |
-| FR37 | Empire management (Phase 2) | Epic 8 | ✓ Covered |
-| FR38 | TUI renders at 30+ FPS | Epic 5, Story 5.2 | ✓ Covered |
-| FR39 | Structured decision logging (JSONL) | Epic 3, Story 3.6 | ✓ Covered |
-| FR40 | Multi-agent concurrent execution (Phase 2) | Epic 9 | ✓ Covered |
-| FR41 | YAML experiment configuration (Phase 2) | Epic 9 | ✓ Covered |
-| FR42 | World state snapshot/restore (Phase 2) | Epic 9 | ✓ Covered |
-| FR43 | Comparative decision log analysis (Phase 2) | Epic 9 | ✓ Covered |
-| FR44 | Docker compose local dev environment | Epic 1, Story 1.3 | ✓ Covered |
-| FR45 | ILP fee schedule configuration | Epic 2, Story 2.4 | ✓ Covered |
-| FR46 | System health monitoring | Epic 6 | ✓ Covered |
-| FR47 | BLS game action handler mapping | Epic 2, Story 2.3 | ✓ Covered |
-| FR48 | Skill files for new SpacetimeDB worlds (Phase 2) | Epic 10 | ✓ Covered |
-| FR49 | BLS handler registration for third-party games (Phase 2) | Epic 10 | ✓ Covered |
-| FR50 | Auto-generate skill files from schema (Phase 3) | Epic 11 | ✓ Covered |
+| FR14 | Validation against SpacetimeDB module                    | Epic 3, Story 3.4 | ✓ Covered |
+| FR15 | Budget limits per agent                                  | Epic 3, Story 3.5 | ✓ Covered |
+| FR16 | LLM backend selection in Agent.md (Phase 2)              | Epic 7            | ✓ Covered |
+| FR17 | Execute actions via client.publish()                     | Epic 2, Story 2.2 | ✓ Covered |
+| FR18 | ILP packet construction and signing                      | Epic 2, Story 2.2 | ✓ Covered |
+| FR19 | BLS handler validates and calls reducer                  | Epic 2, Story 2.3 | ✓ Covered |
+| FR20 | ILP fee collection                                       | Epic 2, Story 2.4 | ✓ Covered |
+| FR21 | Wallet balance query                                     | Epic 2, Story 2.4 | ✓ Covered |
+| FR22 | Action cost registry                                     | Epic 2, Story 2.6 | ✓ Covered |
+| FR23 | Autonomous decisions via MCP tools                       | Epic 4            | ✓ Covered |
+| FR24 | LLM-powered goal planning (Phase 2)                      | Epic 7            | ✓ Covered |
+| FR25 | Persistent memory across sessions (Phase 2)              | Epic 7            | ✓ Covered |
+| FR26 | Affordance detection with cost/reward (Phase 2)          | Epic 7            | ✓ Covered |
+| FR27 | Swappable cognition via config/skill changes             | Epic 3, Story 3.4 | ✓ Covered |
+| FR28 | Hex-grid map rendering in terminal                       | Epic 5, Story 5.3 | ✓ Covered |
+| FR29 | Character movement via keyboard                          | Epic 5, Story 5.4 | ✓ Covered |
+| FR30 | Chat messaging                                           | Epic 5, Story 5.5 | ✓ Covered |
+| FR31 | Inventory management                                     | Epic 5, Story 5.5 | ✓ Covered |
+| FR32 | Character status display                                 | Epic 5, Story 5.5 | ✓ Covered |
+| FR33 | Combat system (Phase 2)                                  | Epic 8            | ✓ Covered |
+| FR34 | Crafting system (Phase 2)                                | Epic 8            | ✓ Covered |
+| FR35 | Building/territory management (Phase 2)                  | Epic 8            | ✓ Covered |
+| FR36 | Trading marketplace (Phase 2)                            | Epic 8            | ✓ Covered |
+| FR37 | Empire management (Phase 2)                              | Epic 8            | ✓ Covered |
+| FR38 | TUI renders at 30+ FPS                                   | Epic 5, Story 5.2 | ✓ Covered |
+| FR39 | Structured decision logging (JSONL)                      | Epic 3, Story 3.6 | ✓ Covered |
+| FR40 | Multi-agent concurrent execution (Phase 2)               | Epic 9            | ✓ Covered |
+| FR41 | YAML experiment configuration (Phase 2)                  | Epic 9            | ✓ Covered |
+| FR42 | World state snapshot/restore (Phase 2)                   | Epic 9            | ✓ Covered |
+| FR43 | Comparative decision log analysis (Phase 2)              | Epic 9            | ✓ Covered |
+| FR44 | Docker compose local dev environment                     | Epic 1, Story 1.3 | ✓ Covered |
+| FR45 | ILP fee schedule configuration                           | Epic 2, Story 2.4 | ✓ Covered |
+| FR46 | System health monitoring                                 | Epic 6            | ✓ Covered |
+| FR47 | BLS game action handler mapping                          | Epic 2, Story 2.3 | ✓ Covered |
+| FR48 | Skill files for new SpacetimeDB worlds (Phase 2)         | Epic 10           | ✓ Covered |
+| FR49 | BLS handler registration for third-party games (Phase 2) | Epic 10           | ✓ Covered |
+| FR50 | Auto-generate skill files from schema (Phase 3)          | Epic 11           | ✓ Covered |
 
 ### Missing Requirements
 
@@ -250,6 +268,7 @@ No missing FR coverage identified. All 50 PRD Functional Requirements are mapped
 **Found:** `ux-design-specification.md` (48KB, 823 lines, dated 2026-02-25)
 
 Comprehensive UX specification covering:
+
 - Executive summary with 3 personas (Marcus researcher, Sarah power player, Alex indie builder)
 - Core experience design (game action loop)
 - Visual design foundation (rebels-in-the-sky inheritance)
@@ -263,6 +282,7 @@ Comprehensive UX specification covering:
 ### UX ↔ PRD Alignment
 
 **Strong alignment on:**
+
 - All TUI FRs (FR28-FR32, FR38) mapped to specific screen designs
 - Identity management (FR1-FR3) reflected in first-launch journey
 - Wallet/payment visibility (FR21, FR22) designed into WalletMeter + CostPreview widgets
@@ -272,12 +292,13 @@ Comprehensive UX specification covering:
 
 **Alignment issue identified:**
 
-| Issue | PRD Says | UX Says | Impact |
-|---|---|---|---|
-| Terminal size requirement | NFR1: "30+ FPS in a standard **80x24** terminal" | "Fixed **160x48** character viewport... show error if < 160x48" | Contradiction — 80x24 is a standard minimum, 160x48 is 4x larger. UX spec explicitly rejects smaller terminals. |
-| SSH play | FR38 + Journey 2: "works over SSH connections", Marcus "playing over SSH from his server rack" | Platform Strategy: "no offline mode, **no remote SSH use case**" | Contradiction — PRD expects SSH play, UX explicitly excludes it. |
+| Issue                     | PRD Says                                                                                       | UX Says                                                          | Impact                                                                                                          |
+| ------------------------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Terminal size requirement | NFR1: "30+ FPS in a standard **80x24** terminal"                                               | "Fixed **160x48** character viewport... show error if < 160x48"  | Contradiction — 80x24 is a standard minimum, 160x48 is 4x larger. UX spec explicitly rejects smaller terminals. |
+| SSH play                  | FR38 + Journey 2: "works over SSH connections", Marcus "playing over SSH from his server rack" | Platform Strategy: "no offline mode, **no remote SSH use case**" | Contradiction — PRD expects SSH play, UX explicitly excludes it.                                                |
 
 **Persona naming discrepancy (minor):**
+
 - PRD: Dr. Priya Sharma (researcher), Marcus Chen (terminal player), Anika Patel (game dev), Jonathan (operator)
 - UX: Marcus (researcher), Sarah (power player), Alex (indie builder)
 - Different names for similar personas. Not a blocking issue, but may cause confusion.
@@ -285,6 +306,7 @@ Comprehensive UX specification covering:
 ### UX ↔ Architecture Alignment
 
 **Strong alignment on:**
+
 - JSON-RPC 2.0 over stdio for TUI ↔ backend IPC
 - Screen trait + SplitPanel pattern from rebels-in-the-sky
 - EventEmitter pattern with typed events
@@ -304,31 +326,31 @@ Comprehensive UX specification covering:
 
 ### A. User Value Focus Check
 
-| Epic | Title Assessment | User Value | Verdict |
-|---|---|---|---|
-| Epic 1 | "Project Foundation & Game World Connection" | "Users can establish their cryptographic identity and connect to the live BitCraft game world" | ✓ User value present (borderline title) |
-| Epic 2 | "Action Execution & Payment Pipeline" | "Users can execute game actions via ILP micropayments" | ✓ Clear user value |
-| Epic 3 | "Declarative Agent Configuration" | "Researchers can define agent behavior entirely through markdown config files" | ✓ Clear user value |
-| Epic 4 | "MCP Server for AI Agents" | "AI agents can play the game autonomously through the standard MCP protocol" | ✓ Clear user value |
-| Epic 5 | "Terminal Game Client" | "Human players can experience a full MMORPG from their terminal" | ✓ Clear user value |
-| Epic 6 | "Infrastructure & Observability" | "Operators can monitor system health and researchers can observe agent behavior" | ⚠️ Borderline — thin epic (1 FR), but serves real operator/researcher needs |
-| Epic 7 | "Advanced Agent Intelligence" | "Researchers can run LLM-powered agents with persistent memory" | ✓ Clear user value |
-| Epic 8 | "TUI Advanced Gameplay" | "Players can engage in the full depth of BitCraft" | ✓ Clear user value |
-| Epic 9 | "Experiment Harness & Multi-Agent Research" | "Researchers can run comparative experiments" | ✓ Clear user value |
-| Epic 10 | "World Extensibility" | "Game developers can make any SpacetimeDB world agent-accessible" | ✓ Clear user value |
-| Epic 11 | "Platform Expansion" | "The platform auto-generates skill files from any SpacetimeDB module" | ✓ Clear user value |
+| Epic    | Title Assessment                             | User Value                                                                                     | Verdict                                                                     |
+| ------- | -------------------------------------------- | ---------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| Epic 1  | "Project Foundation & Game World Connection" | "Users can establish their cryptographic identity and connect to the live BitCraft game world" | ✓ User value present (borderline title)                                     |
+| Epic 2  | "Action Execution & Payment Pipeline"        | "Users can execute game actions via ILP micropayments"                                         | ✓ Clear user value                                                          |
+| Epic 3  | "Declarative Agent Configuration"            | "Researchers can define agent behavior entirely through markdown config files"                 | ✓ Clear user value                                                          |
+| Epic 4  | "MCP Server for AI Agents"                   | "AI agents can play the game autonomously through the standard MCP protocol"                   | ✓ Clear user value                                                          |
+| Epic 5  | "Terminal Game Client"                       | "Human players can experience a full MMORPG from their terminal"                               | ✓ Clear user value                                                          |
+| Epic 6  | "Infrastructure & Observability"             | "Operators can monitor system health and researchers can observe agent behavior"               | ⚠️ Borderline — thin epic (1 FR), but serves real operator/researcher needs |
+| Epic 7  | "Advanced Agent Intelligence"                | "Researchers can run LLM-powered agents with persistent memory"                                | ✓ Clear user value                                                          |
+| Epic 8  | "TUI Advanced Gameplay"                      | "Players can engage in the full depth of BitCraft"                                             | ✓ Clear user value                                                          |
+| Epic 9  | "Experiment Harness & Multi-Agent Research"  | "Researchers can run comparative experiments"                                                  | ✓ Clear user value                                                          |
+| Epic 10 | "World Extensibility"                        | "Game developers can make any SpacetimeDB world agent-accessible"                              | ✓ Clear user value                                                          |
+| Epic 11 | "Platform Expansion"                         | "The platform auto-generates skill files from any SpacetimeDB module"                          | ✓ Clear user value                                                          |
 
 ### B. Epic Independence Validation
 
-| Epic | Dependencies | Forward Dependencies? | Verdict |
-|---|---|---|---|
-| Epic 1 | None — standalone foundation | No | ✓ |
-| Epic 2 | Epic 1 (identity, SpacetimeDB connection) | No | ✓ |
-| Epic 3 | Epic 1 (SpacetimeDB for validation), Epic 2 (client.publish, cost registry) | No | ✓ |
-| Epic 4 | Epic 1, 2, 3 (client, write path, skill system) | No | ✓ |
-| Epic 5 | Epic 1, 2 (client, write path) | No | ✓ |
-| Epic 6 | Epic 1-5 (needs full stack to monitor) | No | ✓ |
-| Epics 7-11 | Phase 2/3, build on MVP epics | No | ✓ |
+| Epic       | Dependencies                                                                | Forward Dependencies? | Verdict |
+| ---------- | --------------------------------------------------------------------------- | --------------------- | ------- |
+| Epic 1     | None — standalone foundation                                                | No                    | ✓       |
+| Epic 2     | Epic 1 (identity, SpacetimeDB connection)                                   | No                    | ✓       |
+| Epic 3     | Epic 1 (SpacetimeDB for validation), Epic 2 (client.publish, cost registry) | No                    | ✓       |
+| Epic 4     | Epic 1, 2, 3 (client, write path, skill system)                             | No                    | ✓       |
+| Epic 5     | Epic 1, 2 (client, write path)                                              | No                    | ✓       |
+| Epic 6     | Epic 1-5 (needs full stack to monitor)                                      | No                    | ✓       |
+| Epics 7-11 | Phase 2/3, build on MVP epics                                               | No                    | ✓       |
 
 No forward dependencies found. Each epic builds only on earlier epics.
 
@@ -361,6 +383,7 @@ This creates an implicit undeclared dependency on Epic 3's skill system and mean
 The epics document's Additional Requirements section explicitly states: "Five-Layer Cognition Architecture is SUPERSEDED — Agent = Claude instance with CLAUDE.md/AGENTS.md + Skills + MCP tools (NOT custom cognition stack)."
 
 However, the PRD FRs still reference cognition layers:
+
 - FR8: "Layer 1: StaticDataLoader"
 - FR9: "Layer 2: EventInterpreter"
 - FR23: "Layer 5: GoalsSimple" (rule-based priority queue planner)
@@ -389,14 +412,14 @@ Several ACs reference performance NFRs (e.g., "30+ FPS (NFR1)", "within 500ms (N
 
 ### E. Best Practices Compliance Checklist
 
-| Criterion | Epic 1 | Epic 2 | Epic 3 | Epic 4 | Epic 5 | Epic 6 |
-|---|---|---|---|---|---|---|
-| Delivers user value | ✓ | ✓ | ✓ | ✓ | ✓ | ⚠️ |
-| Functions independently | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Stories appropriately sized | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| No forward dependencies | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Clear acceptance criteria | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| FR traceability | ✓ | ✓ | ✓ | ✓ | ⚠️ | ✓ |
+| Criterion                   | Epic 1 | Epic 2 | Epic 3 | Epic 4 | Epic 5 | Epic 6 |
+| --------------------------- | ------ | ------ | ------ | ------ | ------ | ------ |
+| Delivers user value         | ✓      | ✓      | ✓      | ✓      | ✓      | ⚠️     |
+| Functions independently     | ✓      | ✓      | ✓      | ✓      | ✓      | ✓      |
+| Stories appropriately sized | ✓      | ✓      | ✓      | ✓      | ✓      | ✓      |
+| No forward dependencies     | ✓      | ✓      | ✓      | ✓      | ✓      | ✓      |
+| Clear acceptance criteria   | ✓      | ✓      | ✓      | ✓      | ✓      | ✓      |
+| FR traceability             | ✓      | ✓      | ✓      | ✓      | ⚠️     | ✓      |
 
 **Overall Epic Quality:** Strong. 2 major issues (both addressable), 3 minor concerns. No critical violations found. The epics are well-structured, user-focused, and properly sequenced.
 
@@ -410,11 +433,11 @@ The project planning artifacts are comprehensive, well-aligned, and implementati
 
 ### Issue Summary
 
-| Severity | Count | Category |
-|---|---|---|
-| Critical | 0 | — |
-| Major | 2 | Epic quality (NFR21 skill uniformity), PRD stale cognition references |
-| Minor | 5 | UX contradictions (terminal size, SSH), technical Story 1.1, thin Epic 6, NFR verification gaps |
+| Severity | Count | Category                                                                                        |
+| -------- | ----- | ----------------------------------------------------------------------------------------------- |
+| Critical | 0     | —                                                                                               |
+| Major    | 2     | Epic quality (NFR21 skill uniformity), PRD stale cognition references                           |
+| Minor    | 5     | UX contradictions (terminal size, SSH), technical Story 1.1, thin Epic 6, NFR verification gaps |
 
 ### Critical Issues Requiring Immediate Action
 
@@ -423,20 +446,24 @@ None. No blocking issues found.
 ### Issues Recommended to Address Before Implementation
 
 **1. Resolve terminal size contradiction (PRD vs UX)**
+
 - PRD NFR1 says "standard 80x24 terminal"
 - UX spec says "fixed 160x48 viewport, error if smaller"
 - **Action:** Update NFR1 to "160x48" to match UX spec. The 160x48 requirement is reasonable for an MMORPG TUI with hex grid + 7 tabs + status bar.
 
 **2. Resolve SSH play contradiction (PRD vs UX)**
+
 - PRD FR38 + user journey says "works over SSH connections"
 - UX Platform Strategy says "no remote SSH use case"
 - **Action:** Remove the "no remote SSH use case" line from UX spec. SSH play is a core value proposition for the terminal player persona and should remain a target.
 
 **3. Update PRD FRs to remove stale five-layer cognition references**
+
 - FRs 8, 9, 23-27 reference Layer 1-5 terminology that was superseded by the Claude agent architecture decision
 - **Action:** Update FR text to describe actual implementations: "StaticDataLoader" instead of "Layer 1", "MCP tool-based autonomous decisions" instead of "GoalsSimple", etc. The epics already adapted correctly — only the PRD text is stale.
 
 **4. Add skill file consumption to Epic 5 TUI stories**
+
 - TUI stories reference specific reducers directly rather than consuming actions from the skill file system (NFR21 violation)
 - **Action:** Add an AC to Story 5.1 (TUI Backend) confirming the backend exposes actions derived from loaded skill files. Update Stories 5.6-5.8 to reference skill-sourced actions rather than hardcoded reducer names.
 
@@ -459,14 +486,14 @@ None. No blocking issues found.
 
 ### Scorecard
 
-| Area | Score | Notes |
-|---|---|---|
-| PRD Completeness | 9/10 | Comprehensive. Stale cognition layer references are the only issue. |
-| FR Coverage | 10/10 | 100% — all 50 FRs mapped to epics with traceability. |
-| Architecture Alignment | 10/10 | Architecture doc is thorough and supports all PRD/UX requirements. |
-| UX Alignment | 8/10 | Detailed and grounded, but two contradictions with PRD need resolution. |
-| Epic Quality | 9/10 | Well-structured, user-focused, properly sequenced. Minor NFR21 gap. |
-| **Overall** | **9/10** | **Ready for implementation with minor corrections.** |
+| Area                   | Score    | Notes                                                                   |
+| ---------------------- | -------- | ----------------------------------------------------------------------- |
+| PRD Completeness       | 9/10     | Comprehensive. Stale cognition layer references are the only issue.     |
+| FR Coverage            | 10/10    | 100% — all 50 FRs mapped to epics with traceability.                    |
+| Architecture Alignment | 10/10    | Architecture doc is thorough and supports all PRD/UX requirements.      |
+| UX Alignment           | 8/10     | Detailed and grounded, but two contradictions with PRD need resolution. |
+| Epic Quality           | 9/10     | Well-structured, user-focused, properly sequenced. Minor NFR21 gap.     |
+| **Overall**            | **9/10** | **Ready for implementation with minor corrections.**                    |
 
 ### Final Note
 

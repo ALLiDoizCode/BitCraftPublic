@@ -33,11 +33,11 @@
 
 ## Measurable Outcomes
 
-| Metric | MVP Target | Growth Target |
-|--------|-----------|---------------|
-| Agent setup time (no code) | < 30 min | < 5 min |
-| Reducers accessible via skills | Top 20 (movement, combat, crafting, trading) | 100% of public reducers |
-| TUI game coverage | Movement, map, chat, inventory | Full BitCraft feature parity |
-| Concurrent agents supported | 2 | 50+ |
-| ILP fee collection | Functional | Profitable |
-| SpacetimeDB worlds supported | 1 (BitCraft) | 3+ |
+| Metric                         | MVP Target                                   | Growth Target                |
+| ------------------------------ | -------------------------------------------- | ---------------------------- |
+| Agent setup time (no code)     | < 30 min                                     | < 5 min                      |
+| Reducers accessible via skills | Top 20 (movement, combat, crafting, trading) | 100% of public reducers      |
+| TUI game coverage              | Movement, map, chat, inventory               | Full BitCraft feature parity |
+| Concurrent agents supported    | 2                                            | 50+                          |
+| ILP fee collection             | Functional                                   | Profitable                   |
+| SpacetimeDB worlds supported   | 1 (BitCraft)                                 | 3+                           |

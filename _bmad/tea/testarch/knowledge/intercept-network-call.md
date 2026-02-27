@@ -330,7 +330,11 @@ The utility uses [picomatch](https://github.com/micromatch/picomatch) for powerf
 // Vanilla Playwright - complex predicate
 const predicate = (response) => {
   const url = response.url();
-  return url.endsWith('/api/users') || url.match(/\/api\/users\/\d+/) || (url.includes('/api/users/') && url.includes('/profile'));
+  return (
+    url.endsWith('/api/users') ||
+    url.match(/\/api\/users\/\d+/) ||
+    (url.includes('/api/users/') && url.includes('/profile'))
+  );
 };
 page.waitForResponse(predicate);
 

@@ -1,6 +1,7 @@
 # SpacetimeDB Cheat Sheet
 
 ## Table of Contents
+
 - [Project Setup](#project-setup)
 - [Tables](#tables)
 - [Reducers](#reducers)
@@ -34,6 +35,7 @@ spacetime dev            # Interactive dev mode (auto-rebuild on save)
 ## Tables
 
 ### Rust
+
 ```rust
 #[spacetimedb::table(name = player, public)]
 pub struct Player {
@@ -56,6 +58,7 @@ pub struct Score {
 ```
 
 ### C#
+
 ```csharp
 [SpacetimeDB.Table(Public = true)]
 public partial struct Player
@@ -80,18 +83,24 @@ public partial struct Score
 ```
 
 ### TypeScript
+
 ```typescript
 import { table, t, spacetimedb } from 'spacetimedb/server';
 
 const Players = table(
   { name: 'player', public: true },
-  { id: t.u64().primaryKey().autoInc(), username: t.string().unique(), score: t.i32().index('btree') }
+  {
+    id: t.u64().primaryKey().autoInc(),
+    username: t.string().unique(),
+    score: t.i32().index('btree'),
+  }
 );
 ```
 
 ## Reducers
 
 ### Rust
+
 ```rust
 use spacetimedb::ReducerContext;
 
@@ -116,6 +125,7 @@ ctx.db.player().id().delete(123);                       // Delete by primary key
 ```
 
 ### C#
+
 ```csharp
 [SpacetimeDB.Reducer]
 public static void CreatePlayer(ReducerContext ctx, string username)
@@ -140,17 +150,19 @@ ctx.Db.Player.Id.Delete(123);                        // Delete by primary key
 ```
 
 ### TypeScript
+
 ```typescript
 import { spacetimedb, t } from 'spacetimedb/server';
 
 spacetimedb.reducer('create_player', { username: t.string() }, (ctx, { username }) => {
-    ctx.db.player.insert({ id: 0n, username, score: 0 });
+  ctx.db.player.insert({ id: 0n, username, score: 0 });
 });
 ```
 
 ## Lifecycle Reducers
 
 ### Rust
+
 ```rust
 #[spacetimedb::reducer(init)]
 fn init(ctx: &ReducerContext) { /* runs on first publish */ }
@@ -165,6 +177,7 @@ fn on_disconnect(ctx: &ReducerContext) { }
 ```
 
 ### C#
+
 ```csharp
 [Reducer(ReducerKind.Init)]
 public static void Init(ReducerContext ctx) { }
@@ -179,6 +192,7 @@ public static void OnDisconnect(ReducerContext ctx) { }
 ## Schedule Tables
 
 ### Rust
+
 ```rust
 #[spacetimedb::table(name = reminder, public, scheduled(send_reminder))]
 pub struct Reminder {
@@ -210,6 +224,7 @@ ctx.db.reminder().insert(Reminder {
 ```
 
 ### C#
+
 ```csharp
 [SpacetimeDB.Table(Scheduled = "SendReminder", ScheduledAt = "ScheduledAt")]
 public partial struct Reminder
@@ -229,22 +244,28 @@ public static void SendReminder(ReducerContext ctx, Reminder reminder)
 ```
 
 ### TypeScript
+
 ```typescript
 import { table, t, spacetimedb } from 'spacetimedb/server';
 
 const Reminders = table(
   { name: 'reminders', scheduled: 'send_reminder' },
-  { scheduled_id: t.u64().primaryKey().autoInc(), scheduled_at: t.scheduleAt(), message: t.string() }
+  {
+    scheduled_id: t.u64().primaryKey().autoInc(),
+    scheduled_at: t.scheduleAt(),
+    message: t.string(),
+  }
 );
 
 spacetimedb.reducer('send_reminder', { arg: Reminders.rowType }, (_ctx, { arg }) => {
-    console.log(`Reminder: ${arg.message}`);
+  console.log(`Reminder: ${arg.message}`);
 });
 ```
 
 ## Views
 
 ### Rust
+
 ```rust
 use spacetimedb::{view, Query, ViewContext};
 
@@ -260,6 +281,7 @@ fn top_players(ctx: &ViewContext) -> Vec<Player> {
 ```
 
 ### C#
+
 ```csharp
 [SpacetimeDB.View(Public = true)]
 public static Player? MyPlayer(ViewContext ctx)
@@ -275,6 +297,7 @@ public static IEnumerable<Player> TopPlayers(ViewContext ctx)
 ```
 
 ### TypeScript
+
 ```typescript
 import { spacetimedb, t } from 'spacetimedb/server';
 
@@ -288,6 +311,7 @@ spacetimedb.view(
 ## Custom Types
 
 ### Rust
+
 ```rust
 // Simple enum
 #[derive(SpacetimeType)]
@@ -306,6 +330,7 @@ pub enum Shape {
 ```
 
 ### C#
+
 ```csharp
 [SpacetimeDB.Type]
 public enum Status { Active, Inactive }
@@ -320,40 +345,40 @@ public partial record ShapeData : SpacetimeDB.TaggedEnum<(CircleData Circle, Rec
 
 ## Context Properties
 
-| Property | Rust | C# | TypeScript |
-|----------|------|----|------------|
-| Database access | `ctx.db` | `ctx.Db` | `ctx.db` |
-| Caller identity | `ctx.sender()` | `ctx.Sender` | `ctx.sender` |
-| Connection ID | `ctx.connection_id()` | `ctx.ConnectionId` | `ctx.connectionId` |
-| Timestamp | `ctx.timestamp` | `ctx.Timestamp` | `ctx.timestamp` |
-| Module identity | `ctx.identity()` | `ctx.Identity` | `ctx.identity` |
-| RNG | `ctx.rng()` | `ctx.Rng` | N/A |
+| Property        | Rust                  | C#                 | TypeScript         |
+| --------------- | --------------------- | ------------------ | ------------------ |
+| Database access | `ctx.db`              | `ctx.Db`           | `ctx.db`           |
+| Caller identity | `ctx.sender()`        | `ctx.Sender`       | `ctx.sender`       |
+| Connection ID   | `ctx.connection_id()` | `ctx.ConnectionId` | `ctx.connectionId` |
+| Timestamp       | `ctx.timestamp`       | `ctx.Timestamp`    | `ctx.timestamp`    |
+| Module identity | `ctx.identity()`      | `ctx.Identity`     | `ctx.identity`     |
+| RNG             | `ctx.rng()`           | `ctx.Rng`          | N/A                |
 
 ## Logging
 
-| Level | Rust | C# | TypeScript |
-|-------|------|----|------------|
-| Error | `log::error!("msg")` | `Log.Error("msg")` | `console.error("msg")` |
-| Warn | `log::warn!("msg")` | `Log.Warn("msg")` | `console.warn("msg")` |
-| Info | `log::info!("msg")` | `Log.Info("msg")` | `console.log("msg")` |
-| Debug | `log::debug!("msg")` | `Log.Debug("msg")` | `console.debug("msg")` |
-| Trace | `log::trace!("msg")` | `Log.Trace("msg")` | `console.trace("msg")` |
-| Exception | N/A | `Log.Exception(ex)` | N/A |
+| Level     | Rust                 | C#                  | TypeScript             |
+| --------- | -------------------- | ------------------- | ---------------------- |
+| Error     | `log::error!("msg")` | `Log.Error("msg")`  | `console.error("msg")` |
+| Warn      | `log::warn!("msg")`  | `Log.Warn("msg")`   | `console.warn("msg")`  |
+| Info      | `log::info!("msg")`  | `Log.Info("msg")`   | `console.log("msg")`   |
+| Debug     | `log::debug!("msg")` | `Log.Debug("msg")`  | `console.debug("msg")` |
+| Trace     | `log::trace!("msg")` | `Log.Trace("msg")`  | `console.trace("msg")` |
+| Exception | N/A                  | `Log.Exception(ex)` | N/A                    |
 
 ## Common Types
 
-| Concept | Rust | C# | TypeScript |
-|---------|------|----|------------|
-| Boolean | `bool` | `bool` | `t.bool()` |
-| String | `String` | `string` | `t.string()` |
-| Integers | `i8`..`i128`, `u8`..`u128`, `i256`, `u256` | `sbyte`..`long`, `byte`..`ulong`, `I128`, `U128`, `I256`, `U256` | `t.i8()`..`t.u256()` |
-| Floats | `f32`, `f64` | `float`, `double` | `t.f32()`, `t.f64()` |
-| Optional | `Option<T>` | `T?` | `t.option(T)` |
-| List | `Vec<T>` | `List<T>` | `t.array(T)` |
-| Identity | `Identity` | `Identity` | `t.identity()` |
-| Timestamp | `Timestamp` | `Timestamp` | `t.timestamp()` |
-| Duration | `Duration` | `TimeDuration` | `t.timeDuration()` |
-| Schedule | `ScheduleAt` | `ScheduleAt` | `t.scheduleAt()` |
+| Concept   | Rust                                       | C#                                                               | TypeScript           |
+| --------- | ------------------------------------------ | ---------------------------------------------------------------- | -------------------- |
+| Boolean   | `bool`                                     | `bool`                                                           | `t.bool()`           |
+| String    | `String`                                   | `string`                                                         | `t.string()`         |
+| Integers  | `i8`..`i128`, `u8`..`u128`, `i256`, `u256` | `sbyte`..`long`, `byte`..`ulong`, `I128`, `U128`, `I256`, `U256` | `t.i8()`..`t.u256()` |
+| Floats    | `f32`, `f64`                               | `float`, `double`                                                | `t.f32()`, `t.f64()` |
+| Optional  | `Option<T>`                                | `T?`                                                             | `t.option(T)`        |
+| List      | `Vec<T>`                                   | `List<T>`                                                        | `t.array(T)`         |
+| Identity  | `Identity`                                 | `Identity`                                                       | `t.identity()`       |
+| Timestamp | `Timestamp`                                | `Timestamp`                                                      | `t.timestamp()`      |
+| Duration  | `Duration`                                 | `TimeDuration`                                                   | `t.timeDuration()`   |
+| Schedule  | `ScheduleAt`                               | `ScheduleAt`                                                     | `t.scheduleAt()`     |
 
 ## CLI Commands
 

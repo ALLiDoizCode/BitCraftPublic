@@ -3,6 +3,7 @@
 ## Decision Priority Analysis
 
 **Critical Decisions (Block Implementation):**
+
 1. Repository Strategy — Single polyglot monorepo (TS + Rust)
 2. Identity Propagation — BLS proxy reducer pattern with Nostr pubkey injection
 3. Agent Runtime — Claude instance with CLAUDE.md/AGENTS.md + Skills + MCP tools
@@ -10,12 +11,10 @@
 5. Client Package Architecture — `@sigil/client` TS package consumed by TUI backend + headless agent
 6. Agent Inference — TS backend uses Agent SDKs (Anthropic, Vercel AI) for LLM inference
 
-**Important Decisions (Shape Architecture):**
-7. TUI Architecture — rebels-in-the-sky patterns + agent observation mode
-8. Skill File Format — Standard Claude Agent Skills (SKILL.md), out of scope for custom design
-9. Agent Config Naming — CLAUDE.md (Claude agents) / AGENTS.md (non-Claude agents)
+**Important Decisions (Shape Architecture):** 7. TUI Architecture — rebels-in-the-sky patterns + agent observation mode 8. Skill File Format — Standard Claude Agent Skills (SKILL.md), out of scope for custom design 9. Agent Config Naming — CLAUDE.md (Claude agents) / AGENTS.md (non-Claude agents)
 
 **Deferred Decisions (Post-MVP):**
+
 - Vector DB choice for semantic memory (ChromaDB vs alternatives)
 - Multi-agent coordination protocols
 - Agent marketplace / sharing mechanism
@@ -24,11 +23,13 @@
 ## Data Architecture
 
 **Database:** SpacetimeDB (server-side, unmodified BitCraft). No additional database required for MVP.
-- SpacetimeDB 2.0 client SDKs targeting 1.6.x server modules (backwards compatible)
+
+- SpacetimeDB SDK 1.3.3 (1.x) required for compatibility with BitCraft's 1.6.0 server (SDK 2.0+ NOT backwards compatible)
 - ~80 entity tables, 148 static data tables, 364+ reducers available
 - Subscription-based real-time state sync via TypeScript SDK
 
 **Data Modeling:** SpacetimeDB tables define the schema. TypeScript SDK consumes generated client bindings.
+
 - TypeScript: `spacetimedb generate --lang typescript`
 
 **Persistence:** Agent state (CLAUDE.md, skill files, decision logs) stored as local files. Game state lives entirely in SpacetimeDB.
@@ -36,11 +37,13 @@
 ## Authentication & Security
 
 **Identity:** Nostr keypair is the sole identity mechanism.
+
 - No usernames, passwords, or OAuth
 - Private keys managed locally per agent/player, never transmitted
 - Public key = player identity across all systems
 
 **Identity Propagation Pattern:**
+
 ```
 Agent/Player → SDK Proxy Layer → Inject Nostr pubkey as reducer arg
 → ILP payment signed with Nostr key → Crosstown routes to BLS
@@ -50,6 +53,7 @@ Agent/Player → SDK Proxy Layer → Inject Nostr pubkey as reducer arg
 **Authorization:** BLS (BitCraft Login Server) validates every write action. No bypass paths. ILP micropayment required for every game write.
 
 **Security Invariants:**
+
 - Zero silent identity propagation failures (fail loud, fail fast)
 - All ILP packets cryptographically signed
 - Private keys never leave the local process
@@ -58,6 +62,7 @@ Agent/Player → SDK Proxy Layer → Inject Nostr pubkey as reducer arg
 ## API & Communication Patterns
 
 **MCP Server (Primary Agent Interface):**
+
 - Standalone TypeScript process
 - Exposes game world state as MCP resources (read)
 - Exposes game actions as MCP tools (write, routed through BLS)
@@ -65,17 +70,20 @@ Agent/Player → SDK Proxy Layer → Inject Nostr pubkey as reducer arg
 - Connects to SpacetimeDB for subscriptions, Crosstown/BLS for authenticated writes
 
 **SpacetimeDB Protocol:**
-- WebSocket v2 (SpacetimeDB 2.0 client SDK)
+
+- WebSocket (SpacetimeDB SDK 1.x compatible with 1.6.0 server)
 - Subscription-based: clients subscribe to table queries, receive real-time updates
 - Reducer calls for all write operations
-- Event tables + `_then()` callbacks (replaces deprecated reducer callbacks)
+- Global reducer callbacks (1.x SDK pattern; 2.0+ uses event tables + `_then()` callbacks)
 
 **Crosstown/ILP Protocol:**
+
 - Every game write action is an ILP micropayment
 - Payment routes through Crosstown relay nodes
 - BLS validates and forwards to SpacetimeDB
 
 **TUI ↔ Backend Communication:**
+
 - Rust ratatui TUI connects to TypeScript backend via IPC (stdio/local WebSocket)
 - TypeScript backend handles all SpacetimeDB, Crosstown, and MCP connectivity
 - TUI is a pure presentation layer — no direct SpacetimeDB or Crosstown connections from Rust
@@ -114,46 +122,47 @@ The "headless agent" use case is handled by external agent SDKs (Vercel AI SDK, 
 const client = new SigilClient({
   spacetimedb: { host: '...', module: '...' },
   nostr: { relay: '...', privateKey: '...' },
-  crosstown: { node: '...' }
-})
+  crosstown: { node: '...' },
+});
 
 // === Two independent read surfaces ===
 
 // SpacetimeDB: game world state
-client.spacetimedb.subscribe('player_state', query)
-client.spacetimedb.on('tableUpdate', handler)
-client.spacetimedb.tables   // generated type-safe table accessors
+client.spacetimedb.subscribe('player_state', query);
+client.spacetimedb.on('tableUpdate', handler);
+client.spacetimedb.tables; // generated type-safe table accessors
 
 // Nostr relay: confirmations, notifications, social
-client.nostr.subscribe(filters)
-client.nostr.on('event', handler)
-client.nostr.relay           // raw relay connection
+client.nostr.subscribe(filters);
+client.nostr.on('event', handler);
+client.nostr.relay; // raw relay connection
 
 // === One write path ===
 
 // Everything goes through ILP — single write API
-client.publish(action)       // signs → ILP packet → Crosstown → BLS → SpacetimeDB
+client.publish(action); // signs → ILP packet → Crosstown → BLS → SpacetimeDB
 
 // === High-level aggregated events ===
 
-client.on('actionConfirmed', handler)   // from Nostr relay
-client.on('gameStateUpdate', handler)   // from SpacetimeDB
-client.on('connectionChange', handler)  // from either
+client.on('actionConfirmed', handler); // from Nostr relay
+client.on('gameStateUpdate', handler); // from SpacetimeDB
+client.on('connectionChange', handler); // from either
 
 // === Identity ===
 
-client.identity              // Nostr keypair, public key
+client.identity; // Nostr keypair, public key
 ```
 
-| Surface | Purpose | Type |
-|---------|---------|------|
-| `client.spacetimedb` | Game world state (tables, subscriptions) | Read |
-| `client.nostr` | Relay events (confirmations, social, custom) | Read |
-| `client.publish()` | All game actions (ILP → Crosstown → BLS → SpacetimeDB) | Write |
-| `client.on()` | High-level aggregated events from both sources | Read (convenience) |
-| `client.identity` | Nostr keypair, public key | Identity |
+| Surface              | Purpose                                                | Type               |
+| -------------------- | ------------------------------------------------------ | ------------------ |
+| `client.spacetimedb` | Game world state (tables, subscriptions)               | Read               |
+| `client.nostr`       | Relay events (confirmations, social, custom)           | Read               |
+| `client.publish()`   | All game actions (ILP → Crosstown → BLS → SpacetimeDB) | Write              |
+| `client.on()`        | High-level aggregated events from both sources         | Read (convenience) |
+| `client.identity`    | Nostr keypair, public key                              | Identity           |
 
 **Design rationale:**
+
 - Two read surfaces because SpacetimeDB and Nostr relay are independent data sources with different protocols
 - One write path because the architecture has a single write pipeline (all actions go through ILP/Crosstown/BLS)
 - `client.publish()` — not "write to SpacetimeDB" or "write to Nostr". The consumer publishes intent; the client handles the pipeline
@@ -162,6 +171,7 @@ client.identity              // Nostr keypair, public key
 ## Frontend Architecture (Hybrid TUI)
 
 **Rust TUI (Presentation Layer):**
+
 - ratatui 0.30+ with crossterm 0.29.0 backend
 - tokio async runtime for terminal input + tick scheduling + IPC
 - Follows rebels-in-the-sky patterns:
@@ -173,12 +183,14 @@ client.identity              // Nostr keypair, public key
   - Tick system: Slow tick (10Hz) for game state polling, fast tick (40Hz) for animations
 
 **TUI Backend (consumes `@sigil/client`):**
+
 - Node.js process that imports `@sigil/client`
 - Exposes game state and action API to the Rust TUI via IPC
 - Manages agent inference lifecycle
 - Bridges agent decisions to game actions
 
 **Communication Bridge (Rust ↔ TypeScript):**
+
 - IPC mechanism: stdio pipes (Rust spawns Node.js child process) or local WebSocket
 - Protocol: JSON messages with typed schemas (game state updates, action requests, responses)
 - Rust TUI sends user actions → TS backend processes → SpacetimeDB/Crosstown → result back to TUI
@@ -187,15 +199,18 @@ client.identity              // Nostr keypair, public key
 ## Headless Agent Mode
 
 Headless agents are not a Sigil package — they are external agent frameworks that consume Sigil:
+
 - **Via MCP:** Agent SDKs (Claude, OpenCode, Vercel AI) connect to `@sigil/mcp-server` using standard MCP protocol. The MCP server exposes game world as tools/resources. This is the primary headless path.
 - **Via direct import:** A researcher can `import { SigilClient } from '@sigil/client'` in their own TypeScript code alongside any agent SDK (Vercel AI SDK, Anthropic SDK) for custom orchestration.
 
 **Agent Observation Mode (TUI only):**
+
 - TUI includes a dedicated view for spectating agents owned by the human player
 - Real-time display of agent perception, decisions, and actions (sourced from TS backend)
 - Read-only view — human observes but does not control the agent
 
 **Panels (following rebels pattern):**
+
 - Game world view (galaxy, planets, teams)
 - Agent dashboard (observation mode)
 - Player/team management
@@ -205,12 +220,14 @@ Headless agents are not a Sigil package — they are external agent frameworks t
 ## Infrastructure & Deployment
 
 **Local Development:**
+
 - Docker Compose: BitCraft server + Crosstown node + BLS
 - TypeScript workspace builds independently (SDK core + MCP server + TUI backend)
 - Rust TUI builds independently (presentation layer only)
 - MCP server runs as standalone process
 
 **Repository Layout (Single Polyglot Monorepo):**
+
 ```
 sigil/
 ├── packages/              # TypeScript (pnpm workspace)
@@ -236,16 +253,19 @@ sigil/
 ## Agent Configuration Architecture
 
 **CLAUDE.md (Claude Agents):**
+
 - Claude-specific configuration following Claude Code conventions
 - Defines agent personality, constraints, goals, budget limits
 - References skills and MCP server connection details
 
 **AGENTS.md (Non-Claude Agents):**
+
 - Generic agent configuration for non-Claude AI systems (Vercel AI, OpenCode, etc.)
 - Runtime-agnostic format
 - Same game capabilities, different configuration surface
 
 **Skills (SKILL.md):**
+
 - Standard Claude Agent Skills format
 - YAML frontmatter: name, description
 - Markdown body: instructions, examples, tool references
@@ -254,8 +274,9 @@ sigil/
 ## Decision Impact Analysis
 
 **Implementation Sequence:**
+
 1. Repository scaffolding (monorepo with TS workspace + Rust crate)
-2. `@sigil/client` package: SpacetimeDB 2.0 client + Nostr relay + Crosstown/ILP + Identity + `client.publish()` write path
+2. `@sigil/client` package: SpacetimeDB 1.x client + Nostr relay + Crosstown/ILP + Identity + `client.publish()` write path
 3. `@sigil/mcp-server` (MCP protocol wrapper over `@sigil/client`, exposes game world as tools/resources)
 4. `@sigil/tui-backend` (JSON-RPC IPC wrapper over `@sigil/client`, bridge for ratatui)
 5. `sigil-tui` Rust TUI application (ratatui presentation layer, connects to tui-backend via IPC)
@@ -263,6 +284,7 @@ sigil/
 7. Agent observation mode in TUI
 
 **Cross-Component Dependencies:**
+
 - `@sigil/client` is the foundational package — both wrappers depend on it
 - `@sigil/mcp-server` wraps `@sigil/client` in MCP protocol (for AI agents)
 - `@sigil/tui-backend` wraps `@sigil/client` in JSON-RPC IPC (for Rust TUI)
@@ -272,6 +294,7 @@ sigil/
 - Identity + `client.publish()` pipeline is foundational — blocks all write operations
 
 **Superseded Architecture (to be removed/replaced in future refinement):**
+
 - Section 5: Five-Layer Cognition Architecture → Replaced by Claude + Skills + MCP
 - Section 5.1: CognitionPlugin<TInput, TOutput, TState> → No longer applicable
 - Section 5.2: Layer implementations (PerceptionFilter, GoalsEngine, etc.) → Agent cognition is Claude, not custom code

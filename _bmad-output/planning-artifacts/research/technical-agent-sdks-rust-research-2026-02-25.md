@@ -59,6 +59,7 @@ source_verification: true
 Rust has emerged as a compelling choice for AI agent development in 2026, offering significant advantages in performance, memory safety, and concurrency. The language's zero-cost abstractions and ownership model enable building high-performance agent systems without the overhead common in garbage-collected languages.
 
 _Key Language Features for Agents:_
+
 - **Memory Safety**: Compile-time guarantees prevent memory leaks and data races
 - **Zero-Cost Async**: Native async/await with efficient task scheduling
 - **Type Safety**: Strong type system enables structured tool calling and agent interfaces
@@ -66,6 +67,7 @@ _Key Language Features for Agents:_
 - **WebAssembly Support**: Compile agents for browser and edge deployment
 
 _Rust vs Python for Agents:_
+
 - 5× memory efficiency advantage (AutoAgents and Rig stay under 1.1 GB vs 5+ GB for Python frameworks)
 - 25% better latency on average
 - 36% higher throughput under same concurrency
@@ -78,6 +80,7 @@ _Source:_ [AutoAgents Benchmarking Article](https://dev.to/saivishwak/benchmarki
 **Major Agent Frameworks**
 
 **AutoAgents** - A modular, multi-agent framework written in Rust that enables building, deploying, and coordinating multiple intelligent agents. Features include:
+
 - Type-safe agent model with structured tool calling
 - Configurable memory systems
 - Pluggable LLM backends
@@ -87,6 +90,7 @@ _Source:_ [AutoAgents Benchmarking Article](https://dev.to/saivishwak/benchmarki
 _Source:_ [AutoAgents GitHub](https://github.com/liquidos-ai/AutoAgents), [AutoAgents Documentation](https://liquidos-ai.github.io/AutoAgents/)
 
 **Rig** - Build modular and scalable LLM applications in Rust with:
+
 - Unified LLM interface across providers
 - Rust-powered performance optimizations
 - Advanced AI workflow abstractions
@@ -95,6 +99,7 @@ _Source:_ [AutoAgents GitHub](https://github.com/liquidos-ai/AutoAgents), [AutoA
 _Source:_ [Rig Official Site](https://rig.rs/)
 
 **graph-flow (rs-graph-llm)** - High-performance framework for building multi-agent workflow systems similar to LangGraph:
+
 - Type-safe graph execution library
 - Stateful workflow orchestration
 - LLM integration with streaming support
@@ -103,6 +108,7 @@ _Source:_ [Rig Official Site](https://rig.rs/)
 _Source:_ [rs-graph-llm GitHub](https://github.com/a-agmon/rs-graph-llm)
 
 **Kowalski** - Powerful, modular agentic AI framework for local-first, extensible LLM workflows:
+
 - Deep modular architecture (v0.5.0)
 - Multi-agent orchestration
 - Local-first design philosophy
@@ -111,6 +117,7 @@ _Source:_ [rs-graph-llm GitHub](https://github.com/a-agmon/rs-graph-llm)
 _Source:_ [Kowalski Article](https://dev.to/yarenty/kowalski-the-rust-native-agentic-ai-framework-53k4)
 
 **langchain-ai-rust** - Rust implementation of LangChain with:
+
 - Support for OpenAI, Azure OpenAI, Anthropic Claude, MistralAI, Google Gemini, AWS Bedrock
 - Chat agents with tool calling
 - Multi-agent system support
@@ -118,6 +125,7 @@ _Source:_ [Kowalski Article](https://dev.to/yarenty/kowalski-the-rust-native-age
 _Source:_ [langchain-ai-rust Docs](https://docs.rs/crate/langchain-ai-rust/latest)
 
 **AgentAI** - Library for simplifying AI agent creation:
+
 - Leverages GenAI library for LLM interface
 - Wide range of LLM provider support
 - Simplified agent development patterns
@@ -129,6 +137,7 @@ _Source:_ [AgentAI Crates.io](https://crates.io/crates/agentai), [AgentAI GitHub
 **Multi-Provider Libraries**
 
 **rust-genai** - Single, ergonomic API for multiple generative AI providers:
+
 - Supports: OpenAI, Anthropic, Gemini, xAI, Ollama, Groq, DeepSeek, Cohere, Together, Fireworks, Nebius, Mimo, Zai (Zhipu AI), BigModel
 - Unified interface across providers
 - Production-ready with comprehensive provider coverage
@@ -138,11 +147,13 @@ _Source:_ [rust-genai GitHub](https://github.com/jeremychone/rust-genai)
 **Provider-Specific Libraries**
 
 **async-openai** - Fully async OpenAI client in Rust:
+
 - Low-level and high-level APIs
 - Streaming support
 - Complete OpenAI service coverage
 
 **anthropic-rs / clust** - Rust clients for Anthropic's Claude API:
+
 - Streaming completions
 - Type-safe request/response models
 - Native Rust interface
@@ -150,6 +161,7 @@ _Source:_ [rust-genai GitHub](https://github.com/jeremychone/rust-genai)
 _Source:_ [clust GitHub](https://github.com/mochi-neko/clust), [Anthropic Docs](https://docs.rs/anthropic)
 
 **Additional Multi-Provider Options:**
+
 - **Allms**: Unified client for OpenAI, Anthropic, Mistral with common interface
 - **RLLM (llm crate)**: Single API to multiple backends with unified chat/completion traits
 - **llmclient**: Unified client for Gemini, OpenAI, Anthropic
@@ -161,12 +173,14 @@ _Source:_ [Rust Ecosystem for AI & LLMs](https://hackmd.io/@Hamze/Hy5LiRV1gg)
 **Tokio Async Runtime**
 
 Tokio is the de facto asynchronous runtime for Rust, critical for AI agent development:
+
 - Multi-threaded runtime for executing asynchronous code
 - Asynchronous version of standard library (I/O, networking, timers)
 - Large ecosystem of compatible libraries
 - Task scheduler and I/O driver
 
 _Key Benefits for AI Agents:_
+
 - Handle thousands of concurrent agent sessions without GIL contention
 - Each session gets its own task with proper CPU scheduling
 - Zero-cost async I/O for data-intensive preprocessing
@@ -195,6 +209,7 @@ _Source:_ [Tokio Official Site](https://tokio.rs/), [The Evolution of Async Rust
 **Built-in Testing**
 
 Rust provides comprehensive built-in testing capabilities:
+
 - Unit tests with `#[test]` annotation
 - Integration tests in `tests/` directory
 - Test organization with modules
@@ -210,6 +225,7 @@ _Source:_ [The Rust Programming Language Book - Testing](https://doc.rust-lang.o
 - **mock libraries**: mockall, mockito for mocking dependencies
 
 _Framework Options:_
+
 - integra8, rspec, hamcrest - Organized testing frameworks
 - morq, rs_unit, stainless - Flexible testing approaches
 
@@ -220,6 +236,7 @@ _Source:_ [Testing in Rust Guide](https://dev.to/tramposo/testing-in-rust-a-quic
 **Memory Efficiency**
 
 Rust agent frameworks demonstrate 5× memory advantage over Python:
+
 - AutoAgents: Under 1.1 GB peak memory
 - Rig: Under 1.1 GB peak memory
 - Python frameworks (LangChain, LlamaIndex): 5+ GB typical
@@ -244,6 +261,7 @@ _Source:_ [AutoAgents Benchmarking](https://dev.to/saivishwak/benchmarking-ai-ag
 **Growing Ecosystem**
 
 The Rust AI agent ecosystem has matured significantly in 2025-2026:
+
 - Multiple production-ready frameworks available
 - Comprehensive LLM provider support
 - Active development and community growth
@@ -252,6 +270,7 @@ The Rust AI agent ecosystem has matured significantly in 2025-2026:
 **Framework Comparisons**
 
 Direct comparisons show Rust frameworks competing favorably with established Python solutions:
+
 - AutoAgents vs LangChain, LangGraph, LlamaIndex, PydanticAI
 - Performance advantages clear across memory, latency, throughput
 - Type safety and compile-time guarantees reduce runtime errors
@@ -264,6 +283,7 @@ Direct comparisons show Rust frameworks competing favorably with established Pyt
 - Local-first and edge deployment focus
 
 _Community Resources:_
+
 - [Awesome Rust LLM](https://github.com/jondot/awesome-rust-llm) - Curated list of Rust tools for LLMs
 - Active discussion on Rust forums about AI agent patterns
 
@@ -280,17 +300,20 @@ _Source:_ [awesome-rust-llm GitHub](https://github.com/jondot/awesome-rust-llm),
 Rust agent SDKs implement structured tool calling through type-safe patterns:
 
 **Derive Macro Pattern:**
+
 - `#[tool]` macro for defining tools with automatic schema generation
 - `#[agent]` macro for agent configuration
 - `#[ToolInput]` for structured input parameters with descriptions
 - Example: `AddTool::as_tool()` attaches tools to agents with type safety
 
 **Builder Pattern:**
+
 - `AgentBuilder` provides fluent API for configuring agents
 - Chain system prompts, models, and tools
 - Common idiom across Rust agent SDKs for composable configuration
 
 **Tool Execution Workflow:**
+
 - Define executor closure with business logic
 - Wrap in `ToolBuilder` with schema
 - Register with agent through builder
@@ -298,6 +321,7 @@ Rust agent SDKs implement structured tool calling through type-safe patterns:
 - Automatic streaming and tool call handling
 
 _Agent Design Patterns:_
+
 - **Prompt Chaining**: Decompose tasks into smaller steps, pipe results sequentially
 - **Multi-Agent Systems**: Specialized agents with tools, LLM decides which agent to use
 - **Type Safety**: Strong typing throughout with async/await support
@@ -315,18 +339,21 @@ _Source:_ [Groq Rust Agent Template](https://app.readytensor.ai/publications/gro
 **HTTP/HTTPS Protocols**
 
 **RESTful Integration:**
+
 - Reqwest and hyper libraries for HTTP clients
 - Axum and Actix-web for building agent HTTP servers
 - Connection pooling for efficient resource usage
 - Request/response lifecycle management
 
 **Streaming Responses:**
+
 - Server-Sent Events (SSE) with `content-type: text/event-stream`
 - Async channels for token-by-token streaming
 - Minimal streaming proxy patterns using Axum + Reqwest
 - Real-time response delivery without buffering
 
 _Implementation Patterns:_
+
 - llm-connector provides protocol abstraction for 11+ providers
 - RSLLM offers streaming via async iterators
 - Type-safe with memory-efficient implementations
@@ -378,12 +405,14 @@ _Source:_ [Multi-Agent Systems Architecture](https://rheumlife.github.io/nested/
 
 **Claude Code OpenAI Gateway:**
 High-performance Rust implementation provides OpenAI-compatible API gateway for Claude Code CLI:
+
 - RESTful API interface using familiar OpenAI format
 - Drop-in replacement for OpenAI API
 - Works with existing OpenAI client libraries
 - Built with Rust, Axum, and Tokio for exceptional performance
 
 _Key Features:_
+
 - Connection pooling to reuse Claude processes
 - Conversation management with session support
 - Multimodal support (images + text)
@@ -395,6 +424,7 @@ _Source:_ [claude-code-api-rs GitHub](https://github.com/ZhangHanDong/claude-cod
 **Claude Agent SDK for Rust**
 
 Production-ready Rust SDK replicating Python Claude Agent SDK features:
+
 - Idiomatic Rust bindings with full async/await support
 - Strong typing with zero-cost abstractions
 - Type-safe tool definitions
@@ -414,17 +444,20 @@ _Source:_ [claude-agent-sdk GitHub](https://github.com/Wally869/claude_agent_sdk
 **Message-Passing Architectures**
 
 **Channel-Based Communication:**
+
 - Tokio channels (mpsc, broadcast, watch) for inter-agent messaging
 - Async message passing with backpressure handling
 - Type-safe message protocols
 
 **Actor Model Implementation:**
+
 - Actix framework provides proven actor pattern
 - Each agent runs in separate thread/task
 - Message-based coordination without shared state
 - Agents can join/leave system dynamically
 
 _Pattern Details:_
+
 - Two-thread model: listener thread + ping thread
 - Allows dynamic system-of-systems formation
 - ZeroMQ for distributed agent messaging
@@ -441,17 +474,20 @@ _Source:_ [Swarms-rs Guide](https://medium.com/@kyeg/the-comprehensive-guide-to-
 **Orchestration Frameworks**
 
 **AutoAgents:**
+
 - Modular multi-agent framework
 - Type-safe agent coordination
 - Configurable communication patterns
 
 **Swarms-rs:**
+
 - Enterprise-grade multi-agent orchestration
 - Production-ready with high performance
 - Rust implementation of popular orchestration patterns
 - Parallel task execution and agent coordination
 
 **Kowalski Federation:**
+
 - Flexible agent registry
 - Task-passing layers for workflow
 - Scalable multi-agent collaboration
@@ -472,6 +508,7 @@ _Source:_ [Microsoft Multi-Agent Architecture](https://microsoft.github.io/multi
 **Official Rust SDK**
 
 **rmcp - Official MCP SDK:**
+
 - Official Rust implementation from Model Context Protocol project
 - Tokio async runtime foundation
 - Clean API with macro support to eliminate boilerplate
@@ -482,12 +519,14 @@ _Source:_ [MCP Rust SDK GitHub](https://github.com/modelcontextprotocol/rust-sdk
 **Building MCP Servers in Rust**
 
 **Why Rust for MCP:**
+
 - Type safety eliminates memory vulnerabilities at compile time
 - No garbage collector pauses for predictable performance
 - Ideal for processing untrusted LLM-generated inputs
 - Performance characteristics critical for boundary services
 
 **Transport Mechanisms:**
+
 - **stdio transport**: Standard input/output communication (like LSP servers) for local use
 - **SSE (Server-Sent Events)**: External cloud-based servers
 - Clean separation between transport and protocol logic
@@ -497,12 +536,14 @@ _Source:_ [Why Rust for MCP](https://stackademic.com/blog/why-rust-is-the-right-
 **MCP in Agent Frameworks**
 
 **Multi-Agent MCP Systems:**
+
 - Orchestrate specialized agents connected to real-world tools via MCP
 - Built-in MCP support in production frameworks
 - Examples: Linear project management, GitHub operations, Supabase tasks
 - Multi-LLM integration with MCP server access
 
 **MCP Framework for Rust:**
+
 - mcp-framework provides Rust framework for building AI agents with MCP
 - Bridges AI agents to real-time data, external APIs, and custom tools
 - Extends AI capabilities with specific tools and services
@@ -514,18 +555,21 @@ _Source:_ [Composio MCP Tutorial](https://composio.dev/blog/how-to-build-your-fi
 **JWT (JSON Web Token) Authentication**
 
 **Implementation Patterns:**
+
 - Compact, URL-safe data transfer between parties
 - Cryptographically signed for data integrity
 - Cannot be easily manipulated
 - Standard for stateless authentication
 
 **JWT in Rust:**
+
 - jsonwebtoken crate for encoding/decoding
 - Type-safe claims with serde
 - Secure token validation and verification
 - Integration with Axum and Actix-web
 
 _Best Practices:_
+
 - Use HTTPS for all token transmission
 - Secure JWT_SECRET storage and regular rotation
 - Proper token validation on every request
@@ -536,16 +580,19 @@ _Source:_ [JWT Authentication in Rust](https://oneuptime.com/blog/post/2026-01-0
 **OAuth 2.0 Implementation**
 
 **Delegated Authorization:**
+
 - OAuth 2.0 provides access to resources without sharing credentials
 - Application acts on behalf of users
 - Standard authorization flows (Authorization Code, Client Credentials, etc.)
 
 **Rust OAuth Libraries:**
+
 - oauth2 crate for OAuth 2.0 client and server implementations
 - Integration with web frameworks
 - PKCE support for enhanced security
 
 _Security Considerations:_
+
 - Validate and sanitize redirect URIs to prevent open redirects
 - State parameter for CSRF protection
 - Secure token storage
@@ -581,6 +628,7 @@ _Source:_ [Authentication and Authorization in Rust](https://calmops.com/program
 Modern Rust agent frameworks adopt modular, type-safe architectures:
 
 **AutoAgents Architecture:**
+
 - Modular framework for building intelligent systems
 - Type-safe agent model with structured interfaces
 - Configurable memory systems
@@ -588,6 +636,7 @@ Modern Rust agent frameworks adopt modular, type-safe architectures:
 - Support for server, edge, and browser targets
 
 **Core Design Patterns:**
+
 - **Chaining**: Sequential task decomposition with result piping
 - **Planning**: Multi-step task planning before execution
 - **Routing**: LLM-driven agent selection based on query
@@ -599,6 +648,7 @@ _Source:_ [AutoAgents GitHub](https://github.com/liquidos-ai/AutoAgents), [Googl
 **ADK-Rust Production Architecture**
 
 ADK-Rust provides flexible, modular framework characteristics:
+
 - Model-agnostic design supporting multiple LLM providers
 - Type-safe interfaces preventing runtime errors
 - High-performance execution with Rust's zero-cost abstractions
@@ -610,12 +660,14 @@ _Source:_ [ADK-Rust](https://adk-rust.com/en)
 
 **Trait-Based Plugin Pattern:**
 Rust frameworks use Plugin trait pattern for extensibility:
+
 - `Plugin` trait with `build` method for registration
 - Systems, resources, and configuration registered at build time
 - Compile-time feature selection via Cargo
 - Modular composition without runtime overhead
 
 **Example from Bevy Engine ECS:**
+
 - Entity Component System (ECS) paradigm
 - Plugins implement modular functionality
 - Zero-cost abstractions for plugin composition
@@ -625,6 +677,7 @@ _Source:_ [Bevy Engine Architecture](https://deepwiki.com/bevyengine/bevy)
 **Entity-Component-System (ECS) Architecture**
 
 ECS architecture defines agents in memory efficiently:
+
 - **Entities**: Unique identifiers for agents
 - **Components**: Vectors of data (health, energy, coordinates) as independent structures
 - **Systems**: Functions operating on component data
@@ -636,6 +689,7 @@ _Source:_ [Rust Agent-Based Models](https://github.com/facorread/rust-agent-base
 **Multi-Agent Microservices Architecture**
 
 Multi-agent systems mirror microservices architecture:
+
 - Specific roles assigned to individual agents
 - Inherently modular and testable design
 - Independent scaling of agent types
@@ -648,26 +702,31 @@ _Source:_ [Google's Multi-Agent Design Patterns](https://www.infoq.com/news/2026
 **SOLID Principles in Rust**
 
 **Single Responsibility Principle (SRP):**
+
 - Modules should have one reason to change
 - Rust's module system enforces clear boundaries
 - Each agent component focuses on specific functionality
 
 **Open/Closed Principle (OCP):**
+
 - Software entities open for extension, closed for modification
 - Achieved through traits and implementations
 - New behavior added via trait implementations without modifying existing code
 
 **Liskov Substitution Principle (LSP):**
+
 - Any type implementing a trait usable wherever trait expected
 - Rust's trait system enforces behavioral contracts
 - Prevents unexpected behavior in polymorphic contexts
 
 **Interface Segregation Principle (ISP):**
+
 - Clients not forced to depend on unused interfaces
 - Small, focused traits in Rust
 - Agent tools implement only required traits
 
 **Dependency Inversion Principle (DIP):**
+
 - Depend on abstractions (traits), not concrete types
 - Trait objects and generics enable dependency injection
 - Testable and flexible agent architectures
@@ -677,17 +736,20 @@ _Source:_ [SOLID Principles in Rust](https://www.darrenhorrocks.co.uk/solid-prin
 **Clean Architecture Patterns**
 
 **Trait-Driven Design:**
+
 - Traits define shared behavior without inheritance complexities
 - Polymorphism through trait bounds and trait objects
 - Composition over inheritance
 
 **Layered Architecture:**
+
 - Domain layer with business logic (agents, tools, memory)
 - Application layer orchestrating use cases
 - Infrastructure layer with LLM clients, databases
 - Clear dependency direction (inward dependencies only)
 
 **Benefits in Rust:**
+
 - Strong type system prevents architectural violations
 - Ownership model ensures safe state management
 - Robust applications easy to maintain, test, and evolve
@@ -709,18 +771,21 @@ _Source:_ [Rust Design Patterns](https://rust-unofficial.github.io/patterns/), [
 **Async/Await Concurrency Patterns**
 
 **Core Async Architecture:**
+
 - Rust's async/await provides efficient, safe concurrency
 - Zero-cost async I/O without compromising performance
 - Task-based model handles thousands of concurrent operations
 - Minimal overhead compared to traditional threading
 
 **Tokio Runtime Patterns:**
+
 - Asynchronous runtime for non-blocking concurrent code
 - Task-based model vs. thread-per-operation
 - Lightweight tasks on shared thread pool
 - Each task returns `JoinHandle` for result handling
 
 _Key Patterns:_
+
 - **tokio::spawn**: Execute tasks concurrently
 - **tokio::join!**: Run multiple futures, wait for all
 - **tokio::try_join!**: Concurrent execution with error handling
@@ -731,16 +796,19 @@ _Source:_ [Scalable Concurrency with Async/Await](https://www.javacodegeeks.com/
 **Concurrency Control Patterns**
 
 **Semaphore Pattern:**
+
 - Limit concurrent task execution
 - Manage resource utilization effectively
 - Essential for agent workload management
 
 **Shared State Management:**
+
 - `Arc<Mutex<T>>` for shared data across async tasks
 - Safe concurrent access to agent state
 - Lock guards prevent data races
 
 **Performance Optimization:**
+
 - Use `tokio-console` and profiling tools
 - Identify bottlenecks before optimizing
 - Async doesn't automatically improve performance
@@ -751,11 +819,13 @@ _Source:_ [Rust Concurrency Patterns](https://onesignal.com/blog/rust-concurrenc
 **Agent Concurrency Characteristics**
 
 **No GIL Contention:**
+
 - Handle thousands of concurrent agent sessions
 - Each session gets own task with proper CPU scheduling
 - No Global Interpreter Lock unlike Python
 
 **Data-Intensive Operations:**
+
 - Zero-cost async I/O for preprocessing
 - Non-blocking operations for LLM API calls
 - Efficient handling of streaming responses
@@ -767,12 +837,14 @@ _Source:_ [Concurrency in Rust: Fearless Parallelism](https://andrewodendaal.com
 **Multi-Layer Memory Architecture**
 
 **Memory Hierarchy for AI Agents:**
+
 1. **Working Memory**: Short-term context for current task
 2. **Long-term Memory**: Persistent knowledge store
 3. **Episodic Memory**: Sequence of past interactions
 4. **Procedural Memory**: Learned patterns and routines
 
 **Session, State, and Memory (ADK Pattern):**
+
 - **Session & State**: Current interaction managed by SessionService
 - **Memory**: Past and external information via MemoryService
 - Clear separation of concerns
@@ -783,11 +855,13 @@ _Source:_ [Building AI Agent Memory Architecture](https://dev.to/oblivionlabz/bu
 
 **agents_persistence Crate:**
 Multiple storage backend support:
+
 - **Redis**: High-performance in-memory with optional persistence
 - **PostgreSQL**: Robust relational with ACID guarantees
 - **DynamoDB**: AWS-managed NoSQL database
 
 **Checkpointer Pattern:**
+
 - `RedisCheckpointer` for Redis-backed state
 - `PostgresCheckpointer` for PostgreSQL persistence
 - Automatic state serialization and recovery
@@ -797,6 +871,7 @@ _Source:_ [agents_persistence Documentation](https://docs.rs/agents-persistence/
 **State Machine Patterns**
 
 **Rust Enum-Based State Machines:**
+
 - Mutually exclusive states using enums
 - Fat enums carry state-specific data
 - Memory efficient (size of largest variant)
@@ -804,6 +879,7 @@ _Source:_ [agents_persistence Documentation](https://docs.rs/agents-persistence/
 - Type-safe transitions at compile time
 
 **Benefits:**
+
 - Impossible states become unrepresentable
 - Compiler enforces valid transitions
 - Zero runtime overhead
@@ -813,12 +889,14 @@ _Source:_ [Rust State Machine Pattern](https://hoverbear.org/blog/rust-state-mac
 **Memory Management Best Practices**
 
 **Smart Pointers:**
+
 - `Box<T>` for heap allocation
 - `Rc<T>` for reference counting (single-threaded)
 - `Arc<T>` for atomic reference counting (multi-threaded)
 - Prevent memory leaks and dangling references
 
 **Ownership Model:**
+
 - Compile-time guarantees for memory safety
 - No garbage collector needed
 - Prevents buffer overflows and use-after-free errors
@@ -830,6 +908,7 @@ _Source:_ [Mastering Rust Memory Management](https://www.rapidinnovation.io/post
 **Memory Safety Foundations**
 
 **Rust's Core Security Guarantees:**
+
 - Safe Rust guarantees memory safety via ownership and borrowing rules
 - Compile-time enforcement prevents runtime vulnerabilities
 - No buffer overflows, use-after-free, or data races in safe code
@@ -842,6 +921,7 @@ _Source:_ [Memory-Safe Programming and National Cybersecurity](https://medium.co
 **SandCell: Fine-Grained Isolation**
 
 General-purpose, highly-automated sandboxing tool for Rust:
+
 - Supports syntactic instance sandboxing
 - Supports run-time instance sandboxing
 - Flexible isolation boundaries beyond fixed approaches
@@ -849,6 +929,7 @@ General-purpose, highly-automated sandboxing tool for Rust:
 - Fine-grained control over component isolation
 
 **PKU-Based In-Process Sandboxing:**
+
 - Hardware Memory Protection Keys (x86 PKU)
 - Dynamic address space partitioning
 - Rapid user-space transitions between trusted/untrusted regions
@@ -859,6 +940,7 @@ _Source:_ [SandCell Research Paper](https://arxiv.org/html/2509.24032v1)
 **LiteBox: Rust-Based Library OS**
 
 Microsoft's comprehensive security approach:
+
 - Entire library OS written in Rust
 - Memory safety throughout trusted computing base (TCB)
 - Vertical decomposition architecture
@@ -866,6 +948,7 @@ Microsoft's comprehensive security approach:
 - Isolated environment execution
 
 **Benefits:**
+
 - Reduces attack surface significantly
 - Type safety prevents entire vulnerability classes
 - Predictable performance without GC pauses
@@ -875,11 +958,13 @@ _Source:_ [Microsoft LiteBox](https://windowsnews.ai/article/microsoft-litebox-r
 **Agent-Specific Security Challenges**
 
 **Probabilistic TCB (Trusted Computing Base):**
+
 - LLM model itself is major TCB component
 - Fundamentally probabilistic behavior
 - Traditional security principles difficult to apply
 
 **Defense Strategies:**
+
 - Sandbox agent to prevent unauthorized network access
 - Default-deny policy for sensitive file access
 - Tool authorization per task
@@ -893,6 +978,7 @@ _Source:_ [Systems Security Foundations for Agentic Computing](https://eprint.ia
 **WebAssembly (WASM) Deployment Patterns**
 
 **2026 WASM Maturity:**
+
 - Rust emerged as dominant force in AI sandboxing
 - High-performance computing via WASM
 - Browser-based agent applications
@@ -901,6 +987,7 @@ _Source:_ [Systems Security Foundations for Agentic Computing](https://eprint.ia
 **Agent-Specific Use Cases:**
 
 **Pydantic Monty:**
+
 - Rust-based sandboxed Python subset in WebAssembly
 - Safe execution of LLM-generated code
 - Microsecond startup times
@@ -911,16 +998,19 @@ _Source:_ [Rust and WebAssembly for AI 2026](https://dasroot.net/posts/2026/02/r
 **Performance Advantages over Containers:**
 
 **Startup Time:**
+
 - WASM: 50-500ms (5-10× faster)
 - Containers: 2-5 seconds
 - Microsecond initialization for WASM modules
 
 **Binary Size:**
+
 - WASM: 2-10MB (50-90% smaller)
 - Containers: 100-500MB
 - Eliminates OS overhead
 
 **Resource Efficiency:**
+
 - WASM: Kilobytes to few megabytes memory
 - Higher density per node
 - No JVM or Node.js container overhead
@@ -930,12 +1020,14 @@ _Source:_ [WASM Production Deployment Patterns](https://calmops.com/programming/
 **Container and Orchestration Patterns**
 
 **Docker + WASM Integration:**
+
 - Docker supports WASM as first-class workload
 - True binary portability
 - Docker's distribution and orchestration capabilities
 - Combines best of both worlds
 
 **Tooling:**
+
 - `wasm-pack`: Bridge between Rust and JavaScript
 - Seamless WASM module integration into web projects
 - Production-ready build pipeline
@@ -943,6 +1035,7 @@ _Source:_ [WASM Production Deployment Patterns](https://calmops.com/programming/
 _Source:_ [Docker and Wasm Microservices](https://oneuptime.com/blog/post/2026-02-08-how-to-build-portable-microservices-with-docker-and-wasm/view)
 
 **WASI 0.3.0 (February 2026):**
+
 - Native async I/O capabilities
 - First-class future and stream types
 - Solves WASM's biggest limitation
@@ -953,6 +1046,7 @@ _Source:_ [WebAssembly Beyond Browsers](https://dasroot.net/posts/2026/01/webass
 **Multi-Target Deployment Architecture**
 
 Rust agent frameworks support deployment across:
+
 - **Server**: Native binaries for cloud/on-premise
 - **Edge**: WASM for edge computing
 - **Browser**: WASM for client-side agents
@@ -960,6 +1054,7 @@ Rust agent frameworks support deployment across:
 - **Embedded**: Cross-compilation for embedded systems
 
 **Cross-Platform Benefits:**
+
 - Single codebase for multiple targets
 - Rust's cross-compilation support
 - Small binary footprint

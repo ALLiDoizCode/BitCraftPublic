@@ -17,6 +17,7 @@ This document provides the complete epic and story breakdown for Sigil, decompos
 ### Functional Requirements
 
 **Identity & Key Management**
+
 - FR1: Users can generate a new Nostr keypair for use as their sole identity across all SDK interactions
 - FR2: Users can import an existing Nostr keypair from a file or seed phrase
 - FR3: Users can export their Nostr keypair for backup and recovery
@@ -24,6 +25,7 @@ This document provides the complete epic and story breakdown for Sigil, decompos
 - FR5: Users can verify their identity ownership is cryptographically intact end-to-end (signed ILP packet -> BLS verification -> reducer attribution)
 
 **World Perception**
+
 - FR6: All consumers of `@sigil/client` (MCP server, TUI backend) can subscribe to SpacetimeDB table updates in real-time via WebSocket
 - FR7: All consumers of `@sigil/client` can subscribe to Crosstown relay events (via its built-in Nostr relay) for action confirmations and system notifications
 - FR8: Agents can load static data tables (`*_desc` tables) and build queryable lookup maps (StaticDataLoader)
@@ -31,6 +33,7 @@ This document provides the complete epic and story breakdown for Sigil, decompos
 - FR10: The system automatically reconnects and recovers subscription state after disconnections
 
 **Agent Configuration & Skills**
+
 - FR11: Researchers can define agent behavior entirely through an `Agent.md` configuration file with zero application code
 - FR12: Researchers can select which skills an agent uses by referencing skill files in Agent.md
 - FR13: Skill files can declare the target reducer, parameters, ILP cost, required table subscriptions, and natural-language usage guidance
@@ -39,6 +42,7 @@ This document provides the complete epic and story breakdown for Sigil, decompos
 - FR16: Researchers can configure which LLM backend an agent uses in Agent.md (Phase 2)
 
 **Action Execution & Payments**
+
 - FR17: All consumers of `@sigil/client` can execute game actions by sending signed ILP packets through the Crosstown connector (via `client.publish()`)
 - FR18: The system constructs ILP packets containing the game action, signs them with the user's Nostr key, and routes them through the Crosstown node
 - FR19: The BLS handler receives ILP packets, validates signatures, extracts the Nostr public key and game action, and calls the corresponding SpacetimeDB reducer with identity propagation
@@ -47,6 +51,7 @@ This document provides the complete epic and story breakdown for Sigil, decompos
 - FR22: Users can view the cost of any action before executing it via the action cost registry
 
 **Agent Cognition**
+
 - FR23: Agents can make autonomous decisions using MCP tools for game perception and action execution
 - FR24: Agents can make autonomous decisions using LLM-powered reasoning with configurable providers (Phase 2)
 - FR25: Agents can maintain persistent memory across sessions (Phase 2)
@@ -54,6 +59,7 @@ This document provides the complete epic and story breakdown for Sigil, decompos
 - FR27: Researchers can swap agent behavior by editing Agent.md and skill files without code changes
 
 **Terminal Game Client (TUI)**
+
 - FR28: Players can view the game world as a rendered hex-grid map with terrain, resources, and other players in their terminal
 - FR29: Players can move their character across the hex grid using keyboard controls
 - FR30: Players can send and receive chat messages with other players
@@ -67,6 +73,7 @@ This document provides the complete epic and story breakdown for Sigil, decompos
 - FR38: The TUI renders at 30+ FPS and works over SSH connections
 
 **Experiment & Analysis**
+
 - FR39: Agents produce structured decision logs (JSONL) capturing observations, deliberations, actions, costs, and outcomes with timestamps
 - FR40: Researchers can run multiple agents concurrently against the same world (Phase 2)
 - FR41: Researchers can configure and launch experiments from YAML configuration files (Phase 2)
@@ -74,12 +81,14 @@ This document provides the complete epic and story breakdown for Sigil, decompos
 - FR43: Researchers can compare decision logs across experiment runs with different agent configurations or LLM backends (Phase 2)
 
 **Infrastructure & Deployment**
+
 - FR44: Operators can deploy a local development environment (game server + Crosstown node) via Docker compose
 - FR45: Operators can configure ILP fee schedules for different action types
 - FR46: Operators can monitor system health: ILP packets per second, fee revenue, BLS validation latency, SpacetimeDB load, identity propagation success rate
 - FR47: The BLS game action handler maps incoming ILP packets to the correct SpacetimeDB reducers with identity propagation
 
 **World Extensibility**
+
 - FR48: Game developers can make a new SpacetimeDB world agent-accessible by writing skill files for its public reducers and table subscriptions — no SDK code changes required (Phase 2)
 - FR49: Game developers can register a Crosstown BLS handler for their SpacetimeDB module's reducers (Phase 2)
 - FR50: The system can auto-generate skeleton skill files from a SpacetimeDB module's published schema (Phase 3)
@@ -87,6 +96,7 @@ This document provides the complete epic and story breakdown for Sigil, decompos
 ### NonFunctional Requirements
 
 **Performance**
+
 - NFR1: TUI client renders at 30+ FPS in a 160x48 terminal viewport with hex map, status panels, and chat visible simultaneously
 - NFR2: TUI client remains responsive (< 50ms input-to-render latency) over SSH connections with up to 200ms network latency
 - NFR3: ILP packet round-trip (SDK sends -> Crosstown routes -> BLS executes reducer -> confirmation received) completes within 2 seconds under normal load
@@ -96,6 +106,7 @@ This document provides the complete epic and story breakdown for Sigil, decompos
 - NFR7: Skill file parsing and Agent.md validation completes within 1 second for up to 50 skills
 
 **Security**
+
 - NFR8: All ILP packets signed with the user's Nostr private key; unsigned or incorrectly signed packets rejected by BLS before reducer execution
 - NFR9: Nostr private keys never transmitted over the network; only public keys and signatures leave the local system
 - NFR10: BLS validates identity on every reducer call — no reducer executes without verified Nostr public key attribution
@@ -104,12 +115,14 @@ This document provides the complete epic and story breakdown for Sigil, decompos
 - NFR13: No game action attributed to a Nostr public key without a valid cryptographic signature from the corresponding private key
 
 **Scalability**
+
 - NFR14: A single Crosstown node supports at least 10 concurrent agents and 5 concurrent TUI players at MVP, scaling to 50+ agents at Phase 2
 - NFR15: SpacetimeDB subscriptions remain performant with up to 50 concurrent connected clients on a single game server instance
 - NFR16: Decision log file size remains manageable: JSONL rotation or archival when logs exceed 100MB per agent
 - NFR17: ILP fee collection maintains accurate accounting under concurrent multi-agent load with no lost or double-counted transactions
 
 **Integration**
+
 - NFR18: `@sigil/client` uses SpacetimeDB 2.0 TypeScript client SDK (backwards-compatible with 1.6.x server modules). The Rust TUI has no direct SpacetimeDB dependency — it connects via the TypeScript backend.
 - NFR19: `@sigil/client` connects to any standard Nostr relay implementing NIP-01; Crosstown's built-in relay is the default
 - NFR20: LLM integration (Phase 2) supports any provider exposing an OpenAI-compatible chat completions API
@@ -117,6 +130,7 @@ This document provides the complete epic and story breakdown for Sigil, decompos
 - NFR22: Docker compose dev environment runs on Linux and macOS with no platform-specific configuration
 
 **Reliability**
+
 - NFR23: SpacetimeDB subscription automatically reconnects within 10 seconds after connection loss, with full state recovery
 - NFR24: Failed ILP packets (network timeout, insufficient balance) return clear error codes and do not leave the system in an inconsistent state
 - NFR25: Agent state persists across SDK restarts: decision logs are append-only, agent configuration is stateless (re-read from Agent.md on startup)
@@ -126,6 +140,7 @@ This document provides the complete epic and story breakdown for Sigil, decompos
 ### Additional Requirements
 
 **From Architecture — Starter Template & Project Setup:**
+
 - Manual polyglot workspace initialization (no starter template): pnpm workspace for TypeScript + cargo workspace for Rust
 - Single monorepo with `packages/` (TS: client, mcp-server, tui-backend) and `crates/` (Rust: tui)
 - SpacetimeDB 2.0 client SDK (v2.0.1) targeting 1.6.x server modules — backwards compatibility must be verified in Phase 1 spike
@@ -133,6 +148,7 @@ This document provides the complete epic and story breakdown for Sigil, decompos
 - Five-Layer Cognition Architecture is SUPERSEDED — Agent = Claude instance with CLAUDE.md/AGENTS.md + Skills + MCP tools (NOT custom cognition stack)
 
 **From Architecture — Technical Infrastructure:**
+
 - BLS game action handler: new callback for kind 30078 events in Crosstown (parse reducer + args, call SpacetimeDB with identity propagation)
 - Docker compose stack: BitCraft server (SpacetimeDB WASM module) + Crosstown node + BLS
 - CI/CD: GitHub Actions — `pnpm lint && pnpm test && cargo clippy && cargo test` on every PR
@@ -141,6 +157,7 @@ This document provides the complete epic and story breakdown for Sigil, decompos
 - JSON schema validation for IPC messages (shared between TS and Rust)
 
 **From Architecture — API & Communication Patterns:**
+
 - `@sigil/client` API: `client.spacetimedb` (read), `client.nostr` (read), `client.publish()` (write), `client.identity`
 - Single write path: `client.publish()` -> ILP packet -> Crosstown -> BLS -> SpacetimeDB
 - IPC: JSON-RPC 2.0 over stdio pipes between Rust TUI and TypeScript backend
@@ -152,6 +169,7 @@ This document provides the complete epic and story breakdown for Sigil, decompos
 - Boundary values for errors: spacetimedb, crosstown, bls, mcp, agent, ipc
 
 **From Architecture — Implementation Patterns:**
+
 - TypeScript: kebab-case files, camelCase functions, PascalCase types, SCREAMING_SNAKE_CASE constants
 - Rust: snake_case files/functions, PascalCase types, SCREAMING_SNAKE_CASE constants
 - Rust serde: `#[serde(rename_all = "camelCase")]` on all IPC message structs
@@ -160,12 +178,14 @@ This document provides the complete epic and story breakdown for Sigil, decompos
 - Connection lifecycle: auto-reconnect with exponential backoff (max 30s), state recovery on reconnect
 
 **From Architecture — Agent Configuration:**
+
 - CLAUDE.md for Claude agents, AGENTS.md for non-Claude agents (Vercel AI, OpenCode)
 - Skills use standard Claude Agent Skills format (SKILL.md with YAML frontmatter + markdown body)
 - Progressive disclosure: metadata always loaded, full instructions on trigger
 - Agent observation mode in TUI (read-only view of agent perception, decisions, actions)
 
 **From UX Design — Terminal Interface:**
+
 - Fixed 160x48 character viewport, centered in terminal
 - Minimum terminal size check at startup (show error if < 160x48)
 - Keyboard-first design, zero mouse dependency for all features
@@ -177,12 +197,14 @@ This document provides the complete epic and story breakdown for Sigil, decompos
 - Hover text row for transient messages (errors, cost preview, descriptions)
 
 **From UX Design — Custom Widgets:**
+
 - HexGrid widget: hex world map rendering with player position, entities, terrain, zoom levels
 - WalletMeter widget: ILP balance with threshold coloring (OK > 50%, LOW 10-50%, CRITICAL < 10%)
 - ConnectionBadge widget: SpacetimeDB + Crosstown connection status (LIVE/STALE/DEAD)
 - CostPreview widget: inline action cost display (affordable = teal, unaffordable = red)
 
 **From UX Design — Interaction Patterns:**
+
 - Auto-generate Nostr identity on first launch (zero config)
 - Auto-fund wallet from Crosstown Genesis faucet when available
 - First action achievable under 2 minutes from launch
@@ -194,6 +216,7 @@ This document provides the complete epic and story breakdown for Sigil, decompos
 - UiState state machine: Splash -> Setup -> Main
 
 **From UX Design — Accessibility:**
+
 - No color-only information — text labels alongside color indicators
 - High contrast foreground colors against dark terminal backgrounds
 - No animation dependencies (no blinking/flashing)
@@ -208,7 +231,7 @@ This document provides the complete epic and story breakdown for Sigil, decompos
 - FR5: Epic 2 — End-to-end identity verification
 - FR6: Epic 1 — SpacetimeDB table subscriptions via WebSocket
 - FR7: Epic 2 — Crosstown relay event subscriptions
-- FR8: Epic 1 — Static data table loading (*_desc tables)
+- FR8: Epic 1 — Static data table loading (\*\_desc tables)
 - FR9: Epic 3 — Event interpretation as semantic narratives
 - FR10: Epic 1 — Auto-reconnection and state recovery
 - FR11: Epic 3 — Agent.md configuration (zero code)
@@ -255,46 +278,57 @@ This document provides the complete epic and story breakdown for Sigil, decompos
 ## Epic List
 
 ### Epic 1: Project Foundation & Game World Connection (MVP)
+
 Users can establish their cryptographic identity and connect to the live BitCraft game world to observe real-time state. Includes monorepo scaffolding, Docker compose dev environment, Nostr keypair management, SpacetimeDB connection + subscriptions, static data loading, and auto-reconnection.
 **FRs covered:** FR1, FR2, FR3, FR6, FR8, FR10, FR44
 
 ### Epic 2: Action Execution & Payment Pipeline (MVP)
+
 Users can execute game actions via ILP micropayments with end-to-end cryptographic identity propagation. Includes Crosstown relay subscriptions, ILP packet construction/signing/routing, BLS game action handler, identity verification, action cost registry, wallet balance, and fee collection.
 **FRs covered:** FR4, FR5, FR7, FR17, FR18, FR19, FR20, FR21, FR22, FR45, FR47
 
 ### Epic 3: Declarative Agent Configuration (MVP)
+
 Researchers can define agent behavior entirely through markdown config files with skills, validation, budget limits, and decision logging — zero application code required. Includes Agent.md parsing, skill file loading, event interpretation, SpacetimeDB validation, budget tracking, and JSONL decision logs.
 **FRs covered:** FR9, FR11, FR12, FR13, FR14, FR15, FR27, FR39
 
 ### Epic 4: MCP Server for AI Agents (MVP)
+
 AI agents (Claude, Vercel AI, OpenCode) can play the game autonomously through the standard MCP protocol, with game state as resources and game actions as tools. Includes @sigil/mcp-server package, resource/tool mapping, and skill-to-MCP-tool integration.
 **FRs covered:** FR23
 
 ### Epic 5: Terminal Game Client (MVP)
+
 Human players can experience a full MMORPG from their terminal — hex-grid map, movement, chat, inventory, and character status at 30+ FPS. Includes @sigil/tui-backend (JSON-RPC IPC), sigil-tui Rust application, 7-tab layout, custom widgets, keyboard-first design, and semantic style system.
 **FRs covered:** FR28, FR29, FR30, FR31, FR32, FR38
 
 ### Epic 6: Infrastructure & Observability (MVP)
+
 Operators can monitor system health and researchers can observe agent behavior in real-time. Includes ILP throughput, fee revenue, BLS latency monitoring, and agent observation mode in TUI.
 **FRs covered:** FR46
 
 ### Epic 7: Advanced Agent Intelligence (Phase 2)
+
 Researchers can run LLM-powered agents with persistent memory, affordance detection, and configurable AI backends for advanced cognitive experiments.
 **FRs covered:** FR16, FR24, FR25, FR26
 
 ### Epic 8: TUI Advanced Gameplay (Phase 2)
+
 Players can engage in the full depth of BitCraft — combat, crafting, building, trading, and empire management from their terminal.
 **FRs covered:** FR33, FR34, FR35, FR36, FR37
 
 ### Epic 9: Experiment Harness & Multi-Agent Research (Phase 2)
+
 Researchers can run comparative experiments with multiple concurrent agents, snapshot/restore world state, and analyze decision logs across runs.
 **FRs covered:** FR40, FR41, FR42, FR43
 
 ### Epic 10: World Extensibility (Phase 2)
+
 Game developers can make any SpacetimeDB world agent-accessible by writing skill files and registering BLS handlers — no SDK code changes required.
 **FRs covered:** FR48, FR49
 
 ### Epic 11: Platform Expansion (Phase 3)
+
 The platform auto-generates skill files from any SpacetimeDB module's published schema, lowering the barrier for new world integration.
 **FRs covered:** FR50
 
@@ -433,7 +467,7 @@ So that I can observe the live game world state through the SDK.
 ### Story 1.5: Static Data Table Loading
 
 As a user,
-I want to load all static data tables (*_desc tables) at startup and build queryable lookup maps,
+I want to load all static data tables (\*\_desc tables) at startup and build queryable lookup maps,
 So that I can reference game data (item descriptions, recipe definitions, terrain types) efficiently.
 
 **Acceptance Criteria:**
@@ -1313,7 +1347,7 @@ So that I can track my possessions and use items effectively.
 **Given** the Player tab with Inventory selected, or a dedicated inventory view
 **When** it renders
 **Then** all items in the player's inventory are listed with name, quantity, and category (FR31)
-**And** item names and descriptions are resolved from static data (*_desc tables)
+**And** item names and descriptions are resolved from static data (\*\_desc tables)
 
 **Given** an inventory list
 **When** the player navigates with Up/Down arrows
@@ -1393,6 +1427,7 @@ So that I can detect issues, track throughput, and ensure the platform is runnin
 **Given** the System tab in the TUI (or a dedicated monitoring endpoint)
 **When** the operator views system health
 **Then** the following metrics are displayed in real-time (FR46):
+
 - ILP packets per second (throughput)
 - Fee revenue (cumulative and per-minute rate)
 - BLS validation latency (average and p95)
@@ -1646,7 +1681,7 @@ So that I can create equipment, tools, and trade goods.
 
 **Given** crafting recipe data
 **When** loaded from static data tables
-**Then** recipe names, descriptions, and material requirements are resolved from *_desc tables
+**Then** recipe names, descriptions, and material requirements are resolved from \*\_desc tables
 
 ### Story 8.3: Building & Territory Management
 

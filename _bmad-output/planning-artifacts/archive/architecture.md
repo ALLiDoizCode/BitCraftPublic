@@ -45,14 +45,14 @@ This document defines the architecture for an **AI Agent SDK** that enables LLM-
 
 ## 2. Design Principles
 
-| Principle | Rationale |
-|-----------|-----------|
-| **Observable** | Every agent perception, decision, and action must be loggable and replayable |
-| **Reproducible** | Snapshot game + agent state; rerun experiments from the same starting conditions |
-| **Pluggable** | Swap LLM backends, cognition strategies, and memory implementations independently |
-| **Unmodified BitCraft** | Zero changes to the BitCraft server — it runs vanilla in Docker |
+| Principle                      | Rationale                                                                                        |
+| ------------------------------ | ------------------------------------------------------------------------------------------------ |
+| **Observable**                 | Every agent perception, decision, and action must be loggable and replayable                     |
+| **Reproducible**               | Snapshot game + agent state; rerun experiments from the same starting conditions                 |
+| **Pluggable**                  | Swap LLM backends, cognition strategies, and memory implementations independently                |
+| **Unmodified BitCraft**        | Zero changes to the BitCraft server — it runs vanilla in Docker                                  |
 | **ILP is Crosstown's Problem** | The Agent SDK publishes Nostr events via `@crosstown/client`; payment validation is out of scope |
-| **TypeScript First** | Native compatibility with SpacetimeDB TS SDK and Crosstown; researchers can hack on it quickly |
+| **TypeScript First**           | Native compatibility with SpacetimeDB TS SDK and Crosstown; researchers can hack on it quickly   |
 
 ---
 
@@ -85,12 +85,12 @@ This document defines the architecture for an **AI Agent SDK** that enables LLM-
 
 ### 3.1 Boundary Definitions
 
-| Component | Owner | Modifiable? | Purpose |
-|-----------|-------|-------------|---------|
-| **Agent SDK** | Us (new repo) | Yes | Cognition framework, experiment harness |
-| **BitCraft Server** | Clockwork Labs (Apache 2.0 fork) | No — run unmodified in Docker | Game logic, state, reducers |
-| **Crosstown Node** | Existing project (`~/Documents/crosstown/`) | No — consume as dependency | ILP payment gateway, Nostr relay |
-| **SpacetimeDB** | Clockwork Labs (open source) | No — use SDK | Real-time database, subscriptions |
+| Component           | Owner                                       | Modifiable?                   | Purpose                                 |
+| ------------------- | ------------------------------------------- | ----------------------------- | --------------------------------------- |
+| **Agent SDK**       | Us (new repo)                               | Yes                           | Cognition framework, experiment harness |
+| **BitCraft Server** | Clockwork Labs (Apache 2.0 fork)            | No — run unmodified in Docker | Game logic, state, reducers             |
+| **Crosstown Node**  | Existing project (`~/Documents/crosstown/`) | No — consume as dependency    | ILP payment gateway, Nostr relay        |
+| **SpacetimeDB**     | Clockwork Labs (open source)                | No — use SDK                  | Real-time database, subscriptions       |
 
 ---
 
@@ -272,17 +272,21 @@ interface GameEncyclopedia {
 }
 
 // Layer 2: Event Interpretation
-interface EventInterpreter extends CognitionPlugin<RawTableUpdate[], SemanticEvent[], EventInterpreterState> {
+interface EventInterpreter extends CognitionPlugin<
+  RawTableUpdate[],
+  SemanticEvent[],
+  EventInterpreterState
+> {
   // Transforms raw SpacetimeDB callbacks into narrative events
 }
 
 interface SemanticEvent {
   timestamp: number;
   category: 'combat' | 'movement' | 'resource' | 'social' | 'building' | 'environment';
-  narrative: string;          // "Forest Wolf attacked you for 15 damage"
-  entities: EntityRef[];      // Referenced game entities
-  importance: number;         // 1-10 scale for memory filtering
-  raw: RawTableUpdate;        // Original data preserved
+  narrative: string; // "Forest Wolf attacked you for 15 damage"
+  entities: EntityRef[]; // Referenced game entities
+  importance: number; // 1-10 scale for memory filtering
+  raw: RawTableUpdate; // Original data preserved
 }
 
 // Layer 3: Memory
@@ -308,13 +312,13 @@ interface AffordanceEngine extends CognitionPlugin<GameState, Affordance[], Affo
 }
 
 interface Affordance {
-  action: string;             // "gather_wood"
-  reducer: string;            // "harvest_start"
+  action: string; // "gather_wood"
+  reducer: string; // "harvest_start"
   args: Record<string, unknown>;
-  cost: number;               // ILP token cost
-  estimatedReward: string;    // "Wood x10"
-  confidence: number;         // 0-1 success probability
-  priority: number;           // Suggested priority
+  cost: number; // ILP token cost
+  estimatedReward: string; // "Wood x10"
+  confidence: number; // 0-1 success probability
+  priority: number; // Suggested priority
 }
 
 // Layer 5: Goal Planning
@@ -323,10 +327,10 @@ interface GoalPlanner extends CognitionPlugin<PlanningInput, PlannedAction, Goal
 }
 
 interface PlannedAction {
-  affordance: Affordance;     // The chosen action
-  reasoning: string;          // Why this action (for logging/research)
-  goalContribution: string;   // Which goal this serves
-  confidence: number;         // Decision confidence
+  affordance: Affordance; // The chosen action
+  reasoning: string; // Why this action (for logging/research)
+  goalContribution: string; // Which goal this serves
+  confidence: number; // Decision confidence
 }
 
 interface PlanningInput {
@@ -341,8 +345,8 @@ interface Goal {
   type: string;
   priority: number;
   conditions: string[];
-  progress: number;           // 0-1
-  deadline?: number;          // Optional time pressure
+  progress: number; // 0-1
+  deadline?: number; // Optional time pressure
 }
 ```
 
@@ -352,8 +356,8 @@ interface Goal {
 
 ```typescript
 class BitCraftAgent {
-  private gameClient: SpacetimeDBClient;    // Direct subscription (free reads)
-  private actionClient: CrosstownClient;     // Nostr → BLS → reducer (paid writes)
+  private gameClient: SpacetimeDBClient; // Direct subscription (free reads)
+  private actionClient: CrosstownClient; // Nostr → BLS → reducer (paid writes)
   private plugins: CognitionStack;
   private logger: DecisionLogger;
   private config: AgentConfig;
@@ -368,8 +372,8 @@ class BitCraftAgent {
 
     // Subscribe to game state updates
     this.gameClient.subscribe([
-      "SELECT * FROM player_state WHERE player_id = ?",
-      "SELECT * FROM entity WHERE distance(pos, ?) < 100",
+      'SELECT * FROM player_state WHERE player_id = ?',
+      'SELECT * FROM entity WHERE distance(pos, ?) < 100',
       // ... configured subscriptions
     ]);
 
@@ -382,23 +386,27 @@ class BitCraftAgent {
       const events = await this.plugins.interpreter.process(rawUpdates, this.context);
 
       // 3. REMEMBER — store important events, recall relevant memories (Layer 3)
-      for (const event of events.filter(e => e.importance >= 5)) {
+      for (const event of events.filter((e) => e.importance >= 5)) {
         await this.plugins.memory.record(event);
       }
       const memories = await this.plugins.memory.recall(this.context);
 
       // 4. DETECT — what can I do here? (Layer 4)
       const affordances = await this.plugins.affordances.process(
-        this.gameClient.currentState, this.context
+        this.gameClient.currentState,
+        this.context
       );
 
       // 5. DECIDE — choose action based on goals + memories + affordances (Layer 5)
-      const decision = await this.plugins.planner.process({
-        affordances,
-        memories,
-        goals: this.config.goals,
-        budget: this.getBudgetState(),
-      }, this.context);
+      const decision = await this.plugins.planner.process(
+        {
+          affordances,
+          memories,
+          goals: this.config.goals,
+          budget: this.getBudgetState(),
+        },
+        this.context
+      );
 
       // 6. ACT — execute via Crosstown payment
       const result = await this.executeAction(decision);
@@ -417,9 +425,10 @@ class BitCraftAgent {
       });
 
       // 8. LEARN — record outcome for future recall
-      await this.plugins.memory.record(
-        { ...decision.affordance, outcome: result } as SemanticEvent
-      );
+      await this.plugins.memory.record({
+        ...decision.affordance,
+        outcome: result,
+      } as SemanticEvent);
 
       await this.sleep(this.config.tickInterval);
     }
@@ -437,20 +446,23 @@ class BitCraftAgent {
   }
 
   private buildGameActionEvent(affordance: Affordance): NostrEvent {
-    return finalizeEvent({
-      kind: 30078,
-      content: JSON.stringify({
-        reducer: affordance.reducer,
-        args: affordance.args,
-      }),
-      tags: [
-        ['d', 'bitcraft-action'],
-        ['game', 'bitcraft'],
-        ['reducer', affordance.reducer],
-        ['cost', String(affordance.cost)],
-      ],
-      created_at: Math.floor(Date.now() / 1000),
-    }, this.config.secretKey);
+    return finalizeEvent(
+      {
+        kind: 30078,
+        content: JSON.stringify({
+          reducer: affordance.reducer,
+          args: affordance.args,
+        }),
+        tags: [
+          ['d', 'bitcraft-action'],
+          ['game', 'bitcraft'],
+          ['reducer', affordance.reducer],
+          ['cost', String(affordance.cost)],
+        ],
+        created_at: Math.floor(Date.now() / 1000),
+      },
+      this.config.secretKey
+    );
   }
 }
 ```
@@ -506,7 +518,7 @@ This is the **one integration point** where Crosstown needs a small extension �
   onGameActionEvent: async (event: NostrEvent) => {
     const { reducer, args } = JSON.parse(event.content);
     await spacetimeClient.reducers[reducer](...args);
-  }
+  };
 }
 ```
 
@@ -523,16 +535,16 @@ Static JSON configuration. Researchers edit costs between experiments.
   "version": 1,
   "defaultCost": 10,
   "actions": {
-    "player_move":           { "cost": 1,   "category": "movement",  "frequency": "high" },
-    "player_teleport_home":  { "cost": 20,  "category": "movement",  "frequency": "low" },
-    "portal_enter":          { "cost": 5,   "category": "movement",  "frequency": "medium" },
-    "attack_start":          { "cost": 10,  "category": "combat",    "frequency": "medium" },
-    "harvest_start":         { "cost": 5,   "category": "resource",  "frequency": "high" },
-    "project_site_place":    { "cost": 50,  "category": "building",  "frequency": "low" },
-    "trade_with_player":     { "cost": 10,  "category": "economy",   "frequency": "medium" },
-    "chat_post_message":     { "cost": 1,   "category": "social",    "frequency": "high" },
-    "empire_form":           { "cost": 100, "category": "governance", "frequency": "very_low" },
-    "craft_item":            { "cost": 15,  "category": "crafting",  "frequency": "medium" }
+    "player_move": { "cost": 1, "category": "movement", "frequency": "high" },
+    "player_teleport_home": { "cost": 20, "category": "movement", "frequency": "low" },
+    "portal_enter": { "cost": 5, "category": "movement", "frequency": "medium" },
+    "attack_start": { "cost": 10, "category": "combat", "frequency": "medium" },
+    "harvest_start": { "cost": 5, "category": "resource", "frequency": "high" },
+    "project_site_place": { "cost": 50, "category": "building", "frequency": "low" },
+    "trade_with_player": { "cost": 10, "category": "economy", "frequency": "medium" },
+    "chat_post_message": { "cost": 1, "category": "social", "frequency": "high" },
+    "empire_form": { "cost": 100, "category": "governance", "frequency": "very_low" },
+    "craft_item": { "cost": 15, "category": "crafting", "frequency": "medium" }
   }
 }
 ```
@@ -549,45 +561,45 @@ What makes this a research platform rather than just a game client.
 
 ```yaml
 # experiment.yaml
-name: "exploration-strategy-comparison"
-description: "Compare GPT-4 vs Claude on open-world exploration"
-duration: 3600  # seconds
-snapshot: "checkpoints/fresh-world-001.snap"
+name: 'exploration-strategy-comparison'
+description: 'Compare GPT-4 vs Claude on open-world exploration'
+duration: 3600 # seconds
+snapshot: 'checkpoints/fresh-world-001.snap'
 
 agents:
-  - id: "explorer-gpt4"
+  - id: 'explorer-gpt4'
     plugins:
-      goal_planner: "@bitcraft-ai/plugins/goals-llm"
-      memory: "@bitcraft-ai/plugins/memory-vector"
+      goal_planner: '@bitcraft-ai/plugins/goals-llm'
+      memory: '@bitcraft-ai/plugins/memory-vector'
     config:
       llm:
-        provider: "openai"
-        model: "gpt-4"
+        provider: 'openai'
+        model: 'gpt-4'
       goals:
-        - type: "EXPLORATION"
+        - type: 'EXPLORATION'
           priority: 10
       budget: 1000
 
-  - id: "explorer-claude"
+  - id: 'explorer-claude'
     plugins:
-      goal_planner: "@bitcraft-ai/plugins/goals-llm"
-      memory: "@bitcraft-ai/plugins/memory-vector"
+      goal_planner: '@bitcraft-ai/plugins/goals-llm'
+      memory: '@bitcraft-ai/plugins/memory-vector'
     config:
       llm:
-        provider: "anthropic"
-        model: "claude-sonnet-4-5-20250929"
+        provider: 'anthropic'
+        model: 'claude-sonnet-4-5-20250929'
       goals:
-        - type: "EXPLORATION"
+        - type: 'EXPLORATION'
           priority: 10
       budget: 1000
 
 analysis:
   metrics:
-    - "area_explored"
-    - "resources_discovered"
-    - "budget_efficiency"
-    - "decision_diversity"
-  output: "./results/exploration-comparison/"
+    - 'area_explored'
+    - 'resources_discovered'
+    - 'budget_efficiency'
+    - 'decision_diversity'
+  output: './results/exploration-comparison/'
 ```
 
 ### 9.2 Decision Logger
@@ -623,12 +635,15 @@ interface ExperimentHarness {
 interface SnapshotManifest {
   id: string;
   timestamp: number;
-  gameState: string;           // SpacetimeDB snapshot reference
-  agentStates: Record<string, {
-    pluginStates: Record<string, unknown>;  // Serialized plugin states
-    goals: Goal[];
-    budget: BudgetState;
-  }>;
+  gameState: string; // SpacetimeDB snapshot reference
+  agentStates: Record<
+    string,
+    {
+      pluginStates: Record<string, unknown>; // Serialized plugin states
+      goals: Goal[];
+      budget: BudgetState;
+    }
+  >;
 }
 ```
 
@@ -717,20 +732,20 @@ COPY --from=builder /build/target/wasm32-unknown-unknown/release/*.wasm /modules
 ENTRYPOINT ["spacetime", "start"]
 ```
 
-*Note: Exact build steps depend on SpacetimeDB module compilation requirements. This is a starting point — will iterate during Phase 1.*
+_Note: Exact build steps depend on SpacetimeDB module compilation requirements. This is a starting point — will iterate during Phase 1._
 
 ### 11.2 Development Stack
 
 ```yaml
 # docker/docker-compose.dev.yml
-version: "3.8"
+version: '3.8'
 services:
   bitcraft:
     build:
       context: ..
       dockerfile: docker/Dockerfile.bitcraft
     ports:
-      - "3000:3000"     # SpacetimeDB WebSocket
+      - '3000:3000' # SpacetimeDB WebSocket
     volumes:
       - bitcraft-data:/var/lib/spacetimedb
 
@@ -738,15 +753,15 @@ services:
   connector:
     image: crosstown-connector:dev
     ports:
-      - "8080:8080"     # Health/Runtime
-      - "8081:8081"     # Admin API
-      - "3001:3000"     # BTP
+      - '8080:8080' # Health/Runtime
+      - '8081:8081' # Admin API
+      - '3001:3000' # BTP
 
   crosstown:
     image: crosstown-node:dev
     ports:
-      - "3100:3100"     # BLS HTTP
-      - "7100:7100"     # Relay WebSocket
+      - '3100:3100' # BLS HTTP
+      - '7100:7100' # Relay WebSocket
     environment:
       - GAME_ACTION_HANDLER=true
       - SPACETIMEDB_URL=ws://bitcraft:3000
@@ -763,14 +778,14 @@ volumes:
 
 **Goal:** An agent can move a character by paying ILP tokens.
 
-| Task | Description |
-|------|-------------|
-| Docker image | Build BitCraft server from source, publish to local SpacetimeDB |
-| SpacetimeDB client wrapper | Connect, subscribe, receive table updates |
-| CrosstownClient wrapper | Initialize, publish game action events (kind 30078) |
-| BLS game action handler | New callback in Crosstown: kind 30078 → parse reducer + args → call SpacetimeDB |
-| Action cost registry | JSON config loader |
-| Integration test | `player_move` reducer called via ILP payment, character moves |
+| Task                       | Description                                                                     |
+| -------------------------- | ------------------------------------------------------------------------------- |
+| Docker image               | Build BitCraft server from source, publish to local SpacetimeDB                 |
+| SpacetimeDB client wrapper | Connect, subscribe, receive table updates                                       |
+| CrosstownClient wrapper    | Initialize, publish game action events (kind 30078)                             |
+| BLS game action handler    | New callback in Crosstown: kind 30078 → parse reducer + args → call SpacetimeDB |
+| Action cost registry       | JSON config loader                                                              |
+| Integration test           | `player_move` reducer called via ILP payment, character moves                   |
 
 **Exit Criteria:** HTTP request with valid ILP receipt calls `player_move`; SpacetimeDB subscription confirms character position changed.
 
@@ -778,15 +793,15 @@ volumes:
 
 **Goal:** An agent with reference plugins can observe the world and make decisions.
 
-| Task | Description |
-|------|-------------|
+| Task                         | Description                                        |
+| ---------------------------- | -------------------------------------------------- |
 | Plugin interface definitions | `CognitionPlugin<T>` base + all 5 layer interfaces |
-| Layer 1: StaticDataLoader | Load `*_desc` tables at startup, build lookup maps |
-| Layer 2: Narrator | Subscribe callbacks → `SemanticEvent[]` |
-| Layer 4: AffordanceEngine | Nearby entity detection + cost annotation |
-| Layer 5: GoalsSimple | Priority queue planner (no LLM) |
-| Agent core loop | Integrate all layers, tick-based execution |
-| Decision logger | JSONL output of every tick |
+| Layer 1: StaticDataLoader    | Load `*_desc` tables at startup, build lookup maps |
+| Layer 2: Narrator            | Subscribe callbacks → `SemanticEvent[]`            |
+| Layer 4: AffordanceEngine    | Nearby entity detection + cost annotation          |
+| Layer 5: GoalsSimple         | Priority queue planner (no LLM)                    |
+| Agent core loop              | Integrate all layers, tick-based execution         |
+| Decision logger              | JSONL output of every tick                         |
 
 **Exit Criteria:** Agent autonomously explores world using priority-queue planner for 10 minutes; decision log captures all ticks.
 
@@ -794,57 +809,59 @@ volumes:
 
 **Goal:** A researcher can run comparative experiments with different configurations.
 
-| Task | Description |
-|------|-------------|
-| Experiment config loader | YAML → typed config |
-| Multi-agent launcher | Spawn N agents with different plugin configs |
-| Layer 3: MemoryBasic | In-memory + JSON file persistence with serialize/deserialize |
-| Layer 5: GoalsLLM | LLM-powered decision-making (OpenAI + Anthropic adapters) |
-| Snapshot/restore | SpacetimeDB state + agent plugin states |
-| Analysis tools | Decision log → metrics (area explored, budget efficiency, etc.) |
-| CLI | `npx @bitcraft-ai/harness run experiment.yaml` |
+| Task                     | Description                                                     |
+| ------------------------ | --------------------------------------------------------------- |
+| Experiment config loader | YAML → typed config                                             |
+| Multi-agent launcher     | Spawn N agents with different plugin configs                    |
+| Layer 3: MemoryBasic     | In-memory + JSON file persistence with serialize/deserialize    |
+| Layer 5: GoalsLLM        | LLM-powered decision-making (OpenAI + Anthropic adapters)       |
+| Snapshot/restore         | SpacetimeDB state + agent plugin states                         |
+| Analysis tools           | Decision log → metrics (area explored, budget efficiency, etc.) |
+| CLI                      | `npx @bitcraft-ai/harness run experiment.yaml`                  |
 
 **Exit Criteria:** Two agents with different LLM backends run for 1 hour; comparative analysis report generated.
 
 ### Phase 4: Polish & Advanced Features (Weeks 7–8)
 
-| Task | Description |
-|------|-------------|
-| Layer 3: MemoryVector | Vector DB integration for semantic search |
-| Example agents | Explorer, gatherer, trader with tuned configs |
-| Documentation | Setup guide, plugin authoring guide, experiment guide |
-| Performance tuning | Tick interval optimization, subscription filtering |
-| Multi-agent interaction | Agent-to-agent trading, chat, combat |
+| Task                    | Description                                           |
+| ----------------------- | ----------------------------------------------------- |
+| Layer 3: MemoryVector   | Vector DB integration for semantic search             |
+| Example agents          | Explorer, gatherer, trader with tuned configs         |
+| Documentation           | Setup guide, plugin authoring guide, experiment guide |
+| Performance tuning      | Tick interval optimization, subscription filtering    |
+| Multi-agent interaction | Agent-to-agent trading, chat, combat                  |
 
 ---
 
 ## 13. Technology Choices
 
-| Component | Choice | Rationale |
-|-----------|--------|-----------|
-| **Language** | TypeScript | SpacetimeDB TS SDK + Crosstown compatibility; researcher-friendly |
-| **Package Manager** | pnpm workspaces | Matches Crosstown; efficient monorepo support |
-| **Build** | tsup | Fast, zero-config TypeScript bundler (matches Crosstown) |
-| **Test** | vitest | Fast, TypeScript-native (matches Crosstown) |
-| **SpacetimeDB Client** | `@spacetimedb/sdk` | Official TypeScript SDK |
-| **Crosstown Client** | `@crosstown/client` | Existing ILP payment + Nostr event publishing |
-| **Nostr** | `nostr-tools` | Event signing, key management (already a Crosstown dep) |
-| **LLM** | Provider-agnostic | OpenAI SDK + Anthropic SDK as optional peer deps |
-| **Vector DB** | ChromaDB (default) | Local-first, easy setup for researchers |
-| **Logging** | JSONL files | Simple, streamable, analyzable with standard tools |
-| **Config** | YAML | Human-readable experiment configuration |
+| Component              | Choice              | Rationale                                                         |
+| ---------------------- | ------------------- | ----------------------------------------------------------------- |
+| **Language**           | TypeScript          | SpacetimeDB TS SDK + Crosstown compatibility; researcher-friendly |
+| **Package Manager**    | pnpm workspaces     | Matches Crosstown; efficient monorepo support                     |
+| **Build**              | tsup                | Fast, zero-config TypeScript bundler (matches Crosstown)          |
+| **Test**               | vitest              | Fast, TypeScript-native (matches Crosstown)                       |
+| **SpacetimeDB Client** | `@spacetimedb/sdk`  | Official TypeScript SDK                                           |
+| **Crosstown Client**   | `@crosstown/client` | Existing ILP payment + Nostr event publishing                     |
+| **Nostr**              | `nostr-tools`       | Event signing, key management (already a Crosstown dep)           |
+| **LLM**                | Provider-agnostic   | OpenAI SDK + Anthropic SDK as optional peer deps                  |
+| **Vector DB**          | ChromaDB (default)  | Local-first, easy setup for researchers                           |
+| **Logging**            | JSONL files         | Simple, streamable, analyzable with standard tools                |
+| **Config**             | YAML                | Human-readable experiment configuration                           |
 
 ---
 
 ## 14. Licensing & Legal
 
 **BitCraft Server (Apache 2.0)**
+
 - Commercial use, modification, and distribution: **Permitted**
 - Derivative works with different license terms: **Permitted** (Section 4)
-- Explicit README allowance: *"Make a game similar to BitCraft with your own IP using our code as a basis"*
-- Explicit README allowance: *"Use it as a reference for building your own projects"*
+- Explicit README allowance: _"Make a game similar to BitCraft with your own IP using our code as a basis"_
+- Explicit README allowance: _"Use it as a reference for building your own projects"_
 
 **Requirements:**
+
 - Retain Apache 2.0 license and copyright notices in the BitCraft Server code
 - Mark modified files with prominent change notices (if we modify — we don't plan to)
 - Do NOT use BitCraft trademarks, IP, art, or branding
@@ -858,29 +875,29 @@ volumes:
 
 ## 15. Open Questions
 
-| # | Question | Impact | Decision Needed By |
-|---|----------|--------|--------------------|
-| 1 | Exact SpacetimeDB module compilation steps for Docker | Blocks Phase 1 | Week 1 |
-| 2 | Which `*_desc` tables exist in BitCraft for static data? | Blocks Layer 1 plugin | Week 3 |
-| 3 | SpacetimeDB subscription limits (max concurrent queries?) | Performance tuning | Week 4 |
-| 4 | ChromaDB vs Pinecone vs local embeddings for MemoryVector | Phase 4 plugin choice | Week 6 |
-| 5 | Agent SDK repo name and npm scope (`@bitcraft-ai`?) | Package publishing | Week 1 |
+| #   | Question                                                  | Impact                | Decision Needed By |
+| --- | --------------------------------------------------------- | --------------------- | ------------------ |
+| 1   | Exact SpacetimeDB module compilation steps for Docker     | Blocks Phase 1        | Week 1             |
+| 2   | Which `*_desc` tables exist in BitCraft for static data?  | Blocks Layer 1 plugin | Week 3             |
+| 3   | SpacetimeDB subscription limits (max concurrent queries?) | Performance tuning    | Week 4             |
+| 4   | ChromaDB vs Pinecone vs local embeddings for MemoryVector | Phase 4 plugin choice | Week 6             |
+| 5   | Agent SDK repo name and npm scope (`@bitcraft-ai`?)       | Package publishing    | Week 1             |
 
 ---
 
 ## 16. Risks & Mitigations
 
-| Risk | Likelihood | Impact | Mitigation |
-|------|-----------|--------|------------|
-| SpacetimeDB TS SDK doesn't support all subscription patterns | Medium | High | Prototype subscription layer in Phase 1; fallback to raw WebSocket |
-| BitCraft reducer args are complex / undocumented | Medium | Medium | Start with simple reducers (`player_move`, `chat_post_message`); reverse-engineer from Rust source |
-| BLS → SpacetimeDB integration requires Crosstown changes | High | Low | This is a small, well-scoped callback handler following the existing `onNIP34Event` pattern |
-| Agent LLM costs exceed research budgets | Medium | Medium | Provide `goals-simple` (no LLM) as default; LLM is optional plugin |
-| BitCraft game state too large for agent context windows | Medium | High | Subscription filtering + Layer 2 summarization reduces data volume |
+| Risk                                                         | Likelihood | Impact | Mitigation                                                                                         |
+| ------------------------------------------------------------ | ---------- | ------ | -------------------------------------------------------------------------------------------------- |
+| SpacetimeDB TS SDK doesn't support all subscription patterns | Medium     | High   | Prototype subscription layer in Phase 1; fallback to raw WebSocket                                 |
+| BitCraft reducer args are complex / undocumented             | Medium     | Medium | Start with simple reducers (`player_move`, `chat_post_message`); reverse-engineer from Rust source |
+| BLS → SpacetimeDB integration requires Crosstown changes     | High       | Low    | This is a small, well-scoped callback handler following the existing `onNIP34Event` pattern        |
+| Agent LLM costs exceed research budgets                      | Medium     | Medium | Provide `goals-simple` (no LLM) as default; LLM is optional plugin                                 |
+| BitCraft game state too large for agent context windows      | Medium     | High   | Subscription filtering + Layer 2 summarization reduces data volume                                 |
 
 ---
 
-*This document is a living artifact. Update as decisions are made and implementation reveals new constraints.*
+_This document is a living artifact. Update as decisions are made and implementation reveals new constraints._
 
 ---
 
@@ -893,6 +910,7 @@ volumes:
 
 **Non-Functional Requirements:**
 27 NFRs with critical constraints:
+
 - Performance: TUI at 30+ FPS, ILP round-trip < 2s, agent decision cycle < 5s (simple) / < 30s (LLM)
 - Security: All ILP packets signed, private keys never transmitted, BLS validates every reducer call
 - Scalability: 10 concurrent agents MVP, 50+ Phase 2
@@ -900,22 +918,23 @@ volumes:
 - Reliability: Auto-reconnect within 10s, zero silent identity propagation failures
 
 **Scale & Complexity:**
+
 - Primary domain: TypeScript SDK + Rust TUI + Real-time Systems + Payment Infrastructure
 - Complexity level: High
 - Estimated architectural components: 15+ (`@sigil/client`, `@sigil/mcp-server`, `@sigil/tui-backend`, Rust TUI, SpacetimeDB client, Crosstown client, skill parser, IPC layer, TUI app, experiment harness, decision logger, Docker environment, BLS handler, action cost registry, snapshot system, analysis tools)
 
 ### Technical Constraints & Dependencies
 
-| Constraint | Impact | Source |
-|-----------|--------|--------|
-| SpacetimeDB 1.6.x protocol | Pins subscription API surface | `@sigil/client` |
-| Crosstown consumed as dependency | No modifications to payment layer | Write path |
-| BitCraft server unmodified | Must work with vanilla reducers | All game interactions |
-| Nostr public key = sole identity | No username/password fallback | Identity system |
-| ILP payment on every write | Zero bypass paths allowed | Business model |
-| Skill file format parsed by `@sigil/client` | Single parser in TypeScript, served to TUI via IPC | Core interoperability |
-| ratatui/crossterm for TUI | Terminal rendering constraints | Rust TUI client |
-| rebels-in-the-sky patterns | Reference architecture for TUI | Event loop, Screen trait, widgets |
+| Constraint                                  | Impact                                             | Source                            |
+| ------------------------------------------- | -------------------------------------------------- | --------------------------------- |
+| SpacetimeDB 1.6.x protocol                  | Pins subscription API surface                      | `@sigil/client`                   |
+| Crosstown consumed as dependency            | No modifications to payment layer                  | Write path                        |
+| BitCraft server unmodified                  | Must work with vanilla reducers                    | All game interactions             |
+| Nostr public key = sole identity            | No username/password fallback                      | Identity system                   |
+| ILP payment on every write                  | Zero bypass paths allowed                          | Business model                    |
+| Skill file format parsed by `@sigil/client` | Single parser in TypeScript, served to TUI via IPC | Core interoperability             |
+| ratatui/crossterm for TUI                   | Terminal rendering constraints                     | Rust TUI client                   |
+| rebels-in-the-sky patterns                  | Reference architecture for TUI                     | Event loop, Screen trait, widgets |
 
 ### Cross-Cutting Concerns Identified
 
@@ -949,12 +968,12 @@ TypeScript SDK with Rust TUI frontend — no standard starter template applies. 
 
 ### Starter Options Considered
 
-| Option | Verdict | Reason |
-|--------|---------|--------|
-| Standard web starters (T3, Next.js, Vite) | Not applicable | SDK library, not web application |
-| pnpm monorepo template generators | Partial fit | Provide workspace scaffolding but not SDK-specific tooling |
-| cargo-generate templates | Partial fit | Generic workspace templates lack SpacetimeDB integration |
-| Manual initialization | Selected | Full control over structure, dependencies, and workspace topology |
+| Option                                    | Verdict        | Reason                                                            |
+| ----------------------------------------- | -------------- | ----------------------------------------------------------------- |
+| Standard web starters (T3, Next.js, Vite) | Not applicable | SDK library, not web application                                  |
+| pnpm monorepo template generators         | Partial fit    | Provide workspace scaffolding but not SDK-specific tooling        |
+| cargo-generate templates                  | Partial fit    | Generic workspace templates lack SpacetimeDB integration          |
+| Manual initialization                     | Selected       | Full control over structure, dependencies, and workspace topology |
 
 ### Selected Approach: Manual Polyglot Workspace Initialization
 
@@ -964,30 +983,30 @@ TypeScript SDK with Rust TUI frontend — no standard starter template applies. 
 
 **TypeScript SDK Dependencies:**
 
-| Package | Version | Notes |
-|---------|---------|-------|
-| `spacetimedb` | 2.0.1 | **BREAKING: replaces deprecated `@clockworklabs/spacetimedb-sdk`**. New WebSocket v2 protocol, reducer callbacks removed (use event tables + `_then()` callbacks). Backwards-compatible with 1.6.x modules. |
-| `nostr-tools` | 2.23.0 | Event signing, key management, NIP implementations |
-| `pnpm` | 9.x | Workspace monorepo management |
-| `tsup` | latest | Zero-config TypeScript bundler (ESM + CJS output, DTS generation) |
-| `vitest` | latest | TypeScript-native test framework |
-| `typescript` | 5.x | Strict mode configuration |
+| Package       | Version | Notes                                                                                                                                                                                                       |
+| ------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `spacetimedb` | 2.0.1   | **BREAKING: replaces deprecated `@clockworklabs/spacetimedb-sdk`**. New WebSocket v2 protocol, reducer callbacks removed (use event tables + `_then()` callbacks). Backwards-compatible with 1.6.x modules. |
+| `nostr-tools` | 2.23.0  | Event signing, key management, NIP implementations                                                                                                                                                          |
+| `pnpm`        | 9.x     | Workspace monorepo management                                                                                                                                                                               |
+| `tsup`        | latest  | Zero-config TypeScript bundler (ESM + CJS output, DTS generation)                                                                                                                                           |
+| `vitest`      | latest  | TypeScript-native test framework                                                                                                                                                                            |
+| `typescript`  | 5.x     | Strict mode configuration                                                                                                                                                                                   |
 
 **Rust TUI Dependencies (presentation layer only — no direct SpacetimeDB or Crosstown connections):**
 
-| Crate | Version | Notes |
-|-------|---------|-------|
-| `ratatui` | 0.30+ | Modular workspace architecture since 0.30. Terminal UI framework |
-| `crossterm` | 0.29.0 | Cross-platform terminal manipulation |
-| `tokio` | 1.x | Async runtime (rt, time, macros, sync) |
-| `serde` / `serde_json` | latest | JSON-RPC IPC serialization with `@sigil/tui-backend` |
+| Crate                  | Version | Notes                                                            |
+| ---------------------- | ------- | ---------------------------------------------------------------- |
+| `ratatui`              | 0.30+   | Modular workspace architecture since 0.30. Terminal UI framework |
+| `crossterm`            | 0.29.0  | Cross-platform terminal manipulation                             |
+| `tokio`                | 1.x     | Async runtime (rt, time, macros, sync)                           |
+| `serde` / `serde_json` | latest  | JSON-RPC IPC serialization with `@sigil/tui-backend`             |
 
 **Shared Tooling:**
 
-| Tool | Purpose |
-|------|---------|
+| Tool                    | Purpose                                                  |
+| ----------------------- | -------------------------------------------------------- |
 | Docker / docker-compose | Local dev environment (BitCraft server + Crosstown node) |
-| GitHub Actions | CI/CD |
+| GitHub Actions          | CI/CD                                                    |
 
 ### SpacetimeDB Version Strategy
 
@@ -1024,12 +1043,14 @@ mkdir -p crates/{core,tui,client}
 ### Architectural Decisions Provided by Tooling
 
 **TypeScript:**
+
 - pnpm workspaces: Monorepo package management, `workspace:*` protocol for inter-package deps
 - tsup: ESM + CJS dual output, `.d.ts` generation, tree-shakeable builds
 - vitest: Fast unit tests with TypeScript support, workspace-aware test running
 - TypeScript strict mode: Catches type errors at compile time
 
 **Rust:**
+
 - cargo workspace: Shared `Cargo.lock`, unified build artifacts, `[workspace.dependencies]`
 - ratatui modular workspace (0.30+): Separate `ratatui-core`, `ratatui-widgets` crates for smaller builds
 - crossterm: Cross-platform terminal backend
@@ -1044,6 +1065,7 @@ mkdir -p crates/{core,tui,client}
 ### Decision Priority Analysis
 
 **Critical Decisions (Block Implementation):**
+
 1. Repository Strategy — Single polyglot monorepo (TS + Rust)
 2. Identity Propagation — BLS proxy reducer pattern with Nostr pubkey injection
 3. Agent Runtime — Claude instance with CLAUDE.md/AGENTS.md + Skills + MCP tools
@@ -1051,12 +1073,10 @@ mkdir -p crates/{core,tui,client}
 5. Client Package Architecture — `@sigil/client` TS package consumed by TUI backend + headless agent
 6. Agent Inference — TS backend uses Agent SDKs (Anthropic, Vercel AI) for LLM inference
 
-**Important Decisions (Shape Architecture):**
-7. TUI Architecture — rebels-in-the-sky patterns + agent observation mode
-8. Skill File Format — Standard Claude Agent Skills (SKILL.md), out of scope for custom design
-9. Agent Config Naming — CLAUDE.md (Claude agents) / AGENTS.md (non-Claude agents)
+**Important Decisions (Shape Architecture):** 7. TUI Architecture — rebels-in-the-sky patterns + agent observation mode 8. Skill File Format — Standard Claude Agent Skills (SKILL.md), out of scope for custom design 9. Agent Config Naming — CLAUDE.md (Claude agents) / AGENTS.md (non-Claude agents)
 
 **Deferred Decisions (Post-MVP):**
+
 - Vector DB choice for semantic memory (ChromaDB vs alternatives)
 - Multi-agent coordination protocols
 - Agent marketplace / sharing mechanism
@@ -1065,11 +1085,13 @@ mkdir -p crates/{core,tui,client}
 ### Data Architecture
 
 **Database:** SpacetimeDB (server-side, unmodified BitCraft). No additional database required for MVP.
+
 - SpacetimeDB 2.0 client SDKs targeting 1.6.x server modules (backwards compatible)
 - ~80 entity tables, 148 static data tables, 364+ reducers available
 - Subscription-based real-time state sync via TypeScript SDK
 
 **Data Modeling:** SpacetimeDB tables define the schema. TypeScript SDK consumes generated client bindings.
+
 - TypeScript: `spacetimedb generate --lang typescript`
 
 **Persistence:** Agent state (CLAUDE.md, skill files, decision logs) stored as local files. Game state lives entirely in SpacetimeDB.
@@ -1077,11 +1099,13 @@ mkdir -p crates/{core,tui,client}
 ### Authentication & Security
 
 **Identity:** Nostr keypair is the sole identity mechanism.
+
 - No usernames, passwords, or OAuth
 - Private keys managed locally per agent/player, never transmitted
 - Public key = player identity across all systems
 
 **Identity Propagation Pattern:**
+
 ```
 Agent/Player → SDK Proxy Layer → Inject Nostr pubkey as reducer arg
 → ILP payment signed with Nostr key → Crosstown routes to BLS
@@ -1091,6 +1115,7 @@ Agent/Player → SDK Proxy Layer → Inject Nostr pubkey as reducer arg
 **Authorization:** BLS (BitCraft Login Server) validates every write action. No bypass paths. ILP micropayment required for every game write.
 
 **Security Invariants:**
+
 - Zero silent identity propagation failures (fail loud, fail fast)
 - All ILP packets cryptographically signed
 - Private keys never leave the local process
@@ -1099,6 +1124,7 @@ Agent/Player → SDK Proxy Layer → Inject Nostr pubkey as reducer arg
 ### API & Communication Patterns
 
 **MCP Server (Primary Agent Interface):**
+
 - Standalone TypeScript process
 - Exposes game world state as MCP resources (read)
 - Exposes game actions as MCP tools (write, routed through BLS)
@@ -1106,17 +1132,20 @@ Agent/Player → SDK Proxy Layer → Inject Nostr pubkey as reducer arg
 - Connects to SpacetimeDB for subscriptions, Crosstown/BLS for authenticated writes
 
 **SpacetimeDB Protocol:**
+
 - WebSocket v2 (SpacetimeDB 2.0 client SDK)
 - Subscription-based: clients subscribe to table queries, receive real-time updates
 - Reducer calls for all write operations
 - Event tables + `_then()` callbacks (replaces deprecated reducer callbacks)
 
 **Crosstown/ILP Protocol:**
+
 - Every game write action is an ILP micropayment
 - Payment routes through Crosstown relay nodes
 - BLS validates and forwards to SpacetimeDB
 
 **TUI ↔ Backend Communication:**
+
 - Rust ratatui TUI connects to TypeScript backend via IPC (stdio/local WebSocket)
 - TypeScript backend handles all SpacetimeDB, Crosstown, and MCP connectivity
 - TUI is a pure presentation layer — no direct SpacetimeDB or Crosstown connections from Rust
@@ -1155,46 +1184,47 @@ The "headless agent" use case is handled by external agent SDKs (Vercel AI SDK, 
 const client = new SigilClient({
   spacetimedb: { host: '...', module: '...' },
   nostr: { relay: '...', privateKey: '...' },
-  crosstown: { node: '...' }
-})
+  crosstown: { node: '...' },
+});
 
 // === Two independent read surfaces ===
 
 // SpacetimeDB: game world state
-client.spacetimedb.subscribe('player_state', query)
-client.spacetimedb.on('tableUpdate', handler)
-client.spacetimedb.tables   // generated type-safe table accessors
+client.spacetimedb.subscribe('player_state', query);
+client.spacetimedb.on('tableUpdate', handler);
+client.spacetimedb.tables; // generated type-safe table accessors
 
 // Nostr relay: confirmations, notifications, social
-client.nostr.subscribe(filters)
-client.nostr.on('event', handler)
-client.nostr.relay           // raw relay connection
+client.nostr.subscribe(filters);
+client.nostr.on('event', handler);
+client.nostr.relay; // raw relay connection
 
 // === One write path ===
 
 // Everything goes through ILP — single write API
-client.publish(action)       // signs → ILP packet → Crosstown → BLS → SpacetimeDB
+client.publish(action); // signs → ILP packet → Crosstown → BLS → SpacetimeDB
 
 // === High-level aggregated events ===
 
-client.on('actionConfirmed', handler)   // from Nostr relay
-client.on('gameStateUpdate', handler)   // from SpacetimeDB
-client.on('connectionChange', handler)  // from either
+client.on('actionConfirmed', handler); // from Nostr relay
+client.on('gameStateUpdate', handler); // from SpacetimeDB
+client.on('connectionChange', handler); // from either
 
 // === Identity ===
 
-client.identity              // Nostr keypair, public key
+client.identity; // Nostr keypair, public key
 ```
 
-| Surface | Purpose | Type |
-|---------|---------|------|
-| `client.spacetimedb` | Game world state (tables, subscriptions) | Read |
-| `client.nostr` | Relay events (confirmations, social, custom) | Read |
-| `client.publish()` | All game actions (ILP → Crosstown → BLS → SpacetimeDB) | Write |
-| `client.on()` | High-level aggregated events from both sources | Read (convenience) |
-| `client.identity` | Nostr keypair, public key | Identity |
+| Surface              | Purpose                                                | Type               |
+| -------------------- | ------------------------------------------------------ | ------------------ |
+| `client.spacetimedb` | Game world state (tables, subscriptions)               | Read               |
+| `client.nostr`       | Relay events (confirmations, social, custom)           | Read               |
+| `client.publish()`   | All game actions (ILP → Crosstown → BLS → SpacetimeDB) | Write              |
+| `client.on()`        | High-level aggregated events from both sources         | Read (convenience) |
+| `client.identity`    | Nostr keypair, public key                              | Identity           |
 
 **Design rationale:**
+
 - Two read surfaces because SpacetimeDB and Nostr relay are independent data sources with different protocols
 - One write path because the architecture has a single write pipeline (all actions go through ILP/Crosstown/BLS)
 - `client.publish()` — not "write to SpacetimeDB" or "write to Nostr". The consumer publishes intent; the client handles the pipeline
@@ -1203,6 +1233,7 @@ client.identity              // Nostr keypair, public key
 ### Frontend Architecture (Hybrid TUI)
 
 **Rust TUI (Presentation Layer):**
+
 - ratatui 0.30+ with crossterm 0.29.0 backend
 - tokio async runtime for terminal input + tick scheduling + IPC
 - Follows rebels-in-the-sky patterns:
@@ -1214,12 +1245,14 @@ client.identity              // Nostr keypair, public key
   - Tick system: Slow tick (10Hz) for game state polling, fast tick (40Hz) for animations
 
 **TUI Backend (consumes `@sigil/client`):**
+
 - Node.js process that imports `@sigil/client`
 - Exposes game state and action API to the Rust TUI via IPC
 - Manages agent inference lifecycle
 - Bridges agent decisions to game actions
 
 **Communication Bridge (Rust ↔ TypeScript):**
+
 - IPC mechanism: stdio pipes (Rust spawns Node.js child process) or local WebSocket
 - Protocol: JSON messages with typed schemas (game state updates, action requests, responses)
 - Rust TUI sends user actions → TS backend processes → SpacetimeDB/Crosstown → result back to TUI
@@ -1228,15 +1261,18 @@ client.identity              // Nostr keypair, public key
 ### Headless Agent Mode
 
 Headless agents are not a Sigil package — they are external agent frameworks that consume Sigil:
+
 - **Via MCP:** Agent SDKs (Claude, OpenCode, Vercel AI) connect to `@sigil/mcp-server` using standard MCP protocol. The MCP server exposes game world as tools/resources. This is the primary headless path.
 - **Via direct import:** A researcher can `import { SigilClient } from '@sigil/client'` in their own TypeScript code alongside any agent SDK (Vercel AI SDK, Anthropic SDK) for custom orchestration.
 
 **Agent Observation Mode (TUI only):**
+
 - TUI includes a dedicated view for spectating agents owned by the human player
 - Real-time display of agent perception, decisions, and actions (sourced from TS backend)
 - Read-only view — human observes but does not control the agent
 
 **Panels (following rebels pattern):**
+
 - Game world view (galaxy, planets, teams)
 - Agent dashboard (observation mode)
 - Player/team management
@@ -1246,12 +1282,14 @@ Headless agents are not a Sigil package — they are external agent frameworks t
 ### Infrastructure & Deployment
 
 **Local Development:**
+
 - Docker Compose: BitCraft server + Crosstown node + BLS
 - TypeScript workspace builds independently (SDK core + MCP server + TUI backend)
 - Rust TUI builds independently (presentation layer only)
 - MCP server runs as standalone process
 
 **Repository Layout (Single Polyglot Monorepo):**
+
 ```
 sigil/
 ├── packages/              # TypeScript (pnpm workspace)
@@ -1277,16 +1315,19 @@ sigil/
 ### Agent Configuration Architecture
 
 **CLAUDE.md (Claude Agents):**
+
 - Claude-specific configuration following Claude Code conventions
 - Defines agent personality, constraints, goals, budget limits
 - References skills and MCP server connection details
 
 **AGENTS.md (Non-Claude Agents):**
+
 - Generic agent configuration for non-Claude AI systems (Vercel AI, OpenCode, etc.)
 - Runtime-agnostic format
 - Same game capabilities, different configuration surface
 
 **Skills (SKILL.md):**
+
 - Standard Claude Agent Skills format
 - YAML frontmatter: name, description
 - Markdown body: instructions, examples, tool references
@@ -1295,6 +1336,7 @@ sigil/
 ### Decision Impact Analysis
 
 **Implementation Sequence:**
+
 1. Repository scaffolding (monorepo with TS workspace + Rust crate)
 2. `@sigil/client` package: SpacetimeDB 2.0 client + Nostr relay + Crosstown/ILP + Identity + `client.publish()` write path
 3. `@sigil/mcp-server` (MCP protocol wrapper over `@sigil/client`, exposes game world as tools/resources)
@@ -1304,6 +1346,7 @@ sigil/
 7. Agent observation mode in TUI
 
 **Cross-Component Dependencies:**
+
 - `@sigil/client` is the foundational package — both wrappers depend on it
 - `@sigil/mcp-server` wraps `@sigil/client` in MCP protocol (for AI agents)
 - `@sigil/tui-backend` wraps `@sigil/client` in JSON-RPC IPC (for Rust TUI)
@@ -1313,6 +1356,7 @@ sigil/
 - Identity + `client.publish()` pipeline is foundational — blocks all write operations
 
 **Superseded Architecture (to be removed/replaced in future refinement):**
+
 - Section 5: Five-Layer Cognition Architecture → Replaced by Claude + Skills + MCP
 - Section 5.1: CognitionPlugin<TInput, TOutput, TState> → No longer applicable
 - Section 5.2: Layer implementations (PerceptionFilter, GoalsEngine, etc.) → Agent cognition is Claude, not custom code
@@ -1330,6 +1374,7 @@ sigil/
 ### Naming Patterns
 
 **TypeScript Naming Conventions:**
+
 - Files: `kebab-case.ts` (e.g., `game-state.ts`, `mcp-server.ts`, `identity-proxy.ts`)
 - Functions/variables: `camelCase` (e.g., `getPlayerInfo`, `gameState`)
 - Types/interfaces: `PascalCase` (e.g., `PlayerState`, `GameAction`, `SigilClientOptions`)
@@ -1337,35 +1382,41 @@ sigil/
 - Exports: barrel `index.ts` per package for public API surface
 
 **Rust Naming Conventions (following rebels-in-the-sky):**
+
 - Files: `snake_case.rs` (e.g., `game_panel.rs`, `clickable_list.rs`)
 - Functions/variables: `snake_case` (e.g., `handle_key_events`, `game_state`)
 - Types/structs/enums: `PascalCase` (e.g., `UiCallback`, `AppEvent`, `Screen`)
 - Constants: `SCREAMING_SNAKE_CASE` (e.g., `UI_SCREEN_SIZE`, `LEFT_PANEL_WIDTH`)
 
 **JSON / IPC Field Naming:**
+
 - All JSON exchanged between Rust and TypeScript uses `camelCase` fields
 - Rust side: `#[serde(rename_all = "camelCase")]` on all IPC message structs
 - Rationale: TS is the data layer, Rust is presentation — TS conventions dominate the wire format
 
 **MCP Tool & Resource Naming:**
+
 - Tool names: `snake_case` (MCP convention) — e.g., `move_player`, `get_inventory`, `submit_trade`, `explore_planet`
 - Resource URIs: plural nouns — `sigil://players/{id}`, `sigil://planets/{id}`, `sigil://teams/{id}`
 
 ### Structure Patterns
 
 **TypeScript Project Organization:**
+
 - One package per concern: `client`, `mcp-server`, `tui-backend`, `headless-agent`, `harness`
 - Each package has: `src/`, `tests/`, `package.json`, `tsconfig.json`, `tsup.config.ts`
 - Barrel exports: `src/index.ts` defines public API per package
 - Internal modules: `src/{feature}/` directories for complex packages
 
 **Rust Project Organization (rebels-in-the-sky pattern):**
+
 - Single `crates/tui/` crate for the TUI application
 - Module structure mirrors rebels: `src/ui/` (panels, widgets), `src/ipc/` (backend communication)
 - One file per widget, one file per panel/screen
 - `mod.rs` barrel re-exports per module
 
 **Test Organization:**
+
 - TypeScript: co-located `*.test.ts` next to source files (vitest convention)
 - TypeScript integration tests: `packages/*/tests/integration/`
 - Rust: inline `#[cfg(test)] mod tests` blocks (standard Rust, matches rebels-in-the-sky)
@@ -1373,6 +1424,7 @@ sigil/
 - Cross-runtime IPC tests: `packages/tui-backend/tests/integration/`
 
 **Configuration Files:**
+
 - Shared ESLint + Prettier config at monorepo root
 - Shared `tsconfig.base.json` at root, extended per package
 - Shared `rustfmt.toml` at root
@@ -1381,6 +1433,7 @@ sigil/
 ### Format Patterns
 
 **IPC Protocol — JSON-RPC 2.0:**
+
 - Standard JSON-RPC 2.0 format for all Rust ↔ TypeScript communication
 - Request: `{"jsonrpc": "2.0", "method": "getGameState", "params": {}, "id": 1}`
 - Response: `{"jsonrpc": "2.0", "result": {...}, "id": 1}`
@@ -1389,12 +1442,14 @@ sigil/
 - Rust side: typed message enums with serde, matching rebels-in-the-sky `AppEvent` pattern
 
 **Error Format (`@sigil/client`):**
+
 - Typed error classes extending `Error`
 - Required fields: `code` (enum), `message` (human-readable), `boundary` (where error originated)
 - Boundary values: `spacetimedb`, `crosstown`, `bls`, `mcp`, `agent`, `ipc`
 - Example: `new SigilError({ code: 'REDUCER_FAILED', message: 'Move rejected: insufficient fuel', boundary: 'spacetimedb' })`
 
 **Data Exchange:**
+
 - Dates: ISO 8601 strings in JSON (`2026-02-25T12:00:00Z`)
 - IDs: string UUIDs (matching SpacetimeDB identity format)
 - Nulls: explicit `null` in JSON, `Option<T>` in Rust, `T | null` in TypeScript
@@ -1403,6 +1458,7 @@ sigil/
 ### Communication Patterns
 
 **`@sigil/client` Event System:**
+
 - Event-driven: `EventEmitter` pattern with typed events
 - Client emits typed events on SpacetimeDB subscription updates
 - Events: `gameStateUpdate`, `playerAction`, `agentDecision`, `connectionStatusChange`, `error`
@@ -1410,6 +1466,7 @@ sigil/
 - No polling — all state changes are push-based from SpacetimeDB subscriptions
 
 **`@sigil/client` Public API Pattern:**
+
 - Constructor: `new SigilClient(options: SigilClientOptions)`
 - All methods: `async/await` Promises (no callbacks, no observables)
 - All methods return typed results — no `any`
@@ -1417,6 +1474,7 @@ sigil/
 - Explicit `connect()` / `disconnect()` lifecycle methods
 
 **TUI State Management (rebels-in-the-sky pattern):**
+
 - `UiCallback` enum: typed variants for all user actions
 - Callbacks dispatched to TUI backend via JSON-RPC over IPC
 - Dirty flags on state changes to minimize re-renders
@@ -1426,6 +1484,7 @@ sigil/
 ### Process Patterns
 
 **Error Handling Chain:**
+
 - `@sigil/client`: catches and wraps all external errors with `boundary` field
 - TUI backend: forwards typed errors via JSON-RPC error objects to Rust TUI
 - Rust TUI: maps IPC errors to UI-displayable popup messages (matching rebels `PopupMessage::Error`)
@@ -1433,6 +1492,7 @@ sigil/
 - Invariant: Rust TUI never crashes on backend errors — always displays gracefully
 
 **Connection Lifecycle:**
+
 - `@sigil/client` manages SpacetimeDB WebSocket connection
 - Auto-reconnect with exponential backoff (max 30s) on disconnect
 - Connection state emitted as events: `connecting`, `connected`, `disconnected`, `reconnecting`
@@ -1440,6 +1500,7 @@ sigil/
 - Headless agent logs connection state changes
 
 **Agent Inference Lifecycle:**
+
 - `@sigil/client` provides pluggable agent inference via Agent SDK integration
 - Inference configured at construction: `new SigilClient({ agent: { sdk: 'anthropic', model: 'claude-sonnet-4-5-20250929' } })`
 - Agent loop: perceive (SpacetimeDB state) → decide (LLM inference) → act (reducer call via Crosstown)
@@ -1447,6 +1508,7 @@ sigil/
 - Budget tracking: token/cost tracking per agent session
 
 **Loading States:**
+
 - TUI: loading spinner on panels awaiting backend data (rebels pattern)
 - Named states: `loading`, `loaded`, `error`, `stale` (connected but data outdated)
 - Global connection state in status bar, per-panel data state in panel header
@@ -1454,6 +1516,7 @@ sigil/
 ### Enforcement Guidelines
 
 **All AI Agents Working on This Codebase MUST:**
+
 - Follow the naming conventions above for their respective language (TS or Rust)
 - Use JSON-RPC 2.0 for any new IPC messages
 - Use `camelCase` for all JSON fields crossing the IPC boundary
@@ -1464,6 +1527,7 @@ sigil/
 - Use `async/await` for all async TypeScript code (no callbacks)
 
 **Enforcement Mechanisms:**
+
 - ESLint: naming convention rules, no-any rule, consistent-type-imports
 - Prettier: format on save, checked in CI
 - `cargo clippy`: lint all Rust code, deny warnings in CI
@@ -1474,35 +1538,46 @@ sigil/
 ### Pattern Examples
 
 **Good — IPC message from Rust TUI to TS backend:**
+
 ```json
-{"jsonrpc": "2.0", "method": "movePlayer", "params": {"playerId": "abc-123", "targetPlanetId": "def-456"}, "id": 42}
+{
+  "jsonrpc": "2.0",
+  "method": "movePlayer",
+  "params": { "playerId": "abc-123", "targetPlanetId": "def-456" },
+  "id": 42
+}
 ```
 
 **Bad — wrong field casing, no JSON-RPC wrapper:**
+
 ```json
-{"action": "move_player", "player_id": "abc-123", "target_planet_id": "def-456"}
+{ "action": "move_player", "player_id": "abc-123", "target_planet_id": "def-456" }
 ```
 
 **Good — MCP tool definition:**
+
 ```json
-{"name": "move_player", "description": "Move a player to a target planet"}
+{ "name": "move_player", "description": "Move a player to a target planet" }
 ```
 
 **Bad — camelCase MCP tool name:**
+
 ```json
-{"name": "movePlayer", "description": "Move a player to a target planet"}
+{ "name": "movePlayer", "description": "Move a player to a target planet" }
 ```
 
 **Good — error from `@sigil/client`:**
+
 ```typescript
 throw new SigilError({
   code: 'REDUCER_FAILED',
   message: 'Move rejected: insufficient fuel',
-  boundary: 'spacetimedb'
+  boundary: 'spacetimedb',
 });
 ```
 
 **Bad — untyped error:**
+
 ```typescript
 throw new Error('something went wrong');
 ```
@@ -1697,24 +1772,28 @@ sigil/
 ### Architectural Boundaries
 
 **Boundary 1: `@sigil/client` → External Services**
+
 - SpacetimeDB: WebSocket v2 connection (subscription + reducer calls)
 - Crosstown: ILP packet routing (payment + BLS identity)
 - Agent SDKs: HTTP to LLM providers (Anthropic API, OpenAI-compatible)
 - All external errors wrapped with `boundary` field at this layer
 
 **Boundary 2: TUI Backend → Rust TUI (IPC)**
+
 - JSON-RPC 2.0 over stdio pipes
 - TUI backend is the only TS process the Rust TUI communicates with
 - All game state and actions flow through this single boundary
 - Schema defined in `packages/client/schemas/ipc-messages.json`
 
 **Boundary 3: MCP Server → MCP Clients**
+
 - Standard MCP protocol (stdio transport)
 - Claude, OpenCode, or any MCP-compatible client connects here
 - MCP server uses `@sigil/client` internally for all game operations
 - Tools = game actions, Resources = game state
 
 **Boundary 4: `@sigil/client` → Consumers**
+
 - Three consumers: tui-backend, headless-agent, harness
 - All use the same `SigilClient` API
 - Event-driven: consumers subscribe to typed events
@@ -1722,27 +1801,27 @@ sigil/
 
 ### Requirements to Structure Mapping
 
-| FR Domain | Package/Crate | Key Files |
-|-----------|--------------|-----------|
-| **FR1-FR5: Identity** | `packages/client/src/identity/` | `keypair.ts`, `signer.ts` |
-| **FR6-FR10: Perception** | `packages/client/src/perception/` | `spacetimedb-client.ts`, `static-data.ts`, `reconnect.ts` |
-| **FR11-FR16: Agent Config** | `packages/client/src/agent/` | `agent-config.ts`, `skill-loader.ts`, `budget-tracker.ts` |
+| FR Domain                       | Package/Crate                                   | Key Files                                                                       |
+| ------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------- |
+| **FR1-FR5: Identity**           | `packages/client/src/identity/`                 | `keypair.ts`, `signer.ts`                                                       |
+| **FR6-FR10: Perception**        | `packages/client/src/perception/`               | `spacetimedb-client.ts`, `static-data.ts`, `reconnect.ts`                       |
+| **FR11-FR16: Agent Config**     | `packages/client/src/agent/`                    | `agent-config.ts`, `skill-loader.ts`, `budget-tracker.ts`                       |
 | **FR17-FR22: Actions/Payments** | `packages/client/src/actions/`, `src/payments/` | `action-executor.ts`, `crosstown-client.ts`, `bls-proxy.ts`, `cost-registry.ts` |
-| **FR23-FR27: Cognition** | External agent SDKs via `@sigil/mcp-server` | MCP tools + `@sigil/client` direct import |
-| **FR28-FR38: TUI** | `crates/tui/`, `packages/tui-backend/` | `src/ui/panels/*.rs`, `src/methods/*.ts` |
-| **FR39-FR43: Experiments** | External tooling consuming `@sigil/client` | Phase 2 — JSONL logging built into client |
-| **FR44-FR47: Infrastructure** | `docker/` | `docker-compose.yml`, Dockerfiles |
-| **FR48-FR50: Extensibility** | `skills/` | Skill files per world, `README.md` authoring guide |
+| **FR23-FR27: Cognition**        | External agent SDKs via `@sigil/mcp-server`     | MCP tools + `@sigil/client` direct import                                       |
+| **FR28-FR38: TUI**              | `crates/tui/`, `packages/tui-backend/`          | `src/ui/panels/*.rs`, `src/methods/*.ts`                                        |
+| **FR39-FR43: Experiments**      | External tooling consuming `@sigil/client`      | Phase 2 — JSONL logging built into client                                       |
+| **FR44-FR47: Infrastructure**   | `docker/`                                       | `docker-compose.yml`, Dockerfiles                                               |
+| **FR48-FR50: Extensibility**    | `skills/`                                       | Skill files per world, `README.md` authoring guide                              |
 
 ### Cross-Cutting Concerns Mapping
 
-| Concern | Locations |
-|---------|-----------|
-| **Identity propagation** | `client/src/identity/` → `client/src/payments/bls-proxy.ts` → `client/src/actions/action-executor.ts` |
-| **Error handling** | `client/src/errors.ts` (defines) → all `client/src/*/` (throws) → `tui-backend/src/ipc-server.ts` (wraps as JSON-RPC error) → `crates/tui/src/ui/popup_message.rs` (displays) |
-| **Logging** | `headless-agent/src/logger.ts` (decision JSONL) + `client/src/` (system logs via structured JSONL) |
-| **Budget tracking** | `client/src/agent/budget-tracker.ts` → `client/src/actions/action-executor.ts` (enforces) → `crates/tui/src/ui/panels/status_bar.rs` (displays) |
-| **Connection lifecycle** | `client/src/perception/reconnect.ts` → events emitted to all consumers → `tui-backend/` relays to TUI → `crates/tui/src/ui/panels/status_bar.rs` (displays) |
+| Concern                  | Locations                                                                                                                                                                     |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Identity propagation** | `client/src/identity/` → `client/src/payments/bls-proxy.ts` → `client/src/actions/action-executor.ts`                                                                         |
+| **Error handling**       | `client/src/errors.ts` (defines) → all `client/src/*/` (throws) → `tui-backend/src/ipc-server.ts` (wraps as JSON-RPC error) → `crates/tui/src/ui/popup_message.rs` (displays) |
+| **Logging**              | `headless-agent/src/logger.ts` (decision JSONL) + `client/src/` (system logs via structured JSONL)                                                                            |
+| **Budget tracking**      | `client/src/agent/budget-tracker.ts` → `client/src/actions/action-executor.ts` (enforces) → `crates/tui/src/ui/panels/status_bar.rs` (displays)                               |
+| **Connection lifecycle** | `client/src/perception/reconnect.ts` → events emitted to all consumers → `tui-backend/` relays to TUI → `crates/tui/src/ui/panels/status_bar.rs` (displays)                   |
 
 ### Data Flow
 
@@ -1778,6 +1857,7 @@ sigil/
 ### Development Workflow
 
 **First-time setup:**
+
 ```bash
 pnpm install                    # Install all TS dependencies
 cargo build                     # Build Rust TUI
@@ -1785,6 +1865,7 @@ docker compose -f docker/docker-compose.dev.yml up  # Start BitCraft + Crosstown
 ```
 
 **Development (TUI):**
+
 ```bash
 # Terminal 1: TS backend with hot reload
 pnpm --filter @sigil/tui-backend dev
@@ -1794,11 +1875,13 @@ cargo run --bin sigil-tui
 ```
 
 **Development (MCP server):**
+
 ```bash
 pnpm --filter @sigil/mcp-server dev
 ```
 
 **CI Pipeline:**
+
 ```bash
 pnpm lint && pnpm typecheck && pnpm test   # All TS packages
 cargo clippy -- -D warnings && cargo test   # Rust TUI
@@ -1811,6 +1894,7 @@ cargo clippy -- -D warnings && cargo test   # Rust TUI
 ### Coherence Validation
 
 **Decision Compatibility: PASS**
+
 - SpacetimeDB 2.0 TS SDK confirmed backwards-compatible with 1.6.x server modules
 - ratatui 0.30 + crossterm 0.29 + tokio: standard, well-tested Rust TUI stack
 - JSON-RPC 2.0 over stdio: proven IPC pattern, strong tooling in both TS and Rust (serde)
@@ -1819,6 +1903,7 @@ cargo clippy -- -D warnings && cargo test   # Rust TUI
 - MCP server standalone: decoupled from TUI and headless agent, any MCP client connects independently
 
 **Pattern Consistency: PASS**
+
 - TS naming (camelCase/PascalCase/kebab-case files) consistent with ecosystem norms
 - Rust naming (snake_case, rebels-in-the-sky patterns) consistent with reference architecture
 - IPC wire format (camelCase JSON + `#[serde(rename_all = "camelCase")]`) handles cross-language boundary cleanly
@@ -1826,6 +1911,7 @@ cargo clippy -- -D warnings && cargo test   # Rust TUI
 - Error handling (typed errors with `boundary` field) consistent from `@sigil/client` through IPC to TUI display
 
 **Structure Alignment: PASS**
+
 - Every architectural boundary maps to a package/crate boundary
 - `@sigil/client` → external services (Boundary 1)
 - `tui-backend` → Rust TUI via IPC (Boundary 2)
@@ -1837,33 +1923,34 @@ cargo clippy -- -D warnings && cargo test   # Rust TUI
 
 **Functional Requirements: 50/50 Covered**
 
-| FR Range | Domain | Coverage | Notes |
-|----------|--------|----------|-------|
-| FR1-FR5 | Identity & Key Management | Full | `client/src/identity/` |
-| FR6-FR10 | World Perception | Full | `client/src/perception/` |
-| FR11-FR16 | Agent Config & Skills | Full | `client/src/agent/` + `skills/` |
-| FR17-FR22 | Action Execution & Payments | Full | `client/src/actions/` + `client/src/payments/` |
-| FR23-FR27 | Agent Cognition | Full | `client/src/agent/inference.ts` delegates to Agent SDK; FR25-26 deferred per PRD (Phase 2) |
-| FR28-FR38 | Terminal Game Client | Full | `crates/tui/` + `packages/tui-backend/`; FR33-37 deferred per PRD (Phase 2) |
-| FR39-FR43 | Experiment & Analysis | Full | `packages/harness/`; FR40-43 deferred per PRD (Phase 2) |
-| FR44-FR47 | Infrastructure & Deployment | Full | `docker/` |
-| FR48-FR50 | World Extensibility | Full | `skills/` + README; FR48-50 deferred per PRD (Phase 2/3) |
+| FR Range  | Domain                      | Coverage | Notes                                                                                      |
+| --------- | --------------------------- | -------- | ------------------------------------------------------------------------------------------ |
+| FR1-FR5   | Identity & Key Management   | Full     | `client/src/identity/`                                                                     |
+| FR6-FR10  | World Perception            | Full     | `client/src/perception/`                                                                   |
+| FR11-FR16 | Agent Config & Skills       | Full     | `client/src/agent/` + `skills/`                                                            |
+| FR17-FR22 | Action Execution & Payments | Full     | `client/src/actions/` + `client/src/payments/`                                             |
+| FR23-FR27 | Agent Cognition             | Full     | `client/src/agent/inference.ts` delegates to Agent SDK; FR25-26 deferred per PRD (Phase 2) |
+| FR28-FR38 | Terminal Game Client        | Full     | `crates/tui/` + `packages/tui-backend/`; FR33-37 deferred per PRD (Phase 2)                |
+| FR39-FR43 | Experiment & Analysis       | Full     | `packages/harness/`; FR40-43 deferred per PRD (Phase 2)                                    |
+| FR44-FR47 | Infrastructure & Deployment | Full     | `docker/`                                                                                  |
+| FR48-FR50 | World Extensibility         | Full     | `skills/` + README; FR48-50 deferred per PRD (Phase 2/3)                                   |
 
 **Non-Functional Requirements: 27/27 Covered**
 
-| NFR Range | Domain | How Addressed |
-|-----------|--------|---------------|
-| NFR1-7 | Performance | ratatui dirty flags + tick system (30+ FPS), ILP pipeline in `@sigil/client`, skill parsing in `skill-loader.ts` |
-| NFR8-13 | Security | `client/identity/` (key management), `client/payments/bls-proxy.ts` (identity propagation), keys never transmitted |
-| NFR14-17 | Scalability | SpacetimeDB handles server-side concurrency; `@sigil/client` is single-connection per instance; JSONL log rotation |
-| NFR18-22 | Integration | SpacetimeDB 2.0 SDK (backwards-compatible with 1.6.x), Nostr via `nostr-tools`, Agent SDK pluggable, SKILL.md runtime-agnostic, Docker for Linux/macOS |
-| NFR23-27 | Reliability | `client/perception/reconnect.ts` (auto-reconnect, state recovery), typed errors with boundary, append-only decision logs, TUI graceful degradation |
+| NFR Range | Domain      | How Addressed                                                                                                                                          |
+| --------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| NFR1-7    | Performance | ratatui dirty flags + tick system (30+ FPS), ILP pipeline in `@sigil/client`, skill parsing in `skill-loader.ts`                                       |
+| NFR8-13   | Security    | `client/identity/` (key management), `client/payments/bls-proxy.ts` (identity propagation), keys never transmitted                                     |
+| NFR14-17  | Scalability | SpacetimeDB handles server-side concurrency; `@sigil/client` is single-connection per instance; JSONL log rotation                                     |
+| NFR18-22  | Integration | SpacetimeDB 2.0 SDK (backwards-compatible with 1.6.x), Nostr via `nostr-tools`, Agent SDK pluggable, SKILL.md runtime-agnostic, Docker for Linux/macOS |
+| NFR23-27  | Reliability | `client/perception/reconnect.ts` (auto-reconnect, state recovery), typed errors with boundary, append-only decision logs, TUI graceful degradation     |
 
 ### Gap Analysis Results
 
 **Important Gaps (non-blocking, document for implementers):**
 
 1. **SKILL.md game-specific metadata** — FR13 requires skill files to declare target reducer, ILP cost, and required subscriptions. Standard Claude Agent Skills SKILL.md supports custom YAML frontmatter fields. The architecture should document the expected frontmatter schema for game skills:
+
    ```yaml
    ---
    name: move-player
@@ -1873,6 +1960,7 @@ cargo clippy -- -D warnings && cargo test   # Rust TUI
    subscriptions: [player_state, hex_grid]
    ---
    ```
+
    **Resolution:** Document this schema in `skills/README.md` during implementation.
 
 2. **PRD "Rust SDK" terminology** — The PRD originally referenced a "Rust SDK" throughout, but our architecture uses Rust only for TUI presentation with a TS backend. The "Rust SDK" from the PRD is realized as the Rust TUI + `@sigil/tui-backend` + `@sigil/client` combination.
@@ -1889,12 +1977,14 @@ cargo clippy -- -D warnings && cargo test   # Rust TUI
 ### Architecture Completeness Checklist
 
 **Requirements Analysis**
+
 - [x] Project context thoroughly analyzed (Step 2)
 - [x] Scale and complexity assessed (TypeScript SDK + Rust TUI, 15+ components)
 - [x] Technical constraints identified (SpacetimeDB 1.6.x, Crosstown, Nostr, ILP)
 - [x] Cross-cutting concerns mapped (identity, errors, logging, budget, connection)
 
 **Architectural Decisions**
+
 - [x] Critical decisions documented with versions (9 decisions)
 - [x] Technology stack fully specified (SpacetimeDB 2.0 TS SDK, ratatui 0.30, etc.)
 - [x] Integration patterns defined (IPC JSON-RPC 2.0, MCP, EventEmitter)
@@ -1902,6 +1992,7 @@ cargo clippy -- -D warnings && cargo test   # Rust TUI
 - [x] Agent inference strategy defined (pluggable Agent SDK in `@sigil/client`)
 
 **Implementation Patterns**
+
 - [x] Naming conventions established (TS, Rust, JSON, MCP)
 - [x] Structure patterns defined (co-located tests, barrel exports, rebels TUI patterns)
 - [x] Communication patterns specified (JSON-RPC 2.0, EventEmitter, MCP protocol)
@@ -1909,6 +2000,7 @@ cargo clippy -- -D warnings && cargo test   # Rust TUI
 - [x] Enforcement mechanisms defined (ESLint, Prettier, clippy, rustfmt, CI)
 
 **Project Structure**
+
 - [x] Complete directory structure defined (all packages, crates, files)
 - [x] Component boundaries established (4 boundaries)
 - [x] Integration points mapped (data flow diagram)
@@ -1922,6 +2014,7 @@ cargo clippy -- -D warnings && cargo test   # Rust TUI
 **Confidence Level:** High
 
 **Key Strengths:**
+
 - Clean `@sigil/client` abstraction enables both TUI and headless agent from a single codebase
 - Well-defined IPC boundary (JSON-RPC 2.0) makes Rust ↔ TS integration testable independently
 - Agent inference is pluggable — swap between Anthropic, Vercel AI, or other providers without architectural changes
@@ -1930,6 +2023,7 @@ cargo clippy -- -D warnings && cargo test   # Rust TUI
 - All 50 FRs and 27 NFRs have architectural homes
 
 **Areas for Future Enhancement:**
+
 - Multi-agent coordination protocols (Phase 2)
 - SSH support for TUI (rebels-in-the-sky has WriterProxy pattern ready)
 - Vector DB integration for agent memory (Phase 2, FR25)
@@ -1939,6 +2033,7 @@ cargo clippy -- -D warnings && cargo test   # Rust TUI
 ### Implementation Handoff
 
 **AI Agent Guidelines:**
+
 - Follow all architectural decisions exactly as documented
 - Use implementation patterns consistently across all components
 - Respect project structure and package boundaries
@@ -1947,6 +2042,7 @@ cargo clippy -- -D warnings && cargo test   # Rust TUI
 - Refer to this document for all architectural questions
 
 **First Implementation Priority:**
+
 1. Repository scaffolding: monorepo with pnpm workspace + cargo workspace
 2. `@sigil/client` package: SpacetimeDB 2.0 connection + basic identity (FR1, FR6)
 3. MCP server: expose one read resource + one write tool to validate end-to-end

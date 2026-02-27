@@ -42,6 +42,7 @@ BitCraft blends cooperative gameplay, city-building, crafting, exploration, and 
 This repository represents the first phase of our open source initiative. It is being made available for public inspection, experimentation, and contribution.
 
 In this first phase we are only open sourcing the server side code. You can read more about our decision to open source the game here:
+
 - [Open Sourcing BitCraft Online](https://bitcraftonline.com/news/open-sourcing-bitcraft-online)
 - [BitCraft Open Sourcing Update](https://bitcraftonline.com/news/bitcraft-open-sourcing-update)
 
@@ -50,7 +51,7 @@ In this first phase we are only open sourcing the server side code. You can read
 BitCraft is a community-driven MMORPG where players collaborate to shape a procedurally generated world. There are no fixed classes or roles — instead, players build, craft, explore, trade,
 and govern together to shape their civilizations.
 
-- Game website: [https://bitcraftonline.com](https://bitcraftonline.com)  
+- Game website: [https://bitcraftonline.com](https://bitcraftonline.com)
 - Steam page: [https://store.steampowered.com/app/3454650/BitCraft_Online/](https://store.steampowered.com/app/3454650/BitCraft_Online/)
 
 ## About This Repository
@@ -66,6 +67,19 @@ If you're interested in exploring the server or trying to run a minimal version 
 
 - [SpacetimeDB Docs](https://spacetimedb.com/docs)
 
+## Development Environment
+
+To run a local BitCraft game server for development and SDK testing, see the Docker Compose setup:
+
+- [Docker Local Development Environment](./docker/README.md)
+
+The Docker environment includes:
+
+- BitCraft server (SpacetimeDB with game module)
+- Crosstown node (Nostr relay with BLS proxy)
+- Health checks, logging, and volume persistence
+- Cross-platform support (macOS, Linux)
+
 ## Contributing
 
 We welcome contributions that improve correctness, stability, or player experience.
@@ -74,7 +88,7 @@ Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for details on contribution scop
 
 ## Reporting Exploits
 
-We truly appreciate any reporting of in game exploits. To ensure that exploits are addressed quickly and not abused by other players, we ask that you submit them to us privately using 
+We truly appreciate any reporting of in game exploits. To ensure that exploits are addressed quickly and not abused by other players, we ask that you submit them to us privately using
 [**this form**](https://docs.google.com/forms/d/e/1FAIpQLSdlQMdxjTmUScKeVL9T-rs7lZOU4VrYl80ida0Kb0d38Nah8w/viewform?usp=sharing&ouid=112232658922648279400).
 
 Accounts that report meaningful, previously unreported, and verified exploits will receive a unique in-game reward that cannot be obtained through normal gameplay.
@@ -88,6 +102,7 @@ The BitCraft source code is licensed under the Apache 2.0 license. See [LICENSE]
 To avoid any confusion, here is a clear summary what is allowed and what is not allowed:
 
 You can:
+
 - Read and study the code to better understand how the game works
 - Modify and experiment with the code locally
 - Run your own servers for experimentation
@@ -95,6 +110,7 @@ You can:
 - Make a game similar to BitCraft with your own IP (art and themes) using our code as a basis
 
 You cannot:
+
 - Use BitCraft’s art, game content, music, or other protected assets
 - Use BitCraft’s IP or present forks as official
 - Share information about any discovered exploits in the game with anyone other than us

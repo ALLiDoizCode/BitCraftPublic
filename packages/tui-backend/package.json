@@ -1,0 +1,39 @@
+{
+  "name": "@sigil/tui-backend",
+  "version": "0.1.0",
+  "description": "JSON-RPC IPC backend wrapper for Sigil TUI",
+  "license": "Apache-2.0",
+  "author": "BitCraft Contributors",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bitcraftlabs/sigil.git",
+    "directory": "packages/tui-backend"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@sigil/client": "workspace:*"
+  },
+  "devDependencies": {
+    "tsup": "latest",
+    "vitest": "latest",
+    "@types/node": "latest",
+    "typescript": "^5.0.0"
+  }
+}

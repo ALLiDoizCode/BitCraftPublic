@@ -100,7 +100,9 @@ test.describe('Users API', () => {
 
     const error = await response.json();
     expect(error.code).toBe('VALIDATION_ERROR');
-    expect(error.details).toContainEqual(expect.objectContaining({ field: 'email', message: expect.any(String) }));
+    expect(error.details).toContainEqual(
+      expect.objectContaining({ field: 'email', message: expect.any(String) })
+    );
   });
 });
 ```
@@ -132,7 +134,7 @@ const OrderSchema = z.object({
       productId: z.string(),
       quantity: z.number().positive(),
       price: z.number().positive(),
-    }),
+    })
   ),
   total: z.number().positive(),
   status: z.enum(['pending', 'processing', 'shipped', 'delivered']),
@@ -281,7 +283,7 @@ test.describe('Service Integration', () => {
           baseUrl: INVENTORY_SERVICE_URL,
         }),
       (response) => response.body.quantity === initialInventory.quantity - 2,
-      { timeout: 10000, interval: 500 },
+      { timeout: 10000, interval: 500 }
     );
 
     expect(updatedInventory.quantity).toBe(initialInventory.quantity - 2);
@@ -563,7 +565,7 @@ test.describe('Background Jobs', () => {
         timeout: 60000,
         interval: 2000,
         log: `Waiting for export job ${job.id} to complete`,
-      },
+      }
     );
 
     expect(completedJob.status).toBe('completed');
@@ -586,7 +588,7 @@ test.describe('Background Jobs', () => {
     const { body: failedJob } = await recurse(
       () => apiRequest({ method: 'GET', path: `/api/exports/${job.id}` }),
       (response) => ['completed', 'failed'].includes(response.body.status),
-      { timeout: 30000 },
+      { timeout: 30000 }
     );
 
     expect(failedJob.status).toBe('failed');
@@ -610,7 +612,7 @@ test.describe('Background Jobs', () => {
     const { body: webhookStatus } = await recurse(
       () => apiRequest({ method: 'GET', path: `/api/webhooks/order/${order.id}` }),
       (response) => response.body.delivered === true,
-      { timeout: 30000, interval: 1000 },
+      { timeout: 30000, interval: 1000 }
     );
 
     expect(webhookStatus.delivered).toBe(true);
@@ -763,7 +765,7 @@ test.describe('API Tests with Generated Operations', () => {
           headers: getHeaders(workspaceId),
         }),
       (res) => res.body.status === 'completed',
-      { timeout: 60000, interval: 2000 },
+      { timeout: 60000, interval: 2000 }
     );
   });
 });

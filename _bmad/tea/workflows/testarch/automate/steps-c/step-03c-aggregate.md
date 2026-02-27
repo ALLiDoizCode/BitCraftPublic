@@ -241,19 +241,31 @@ const summary = {
     P0:
       (apiTestsOutput.priority_coverage?.P0 ?? 0) +
       (e2eTestsOutput?.priority_coverage?.P0 ?? 0) +
-      (backendTestsOutput?.testsGenerated?.reduce((sum, t) => sum + (t.priority_coverage?.P0 ?? 0), 0) ?? 0),
+      (backendTestsOutput?.testsGenerated?.reduce(
+        (sum, t) => sum + (t.priority_coverage?.P0 ?? 0),
+        0
+      ) ?? 0),
     P1:
       (apiTestsOutput.priority_coverage?.P1 ?? 0) +
       (e2eTestsOutput?.priority_coverage?.P1 ?? 0) +
-      (backendTestsOutput?.testsGenerated?.reduce((sum, t) => sum + (t.priority_coverage?.P1 ?? 0), 0) ?? 0),
+      (backendTestsOutput?.testsGenerated?.reduce(
+        (sum, t) => sum + (t.priority_coverage?.P1 ?? 0),
+        0
+      ) ?? 0),
     P2:
       (apiTestsOutput.priority_coverage?.P2 ?? 0) +
       (e2eTestsOutput?.priority_coverage?.P2 ?? 0) +
-      (backendTestsOutput?.testsGenerated?.reduce((sum, t) => sum + (t.priority_coverage?.P2 ?? 0), 0) ?? 0),
+      (backendTestsOutput?.testsGenerated?.reduce(
+        (sum, t) => sum + (t.priority_coverage?.P2 ?? 0),
+        0
+      ) ?? 0),
     P3:
       (apiTestsOutput.priority_coverage?.P3 ?? 0) +
       (e2eTestsOutput?.priority_coverage?.P3 ?? 0) +
-      (backendTestsOutput?.testsGenerated?.reduce((sum, t) => sum + (t.priority_coverage?.P3 ?? 0), 0) ?? 0),
+      (backendTestsOutput?.testsGenerated?.reduce(
+        (sum, t) => sum + (t.priority_coverage?.P3 ?? 0),
+        0
+      ) ?? 0),
   },
   knowledge_fragments_used: [
     ...apiTestsOutput.knowledge_fragments_used,
@@ -269,7 +281,11 @@ const summary = {
 Save summary to temp file for validation step:
 
 ```javascript
-fs.writeFileSync('/tmp/tea-automate-summary-{{timestamp}}.json', JSON.stringify(summary, null, 2), 'utf8');
+fs.writeFileSync(
+  '/tmp/tea-automate-summary-{{timestamp}}.json',
+  JSON.stringify(summary, null, 2),
+  'utf8'
+);
 ```
 
 ---

@@ -299,17 +299,17 @@ src/ssh/
 
 ## File Count Summary
 
-| Directory | Files | Purpose |
-|---|---|---|
-| `src/` (top-level) | 10 | App core, event handling, persistence, types |
-| `src/core/` | 14 | Game domain model |
-| `src/ui/` | 29 | UI framework, widgets, panels |
-| `src/game_engine/` | 17 | Basketball simulation |
-| `src/image/` | 6 | Image processing and sprite generation |
-| `src/space_adventure/` | 16 | Space shooter minigame |
-| `src/network/` | 6 | P2P networking |
-| `src/audio/` | 2 | Music streaming |
-| `src/ssh/` | 4 | SSH server |
-| **Total** | **104** | |
+| Directory              | Files   | Purpose                                      |
+| ---------------------- | ------- | -------------------------------------------- |
+| `src/` (top-level)     | 10      | App core, event handling, persistence, types |
+| `src/core/`            | 14      | Game domain model                            |
+| `src/ui/`              | 29      | UI framework, widgets, panels                |
+| `src/game_engine/`     | 17      | Basketball simulation                        |
+| `src/image/`           | 6       | Image processing and sprite generation       |
+| `src/space_adventure/` | 16      | Space shooter minigame                       |
+| `src/network/`         | 6       | P2P networking                               |
+| `src/audio/`           | 2       | Music streaming                              |
+| `src/ssh/`             | 4       | SSH server                                   |
+| **Total**              | **104** |                                              |
 
 Note: The README mentions 119 files; the difference may include non-Rust files (JSON data, assets) or test files not captured by this listing of `.rs` files only.

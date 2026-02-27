@@ -27,11 +27,11 @@
 
 ## 3.1 Boundary Definitions
 
-| Component | Owner | Modifiable? | Purpose |
-|-----------|-------|-------------|---------|
-| **Agent SDK** | Us (new repo) | Yes | Cognition framework, experiment harness |
-| **BitCraft Server** | Clockwork Labs (Apache 2.0 fork) | No — run unmodified in Docker | Game logic, state, reducers |
-| **Crosstown Node** | Existing project (`~/Documents/crosstown/`) | No — consume as dependency | ILP payment gateway, Nostr relay |
-| **SpacetimeDB** | Clockwork Labs (open source) | No — use SDK | Real-time database, subscriptions |
+| Component           | Owner                                       | Modifiable?                   | Purpose                                 |
+| ------------------- | ------------------------------------------- | ----------------------------- | --------------------------------------- |
+| **Agent SDK**       | Us (new repo)                               | Yes                           | Cognition framework, experiment harness |
+| **BitCraft Server** | Clockwork Labs (Apache 2.0 fork)            | No — run unmodified in Docker | Game logic, state, reducers             |
+| **Crosstown Node**  | Existing project (`~/Documents/crosstown/`) | No — consume as dependency    | ILP payment gateway, Nostr relay        |
+| **SpacetimeDB**     | Clockwork Labs (open source)                | No — use SDK                  | Real-time database, subscriptions       |
 
 ---

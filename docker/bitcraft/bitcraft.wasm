@@ -1,0 +1,8 @@
+Replace with actual BitCraft WASM module (version 1.6.x compatible).
+
+See docker/README.md for instructions on obtaining the module:
+1. Download from BitCraft Apache 2.0 fork releases (GitHub: bitcraftlabs/bitcraft, tag: v1.6.x-compatible)
+2. Build from source using SpacetimeDB CLI
+3. Use pre-built module from project assets at _assets/bitcraft.wasm
+
+This placeholder file is intentionally small to trigger the validation check in init.sh.

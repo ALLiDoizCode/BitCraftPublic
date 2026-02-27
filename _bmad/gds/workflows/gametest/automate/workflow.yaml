@@ -1,30 +1,30 @@
 # Game QA workflow: automate
 name: gametest-automate
 description: 'Automated test scenario generator. Use when the user says "I want to create automated game tests" or "Generate test scenarios for Unity Unreal or Godot"'
-author: "BMad"
+author: 'BMad'
 
 # Critical variables from config
-config_source: "{project-root}/_bmad/gds/config.yaml"
-output_folder: "{config_source}:output_folder"
-user_name: "{config_source}:user_name"
-communication_language: "{config_source}:communication_language"
-document_output_language: "{config_source}:document_output_language"
+config_source: '{project-root}/_bmad/gds/config.yaml'
+output_folder: '{config_source}:output_folder'
+user_name: '{config_source}:user_name'
+communication_language: '{config_source}:communication_language'
+document_output_language: '{config_source}:document_output_language'
 date: system-generated
 
 # Workflow components
-installed_path: "{project-root}/_bmad/gds/workflows/gametest/automate"
-instructions: "{installed_path}/instructions.md"
-validation: "{installed_path}/checklist.md"
+installed_path: '{project-root}/_bmad/gds/workflows/gametest/automate'
+instructions: '{installed_path}/instructions.md'
+validation: '{installed_path}/checklist.md'
 
 # Variables and inputs
 variables:
-  test_dir: "{project-root}/tests"
-  source_dir: "{project-root}/src"
-  coverage_target: "critical-paths" # critical-paths, comprehensive, selective
-  game_engine: "auto" # auto, unity, unreal, godot
+  test_dir: '{project-root}/tests'
+  source_dir: '{project-root}/src'
+  coverage_target: 'critical-paths' # critical-paths, comprehensive, selective
+  game_engine: 'auto' # auto, unity, unreal, godot
 
 # Output configuration
-default_output_file: "{output_folder}/automation-summary.md"
+default_output_file: '{output_folder}/automation-summary.md'
 
 # Required tools
 required_tools:

@@ -47,7 +47,7 @@ This is the **one integration point** where Crosstown needs a small extension â€
   onGameActionEvent: async (event: NostrEvent) => {
     const { reducer, args } = JSON.parse(event.content);
     await spacetimeClient.reducers[reducer](...args);
-  }
+  };
 }
 ```
 

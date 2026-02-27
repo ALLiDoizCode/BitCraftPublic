@@ -15,16 +15,16 @@ Regional game servers communicate with the global coordinator through a **typed 
 
 ## Codebase at a Glance
 
-| Metric | Value |
-|---|---|
-| Language | Rust 2021 edition |
-| Runtime | SpacetimeDB v1.6.0 (WASM) |
-| Game module source files | ~533 `.rs` files |
-| Global module source files | ~150+ `.rs` files |
-| Server-side agents | 20 scheduled agents for automated game processes |
-| Static data tables | 148 tables defining game content (items, recipes, skills, etc.) |
-| Entity/state tables | ~80 SpacetimeDB tables for runtime game state |
-| Client code generation | C# (Unity) and TypeScript bindings |
+| Metric                     | Value                                                           |
+| -------------------------- | --------------------------------------------------------------- |
+| Language                   | Rust 2021 edition                                               |
+| Runtime                    | SpacetimeDB v1.6.0 (WASM)                                       |
+| Game module source files   | ~533 `.rs` files                                                |
+| Global module source files | ~150+ `.rs` files                                               |
+| Server-side agents         | 20 scheduled agents for automated game processes                |
+| Static data tables         | 148 tables defining game content (items, recipes, skills, etc.) |
+| Entity/state tables        | ~80 SpacetimeDB tables for runtime game state                   |
+| Client code generation     | C# (Unity) and TypeScript bindings                              |
 
 ## Repository Structure
 

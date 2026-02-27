@@ -1,6 +1,7 @@
 # SpacetimeDB Client SDK Reference
 
 ## Table of Contents
+
 - [Overview](#overview)
 - [Code Generation](#code-generation)
 - [TypeScript Client](#typescript-client)
@@ -12,6 +13,7 @@
 ## Overview
 
 SpacetimeDB client SDKs provide:
+
 - Auto-generated type-safe bindings from your module schema
 - Real-time subscriptions that maintain a local cache
 - Reducer invocation with callbacks
@@ -42,12 +44,14 @@ Regenerate bindings after any module schema or reducer signature changes.
 ## TypeScript Client
 
 ### Setup
+
 ```bash
 npm install spacetimedb
 # Note: @clockworklabs/spacetimedb-sdk is deprecated as of SpacetimeDB 1.4.0
 ```
 
 ### Connection (React)
+
 ```typescript
 import { Identity } from 'spacetimedb';
 import { SpacetimeDBProvider } from 'spacetimedb/react';
@@ -77,6 +81,7 @@ createRoot(document.getElementById('root')!).render(
 ```
 
 ### React Hooks (useTable, useSpacetimeDB)
+
 ```typescript
 import { useSpacetimeDB, useTable, where, eq } from 'spacetimedb/react';
 
@@ -96,20 +101,24 @@ const { rows: messages } = useTable('message');
 ```
 
 ### Reducer Calls
+
 ```typescript
-conn.reducers.createPlayer("Alice");
-conn.reducers.sendMessage("Hello world");
+conn.reducers.createPlayer('Alice');
+conn.reducers.sendMessage('Hello world');
 ```
 
 ## C# Client
 
 ### Setup
+
 ```bash
 dotnet add package SpacetimeDB.ClientSDK
 ```
+
 **Unity:** Install via Package Manager using Git URL: `https://github.com/clockworklabs/com.clockworklabs.spacetimedbsdk.git`
 
 ### Connection
+
 ```csharp
 using SpacetimeDB;
 using SpacetimeDB.Types;
@@ -139,6 +148,7 @@ void OnConnected(DbConnection conn, Identity identity, string authToken)
 ```
 
 ### Table Events
+
 ```csharp
 conn.Db.User.OnInsert += (EventContext ctx, User user) => {
     if (user.Online) Console.WriteLine($"{user.Name} connected");
@@ -153,6 +163,7 @@ conn.Db.Message.OnInsert += (EventContext ctx, Message msg) => {
 ```
 
 ### Reducer Calls & Events
+
 ```csharp
 conn.Reducers.SendMessage("Hello");
 conn.Reducers.SetName("Alice");
@@ -166,6 +177,7 @@ conn.Reducers.OnSetName += (ctx, name) =>
 ```
 
 ### Threading (C# / Unity)
+
 ```csharp
 // C# and Unity require manual message processing
 void ProcessThread(DbConnection conn, CancellationToken ct)
@@ -177,11 +189,13 @@ void ProcessThread(DbConnection conn, CancellationToken ct)
     }
 }
 ```
+
 **Warning:** Do not run `FrameTick()` on a background thread -- this can cause data races. Process messages on the main thread.
 
 ## Rust Client
 
 ### Setup
+
 ```toml
 # Cargo.toml
 [dependencies]
@@ -189,6 +203,7 @@ spacetimedb-sdk = "1.0"
 ```
 
 ### Connection
+
 ```rust
 use spacetimedb_sdk::{credentials, DbContext, Error, Event, Identity, Status, Table, TableWithPrimaryKey};
 
@@ -220,6 +235,7 @@ fn on_connected(_ctx: &DbConnection, _identity: Identity, token: &str) {
 ```
 
 ### Callbacks & Subscriptions
+
 ```rust
 fn register_callbacks(ctx: &DbConnection) {
     ctx.db.user().on_insert(on_user_inserted);
@@ -252,6 +268,7 @@ fn main() {
 ```
 
 ### Reducer Calls
+
 ```rust
 ctx.reducers.set_name("Alice".to_string()).unwrap();
 ctx.reducers.send_message("Hello".to_string()).unwrap();
@@ -260,6 +277,7 @@ ctx.reducers.send_message("Hello".to_string()).unwrap();
 ## Unreal Client
 
 ### Connection
+
 ```cpp
 Conn = UDbConnection::Builder()
     ->WithUri(TEXT("127.0.0.1:3000"))
@@ -271,12 +289,14 @@ Conn = UDbConnection::Builder()
 ```
 
 ### Table Events
+
 ```cpp
 Conn->Db->User->OnInsert.AddDynamic(this, &AMyActor::OnUserInsert);
 Conn->Db->User->OnUpdate.AddDynamic(this, &AMyActor::OnUserUpdate);
 ```
 
 ### Subscriptions
+
 ```cpp
 USubscriptionHandle* Handle = Connection->SubscriptionBuilder()
     ->OnApplied(Callback)
@@ -286,25 +306,31 @@ USubscriptionHandle* Handle = Connection->SubscriptionBuilder()
 ## Common Patterns
 
 ### Subscription SQL
+
 ```
 SELECT * FROM player                           -- All rows from table
 SELECT * FROM player WHERE online = true       -- Filtered
 SELECT p.* FROM player p JOIN team t ON ...     -- Joined (max 2 tables)
 ```
+
 **Note:** Event tables are excluded from `subscribeToAllTables()` / `SubscribeToAllTables()` and must be explicitly subscribed.
 
 ### Identity Management
+
 - Each client gets an `Identity` (persists across connections) and `ConnectionId` (unique per session)
 - Store auth tokens locally for reconnection as the same identity
 - `Identity` is a 256-bit value; display with `.toHexString()` / `.to_hex()`
 
 ### Subscribe-Before-Unsubscribe Pattern
+
 When updating subscriptions, subscribe to new data BEFORE unsubscribing from old. SpacetimeDB deduplicates overlapping queries with zero-copy, so there's no overhead.
 
 ### Subscription Management
+
 SubscriptionHandle provides: `isActive()` / `IsActive`, `isEnded()` / `IsEnded`, `unsubscribe()` / `Unsubscribe()`, `unsubscribeThen(callback)` / `UnsubscribeThen(callback)`.
 
 ### Event Flow
+
 1. Connect to database with builder pattern
 2. Register table/reducer callbacks
 3. Subscribe to tables with SQL queries

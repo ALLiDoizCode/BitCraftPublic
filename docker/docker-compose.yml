@@ -1,0 +1,74 @@
+networks:
+  sigil-dev:
+    driver: bridge
+
+services:
+  bitcraft-server:
+    build:
+      context: ./bitcraft
+    container_name: sigil-bitcraft-server
+    networks:
+      - sigil-dev
+    ports:
+      - '127.0.0.1:${BITCRAFT_PORT:-3000}:3000'
+    volumes:
+      - ./volumes/spacetimedb:/var/lib/spacetimedb
+    environment:
+      - SPACETIMEDB_LOG_LEVEL=${SPACETIMEDB_LOG_LEVEL:-info}
+      - SPACETIMEDB_BIND=0.0.0.0:3000
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000/database/bitcraft/info']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '3'
+    deploy:
+      resources:
+        limits:
+          memory: ${BITCRAFT_MEMORY_LIMIT:-1G}
+          cpus: '2.0'
+
+  crosstown-node:
+    build:
+      context: ./crosstown
+      args:
+        - BUILD_MODE=${CROSSTOWN_BUILD_MODE:-remote}
+    container_name: sigil-crosstown-node
+    networks:
+      - sigil-dev
+    ports:
+      - '127.0.0.1:${CROSSTOWN_NOSTR_PORT:-4040}:4040'
+      - '127.0.0.1:${CROSSTOWN_HTTP_PORT:-4041}:4041'
+    volumes:
+      - ./volumes/crosstown:/var/lib/crosstown
+    environment:
+      - CROSSTOWN_NOSTR_PORT=4040
+      - CROSSTOWN_HTTP_PORT=4041
+      - CROSSTOWN_BITCRAFT_URL=ws://bitcraft-server:3000
+      - CROSSTOWN_LOG_LEVEL=${CROSSTOWN_LOG_LEVEL:-info}
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:4041/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    depends_on:
+      bitcraft-server:
+        condition: service_healthy
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '3'
+    deploy:
+      resources:
+        limits:
+          memory: ${CROSSTOWN_MEMORY_LIMIT:-512M}
+          cpus: '1.0'

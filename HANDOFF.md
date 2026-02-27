@@ -8,6 +8,7 @@
 ## 🎯 Project Vision
 
 Create a fully playable headless MMORPG where:
+
 - **AI agents** are first-class citizens
 - **ILP micropayments** gate all actions (pay-to-write, free-to-read)
 - **Economic constraints** create strategic decision-making
@@ -62,6 +63,7 @@ Agent → Nostr Event (game action + ILP proof)
 ```
 
 **Benefits:**
+
 - ✅ No BitCraft modifications needed
 - ✅ Reuse existing Crosstown ILP validation
 - ✅ Clean separation: BLS = payments, SpacetimeDB = game logic
@@ -69,6 +71,7 @@ Agent → Nostr Event (game action + ILP proof)
 - ✅ Can support multiple games with one BLS
 
 **Implementation:**
+
 ```typescript
 // In BLS WebSocket handler
 async handleGameAction(event: NostrEvent): Promise<[string, string, boolean, string]> {
@@ -87,6 +90,7 @@ async handleGameAction(event: NostrEvent): Promise<[string, string, boolean, str
 ```
 
 **Event Kind:**
+
 ```javascript
 {
   "kind": 30000,  // Game Action
@@ -105,48 +109,54 @@ async handleGameAction(event: NostrEvent): Promise<[string, string, boolean, str
 ### 2. **Data Flow**
 
 **Write Path (Paid Actions):**
+
 ```
 Agent → Nostr event → BLS validates ILP → SpacetimeDB reducer → State update
 ```
 
 **Read Path (Free Observations):**
+
 ```
 Agent → Direct SpacetimeDB subscription → Real-time updates → Local cache
 ```
 
 ### 3. **Pay-to-Write, Free-to-Read Pricing**
 
-| Category | Reducer | Cost (tokens) | Frequency |
-|----------|---------|---------------|-----------|
-| **Movement** | `player_move` | 1 | High |
-| **Combat** | `attack_start` | 5-15 | Medium |
-| **Building** | `project_site_place` | 50 | Low |
-| **Trading** | `trade_with_player` | 10 | Medium |
-| **Chat** | `chat_post_message` | 1 | High |
-| **Empire** | `empire_form` | 100 | Very Low |
+| Category     | Reducer              | Cost (tokens) | Frequency |
+| ------------ | -------------------- | ------------- | --------- |
+| **Movement** | `player_move`        | 1             | High      |
+| **Combat**   | `attack_start`       | 5-15          | Medium    |
+| **Building** | `project_site_place` | 50            | Low       |
+| **Trading**  | `trade_with_player`  | 10            | Medium    |
+| **Chat**     | `chat_post_message`  | 1             | High      |
+| **Empire**   | `empire_form`        | 100           | Very Low  |
 
 ---
 
 ## 🎮 Key BitCraft Reducers Discovered
 
 ### Movement
+
 - `player_move(origin, destination, running, duration)` - Primary movement
 - `player_teleport_home()` - Teleport to home
 - `portal_enter(portal_id)` - Enter portals/buildings
 - `player_climb(coordinates)` - Climb ladders
 
 ### Combat
+
 - `attack_start(attacker_id, defender_id, combat_action_id)` - Initiate attack
 - `attack(request)` - Execute attack (after wind-up)
 - `attack_impact_migrated(timer)` - Calculate damage/effects
 
 ### Building
+
 - `project_site_place(recipe_id, coordinates)` - Place construction
 - `project_site_add_materials(site_id, materials)` - Add materials
 - `building_move(building_id, new_coords)` - Move building
 - `building_deconstruct(building_id)` - Destroy building
 
 ### Social/Economy
+
 - `empire_form(name)` - Create guild/faction
 - `chat_post_message(text, channel)` - Send message
 - Trading, crafting, inventory management reducers
@@ -162,21 +172,27 @@ The challenge: **SpacetimeDB gives raw data, but agents need semantic understand
 ### Multi-Layer Solution
 
 #### **Layer 1: Static Data Context**
+
 Load game encyclopedia to translate IDs → meanings:
+
 ```typescript
 // enemy_type: 12 → "Forest Wolf (Tier 1, Danger: 3/10)"
 // resource_id: 3 → "Copper Ore (Value: High, Rarity: Medium)"
 ```
 
 #### **Layer 2: Semantic Event Interpretation**
+
 Transform raw updates → narrative:
+
 ```typescript
 // Raw: health_state.health: 100 → 85
 // Narrative: "You were attacked by Forest Wolf and lost 15 health"
 ```
 
 #### **Layer 3: Spatial & Temporal Memory**
+
 Persist discoveries across sessions:
+
 ```typescript
 {
   type: 'SPATIAL',
@@ -189,7 +205,9 @@ Persist discoveries across sessions:
 **Storage:** Vector DB (embeddings) or Graph DB for semantic search
 
 #### **Layer 4: Affordance Detection**
+
 Understand "what can I do here?":
+
 ```typescript
 // Detects: nearby resources, enemies, players, buildings
 // Outputs: ["gather wood (cost: 5, reward: Wood x10)",
@@ -197,13 +215,15 @@ Understand "what can I do here?":
 ```
 
 #### **Layer 5: Goal-Oriented Planning**
+
 High-level objectives persist across actions:
+
 ```typescript
 goals = [
   { type: 'SURVIVAL', priority: 10, conditions: ['health > 50'] },
   { type: 'RESOURCE_GATHERING', priority: 7, target: { wood: 100 } },
-  { type: 'EXPLORATION', priority: 5 }
-]
+  { type: 'EXPLORATION', priority: 5 },
+];
 ```
 
 ### Complete Agent Loop
@@ -268,7 +288,9 @@ BitCraftPublic/
 ## 🚀 Next Steps
 
 ### Phase 1: BLS Integration (Week 1-2)
+
 1. **Add SpacetimeDB client to Crosstown BLS**
+
    ```bash
    cd ~/Documents/crosstown/packages/bls
    npm install @spacetimedb/sdk
@@ -286,6 +308,7 @@ BitCraftPublic/
    - Finally: `attack_start`
 
 ### Phase 2: Agent SDK (Week 3-4)
+
 1. **Static data loader**
    - Load all `*_desc` tables at startup
    - Build semantic indices
@@ -299,6 +322,7 @@ BitCraftPublic/
    - Calculate: costs, rewards, win chances
 
 ### Phase 3: Memory & Cognition (Week 5-6)
+
 1. **Memory system**
    - Choose vector DB (Pinecone, Weaviate, or local)
    - Implement semantic search
@@ -315,7 +339,9 @@ BitCraftPublic/
    - Implement action execution
 
 ### Phase 4: Testing & Iteration (Week 7-8)
+
 1. **Deploy local BitCraft server**
+
    ```bash
    cd BitCraftServer
    spacetime publish
@@ -336,6 +362,7 @@ BitCraftPublic/
 ## 🔧 Technical Details
 
 ### BitCraft Server Info
+
 - **Built on:** SpacetimeDB
 - **Language:** Rust (99%)
 - **Modules:** 2 (global_module, game)
@@ -343,12 +370,14 @@ BitCraftPublic/
 - **Tables:** All game state
 
 ### SpacetimeDB Primer
+
 - **Reducers:** Functions that modify database state (like RPC)
 - **Tables:** Data storage with real-time subscriptions
 - **Subscriptions:** SQL queries that push updates to clients
 - **Client SDKs:** TypeScript, Rust, C#, Python
 
 ### Crosstown Integration Points
+
 - **BLS:** Business Logic Service (ILP payment validation)
 - **Event kinds:** Propose kind 30000 for game actions
 - **TOON format:** Consider for efficient event encoding
@@ -358,16 +387,19 @@ BitCraftPublic/
 ## 📚 Key Resources
 
 ### BitCraft
+
 - **Repo:** https://github.com/clockworklabs/BitCraftPublic
 - **Docs:** See BitCraftServer/README.md
 - **License:** Apache 2.0 (can fork, cannot use IP/assets)
 
 ### SpacetimeDB
+
 - **Docs:** https://spacetimedb.com/docs/
 - **Repo:** https://github.com/clockworklabs/SpacetimeDB
 - **SDK:** `npm install @spacetimedb/sdk`
 
 ### Crosstown
+
 - **Location:** ~/Documents/crosstown/
 - **BLS:** packages/bls/
 - **Relay:** packages/relay/
@@ -387,18 +419,21 @@ BitCraftPublic/
 ## 🎯 Success Metrics
 
 ### MVP Success (Phase 1-2)
+
 - [ ] Agent can connect to BitCraft via BLS
 - [ ] Agent can move around world
 - [ ] Agent pays ILP tokens for actions
 - [ ] Free real-time state observation works
 
 ### Alpha Success (Phase 3-4)
+
 - [ ] Agent builds persistent spatial memory
 - [ ] Agent makes goal-driven decisions
 - [ ] Agent learns from experience
 - [ ] Multiple agents can coexist
 
 ### Beta Success (Future)
+
 - [ ] Emergent agent economies form
 - [ ] Agent social networks emerge
 - [ ] Agents discover novel strategies
@@ -409,6 +444,7 @@ BitCraftPublic/
 ## 🤝 Context from Previous Session
 
 **Key Insights:**
+
 1. BitCraft is **already headless-ready** - server has all logic, client is just UI
 2. SpacetimeDB SDK provides programmatic access - no client needed
 3. ILP-gating via BLS is cleaner than modifying BitCraft directly
@@ -416,6 +452,7 @@ BitCraftPublic/
 5. The hard problem isn't game access - it's **agent understanding and memory**
 
 **Design Philosophy:**
+
 - Nostr social graph = network graph (NIP-02 for peer discovery)
 - Pay-to-write, free-to-read (sustainable relay economics)
 - TOON-native (efficient binary format for agents)
@@ -426,11 +463,13 @@ BitCraftPublic/
 ## 📞 Contact & Continuation
 
 Continue this conversation:
+
 1. Open Claude Code in `/Users/jonathangreen/Documents/BitCraftPublic`
 2. Reference this handoff doc
 3. Key context preserved in this document
 
 **Related Projects:**
+
 - Crosstown: `~/Documents/crosstown/`
 - Original BitCraft fork: https://github.com/ALLiDoizCode/BitCraftPublic
 

@@ -1,0 +1,15 @@
+services:
+  bitcraft-server:
+    ports:
+      - '127.0.0.1:${BITCRAFT_ADMIN_PORT:-3001}:3001'
+    environment:
+      - SPACETIMEDB_LOG_LEVEL=debug
+    volumes:
+      - ./bitcraft-module:/opt/bitcraft
+
+  crosstown-node:
+    ports:
+      - '127.0.0.1:${CROSSTOWN_METRICS_PORT:-4042}:4042'
+    environment:
+      - CROSSTOWN_LOG_LEVEL=debug
+      - CROSSTOWN_METRICS_PORT=4042

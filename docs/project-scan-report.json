@@ -9,18 +9,78 @@
   "project_root": "/Users/jonathangreen/Documents/BitCraftPublic/BitCraftServer",
   "project_knowledge": "/Users/jonathangreen/Documents/BitCraftPublic/docs",
   "completed_steps": [
-    {"step": "step_1", "status": "completed", "timestamp": "2026-02-24T21:16:00Z", "summary": "Classified as monorepo with 2 parts: game (backend/Rust/SpacetimeDB) and global_module (backend/Rust/SpacetimeDB, symlinks shared code)"},
-    {"step": "step_2", "status": "completed", "timestamp": "2026-02-25T12:10:00Z", "summary": "Scanned existing docs - only PR template found"},
-    {"step": "step_3", "status": "completed", "timestamp": "2026-02-25T12:11:00Z", "summary": "Tech stack: Rust 2021, SpacetimeDB 1.6.0, glam 0.30.9, strum 0.24, csv, regex. Build: custom build.rs with codegen"},
-    {"step": "step_4", "status": "completed", "timestamp": "2026-02-25T12:12:00Z", "summary": "Exhaustive scan: ~80 entity tables, 148 static data tables, 20 agents, 20 knowledge categories, hex coordinate system, inter-module messaging"},
-    {"step": "step_5", "status": "completed", "timestamp": "2026-02-25T12:14:00Z", "summary": "Source tree documented with annotated directory structure"},
-    {"step": "step_6", "status": "completed", "timestamp": "2026-02-25T12:14:00Z", "summary": "Dev/deployment guides written - CI/CD via GitHub Actions, multi-environment deployment"},
-    {"step": "step_7", "status": "completed", "timestamp": "2026-02-25T12:14:00Z", "summary": "Integration architecture documented - inter-module messaging via InterModuleMessageV4 with typed MessageContentsV4 enum"},
-    {"step": "step_8", "status": "completed", "timestamp": "2026-02-25T12:17:00Z", "summary": "Architecture doc written - 20 sections covering full system"},
-    {"step": "step_9", "status": "completed", "timestamp": "2026-02-25T12:28:00Z", "summary": "All supporting docs written: project-overview.md, development-guide.md, source-tree-analysis.md, data-models.md"},
-    {"step": "step_10", "status": "completed", "timestamp": "2026-02-25T12:29:00Z", "summary": "Master index generated with links to all docs"},
-    {"step": "step_11", "status": "completed", "timestamp": "2026-02-25T12:30:00Z", "summary": "Validation passed - all 6 doc files exist, no incomplete markers found"},
-    {"step": "step_12", "status": "completed", "timestamp": "2026-02-25T12:30:00Z", "summary": "Workflow complete"}
+    {
+      "step": "step_1",
+      "status": "completed",
+      "timestamp": "2026-02-24T21:16:00Z",
+      "summary": "Classified as monorepo with 2 parts: game (backend/Rust/SpacetimeDB) and global_module (backend/Rust/SpacetimeDB, symlinks shared code)"
+    },
+    {
+      "step": "step_2",
+      "status": "completed",
+      "timestamp": "2026-02-25T12:10:00Z",
+      "summary": "Scanned existing docs - only PR template found"
+    },
+    {
+      "step": "step_3",
+      "status": "completed",
+      "timestamp": "2026-02-25T12:11:00Z",
+      "summary": "Tech stack: Rust 2021, SpacetimeDB 1.6.0, glam 0.30.9, strum 0.24, csv, regex. Build: custom build.rs with codegen"
+    },
+    {
+      "step": "step_4",
+      "status": "completed",
+      "timestamp": "2026-02-25T12:12:00Z",
+      "summary": "Exhaustive scan: ~80 entity tables, 148 static data tables, 20 agents, 20 knowledge categories, hex coordinate system, inter-module messaging"
+    },
+    {
+      "step": "step_5",
+      "status": "completed",
+      "timestamp": "2026-02-25T12:14:00Z",
+      "summary": "Source tree documented with annotated directory structure"
+    },
+    {
+      "step": "step_6",
+      "status": "completed",
+      "timestamp": "2026-02-25T12:14:00Z",
+      "summary": "Dev/deployment guides written - CI/CD via GitHub Actions, multi-environment deployment"
+    },
+    {
+      "step": "step_7",
+      "status": "completed",
+      "timestamp": "2026-02-25T12:14:00Z",
+      "summary": "Integration architecture documented - inter-module messaging via InterModuleMessageV4 with typed MessageContentsV4 enum"
+    },
+    {
+      "step": "step_8",
+      "status": "completed",
+      "timestamp": "2026-02-25T12:17:00Z",
+      "summary": "Architecture doc written - 20 sections covering full system"
+    },
+    {
+      "step": "step_9",
+      "status": "completed",
+      "timestamp": "2026-02-25T12:28:00Z",
+      "summary": "All supporting docs written: project-overview.md, development-guide.md, source-tree-analysis.md, data-models.md"
+    },
+    {
+      "step": "step_10",
+      "status": "completed",
+      "timestamp": "2026-02-25T12:29:00Z",
+      "summary": "Master index generated with links to all docs"
+    },
+    {
+      "step": "step_11",
+      "status": "completed",
+      "timestamp": "2026-02-25T12:30:00Z",
+      "summary": "Validation passed - all 6 doc files exist, no incomplete markers found"
+    },
+    {
+      "step": "step_12",
+      "status": "completed",
+      "timestamp": "2026-02-25T12:30:00Z",
+      "summary": "Workflow complete"
+    }
   ],
   "current_step": "completed",
   "findings": {
@@ -32,8 +92,12 @@
     "ci_cd": "GitHub Actions: upload-module.yml, delete-module.yml, weekly-update-stable-branch.yml"
   },
   "project_types": [
-    {"part_id": "game", "project_type_id": "backend", "display_name": "BitCraft Game Module"},
-    {"part_id": "global_module", "project_type_id": "backend", "display_name": "BitCraft Global Module"}
+    { "part_id": "game", "project_type_id": "backend", "display_name": "BitCraft Game Module" },
+    {
+      "part_id": "global_module",
+      "project_type_id": "backend",
+      "display_name": "BitCraft Global Module"
+    }
   ],
   "outputs_generated": [
     "project-scan-report.json",
