@@ -10,7 +10,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { SigilClient } from '../client';
 import { generateKeypair } from '../nostr/keypair';
 import { saveKeypair } from '../nostr/storage';
-import { writeFileSync, unlinkSync, mkdirSync } from 'fs';
+import { writeFileSync, unlinkSync, mkdirSync, rmSync } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import type { NostrEvent } from '../nostr/types';
@@ -21,13 +21,16 @@ import { signEvent } from './event-signing';
 const originalFetch = global.fetch;
 
 describe('Confirmation Flow (AC3)', () => {
-  const testDir = join(tmpdir(), `sigil-test-${Date.now()}`);
-  const registryPath = join(testDir, 'costs.json');
-  const identityPath = join(testDir, 'identity.json');
+  let testDir: string;
+  let registryPath: string;
+  let identityPath: string;
   let testKeypair: { publicKey: Uint8Array; privateKey: Uint8Array };
 
   beforeEach(async () => {
-    // Create test directory
+    // Create unique test directory for each test
+    testDir = join(tmpdir(), `sigil-test-${Date.now()}-${Math.random().toString(36).substring(7)}`);
+    registryPath = join(testDir, 'costs.json');
+    identityPath = join(testDir, 'identity.json');
     mkdirSync(testDir, { recursive: true });
 
     // Create test cost registry
@@ -52,8 +55,7 @@ describe('Confirmation Flow (AC3)', () => {
   afterEach(() => {
     // Cleanup
     try {
-      unlinkSync(registryPath);
-      unlinkSync(identityPath);
+      rmSync(testDir, { recursive: true, force: true });
     } catch {
       // Ignore cleanup errors
     }

@@ -67,6 +67,16 @@ export {
 // Wallet client (Story 2.2)
 export { WalletClient } from './wallet/wallet-client';
 
+// BLS handler types (Story 2.4)
+export {
+  BLSErrorCode,
+  type BLSErrorResponse,
+  type BLSSuccessResponse,
+  type BLSResponse,
+  isBLSError,
+  isBLSSuccess,
+} from './bls/types';
+
 // Sigil Client
 export {
   SigilClient,

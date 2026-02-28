@@ -142,7 +142,8 @@ describe('SpacetimeDB Edge Cases', () => {
       await slowResponse;
       const elapsed = Date.now() - start;
 
-      expect(elapsed).toBeGreaterThanOrEqual(2000);
+      // Allow 1ms margin of error for timer precision
+      expect(elapsed).toBeGreaterThanOrEqual(1999);
     });
   });
 

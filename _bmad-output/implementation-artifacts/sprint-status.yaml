@@ -58,7 +58,7 @@ epics:
         status: done
       - id: story-2.4
         title: 'BLS Game Action Handler'
-        status: backlog
+        status: done
       - id: story-2.5
         title: 'Identity Propagation & Verification'
         status: backlog

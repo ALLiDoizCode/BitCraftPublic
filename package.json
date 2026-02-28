@@ -11,7 +11,8 @@
     "test": "pnpm --recursive test",
     "test:integration": "vitest run",
     "lint": "eslint packages/*/src --ext .ts",
-    "typecheck": "pnpm --recursive exec tsc --noEmit"
+    "typecheck": "pnpm --recursive exec tsc --noEmit",
+    "smoke:bls": "tsx scripts/bls-handler-smoke-test.ts"
   },
   "devDependencies": {
     "@types/node": "latest",
@@ -19,6 +20,7 @@
     "@typescript-eslint/parser": "^8.56.1",
     "eslint": "^8.50.0",
     "prettier": "^3.0.0",
+    "tsx": "^4.21.0",
     "typescript": "^5.2.0",
     "vitest": "latest"
   }

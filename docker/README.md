@@ -214,16 +214,95 @@ The Crosstown node includes a BLS (Blockchain-Like Signing) proxy for game actio
 - Logs to stdout: `[BLS STUB] Received kind 30078 from {pubkey}: reducer={name}, args_count={n}, fee={amount}`
 - Stores event normally but **does NOT forward to SpacetimeDB**
 
-### Full Mode (Story 2.5 - Future)
+### Full Mode (Story 2.4+ - BLS Handler Implementation)
 
-- Parse ILP packet from event content
-- Validate BLS signature
+The BLS handler validates Nostr event signatures and forwards authenticated game actions to SpacetimeDB with identity propagation:
+
+- Parse ILP packet from event content (extract `reducer` and `args`)
+- Validate Nostr event signature (secp256k1 Schnorr verification per NIP-01)
 - Extract Nostr pubkey from event author
-- Call SpacetimeDB reducer with identity propagation:
-  ```bash
-  spacetime call bitcraft {reducer} --identity {pubkey} {args...}
-  ```
-- Forward result back to Nostr relay
+- Call SpacetimeDB reducer via HTTP API with identity prepended as first argument
+- Return success or error response to Crosstown connector
+
+**Configuration:**
+
+The BLS handler requires the following environment variables:
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `SPACETIMEDB_URL` | SpacetimeDB HTTP endpoint | `http://localhost:3000` | Yes |
+| `SPACETIMEDB_DATABASE` | Database name | `bitcraft` | Yes |
+| `SPACETIMEDB_TOKEN` | Authentication token (admin token for MVP) | (none) | Yes |
+
+**Example `docker-compose.yml` configuration:**
+
+```yaml
+services:
+  crosstown-node:
+    environment:
+      - SPACETIMEDB_URL=http://bitcraft-server:3000
+      - SPACETIMEDB_DATABASE=bitcraft
+      - SPACETIMEDB_TOKEN=${SPACETIMEDB_TOKEN}
+    depends_on:
+      bitcraft-server:
+        condition: service_healthy
+```
+
+**Setting the authentication token:**
+
+For MVP, use an admin token (full permissions):
+
+```bash
+# Generate admin token from SpacetimeDB (one-time setup)
+spacetime token create admin-token --identity admin
+
+# Add to .env file
+echo "SPACETIMEDB_TOKEN=<token_here>" >> .env
+
+# Restart Crosstown to pick up new token
+docker compose restart crosstown-node
+```
+
+**SECURITY WARNING:** The admin token has full SpacetimeDB permissions (all reducers, all tables). This is overly permissive for production deployments. Future work (Epic 6) will create a service account with reducer-only permissions.
+
+**Expected log output (BLS handler enabled):**
+
+```
+[INFO] BLS: Initializing game action handler
+  spacetimedb_url: http://bitcraft-server:3000
+  database: bitcraft
+  token: <redacted>
+
+[INFO] BLS: Action succeeded
+  eventId: a1b2c3d4e5f6...
+  pubkey: 32e1827635450ebb...
+  reducer: player_move
+  args: [{"x":100,"z":200},{"x":110,"z":200},false]
+  duration: 42ms
+
+[ERROR] BLS: Action failed
+  eventId: a1b2c3d4e5f6...
+  pubkey: 32e1827635450ebb...
+  reducer: nonexistent_reducer
+  errorCode: UNKNOWN_REDUCER
+  message: Reducer 'nonexistent_reducer' not found in SpacetimeDB (404 Not Found)
+  duration: 15ms
+```
+
+**Integration contract reference:**
+
+See [docs/bls-handler-contract.md](../docs/bls-handler-contract.md) for the complete integration contract between Sigil SDK and Crosstown BLS handler, including:
+
+- Event format (kind 30078 structure)
+- Signature validation requirements (NIP-01)
+- Content parsing requirements
+- SpacetimeDB HTTP API contract
+- Error response format and error codes
+- Performance and logging requirements
+
+**Implementation specification reference:**
+
+See [docs/crosstown-bls-implementation-spec.md](../docs/crosstown-bls-implementation-spec.md) for detailed implementation requirements for the Crosstown BLS handler team
 
 ## Smoke Tests
 

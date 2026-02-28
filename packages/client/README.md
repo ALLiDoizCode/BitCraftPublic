@@ -197,6 +197,115 @@ console.log('Latency stats:', stats);
 // { avg: 45.2, p50: 42, p95: 78, p99: 120, count: 1000 }
 ```
 
+### Publishing Game Actions (BLS Handler)
+
+Game actions are published to the Crosstown BLS (Business Logic Service) handler, which validates signatures and forwards authenticated actions to SpacetimeDB.
+
+**Prerequisites:**
+
+- Crosstown BLS handler must be running and configured
+- SpacetimeDB must be accessible from BLS handler
+- `SPACETIMEDB_TOKEN` must be configured in BLS handler environment
+
+**Publishing an action:**
+
+```typescript
+// Load identity (required for signing)
+await client.loadIdentity('~/.sigil/identity');
+
+// Publish action
+try {
+  await client.publish({
+    reducer: 'player_move',
+    args: [
+      { x: 100, z: 200 }, // origin
+      { x: 110, z: 200 }, // destination
+      false, // running
+    ],
+  });
+  console.log('Action published successfully');
+} catch (error) {
+  console.error('Action failed:', error);
+}
+```
+
+**Handling errors:**
+
+The BLS handler returns structured error responses for all failure modes:
+
+```typescript
+// Listen for publish errors
+client.on('publishError', (error) => {
+  console.error(`Action failed: ${error.message}`);
+  console.error(`Error code: ${error.errorCode}`);
+  console.error(`Retryable: ${error.retryable}`);
+
+  // Handle different error types
+  switch (error.errorCode) {
+    case 'INVALID_SIGNATURE':
+      // Signature verification failed - re-sign event
+      console.error('Invalid signature - check identity is loaded');
+      break;
+    case 'UNKNOWN_REDUCER':
+      // Reducer not found in SpacetimeDB
+      console.error('Reducer does not exist:', error.message);
+      break;
+    case 'REDUCER_FAILED':
+      // Reducer execution failed - may be retryable
+      if (error.retryable) {
+        console.log('Retrying action...');
+        // Retry logic here
+      }
+      break;
+    case 'INVALID_CONTENT':
+      // Event content parsing failed
+      console.error('Invalid event content:', error.message);
+      break;
+  }
+});
+
+// Publish with error handling
+try {
+  await client.publish({ reducer: 'test_action', args: [] });
+} catch (error) {
+  // Handle publish error (e.g., invalid signature, unknown reducer, reducer failure)
+  if (error.errorCode === 'REDUCER_FAILED' && error.retryable) {
+    // Retry after delay
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await client.publish({ reducer: 'test_action', args: [] });
+  }
+}
+```
+
+**Error codes:**
+
+| Error Code | Description | Retryable |
+|------------|-------------|-----------|
+| `INVALID_SIGNATURE` | Signature verification failed | No |
+| `UNKNOWN_REDUCER` | Reducer not found in SpacetimeDB | No |
+| `REDUCER_FAILED` | Reducer execution failed | Yes |
+| `INVALID_CONTENT` | Event content parsing failed | No |
+
+**BLS Handler Contract:**
+
+See [docs/bls-handler-contract.md](../../docs/bls-handler-contract.md) for the complete integration contract, including:
+
+- Event format (kind 30078 structure)
+- Signature validation requirements (NIP-01)
+- Content parsing requirements
+- SpacetimeDB HTTP API contract
+- Error response format and error codes
+- Performance and logging requirements
+
+**BLS Handler Configuration:**
+
+See [docker/README.md](../../docker/README.md#crosstown-bls-integration) for BLS handler setup and configuration, including:
+
+- Environment variables (`SPACETIMEDB_URL`, `SPACETIMEDB_DATABASE`, `SPACETIMEDB_TOKEN`)
+- Docker Compose configuration
+- Expected log output
+- Troubleshooting
+
 ### Disconnection
 
 ```typescript
