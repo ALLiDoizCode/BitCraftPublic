@@ -1,25 +1,26 @@
 # Crosstown BLS Game Action Handler - Implementation Specification
 
-**Version:** 1.0
+**Version:** 2.0
 **Date:** 2026-02-28
 **Status:** Ready for Implementation
-**Target:** Crosstown Nostr Relay (BLS Handler Component)
+**Target:** Crosstown Node (BLS Handler Component)
 
 ---
 
 ## Executive Summary
 
-This document provides detailed implementation specifications for the **BLS Game Action Handler** component in the Crosstown Nostr relay. The BLS handler processes kind 30078 Nostr events containing game actions, validates cryptographic signatures, and forwards authenticated actions to SpacetimeDB for execution.
+This document provides detailed implementation specifications for the **BLS Game Action Handler** component in the Crosstown node. The BLS handler receives ILP packets from the Crosstown node's ILP connector via the `handle-packet` endpoint, validates Nostr event signatures embedded in the packets, and forwards authenticated game actions to SpacetimeDB for execution.
 
 **Key Responsibilities:**
-1. Receive kind 30078 Nostr events from Crosstown relay
-2. Validate Nostr event signatures (secp256k1)
-3. Parse event content (reducer name and arguments)
-4. Forward actions to SpacetimeDB HTTP API with identity propagation
-5. Handle errors and return responses to relay
+1. Receive ILP packets via `POST /handle-packet` endpoint from Crosstown node's connector
+2. Extract and validate Nostr event (kind 30078) from ILP packet data
+3. Validate Nostr event signatures (secp256k1)
+4. Parse event content (reducer name and arguments)
+5. Forward actions to SpacetimeDB HTTP API with identity propagation
+6. Handle errors and return responses to connector
 
 **Integration Points:**
-- **Input:** Crosstown Nostr relay (kind 30078 events)
+- **Input:** Crosstown node's ILP connector → BLS `POST /handle-packet` endpoint
 - **Output:** SpacetimeDB HTTP API (`/database/bitcraft/call/{reducer}`)
 - **Identity:** Nostr public key (event.pubkey) → SpacetimeDB reducer first parameter
 
@@ -27,58 +28,86 @@ This document provides detailed implementation specifications for the **BLS Game
 
 ## Architecture Overview
 
-### Event Flow
+### Correct ILP Routing Flow
 
 ```
-┌─────────────┐      Kind 30078 Event      ┌─────────────────┐
-│   Sigil     │ ──────────────────────────> │   Crosstown     │
-│   Client    │                             │   Nostr Relay   │
-└─────────────┘                             └────────┬────────┘
-                                                     │
-                                                     │ ILP Routing
-                                                     ▼
-                                            ┌─────────────────┐
-                                            │   BLS Handler   │
-                                            │  (THIS COMPONENT)│
-                                            └────────┬────────┘
-                                                     │
-                        ┌────────────────────────────┼────────────────────────────┐
-                        │                            │                            │
-                        ▼                            ▼                            ▼
-               Signature Validation          Parse Content              Check Reducer Exists
-               (secp256k1, NIP-01)          (JSON: reducer, args)       (Known reducer name)
-                        │                            │                            │
-                        └────────────────────────────┼────────────────────────────┘
-                                                     │
-                                                     │ All validations pass
-                                                     ▼
-                                            ┌─────────────────┐
-                                            │   SpacetimeDB   │
-                                            │   HTTP API      │
-                                            │  (BitCraft DB)  │
-                                            └─────────────────┘
-                                                     │
-                                                     │ Reducer Response
-                                                     ▼
-                                            ┌─────────────────┐
-                                            │   Return to     │
-                                            │   Relay (OK/ERR)│
-                                            └─────────────────┘
+┌─────────────┐                           ┌─────────────────┐
+│   Sigil     │   ILP Packet              │   Client's ILP  │
+│   Client    │ ────────────────────────> │   Connector     │
+└─────────────┘                           └────────┬────────┘
+                                                   │
+                                                   │ ILP Routing (Interledger Protocol)
+                                                   ▼
+                                          ┌─────────────────┐
+                                          │  Crosstown Node │
+                                          │  ILP Connector  │
+                                          └────────┬────────┘
+                                                   │
+                                                   │ POST /handle-packet
+                                                   ▼
+                                          ┌─────────────────┐
+                                          │   BLS Handler   │
+                                          │ (THIS COMPONENT)│
+                                          └────────┬────────┘
+                                                   │
+                      ┌────────────────────────────┼────────────────────────────┐
+                      │                            │                            │
+                      ▼                            ▼                            ▼
+             Extract Nostr Event          Signature Validation          Parse Content
+             from ILP packet data         (secp256k1, NIP-01)          (JSON: reducer, args)
+                      │                            │                            │
+                      └────────────────────────────┼────────────────────────────┘
+                                                   │
+                                                   │ All validations pass
+                                                   ▼
+                                          ┌─────────────────┐
+                                          │   SpacetimeDB   │
+                                          │   HTTP API      │
+                                          │  (BitCraft DB)  │
+                                          └─────────────────┘
+                                                   │
+                                                   │ Reducer Response
+                                                   ▼
+                                          ┌─────────────────┐
+                                          │  Return to      │
+                                          │  Connector      │
+                                          └─────────────────┘
 ```
 
 ### Component Responsibilities
 
 | Component | Responsibility |
 |-----------|----------------|
-| **Crosstown Relay** | Routes kind 30078 events to BLS handler, forwards responses to sender |
-| **BLS Handler** | Validates signatures, parses content, calls SpacetimeDB reducers |
+| **Sigil Client** | Creates ILP packet with Nostr event (kind 30078), sends to client's ILP connector |
+| **Client's ILP Connector** | Routes ILP packet to Crosstown node's connector using Interledger Protocol |
+| **Crosstown Node's Connector** | Receives ILP packet, forwards to BLS handler via `POST /handle-packet` |
+| **BLS Handler** | Extracts Nostr event, validates signature, parses content, calls SpacetimeDB reducers |
 | **SpacetimeDB HTTP API** | Executes reducers, updates game state, returns success/failure |
 
 ---
 
 ## Data Structures
 
-### Kind 30078 Event Format (Input)
+### ILP Packet Format (Input to BLS)
+
+The BLS handler receives ILP packets via `POST /handle-packet`. The ILP packet contains the Nostr event in its `data` field.
+
+```typescript
+interface ILPPacket {
+  amount: string;           // ILP amount (string-encoded integer)
+  account: string;          // ILP account address (e.g., "g.crosstown.bls")
+  data: Buffer;             // Nostr event (kind 30078) encoded as Buffer
+  expiresAt: Date;          // Packet expiration timestamp
+  executionCondition: Buffer;  // ILP execution condition (32 bytes)
+}
+```
+
+**Key Points:**
+- The `data` field contains the **Nostr event** (kind 30078) serialized as JSON and encoded as a Buffer
+- The BLS handler must decode `data` to extract the Nostr event
+- Example: `Buffer.from(packet.data).toString('utf-8')` → JSON string → parse to NostrEvent
+
+### Nostr Event Format (Extracted from ILP Packet Data)
 
 ```typescript
 interface NostrEvent {
@@ -92,7 +121,7 @@ interface NostrEvent {
 }
 ```
 
-### Event Content Format
+### Event Content Format (Extracted from Nostr Event)
 
 ```json
 {
@@ -151,10 +180,17 @@ Content-Type: application/json
 }
 ```
 
-### BLS Error Response Format
+### BLS Response Format (to Connector)
 
-When the BLS handler rejects an event, it returns an error to the Crosstown relay:
+**Success:**
+```json
+{
+  "success": true,
+  "eventId": "abc123..."
+}
+```
 
+**Error:**
 ```json
 {
   "eventId": "abc123...",
@@ -169,38 +205,110 @@ When the BLS handler rejects an event, it returns an error to the Crosstown rela
 - `UNKNOWN_REDUCER`: Reducer name not recognized
 - `REDUCER_FAILED`: SpacetimeDB reducer returned an error
 - `INVALID_CONTENT`: Event content is not valid JSON or missing required fields
+- `INVALID_PACKET`: ILP packet data is not a valid Nostr event
 
 ---
 
 ## Implementation Requirements
 
-### 1. Event Reception (from Crosstown Relay)
+### 1. HTTP Endpoint: `POST /handle-packet`
 
-**Requirement:** The BLS handler MUST register an event listener with the Crosstown relay to receive kind 30078 events.
+**Requirement:** The BLS handler MUST expose an HTTP endpoint that receives ILP packets from the Crosstown node's connector.
+
+**Endpoint Specification:**
+- **Method:** POST
+- **Path:** `/handle-packet`
+- **Content-Type:** `application/octet-stream` (ILP packet binary format)
+- **Request Body:** ILP packet (binary)
+- **Response:** JSON (success or error)
 
 **Implementation Notes:**
-- Event listener registration mechanism depends on Crosstown relay architecture (e.g., pub/sub, event emitter, message queue)
-- Handler MUST filter for `kind === 30078` (game action events only)
-- Handler SHOULD log all received events at DEBUG level with event ID and pubkey
+- The endpoint receives ILP packets from the Crosstown node's ILP connector
+- The ILP connector is responsible for ILP protocol handling (amount, account, execution condition)
+- The BLS handler is responsible for extracting and processing the Nostr event from `packet.data`
 
 **Pseudocode:**
 ```javascript
-relay.on('event', async (event) => {
-  if (event.kind !== 30078) return;
+app.post('/handle-packet', async (req, res) => {
+  try {
+    // Parse ILP packet from request body
+    const packet = parseILPPacket(req.body);
 
-  logger.debug('Received game action event', {
-    eventId: event.id,
-    pubkey: event.pubkey,
-    reducer: parseReducerName(event.content)
-  });
+    // Extract Nostr event from packet.data
+    const eventJson = Buffer.from(packet.data).toString('utf-8');
+    const event = JSON.parse(eventJson);
 
-  await handleGameAction(event);
+    logger.debug('Received game action packet', {
+      amount: packet.amount,
+      account: packet.account,
+      eventId: event.id,
+      pubkey: event.pubkey,
+      reducer: parseReducerName(event.content)
+    });
+
+    // Process the game action
+    const result = await handleGameAction(event);
+
+    res.json({ success: true, eventId: event.id });
+  } catch (error) {
+    res.status(400).json({
+      eventId: event?.id || 'unknown',
+      errorCode: error.code,
+      message: error.message,
+      retryable: false
+    });
+  }
 });
 ```
 
 ---
 
-### 2. Signature Validation (NIP-01)
+### 2. ILP Packet Parsing
+
+**Requirement:** The BLS handler MUST parse ILP packets to extract the Nostr event from the `data` field.
+
+**Validation Steps:**
+1. Verify ILP packet structure is valid (amount, account, data, expiresAt, executionCondition)
+2. Extract `packet.data` (Buffer containing Nostr event)
+3. Decode Buffer to UTF-8 string
+4. Parse JSON to extract NostrEvent object
+5. Validate event.kind === 30078 (game action event)
+
+**Implementation Notes:**
+- Use an ILP packet parsing library (e.g., `ilp-packet` npm package for Node.js)
+- If `packet.data` is not valid JSON, return `INVALID_PACKET` error
+- If `event.kind !== 30078`, return `INVALID_PACKET` error
+
+**Pseudocode:**
+```javascript
+import { deserializeIlpPacket } from 'ilp-packet';
+
+function parseILPPacket(requestBody) {
+  // Deserialize ILP packet from binary
+  const packet = deserializeIlpPacket(requestBody);
+
+  // Extract and decode Nostr event from packet.data
+  const eventJson = Buffer.from(packet.data).toString('utf-8');
+  let event;
+
+  try {
+    event = JSON.parse(eventJson);
+  } catch (err) {
+    throw new Error('INVALID_PACKET: packet.data is not valid JSON');
+  }
+
+  // Validate event kind
+  if (event.kind !== 30078) {
+    throw new Error(`INVALID_PACKET: Expected kind 30078, got ${event.kind}`);
+  }
+
+  return { packet, event };
+}
+```
+
+---
+
+### 3. Signature Validation (NIP-01)
 
 **Requirement:** The BLS handler MUST validate the Nostr event signature before processing any action.
 
@@ -234,6 +342,7 @@ relay.on('event', async (event) => {
 **Pseudocode:**
 ```javascript
 import { schnorr } from '@noble/secp256k1';
+import { sha256 } from '@noble/hashes/sha256';
 
 async function validateSignature(event) {
   // 1. Compute canonical event ID
@@ -245,24 +354,24 @@ async function validateSignature(event) {
     event.tags,
     event.content
   ]);
-  const computedId = sha256(canonical);
+  const computedId = Buffer.from(sha256(canonical)).toString('hex');
 
   if (computedId !== event.id) {
-    throw new Error('Event ID mismatch');
+    throw new Error('INVALID_SIGNATURE: Event ID mismatch');
   }
 
   // 2. Verify signature
   const isValid = await schnorr.verify(event.sig, event.id, event.pubkey);
 
   if (!isValid) {
-    throw new Error('Invalid signature');
+    throw new Error('INVALID_SIGNATURE: Signature verification failed');
   }
 }
 ```
 
 ---
 
-### 3. Content Parsing
+### 4. Content Parsing
 
 **Requirement:** The BLS handler MUST parse the event content JSON to extract the reducer name and arguments.
 
@@ -299,7 +408,7 @@ function parseContent(event) {
 
 ---
 
-### 4. Reducer Existence Check
+### 5. Reducer Existence Check
 
 **Requirement:** The BLS handler MUST verify the reducer exists before calling SpacetimeDB.
 
@@ -317,6 +426,7 @@ const KNOWN_REDUCERS = new Set([
   'player_move',
   'craft_item',
   'harvest_resource',
+  'build_structure',
   // ... add all BitCraft reducers
 ]);
 
@@ -334,7 +444,7 @@ function validateReducer(reducerName) {
 
 ---
 
-### 5. Identity Propagation
+### 6. Identity Propagation
 
 **Requirement:** The BLS handler MUST prepend the Nostr public key to the reducer args array.
 
@@ -362,7 +472,7 @@ function prepareReducerArgs(event, originalArgs) {
 
 ---
 
-### 6. SpacetimeDB HTTP Call
+### 7. SpacetimeDB HTTP Call
 
 **Requirement:** The BLS handler MUST call the SpacetimeDB HTTP API to execute the reducer.
 
@@ -404,12 +514,12 @@ async function callReducer(reducerName, args) {
 
 ---
 
-### 7. Error Handling and Logging
+### 8. Error Handling and Logging
 
 **Requirement:** The BLS handler MUST log all errors and return structured error responses.
 
 **Logging Levels:**
-- **DEBUG:** All received events (event ID, pubkey, reducer name)
+- **DEBUG:** All received packets (packet amount, account, event ID, pubkey, reducer name)
 - **INFO:** Successful reducer executions (event ID, reducer, execution time)
 - **WARN:** Retryable errors (network timeout, SpacetimeDB 5xx)
 - **ERROR:** Non-retryable errors (invalid signature, unknown reducer, reducer failure)
@@ -418,7 +528,7 @@ async function callReducer(reducerName, args) {
 ```javascript
 function createErrorResponse(event, errorCode, message, retryable = false) {
   return {
-    eventId: event.id,
+    eventId: event?.id || 'unknown',
     errorCode: errorCode,
     message: message,
     retryable: retryable
@@ -431,20 +541,22 @@ createErrorResponse(event, 'REDUCER_FAILED', 'Invalid move coordinates', false);
 createErrorResponse(event, 'UNKNOWN_REDUCER', 'Reducer "invalid_action" not found', false);
 ```
 
-**Relay Integration:**
-The BLS handler returns the error response to the Crosstown relay, which forwards it to the sender as a Nostr NOTICE message (NIP-01) or OK message with error status.
+**Response to Connector:**
+The BLS handler returns the error response (JSON) to the Crosstown node's ILP connector, which can then propagate the error back through the ILP routing chain.
 
 ---
 
-### 8. Performance Requirements
+### 9. Performance Requirements
 
 **Latency:**
-- Target: < 500ms end-to-end (event received → reducer response returned)
+- Target: < 500ms end-to-end (packet received → reducer response returned)
 - Budget breakdown:
+  - ILP packet parsing: < 10ms
+  - Nostr event extraction: < 10ms
   - Signature validation: < 50ms
   - Content parsing: < 10ms
   - SpacetimeDB HTTP call: < 400ms
-  - Error handling: < 40ms
+  - Error handling: < 20ms
 
 **Throughput:**
 - MVP: Handle 10 actions/second per BLS instance
@@ -459,12 +571,23 @@ The BLS handler returns the error response to the Crosstown relay, which forward
 
 ## Implementation Tasks
 
-### Task 1: Event Listener Setup
-- [ ] Register event listener with Crosstown relay for kind 30078 events
-- [ ] Add debug logging for all received events
-- [ ] Add metrics: total events received counter
+### Task 1: HTTP Endpoint Setup
+- [ ] Implement `POST /handle-packet` endpoint
+- [ ] Parse ILP packet from request body (binary)
+- [ ] Add debug logging for all received packets
+- [ ] Add metrics: total packets received counter
 
-### Task 2: Signature Validation
+### Task 2: ILP Packet Parsing
+- [ ] Implement ILP packet deserialization (using `ilp-packet` library)
+- [ ] Extract Nostr event from `packet.data` (Buffer → UTF-8 → JSON)
+- [ ] Validate event.kind === 30078
+- [ ] Add unit tests:
+  - Valid ILP packet with kind 30078 → extracts event successfully
+  - Invalid packet.data (not JSON) → rejects with `INVALID_PACKET`
+  - Wrong event kind → rejects with `INVALID_PACKET`
+- [ ] Add metrics: packet parsing success/failure counters
+
+### Task 3: Signature Validation
 - [ ] Implement NIP-01 canonical serialization
 - [ ] Implement secp256k1 signature verification
 - [ ] Add unit tests:
@@ -473,7 +596,7 @@ The BLS handler returns the error response to the Crosstown relay, which forward
   - Tampered event ID → rejects
 - [ ] Add metrics: signature validation success/failure counters
 
-### Task 3: Content Parsing
+### Task 4: Content Parsing
 - [ ] Implement JSON content parsing
 - [ ] Validate required fields (reducer, args)
 - [ ] Add unit tests:
@@ -482,7 +605,7 @@ The BLS handler returns the error response to the Crosstown relay, which forward
   - Missing fields → rejects with `INVALID_CONTENT`
 - [ ] Add metrics: content parsing success/failure counters
 
-### Task 4: Reducer Existence Check
+### Task 5: Reducer Existence Check
 - [ ] Create static allowlist of known reducers (Option A for MVP)
 - [ ] Implement reducer validation logic
 - [ ] Add unit tests:
@@ -490,7 +613,7 @@ The BLS handler returns the error response to the Crosstown relay, which forward
   - Unknown reducer → rejects with `UNKNOWN_REDUCER`
 - [ ] Document how to update the allowlist when new reducers are added
 
-### Task 5: Identity Propagation
+### Task 6: Identity Propagation
 - [ ] Implement hex → npub conversion (using nip19.npubEncode)
 - [ ] Implement args array prepending logic
 - [ ] Add unit tests:
@@ -498,7 +621,7 @@ The BLS handler returns the error response to the Crosstown relay, which forward
   - Verify args array is prepended (not appended)
   - Verify original args are preserved
 
-### Task 6: SpacetimeDB HTTP Integration
+### Task 7: SpacetimeDB HTTP Integration
 - [ ] Implement HTTP POST to SpacetimeDB reducer endpoint
 - [ ] Add environment variable configuration (SPACETIMEDB_URL, DATABASE, TOKEN)
 - [ ] Implement error handling for 4xx/5xx responses
@@ -509,30 +632,31 @@ The BLS handler returns the error response to the Crosstown relay, which forward
   - Network timeout → retries once, then fails
 - [ ] Add metrics: reducer call success/failure/retry counters, latency histogram
 
-### Task 7: Error Response Formatting
+### Task 8: Error Response Formatting
 - [ ] Implement error response creation function
 - [ ] Map internal errors to error codes (INVALID_SIGNATURE, UNKNOWN_REDUCER, etc.)
-- [ ] Integrate with Crosstown relay (return errors to sender)
+- [ ] Return JSON error responses from `/handle-packet` endpoint
 - [ ] Add unit tests for each error code
 
-### Task 8: Logging and Monitoring
+### Task 9: Logging and Monitoring
 - [ ] Add structured logging (JSON format recommended)
-- [ ] Log all events at DEBUG level (event ID, pubkey, reducer)
+- [ ] Log all packets at DEBUG level (amount, account, event ID, pubkey, reducer)
 - [ ] Log all errors at ERROR level (event ID, error code, message)
 - [ ] Log all successful reducer calls at INFO level (event ID, reducer, execution time)
 - [ ] Add metrics dashboard (if Crosstown has monitoring infrastructure)
 
-### Task 9: Integration Testing
-- [ ] Set up test environment (Crosstown + BLS + SpacetimeDB)
+### Task 10: Integration Testing
+- [ ] Set up test environment (Client ILP Connector + Crosstown Node + BLS + SpacetimeDB)
 - [ ] Test end-to-end flow:
-  - Valid event → reducer executes, success returned
+  - Valid ILP packet → reducer executes, success returned
   - Invalid signature → rejected with `INVALID_SIGNATURE`
   - Unknown reducer → rejected with `UNKNOWN_REDUCER`
   - Reducer failure → rejected with `REDUCER_FAILED`
 - [ ] Test performance under load (10 actions/second sustained)
 
-### Task 10: Documentation
+### Task 11: Documentation
 - [ ] Document BLS handler configuration (environment variables)
+- [ ] Document `/handle-packet` endpoint specification
 - [ ] Document error codes and troubleshooting steps
 - [ ] Document how to add new reducers to allowlist
 - [ ] Document monitoring and alerting setup
@@ -550,6 +674,7 @@ The BLS handler returns the error response to the Crosstown relay, which forward
 | `SPACETIMEDB_TOKEN` | Admin token for SpacetimeDB API | `admin_token_abc123` | Yes |
 | `BLS_LOG_LEVEL` | Logging level | `debug`, `info`, `warn`, `error` | No (default: `info`) |
 | `BLS_KNOWN_REDUCERS` | Comma-separated list of allowed reducers | `player_move,craft_item` | No (uses static allowlist if not set) |
+| `BLS_HANDLE_PACKET_PORT` | Port for `/handle-packet` endpoint | `8080` | No (default: `3001`) |
 
 ### Sample Configuration File
 
@@ -561,6 +686,7 @@ spacetimedb:
   token: ${SPACETIMEDB_ADMIN_TOKEN}
 
 bls:
+  port: 3001
   logLevel: info
   knownReducers:
     - player_move
@@ -578,6 +704,12 @@ bls:
 ## Testing Strategy
 
 ### Unit Tests (95%+ Coverage)
+
+**ILP Packet Parsing Tests:**
+- ✅ Valid ILP packet with kind 30078 event → parses
+- ✅ Invalid packet.data (not JSON) → rejects with INVALID_PACKET
+- ✅ Valid JSON but wrong event kind → rejects with INVALID_PACKET
+- ✅ Missing packet.data field → rejects
 
 **Signature Validation Tests:**
 - ✅ Valid NIP-01 event → signature validates
@@ -611,13 +743,13 @@ bls:
 ### Integration Tests
 
 **End-to-End Flow:**
-- ✅ Sigil client publishes event → BLS processes → SpacetimeDB executes → client receives confirmation
-- ✅ Invalid signature → client receives INVALID_SIGNATURE error
-- ✅ Unknown reducer → client receives UNKNOWN_REDUCER error
-- ✅ Reducer fails validation → client receives REDUCER_FAILED error
+- ✅ Client → Client ILP Connector → Crosstown Connector → BLS `/handle-packet` → SpacetimeDB → success response
+- ✅ Invalid signature → BLS rejects with INVALID_SIGNATURE error
+- ✅ Unknown reducer → BLS rejects with UNKNOWN_REDUCER error
+- ✅ Reducer fails validation → BLS rejects with REDUCER_FAILED error
 
 **Performance Tests:**
-- ✅ Single event latency < 500ms (p95)
+- ✅ Single packet latency < 500ms (p95)
 - ✅ Sustained 10 actions/second for 60 seconds (no errors)
 - ✅ Signature validation < 50ms (p95)
 - ✅ SpacetimeDB HTTP call < 400ms (p95)
@@ -630,41 +762,48 @@ The BLS handler implementation is considered **DONE** when:
 
 - [ ] All unit tests pass (95%+ coverage)
 - [ ] All integration tests pass (end-to-end flow validated)
+- [ ] `POST /handle-packet` endpoint accepts ILP packets
 - [ ] Performance targets met:
   - [ ] p95 latency < 500ms
   - [ ] Sustained 10 actions/second throughput
 - [ ] Error handling complete:
-  - [ ] All error codes implemented (INVALID_SIGNATURE, UNKNOWN_REDUCER, REDUCER_FAILED, INVALID_CONTENT)
+  - [ ] All error codes implemented (INVALID_SIGNATURE, UNKNOWN_REDUCER, REDUCER_FAILED, INVALID_CONTENT, INVALID_PACKET)
   - [ ] Errors logged with sufficient detail
-  - [ ] Errors returned to relay/client
+  - [ ] Errors returned to connector as JSON
 - [ ] Documentation complete:
   - [ ] Configuration guide (environment variables)
+  - [ ] `/handle-packet` endpoint specification
   - [ ] Error code reference
   - [ ] Troubleshooting guide
 - [ ] Sigil SDK integration tests pass:
-  - [ ] Sigil client → Crosstown relay → BLS handler → SpacetimeDB (round-trip)
+  - [ ] Client → Connector → BLS → SpacetimeDB (round-trip)
   - [ ] Error propagation (client receives error messages)
 
 ---
 
 ## Open Questions
 
-**Q1: SpacetimeDB Admin Token Security**
+**Q1: ILP Packet Binary Format**
+- **Issue:** Is `ilp-packet` npm package the correct library for parsing ILP packets?
+- **MVP Approach:** Use `ilp-packet` (standard Interledger library)
+- **Action:** Confirm with Crosstown team which ILP library/protocol version is used
+
+**Q2: SpacetimeDB Admin Token Security**
 - **Issue:** Using admin token gives BLS handler overly broad permissions
 - **MVP Approach:** Use admin token for MVP (acceptable risk)
 - **Future Enhancement:** Create service account with limited permissions (only reducer execution)
 - **Action:** Document admin token as security risk in deployment guide
 
-**Q2: Reducer Allowlist Maintenance**
+**Q3: Reducer Allowlist Maintenance**
 - **Issue:** Static allowlist requires code changes when new reducers are added
-- **MVP Approach:** Static allowlist in code (Task 4, Option A)
+- **MVP Approach:** Static allowlist in code (Task 5, Option A)
 - **Future Enhancement:** Query SpacetimeDB schema endpoint dynamically (Option B)
 - **Action:** Document how to update allowlist when adding new reducers
 
-**Q3: Retry Logic for Network Failures**
+**Q4: Retry Logic for Network Failures**
 - **Issue:** Should BLS handler retry on SpacetimeDB network timeout?
 - **MVP Approach:** Retry once (max 1 retry)
-- **Rationale:** Client can retry if needed; excessive retries risk duplicate actions
+- **Rationale:** Client can retry via ILP if needed; excessive retries risk duplicate actions
 - **Action:** Log retries at WARN level for monitoring
 
 ---
@@ -684,18 +823,29 @@ The BLS handler implementation is considered **DONE** when:
 **Handoff Process:**
 1. Crosstown team reviews this specification document
 2. Crosstown team implements BLS handler per specification
-3. Crosstown team notifies Sigil SDK team when BLS handler is deployed
-4. Sigil SDK team runs integration tests against live BLS handler
-5. Both teams validate end-to-end flow
-6. Story 2.4 marked complete when all integration tests pass
+3. Crosstown team deploys BLS handler with `/handle-packet` endpoint
+4. Crosstown team notifies Sigil SDK team when BLS handler is deployed
+5. Sigil SDK team runs integration tests against live BLS handler
+6. Both teams validate end-to-end flow (Client → Connector → BLS → SpacetimeDB)
+7. Story 2.4 marked complete when all integration tests pass
 
 ---
 
-## Appendix A: Example Event Payloads
+## Appendix A: Example ILP Packet & Event Payloads
 
 ### Example 1: Player Move Action
 
-**Nostr Event (Kind 30078):**
+**ILP Packet (Binary):**
+```
+(Binary ILP packet structure - deserialized using ilp-packet library)
+- amount: "100"
+- account: "g.crosstown.bls"
+- data: Buffer containing Nostr event JSON (below)
+- expiresAt: Date(2024-03-01T12:00:00Z)
+- executionCondition: Buffer(32 bytes)
+```
+
+**Nostr Event (Extracted from packet.data):**
 ```json
 {
   "id": "a1b2c3d4e5f6...",
@@ -719,7 +869,7 @@ Content-Type: application/json
 
 ### Example 2: Craft Item Action
 
-**Nostr Event (Kind 30078):**
+**Nostr Event (Extracted from ILP packet.data):**
 ```json
 {
   "id": "f1e2d3c4b5a6...",
@@ -747,6 +897,7 @@ Content-Type: application/json
 
 | Error Code | Description | Retryable | Client Action |
 |------------|-------------|-----------|---------------|
+| `INVALID_PACKET` | ILP packet.data is not a valid Nostr event (kind 30078) | No | Check ILP packet construction, verify event kind |
 | `INVALID_SIGNATURE` | Event signature verification failed (secp256k1) | No | Re-sign the event, check Nostr keypair |
 | `UNKNOWN_REDUCER` | Reducer name not recognized by BLS handler | No | Check reducer name spelling, verify reducer exists in SpacetimeDB schema |
 | `REDUCER_FAILED` | SpacetimeDB reducer returned an error (4xx/5xx) | No | Check reducer arguments, verify game state allows this action |
@@ -762,7 +913,7 @@ Content-Type: application/json
 - Network: < 50ms latency to SpacetimeDB
 
 **Expected Performance:**
-- Single event latency: 200-400ms (p50), < 500ms (p95)
+- Single packet latency: 200-400ms (p50), < 500ms (p95)
 - Throughput: 10-20 actions/second per BLS instance
 - Signature validation: 20-40ms (p50), < 50ms (p95)
 - SpacetimeDB HTTP call: 100-300ms (p50), < 400ms (p95)
@@ -781,5 +932,5 @@ Content-Type: application/json
 
 | Date | Version | Author | Changes |
 |------|---------|--------|---------|
-| 2026-02-28 | 1.0 | Sigil SDK Team | Initial specification created |
-
+| 2026-02-28 | 1.0 | Sigil SDK Team | Initial specification created (incorrect ILP routing) |
+| 2026-02-28 | 2.0 | Sigil SDK Team | **CORRECTED:** ILP routing architecture - BLS receives ILP packets via `/handle-packet` endpoint from Crosstown node's connector (not Nostr events from relay) |
