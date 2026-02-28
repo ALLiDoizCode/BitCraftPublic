@@ -17,11 +17,11 @@ services:
       - SPACETIMEDB_LOG_LEVEL=${SPACETIMEDB_LOG_LEVEL:-info}
       - SPACETIMEDB_BIND=0.0.0.0:3000
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:3000/database/bitcraft/info']
+      test: ['CMD', 'sh', '-c', 'spacetime describe bitcraft --server localhost --json >/dev/null 2>&1']
       interval: 30s
       timeout: 10s
-      retries: 3
-      start_period: 10s
+      retries: 5
+      start_period: 90s
     restart: unless-stopped
     logging:
       driver: json-file

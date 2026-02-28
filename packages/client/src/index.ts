@@ -46,6 +46,24 @@ export {
   type FrequencyEnum,
 } from './publish/action-cost-registry';
 
+// ILP packet construction (Story 2.3)
+export {
+  type ILPPacketOptions,
+  type ILPPacketResult,
+  constructILPPacket,
+  parseILPPacket,
+  extractFeeFromEvent,
+} from './publish/ilp-packet';
+
+// Event signing (Story 2.3)
+export { signEvent, redactPrivateKey } from './publish/event-signing';
+
+// Crosstown connector (Story 2.3)
+export {
+  CrosstownConnector,
+  type CrosstownConnectorOptions,
+} from './crosstown/crosstown-connector';
+
 // Wallet client (Story 2.2)
 export { WalletClient } from './wallet/wallet-client';
 

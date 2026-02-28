@@ -37,7 +37,8 @@ export class SigilError extends Error {
   constructor(
     message: string,
     public code: string,
-    public boundary: string
+    public boundary: string,
+    public context?: Record<string, unknown>
   ) {
     super(message);
     this.name = 'SigilError';

@@ -9,6 +9,15 @@ module.exports = {
     node: true,
     es2022: true,
   },
+  rules: {
+    '@typescript-eslint/no-unused-vars': [
+      'error',
+      {
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+      },
+    ],
+  },
   overrides: [
     {
       files: ['**/__tests__/**/*.ts', '**/*.test.ts', '**/generated/**/*.ts'],

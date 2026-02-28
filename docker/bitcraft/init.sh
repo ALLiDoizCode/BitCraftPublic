@@ -46,7 +46,8 @@ echo "Waiting for SpacetimeDB to be ready..."
 MAX_WAIT=30
 ELAPSED=0
 while [ $ELAPSED -lt $MAX_WAIT ]; do
-    if curl -f http://localhost:3000/database/list >/dev/null 2>&1; then
+    # Check if server is accepting HTTP connections on port 3000
+    if curl -s http://localhost:3000/ >/dev/null 2>&1; then
         echo "SpacetimeDB is ready"
         break
     fi
@@ -60,10 +61,18 @@ if [ $ELAPSED -ge $MAX_WAIT ]; then
     exit 1
 fi
 
+# Configure spacetime CLI to use local server
+spacetime server add localhost --url http://localhost:3000 || true
+spacetime server set-default localhost
+
 # Check if database exists, publish if not
-if ! spacetime describe bitcraft >/dev/null 2>&1; then
+if ! spacetime describe bitcraft --server localhost >/dev/null 2>&1; then
     echo "Publishing BitCraft module to database 'bitcraft'..."
-    if ! spacetime publish bitcraft --module-path "$MODULE_PATH" --clear-database; then
+    # Use printf to auto-respond to both prompts: N (no login) and y (confirm delete)
+    # The publish command asks two questions:
+    # 1. "Would you like to log in with spacetimedb.com?" - Answer: N
+    # 2. "Are you sure you want to proceed? [deleting bitcraft]" - Answer: y
+    if ! printf "N\ny\n" | spacetime publish bitcraft --server localhost --bin-path "$MODULE_PATH" --delete-data=always; then
         echo "ERROR: Failed to publish BitCraft module"
         kill $SERVER_PID 2>/dev/null || true
         exit 1

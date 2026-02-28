@@ -55,7 +55,7 @@ epics:
         status: done
       - id: story-2.3
         title: 'ILP Packet Construction & Signing'
-        status: backlog
+        status: done
       - id: story-2.4
         title: 'BLS Game Action Handler'
         status: backlog

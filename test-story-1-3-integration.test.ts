@@ -139,11 +139,11 @@ describe('Story 1.3: Docker Local Development Environment - Integration Tests', 
       const bitcraftSection = composeContent.split('crosstown-node:')[0];
 
       expect(bitcraftSection).toContain('healthcheck:');
-      expect(bitcraftSection).toMatch(/test:.*curl.*3000.*database.*bitcraft.*info/);
+      expect(bitcraftSection).toMatch(/test:.*spacetime describe bitcraft/);
       expect(bitcraftSection).toContain('interval: 30s');
       expect(bitcraftSection).toContain('timeout: 10s');
-      expect(bitcraftSection).toContain('retries: 3');
-      expect(bitcraftSection).toContain('start_period: 10s');
+      expect(bitcraftSection).toContain('retries: 5');
+      expect(bitcraftSection).toContain('start_period: 90s');
     });
 
     test('crosstown-node has healthcheck configured', () => {
