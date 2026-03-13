@@ -76,11 +76,13 @@ Agent/Player → SDK Proxy Layer → Inject Nostr pubkey as reducer arg
 - Reducer calls for all write operations
 - Global reducer callbacks (1.x SDK pattern; 2.0+ uses event tables + `_then()` callbacks)
 
-**Crosstown/ILP Protocol:**
+**Crosstown/ILP Protocol (two packages):**
 
-- Every game write action is an ILP micropayment
-- Payment routes through Crosstown relay nodes
-- BLS validates and forwards to SpacetimeDB
+- **Client-side (`@crosstown/client@^0.4.2`):** Published npm package consumed by `@sigil/client`. Handles ILP micropayments, TOON encoding, payment channels, multi-hop routing. MCP server and TUI backend do not depend on it directly. Payment channels (EVM-based, off-chain settlement via signed balance proofs) abstracted inside `@sigil/client` for MVP.
+- **Server-side (`@crosstown/sdk@^0.1.4`):** Published npm package consumed by `packages/bitcraft-bls`. Provides `createNode()` for building a Crosstown service node with embedded connector mode, `createVerificationPipeline` for Schnorr signature verification, `createPricingValidator` for kind-based fee enforcement, and `HandlerRegistry` for kind-specific handler dispatch.
+- Unified identity: Nostr secretKey derives both Nostr pubkey and EVM address (secp256k1), no separate EVM key configuration needed
+- Peer discovery via NIP-02 follow lists and kind:10032 events (handled by `@crosstown/core`)
+- BLS (bitcraft-bls) validates signatures, enforces pricing, and forwards to SpacetimeDB via HTTP API
 
 **TUI ↔ Backend Communication:**
 
@@ -232,7 +234,9 @@ Headless agents are not a Sigil package — they are external agent frameworks t
 sigil/
 ├── packages/              # TypeScript (pnpm workspace)
 │   ├── client/            # @sigil/client — pure library (the engine)
-│   │                      #   SpacetimeDB + Crosstown/ILP + Nostr + Identity
+│   │                      #   SpacetimeDB + @crosstown/client + Nostr + Identity
+│   ├── bitcraft-bls/      # BitCraft BLS — Crosstown node via @crosstown/sdk
+│   │                      #   Game action handler, identity propagation, pricing
 │   ├── mcp-server/        # @sigil/mcp-server — MCP protocol wrapper
 │   └── tui-backend/       # @sigil/tui-backend — JSON-RPC IPC wrapper
 ├── crates/                # Rust (cargo workspace)
@@ -275,23 +279,29 @@ sigil/
 
 **Implementation Sequence:**
 
-1. Repository scaffolding (monorepo with TS workspace + Rust crate)
-2. `@sigil/client` package: SpacetimeDB 1.x client + Nostr relay + Crosstown/ILP + Identity + `client.publish()` write path
-3. `@sigil/mcp-server` (MCP protocol wrapper over `@sigil/client`, exposes game world as tools/resources)
-4. `@sigil/tui-backend` (JSON-RPC IPC wrapper over `@sigil/client`, bridge for ratatui)
-5. `sigil-tui` Rust TUI application (ratatui presentation layer, connects to tui-backend via IPC)
-6. Agent configuration (CLAUDE.md + AGENTS.md + Skills)
-7. Agent observation mode in TUI
+1. Repository scaffolding (monorepo with TS workspace + Rust crate) — Epic 1
+2. `@sigil/client` package: SpacetimeDB 1.x client + Nostr relay + Identity + `client.publish()` write path + `@crosstown/client` integration — Epics 1-2
+3. `packages/bitcraft-bls`: Crosstown node via `@crosstown/sdk` — kind 30078 handler, signature verification, pricing, SpacetimeDB reducer calls with identity propagation — Epic 3
+4. `@sigil/mcp-server` (MCP protocol wrapper over `@sigil/client`, exposes game world as tools/resources) — Epic 6
+5. BitCraft game analysis & playability validation (reducer catalog, game loops, end-to-end integration tests) — Epic 5
+6. `@sigil/tui-backend` (JSON-RPC IPC wrapper over `@sigil/client`, bridge for ratatui) — Epic 7
+7. `sigil-tui` Rust TUI application (ratatui presentation layer, connects to tui-backend via IPC) — Epic 7
+8. Agent configuration (CLAUDE.md + AGENTS.md + Skills) — Epic 4
+9. Agent observation mode in TUI — Epic 8
 
 **Cross-Component Dependencies:**
 
 - `@sigil/client` is the foundational package — both wrappers depend on it
+- `@sigil/client` depends on `@crosstown/client@^0.4.2` for ILP publishing, TOON encoding, and payment channels
+- `packages/bitcraft-bls` depends on `@crosstown/sdk@^0.1.4` for Crosstown node creation, handler dispatch, signature verification, and pricing enforcement
+- `packages/bitcraft-bls` is the server-side counterpart to `@sigil/client` — it receives what the client publishes
 - `@sigil/mcp-server` wraps `@sigil/client` in MCP protocol (for AI agents)
 - `@sigil/tui-backend` wraps `@sigil/client` in JSON-RPC IPC (for Rust TUI)
 - `sigil-tui` depends on `@sigil/tui-backend` (IPC communication for all data)
 - Headless agents connect to `@sigil/mcp-server` via MCP, or import `@sigil/client` directly
 - Skills are consumed by MCP server (tool definitions) and agent configs
 - Identity + `client.publish()` pipeline is foundational — blocks all write operations
+- BLS handler + SpacetimeDB reducer calls complete the write path — blocks end-to-end verification
 
 **Superseded Architecture (to be removed/replaced in future refinement):**
 
@@ -300,5 +310,6 @@ sigil/
 - Section 5.2: Layer implementations (PerceptionFilter, GoalsEngine, etc.) → Agent cognition is Claude, not custom code
 - Rust SDK core for SpacetimeDB/Crosstown → Eliminated; `@sigil/client` (TS) handles all connectivity
 - Section 10: Technology Choices → Partially superseded (single TS runtime for all backend logic, Rust only for TUI rendering)
+- Section 7.2 (original): Simple callback-style BLS handler → Replaced with `@crosstown/sdk`-based Crosstown node architecture (updated 2026-03-13)
 
 ---

@@ -139,11 +139,11 @@ cd packages/client
 pnpm test:watch        # TDD watch mode
 pnpm build             # Build dist/
 
-# MCP server (@sigil/mcp-server) - Future Epic 4
+# MCP server (@sigil/mcp-server) - Future Epic 6
 cd packages/mcp-server
 # (placeholder only)
 
-# TUI backend (@sigil/tui-backend) - Future Epic 5
+# TUI backend (@sigil/tui-backend) - Future Epic 7
 cd packages/tui-backend
 # (placeholder only)
 ```
@@ -311,7 +311,7 @@ Every story MUST pass OWASP Top 10 review before "done":
 
 ### Planning Artifacts
 
-- **Epics:** `_bmad-output/planning-artifacts/epics.md` (11 epics, 50 stories)
+- **Epics:** `_bmad-output/planning-artifacts/epics.md` (13 epics, 61 stories)
 - **Architecture:** `_bmad-output/planning-artifacts/architecture/index.md` (14 architecture docs)
 - **PRD:** `_bmad-output/planning-artifacts/prd/index.md` (archived, superseded by architecture)
 
@@ -361,7 +361,7 @@ Subscription re-subscribe logic after reconnection is stubbed. Must complete bef
 ### Medium Priority
 
 **DEBT-2: Load Remaining 108 Static Data Tables**
-Only 40/148 static data tables loaded. May block Epic 3-4 agent skills.
+Only 40/148 static data tables loaded. May block Epic 4-5 agent skills and game analysis.
 
 **DEBT-3: Add Linux Integration Test Coverage**
 Epic 1 tested on macOS only. Linux validation required before Epic 2 (PREP-2).

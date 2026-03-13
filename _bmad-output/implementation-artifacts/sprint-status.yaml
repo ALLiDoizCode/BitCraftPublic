@@ -1,6 +1,7 @@
 ---
 # Sprint Status Tracking
 # Generated: 2026-02-26
+# Updated: 2026-03-13 (Epic 5 inserted, Epics 5-12 renumbered to 6-13)
 # Source: _bmad-output/planning-artifacts/epics.md
 #
 # STATUS DEFINITIONS:
@@ -11,9 +12,9 @@
 #   deferred: Postponed to later sprint/phase
 #
 # PHASES:
-#   MVP: Epics 1-6 (34 stories)
-#   Phase 2: Epics 7-10 (15 stories)
-#   Phase 3: Epic 11 (1 story)
+#   MVP: Epics 1-8 (45 stories)
+#   Phase 2: Epics 9-12 (15 stories)
+#   Phase 3: Epic 13 (1 story)
 
 epics:
   - id: epic-1
@@ -60,186 +61,235 @@ epics:
         title: 'BLS Game Action Handler'
         status: done
       - id: story-2.5
-        title: 'Identity Propagation & Verification'
+        title: '@crosstown/client Integration & Scaffolding Removal'
         status: backlog
-      - id: story-2.6
-        title: 'ILP Fee Collection & Schedule Configuration'
-        status: backlog
+        note: 'Integrate @crosstown/client@^0.4.2 for signing/ILP/transport, remove custom scaffolding (event-signing.ts, crosstown-connector.ts), simplify ilp-packet.ts to content-only'
+      # Stories 2.6 (Identity Propagation) and 2.7 (ILP Fee Collection) REMOVED 2026-03-13
+      # Reason: Moved to Epic 3 (BitCraft BLS). Spec'd in Story 2.4, implemented in Epic 3.
 
   - id: epic-3
-    title: 'Declarative Agent Configuration'
+    title: 'BitCraft BLS Game Action Handler'
     phase: mvp
     status: backlog
     stories:
       - id: story-3.1
-        title: 'Skill File Format & Parser'
+        title: 'BLS Package Setup & Crosstown SDK Node'
         status: backlog
       - id: story-3.2
-        title: 'Agent.md Configuration & Skill Selection'
+        title: 'Game Action Handler (kind 30078)'
         status: backlog
       - id: story-3.3
-        title: 'Configuration Validation Against SpacetimeDB'
+        title: 'Pricing Configuration & Fee Schedule'
         status: backlog
       - id: story-3.4
-        title: 'Budget Tracking & Limits'
-        status: backlog
-      - id: story-3.5
-        title: 'Event Interpretation as Semantic Narratives'
-        status: backlog
-      - id: story-3.6
-        title: 'Structured Decision Logging'
-        status: backlog
-      - id: story-3.7
-        title: 'Swappable Agent Configuration'
+        title: 'Identity Propagation & End-to-End Verification'
         status: backlog
 
   - id: epic-4
-    title: 'MCP Server for AI Agents'
+    title: 'Declarative Agent Configuration'
     phase: mvp
     status: backlog
     stories:
       - id: story-4.1
-        title: 'MCP Server Package & Transport Setup'
+        title: 'Skill File Format & Parser'
         status: backlog
       - id: story-4.2
-        title: 'Game State as MCP Resources'
+        title: 'Agent.md Configuration & Skill Selection'
         status: backlog
       - id: story-4.3
-        title: 'Game Actions as MCP Tools'
+        title: 'Configuration Validation Against SpacetimeDB'
         status: backlog
       - id: story-4.4
-        title: 'Agent Autonomous Game Loop'
+        title: 'Budget Tracking & Limits'
+        status: backlog
+      - id: story-4.5
+        title: 'Event Interpretation as Semantic Narratives'
+        status: backlog
+      - id: story-4.6
+        title: 'Structured Decision Logging'
+        status: backlog
+      - id: story-4.7
+        title: 'Swappable Agent Configuration'
         status: backlog
 
   - id: epic-5
-    title: 'Terminal Game Client'
+    title: 'BitCraft Game Analysis & Playability Validation'
     phase: mvp
     status: backlog
+    note: 'Inserted 2026-03-13. Analyze BitCraft server game mechanics and validate end-to-end gameplay through SDK pipeline before building TUI.'
     stories:
       - id: story-5.1
-        title: 'TUI Backend JSON-RPC IPC Server'
+        title: 'Server Source Analysis & Reducer Catalog'
         status: backlog
       - id: story-5.2
-        title: 'Rust TUI Application Shell & Screen Architecture'
+        title: 'Game State Model & Table Relationships'
         status: backlog
       - id: story-5.3
-        title: 'Connection & Identity Setup Flow'
+        title: 'Game Loop Mapping & Precondition Documentation'
         status: backlog
       - id: story-5.4
-        title: 'Player Tab & Character Status'
+        title: 'Basic Action Round-Trip Validation'
         status: backlog
       - id: story-5.5
-        title: 'Map Tab & Hex Grid Rendering'
+        title: 'Player Lifecycle & Movement Validation'
         status: backlog
       - id: story-5.6
-        title: 'Character Movement'
+        title: 'Resource Gathering & Inventory Validation'
         status: backlog
       - id: story-5.7
-        title: 'Chat Panel & Messaging'
+        title: 'Multi-Step Crafting Loop Validation'
         status: backlog
       - id: story-5.8
-        title: 'Inventory Management'
-        status: backlog
-      - id: story-5.9
-        title: 'Status Bar, WalletMeter & ConnectionBadge'
+        title: 'Error Scenarios & Graceful Degradation'
         status: backlog
 
   - id: epic-6
-    title: 'Infrastructure & Observability'
+    title: 'MCP Server for AI Agents'
     phase: mvp
     status: backlog
     stories:
       - id: story-6.1
-        title: 'System Health Monitoring Dashboard'
+        title: 'MCP Server Package & Transport Setup'
         status: backlog
       - id: story-6.2
-        title: 'Agent Observation Mode in TUI'
+        title: 'Game State as MCP Resources'
+        status: backlog
+      - id: story-6.3
+        title: 'Game Actions as MCP Tools'
+        status: backlog
+      - id: story-6.4
+        title: 'Agent Autonomous Game Loop'
         status: backlog
 
   - id: epic-7
+    title: 'Terminal Game Client'
+    phase: mvp
+    status: backlog
+    stories:
+      - id: story-7.1
+        title: 'TUI Backend JSON-RPC IPC Server'
+        status: backlog
+      - id: story-7.2
+        title: 'Rust TUI Application Shell & Screen Architecture'
+        status: backlog
+      - id: story-7.3
+        title: 'Connection & Identity Setup Flow'
+        status: backlog
+      - id: story-7.4
+        title: 'Player Tab & Character Status'
+        status: backlog
+      - id: story-7.5
+        title: 'Map Tab & Hex Grid Rendering'
+        status: backlog
+      - id: story-7.6
+        title: 'Character Movement'
+        status: backlog
+      - id: story-7.7
+        title: 'Chat Panel & Messaging'
+        status: backlog
+      - id: story-7.8
+        title: 'Inventory Management'
+        status: backlog
+      - id: story-7.9
+        title: 'Status Bar, WalletMeter & ConnectionBadge'
+        status: backlog
+
+  - id: epic-8
+    title: 'Infrastructure & Observability'
+    phase: mvp
+    status: backlog
+    stories:
+      - id: story-8.1
+        title: 'System Health Monitoring Dashboard'
+        status: backlog
+      - id: story-8.2
+        title: 'Agent Observation Mode in TUI'
+        status: backlog
+
+  - id: epic-9
     title: 'Advanced Agent Intelligence (Phase 2)'
     phase: phase-2
     status: backlog
     stories:
-      - id: story-7.1
+      - id: story-9.1
         title: 'Configurable LLM Backend Selection'
         status: backlog
-      - id: story-7.2
+      - id: story-9.2
         title: 'LLM-Powered Goal Planning'
         status: backlog
-      - id: story-7.3
+      - id: story-9.3
         title: 'Persistent Memory System'
         status: backlog
-      - id: story-7.4
+      - id: story-9.4
         title: 'Affordance Detection Engine'
         status: backlog
 
-  - id: epic-8
+  - id: epic-10
     title: 'TUI Advanced Gameplay (Phase 2)'
     phase: phase-2
     status: backlog
     stories:
-      - id: story-8.1
+      - id: story-10.1
         title: 'Combat System'
         status: backlog
-      - id: story-8.2
+      - id: story-10.2
         title: 'Crafting System'
         status: backlog
-      - id: story-8.3
+      - id: story-10.3
         title: 'Building & Territory Management'
         status: backlog
-      - id: story-8.4
+      - id: story-10.4
         title: 'Trading Marketplace'
         status: backlog
-      - id: story-8.5
+      - id: story-10.5
         title: 'Empire Management'
         status: backlog
 
-  - id: epic-9
+  - id: epic-11
     title: 'Experiment Harness & Multi-Agent Research (Phase 2)'
     phase: phase-2
     status: backlog
     stories:
-      - id: story-9.1
+      - id: story-11.1
         title: 'Multi-Agent Concurrent Launcher'
         status: backlog
-      - id: story-9.2
+      - id: story-11.2
         title: 'YAML Experiment Configuration'
         status: backlog
-      - id: story-9.3
+      - id: story-11.3
         title: 'World State Snapshot & Restore'
         status: backlog
-      - id: story-9.4
+      - id: story-11.4
         title: 'Comparative Decision Log Analysis'
         status: backlog
 
-  - id: epic-10
+  - id: epic-12
     title: 'World Extensibility (Phase 2)'
     phase: phase-2
     status: backlog
     stories:
-      - id: story-10.1
+      - id: story-12.1
         title: 'Skill File Authoring for New Worlds'
         status: backlog
-      - id: story-10.2
+      - id: story-12.2
         title: 'BLS Handler Registration for Third-Party Games'
         status: backlog
 
-  - id: epic-11
+  - id: epic-13
     title: 'Platform Expansion (Phase 3)'
     phase: phase-3
     status: backlog
     stories:
-      - id: story-11.1
+      - id: story-13.1
         title: 'Auto-Generate Skill Files from SpacetimeDB Schema'
         status: backlog
 
 # Sprint metadata
 sprint_metadata:
-  total_epics: 11
-  total_stories: 50
-  mvp_stories: 34
+  total_epics: 13
+  total_stories: 61
+  mvp_stories: 45
   phase2_stories: 15
   phase3_stories: 1
-  last_updated: 2026-02-27
+  last_updated: 2026-03-13
   current_sprint_focus: epic-2

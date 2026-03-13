@@ -127,13 +127,14 @@ This test design defines the comprehensive testing strategy for Epic 2: Action E
 
 ### 2.1 In Scope
 
-**Epic 2 Stories (All 6 stories):**
+**Epic 2 Stories (All 7 stories):**
 - Story 2.1: Crosstown Relay Connection & Event Subscriptions
 - Story 2.2: Action Cost Registry & Wallet Balance
 - Story 2.3: ILP Packet Construction & Signing
 - Story 2.4: BLS Game Action Handler
-- Story 2.5: Identity Propagation & Verification
-- Story 2.6: ILP Fee Collection & Schedule Configuration
+- Story 2.5: Crosstown Client Adapter Refactoring (replaces custom HTTP connector with `@crosstown/client@^0.4.2`)
+- Story 2.6: Identity Propagation & Verification (previously Story 2.5)
+- Story 2.7: ILP Fee Collection & Schedule Configuration (previously Story 2.6)
 
 **Test Types:**
 - Unit tests (TypeScript + Rust)
@@ -157,13 +158,14 @@ This test design defines the comprehensive testing strategy for Epic 2: Action E
 - SpacetimeDB server internals (already validated in Epic 1)
 - Crosstown ILP routing internals (black box, only test public APIs)
 - Game logic validation (BitCraft reducer behavior is trusted)
-- Agent decision-making (deferred to Epic 3)
-- TUI/MCP server (deferred to Epics 4-5)
+- Agent decision-making (deferred to Epic 4)
+- TUI/MCP server (deferred to Epics 6-7)
 
 **Deferred to Later Epics:**
-- Agent skill configuration (Epic 3)
-- Multi-agent experiments (Epic 9)
-- MCP tool integration (Epic 4)
+- BitCraft game analysis & playability validation (Epic 5)
+- Agent skill configuration (Epic 4)
+- Multi-agent experiments (Epic 11)
+- MCP tool integration (Epic 6)
 
 ---
 
@@ -197,8 +199,9 @@ Total Target: ~300 tests for Epic 2
 - Action cost registry parser and lookup (Story 2.2)
 - ILP packet construction and signing (Story 2.3)
 - BLS event parsing and validation (Story 2.4)
-- Identity verification functions (Story 2.5)
-- Fee schedule configuration loading (Story 2.6)
+- Crosstown adapter wrapping `@crosstown/client` (Story 2.5)
+- Identity verification functions (Story 2.6)
+- Fee schedule configuration loading (Story 2.7)
 
 **Mocking Strategy:**
 - WebSocket connections (use EventEmitter-based mocks from Epic 1)
@@ -217,8 +220,9 @@ Total Target: ~300 tests for Epic 2
 **Focus Areas:**
 - Crosstown Nostr relay subscriptions (Story 2.1)
 - End-to-end ILP packet flow (Stories 2.3 + 2.4)
-- Identity propagation validation (Story 2.5)
-- Fee collection under realistic load (Story 2.6)
+- Crosstown adapter integration with Docker stack (Story 2.5)
+- Identity propagation validation (Story 2.6)
+- Fee collection under realistic load (Story 2.7)
 
 **Test Environment:**
 - Full Docker stack (BitCraft + Crosstown + BLS handler)
@@ -632,7 +636,61 @@ Total Target: ~300 tests for Epic 2
 
 ---
 
-### 4.5 Story 2.5: Identity Propagation & Verification
+### 4.5 Story 2.5: Crosstown Client Adapter Refactoring
+
+**Acceptance Criteria:** 5 ACs (all P0)
+
+**Test Strategy:**
+- **Risk Mitigation:** R2-003 (ILP packet signing failures — adapter must preserve error behavior)
+- **TDD Required:** YES (5 ACs)
+- **Integration Tests:** REQUIRED (validate `@crosstown/client` integration with Docker stack)
+
+**Unit Tests (25 tests):**
+
+| Test Suite | Test Count | Focus Area |
+|------------|-----------|------------|
+| `crosstown-adapter.test.ts` | 15 | Adapter wraps CrosstownClient correctly, error mapping |
+| `crosstown-adapter-security.test.ts` | 10 | SSRF protection, URL validation, credential rejection |
+
+**Integration Tests (10 tests):**
+
+| Test Suite | Test Count | Focus Area |
+|------------|-----------|------------|
+| `crosstown-adapter-integration.test.ts` | 10 | End-to-end publish via real CrosstownClient |
+
+**Key Test Cases:**
+
+1. **AC1 - Dependencies:**
+   - ✅ `@crosstown/client@^0.4.2` listed in package.json dependencies
+   - ✅ `@crosstown/relay` listed in package.json dependencies
+   - ✅ Build succeeds with new dependencies
+
+2. **AC2 - Publish Routing:**
+   - ✅ `client.publish()` routes through `CrosstownClient.publishEvent()`
+   - ✅ TOON encoding uses `encodeEventToToon` / `decodeEventFromToon` from `@crosstown/relay`
+   - ✅ No HTTP POST to connector endpoint (custom HTTP client removed)
+
+3. **AC3 - Error Code Preservation:**
+   - ✅ `NETWORK_TIMEOUT` error code preserved
+   - ✅ `NETWORK_ERROR` error code preserved
+   - ✅ `PUBLISH_FAILED` error code preserved
+   - ✅ `RATE_LIMITED` error code preserved
+   - ✅ SSRF protection for connector URL preserved
+
+4. **AC4 - Test Continuity:**
+   - ✅ All existing `client.publish()` tests pass without modification
+   - ✅ Equivalent adapter tests cover same scenarios as old connector tests
+
+5. **AC5 - Lifecycle Management:**
+   - ✅ `CrosstownClient.start()` called during client connection
+   - ✅ `CrosstownClient.stop()` called during client disconnection
+   - ✅ Unified identity: Nostr secretKey derives both pubkey and EVM address
+
+**Estimated Test Count:** 35 tests (25 unit + 10 integration)
+
+---
+
+### 4.6 Story 2.6: Identity Propagation & Verification
 
 **Acceptance Criteria:** 4 ACs (all P0)
 
@@ -703,7 +761,7 @@ Total Target: ~300 tests for Epic 2
 
 ---
 
-### 4.6 Story 2.6: ILP Fee Collection & Schedule Configuration
+### 4.7 Story 2.7: ILP Fee Collection & Schedule Configuration
 
 **Acceptance Criteria:** 4 ACs (all P0)
 
