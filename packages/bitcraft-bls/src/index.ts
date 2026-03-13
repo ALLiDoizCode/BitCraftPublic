@@ -12,7 +12,7 @@
  * 4. Sets up graceful shutdown handlers
  * 5. Starts the node
  *
- * Handler registration for kind 30078 (game actions) is done in Story 3.2.
+ * Registers handler for kind 30078 (game actions) -- implemented in Story 3.2.
  */
 
 // Re-export public API for library consumers
@@ -25,11 +25,20 @@ export {
   type HealthServerState,
 } from './health.js';
 export { setupShutdownHandlers, type ShutdownOptions } from './lifecycle.js';
+export { createGameActionHandler } from './handler.js';
+export { parseEventContent, ContentParseError, type ParsedContent } from './content-parser.js';
+export {
+  callReducer,
+  ReducerCallError,
+  type SpacetimeDBCallerConfig,
+  type ReducerResult,
+} from './spacetimedb-caller.js';
 
 import { loadConfig } from './config.js';
 import { createBLSNode } from './node.js';
 import { createHealthServer, type HealthServerState } from './health.js';
 import { setupShutdownHandlers } from './lifecycle.js';
+import { createGameActionHandler } from './handler.js';
 
 /**
  * Main entry point. Called when running `node dist/index.js`.
@@ -42,6 +51,11 @@ async function main(): Promise<void> {
 
   // 2. Create BLS node
   const { node, identity } = createBLSNode(config);
+
+  // 2.5. Register game action handler for kind 30078
+  const handler = createGameActionHandler(config);
+  node.on(30078, handler);
+  console.log('[BLS] Handler registered for kind 30078 (game actions)');
 
   // 3. Start health check server
   const healthState: HealthServerState = {

@@ -26,12 +26,12 @@ Note: This workflow does not generate tests. If gaps exist, run `*atdd` or `*aut
 
 ### Coverage Summary
 
-| Priority  | Total Criteria | FULL Coverage | Coverage % | Status |
-| --------- | -------------- | ------------- | ---------- | ------ |
-| P0        | 1              | 1             | 100%       | PASS   |
-| P1        | 4              | 4             | 100%       | PASS   |
-| P2        | 0              | 0             | 100%       | PASS   |
-| P3        | 0              | 0             | 100%       | PASS   |
+| Priority  | Total Criteria | FULL Coverage | Coverage % | Status   |
+| --------- | -------------- | ------------- | ---------- | -------- |
+| P0        | 1              | 1             | 100%       | PASS     |
+| P1        | 4              | 4             | 100%       | PASS     |
+| P2        | 0              | 0             | 100%       | PASS     |
+| P3        | 0              | 0             | 100%       | PASS     |
 | **Total** | **5**          | **5**         | **100%**   | **PASS** |
 
 **Legend:**
@@ -375,6 +375,7 @@ None.
 **68/68 unit tests (100%) meet all quality criteria**
 
 Quality checks:
+
 - No hard waits (all use deterministic `setTimeout` with explicit ms for async lifecycle)
 - No conditionals controlling test flow
 - Self-cleaning (afterEach cleanup, server arrays)
@@ -402,11 +403,11 @@ None identified. All overlaps serve defense-in-depth purpose.
 
 ### Coverage by Test Level
 
-| Test Level | Tests | Criteria Covered | Coverage % |
-| ---------- | ----- | ---------------- | ---------- |
-| Unit       | 68    | 5/5              | 100%       |
-| Integration| 15    | 4/5 (AC1-AC5 except AC1 unit-only) | 80% |
-| **Total**  | **83**| **5/5**          | **100%**   |
+| Test Level  | Tests  | Criteria Covered                   | Coverage % |
+| ----------- | ------ | ---------------------------------- | ---------- |
+| Unit        | 68     | 5/5                                | 100%       |
+| Integration | 15     | 4/5 (AC1-AC5 except AC1 unit-only) | 80%        |
+| **Total**   | **83** | **5/5**                            | **100%**   |
 
 ---
 
@@ -541,8 +542,8 @@ None required. All acceptance criteria have FULL coverage.
 
 #### P2/P3 Criteria (Informational, Don't Block)
 
-| Criterion         | Actual | Notes                      |
-| ----------------- | ------ | -------------------------- |
+| Criterion         | Actual | Notes                        |
+| ----------------- | ------ | ---------------------------- |
 | P2 Test Pass Rate | N/A    | No P2 criteria in this story |
 | P3 Test Pass Rate | N/A    | No P3 criteria in this story |
 
@@ -606,8 +607,8 @@ All P0 criteria met with 100% coverage and 100% pass rate. The single P0 accepta
 traceability_and_gate:
   # Phase 1: Traceability
   traceability:
-    story_id: "3.1"
-    date: "2026-03-13"
+    story_id: '3.1'
+    date: '2026-03-13'
     coverage:
       overall: 100%
       p0: 100%
@@ -625,14 +626,14 @@ traceability_and_gate:
       blocker_issues: 0
       warning_issues: 0
     recommendations:
-      - "Run integration tests with Docker stack"
-      - "Consider splitting ac-coverage-gaps.test.ts (430 lines)"
+      - 'Run integration tests with Docker stack'
+      - 'Consider splitting ac-coverage-gaps.test.ts (430 lines)'
 
   # Phase 2: Gate Decision
   gate_decision:
-    decision: "PASS"
-    gate_type: "story"
-    decision_mode: "deterministic"
+    decision: 'PASS'
+    gate_type: 'story'
+    decision_mode: 'deterministic'
     criteria:
       p0_coverage: 100%
       p0_pass_rate: 100%
@@ -651,11 +652,11 @@ traceability_and_gate:
       min_overall_pass_rate: 95
       min_coverage: 80
     evidence:
-      test_results: "local_run (pnpm --filter @sigil/bitcraft-bls test:unit)"
-      traceability: "_bmad-output/test-artifacts/traceability-report.md"
-      nfr_assessment: "OWASP review in story file (3 review passes)"
-      code_coverage: "not_measured"
-    next_steps: "Proceed to Story 3.2. Run integration tests with Docker."
+      test_results: 'local_run (pnpm --filter @sigil/bitcraft-bls test:unit)'
+      traceability: '_bmad-output/test-artifacts/traceability-report.md'
+      nfr_assessment: 'OWASP review in story file (3 review passes)'
+      code_coverage: 'not_measured'
+    next_steps: 'Proceed to Story 3.2. Run integration tests with Docker.'
 ```
 
 ---

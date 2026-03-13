@@ -77,7 +77,7 @@ Story 3.1 establishes the `@sigil/bitcraft-bls` package and `@crosstown/sdk` wor
 - **Status**: success
 - **Duration**: ~12 min
 - **What changed**: 12 test files created (50 tests in RED phase)
-- **Key decisions**: Used it.skip() for TDD RED, co-located tests in packages/bitcraft-bls/src/__tests__/
+- **Key decisions**: Used it.skip() for TDD RED, co-located tests in packages/bitcraft-bls/src/**tests**/
 - **Issues found & fixed**: 0
 
 ### Step 4: Develop

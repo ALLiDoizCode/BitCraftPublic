@@ -233,7 +233,10 @@ describe('Story 1.3: Docker Local Development Environment - Integration Tests', 
     });
 
     test('docker compose config validates successfully', () => {
-      const result = runCommand('SPACETIMEDB_ADMIN_TOKEN=test-token docker compose -f docker-compose.yml config', DOCKER_DIR);
+      const result = runCommand(
+        'SPACETIMEDB_ADMIN_TOKEN=test-token docker compose -f docker-compose.yml config',
+        DOCKER_DIR
+      );
 
       // If docker is not available, skip this test
       if (
