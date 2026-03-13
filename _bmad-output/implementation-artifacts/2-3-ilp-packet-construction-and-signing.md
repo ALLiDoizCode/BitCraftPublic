@@ -433,7 +433,8 @@ This story is considered "done" when ALL of the following are complete:
 
 **Blocks:**
 - Story 2.4: BLS Game Action Handler (needs ILP packets to process)
-- Story 2.5: Identity Propagation & Verification (needs end-to-end publish flow)
+- Story 2.5: Crosstown Client Adapter Refactoring (replaces custom HTTP connector with @crosstown/client)
+- Story 2.6: Identity Propagation & Verification (needs end-to-end publish flow)
 
 **External Dependencies:**
 - `nostr-tools` library (signing functions)

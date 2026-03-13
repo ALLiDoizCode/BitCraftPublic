@@ -50,7 +50,7 @@ sigil/
 │   │   │   │   ├── publisher.ts       # Signs action → ILP packet → Crosstown → BLS
 │   │   │   │   ├── cost-registry.ts   # Action cost lookup (FR22)
 │   │   │   │   ├── wallet.ts          # ILP wallet balance queries (FR21)
-│   │   │   │   ├── crosstown-client.ts # ILP packet routing via Crosstown
+│   │   │   │   ├── crosstown-adapter.ts # Wraps @crosstown/client (CrosstownClient lifecycle, publishEvent)
 │   │   │   │   ├── bls-proxy.ts       # Identity propagation proxy (Nostr pubkey injection)
 │   │   │   │   └── publisher.test.ts
 │   │   │   ├── skills/
@@ -107,6 +107,22 @@ sigil/
 │   │   # NOTE: No headless-agent package. Headless agents use external
 │   │   # agent SDKs (Claude, Vercel AI) connecting to @sigil/mcp-server,
 │   │   # or import @sigil/client directly in custom TS code.
+│   │
+│   ├── bitcraft-bls/                  # BitCraft BLS — Crosstown node (game action handler)
+│   │   ├── package.json               # name: "bitcraft-bls" (private, not published)
+│   │   ├── tsconfig.json
+│   │   ├── tsup.config.ts
+│   │   ├── Dockerfile                 # Docker image for BLS container
+│   │   ├── src/
+│   │   │   ├── index.ts               # Entry point: createNode(), handler registration, start
+│   │   │   ├── config.ts              # Environment variable parsing (SPACETIMEDB_URL, TOKEN, etc.)
+│   │   │   ├── handler.ts             # Kind 30078 handler: parse content, call SpacetimeDB reducer
+│   │   │   ├── spacetimedb-client.ts  # SpacetimeDB HTTP API client (POST /database/bitcraft/call/{reducer})
+│   │   │   └── types.ts               # Handler types, SpacetimeDB response types
+│   │   └── tests/
+│   │       ├── handler.test.ts        # Unit tests for game action handler logic
+│   │       └── integration/
+│   │           └── bls-e2e.test.ts    # End-to-end: publish → BLS → SpacetimeDB
 │   │
 │   └── examples/                      # Example agent configurations
 │       ├── explorer/
@@ -175,12 +191,15 @@ sigil/
 │   └── AGENTS.md                      # Default non-Claude agent configuration
 │
 └── docker/                            # ═══ Infrastructure ═══
-    ├── docker-compose.yml             # FR44: BitCraft server + Crosstown node + BLS
+    ├── docker-compose.yml             # FR44: BitCraft server + Crosstown connector + BLS
     ├── docker-compose.dev.yml         # Dev overrides (hot reload, debug ports)
     ├── bitcraft-server/
     │   └── Dockerfile                 # BitCraft server (SpacetimeDB WASM module)
-    └── crosstown-node/
-        └── Dockerfile                 # Crosstown node + BLS handler (FR47)
+    └── crosstown/
+        └── Dockerfile                 # Crosstown connector (ILP routing, Nostr relay)
+    # NOTE: The BLS Dockerfile lives at packages/bitcraft-bls/Dockerfile
+    # (first-party code, built from workspace). Docker compose references it
+    # with build context pointing to the workspace package.
 ```
 
 ## Architectural Boundaries
@@ -188,9 +207,16 @@ sigil/
 **Boundary 1: `@sigil/client` → External Services**
 
 - SpacetimeDB: WebSocket connection (subscription + reducer calls, SDK 1.x)
-- Crosstown: ILP packet routing (payment + BLS identity)
+- Crosstown: via `@crosstown/client@^0.4.2` (npm) — ILP micropayments, TOON encoding, payment channels, multi-hop routing. `@sigil/client` is the **only** Sigil package that depends on `@crosstown/client`; MCP server and TUI backend access Crosstown through `client.publish()`
 - Agent SDKs: HTTP to LLM providers (Anthropic API, OpenAI-compatible)
 - All external errors wrapped with `boundary` field at this layer
+
+**Boundary 1b: `packages/bitcraft-bls` → External Services**
+
+- Crosstown SDK: via `@crosstown/sdk@^0.1.4` (npm) — node creation, handler dispatch, signature verification, pricing enforcement
+- SpacetimeDB: HTTP API calls (`POST /database/bitcraft/call/{reducer}`) for reducer execution with identity propagation
+- Crosstown Connector: embedded connector mode for zero-latency ILP packet delivery (or standalone HTTP mode)
+- All handler errors returned via `ctx.reject(code, message)` using ILP error codes (F04, F06, T00)
 
 **Boundary 2: TUI Backend → Rust TUI (IPC)**
 
@@ -221,6 +247,7 @@ sigil/
 | **FR6-FR10: Perception**        | `packages/client/src/perception/`               | `spacetimedb-client.ts`, `static-data.ts`, `reconnect.ts`                       |
 | **FR11-FR16: Agent Config**     | `packages/client/src/agent/`                    | `agent-config.ts`, `skill-loader.ts`, `budget-tracker.ts`                       |
 | **FR17-FR22: Actions/Payments** | `packages/client/src/actions/`, `src/payments/` | `action-executor.ts`, `crosstown-client.ts`, `bls-proxy.ts`, `cost-registry.ts` |
+| **FR4,FR5,FR19,FR20,FR45,FR47: BLS** | `packages/bitcraft-bls/` | `handler.ts`, `spacetimedb-client.ts`, `config.ts` |
 | **FR23-FR27: Cognition**        | External agent SDKs via `@sigil/mcp-server`     | MCP tools + `@sigil/client` direct import                                       |
 | **FR28-FR38: TUI**              | `crates/tui/`, `packages/tui-backend/`          | `src/ui/panels/*.rs`, `src/methods/*.ts`                                        |
 | **FR39-FR43: Experiments**      | External tooling consuming `@sigil/client`      | Phase 2 — JSONL logging built into client                                       |
@@ -242,30 +269,43 @@ sigil/
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                        SpacetimeDB Server                          │
-│  (BitCraft WASM module — unmodified, ~80 tables, 364+ reducers)    │
+│  (BitCraft WASM module, ~80 tables, 364+ reducers)                 │
+│  (reducers modified to accept identity: String as first param)     │
 └──────────┬──────────────────────────────────┬───────────────────────┘
-           │ WebSocket (subscriptions, SDK 1.x) │ reducer calls
+           │ WebSocket (subscriptions, SDK 1.x) │ HTTP POST /call/{reducer}
            ▼                                   ▲
-┌────────────────────────────────────────────────────────────────────┐
-│                       @sigil/client                                │
-│  client.spacetimedb ◄── table updates                              │
-│  client.nostr ◄── relay events (confirmations, notifications)      │
-│  client.publish() ──► ILP packet ──► Crosstown ──► BLS ──► STDB   │
-│  client.identity ── Nostr keypair                                  │
-└───────────────┬───────────────────────────┬────────────────────────┘
-                │ imported by                │ imported by
-                ▼                            ▼
-    ┌───────────────────┐        ┌───────────────────┐
-    │ @sigil/tui-backend│        │ @sigil/mcp-server │
-    │ (JSON-RPC wrapper)│        │ (MCP wrapper)     │
-    └────────┬──────────┘        └─────────┬─────────┘
-             │ stdio IPC                   │ MCP protocol
-             ▼                             ▲
-    ┌────────────────┐           ┌─────────┴─────────┐
-    │ sigil-tui      │           │ Claude / OpenCode /│
-    │ (Rust/ratatui) │           │ Vercel AI / any   │
-    └────────────────┘           │ MCP-compatible     │
-                                 └───────────────────┘
+┌────────────────────────────────────────────┐ │
+│              @sigil/client                 │ │
+│  client.spacetimedb ◄── table updates      │ │
+│  client.nostr ◄── relay events             │ │
+│  client.publish() ──► CrosstownClient      │ │
+│    .publishEvent()  ──► ILP packet ──┐     │ │
+│  client.identity ── Nostr keypair    │     │ │
+└───────────────┬──────────────┬───────│─────┘ │
+                │ imported by  │       │       │
+                ▼              ▼       │       │
+    ┌────────────────┐ ┌────────────┐  │       │
+    │@sigil/          │ │@sigil/     │  │       │
+    │tui-backend      │ │mcp-server  │  │       │
+    │(JSON-RPC)       │ │(MCP)       │  │       │
+    └───────┬─────────┘ └─────┬──────┘  │       │
+            │ stdio IPC       │ MCP     │       │
+            ▼                 ▲         │       │
+    ┌────────────┐  ┌──────────────┐    │       │
+    │ sigil-tui  │  │ Claude / any │    │       │
+    │ (ratatui)  │  │ MCP agent    │    │       │
+    └────────────┘  └──────────────┘    │       │
+                                        ▼       │
+                              ┌─────────────────┤
+                              │ bitcraft-bls     │
+                              │ (@crosstown/sdk) │
+                              │  ┌─verify sig    │
+                              │  ├─check pricing │
+                              │  └─handler:      │
+                              │    parse content  │
+                              │    prepend pubkey │
+                              │    call reducer ──┘
+                              └─────────────────┘
 ```
 
 ## Development Workflow

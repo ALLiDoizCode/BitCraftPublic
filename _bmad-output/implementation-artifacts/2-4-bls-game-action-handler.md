@@ -314,7 +314,8 @@ So that the Crosstown BLS handler (implemented separately) can be verified to co
   - Handoff: Crosstown team implements BLS handler, Sigil SDK team validates with integration tests
 
 **Blocks (Cannot Start Until Story 2.4 Complete):**
-- Story 2.5 (Identity Propagation & Verification) - depends on BLS reducer calls working
+- Story 2.5 (Crosstown Client Adapter Refactoring) - replaces custom HTTP connector with @crosstown/client
+- Story 2.6 (Identity Propagation & Verification) - depends on BLS reducer calls working
 
 ## Acceptance Test Examples
 
