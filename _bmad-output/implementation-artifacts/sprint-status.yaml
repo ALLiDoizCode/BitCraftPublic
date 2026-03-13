@@ -47,6 +47,7 @@ epics:
     title: 'Action Execution & Payment Pipeline'
     phase: mvp
     status: in-progress
+    retrospective_status: not_started
     stories:
       - id: story-2.1
         title: 'Crosstown Relay Connection & Event Subscriptions'
@@ -71,6 +72,7 @@ epics:
     title: 'BitCraft BLS Game Action Handler'
     phase: mvp
     status: backlog
+    retrospective_status: not_started
     stories:
       - id: story-3.1
         title: 'BLS Package Setup & Crosstown SDK Node'
@@ -89,6 +91,7 @@ epics:
     title: 'Declarative Agent Configuration'
     phase: mvp
     status: backlog
+    retrospective_status: not_started
     stories:
       - id: story-4.1
         title: 'Skill File Format & Parser'
@@ -116,6 +119,7 @@ epics:
     title: 'BitCraft Game Analysis & Playability Validation'
     phase: mvp
     status: backlog
+    retrospective_status: not_started
     note: 'Inserted 2026-03-13. Analyze BitCraft server game mechanics and validate end-to-end gameplay through SDK pipeline before building TUI.'
     stories:
       - id: story-5.1
@@ -147,6 +151,7 @@ epics:
     title: 'MCP Server for AI Agents'
     phase: mvp
     status: backlog
+    retrospective_status: not_started
     stories:
       - id: story-6.1
         title: 'MCP Server Package & Transport Setup'
@@ -165,6 +170,7 @@ epics:
     title: 'Terminal Game Client'
     phase: mvp
     status: backlog
+    retrospective_status: not_started
     stories:
       - id: story-7.1
         title: 'TUI Backend JSON-RPC IPC Server'
@@ -198,6 +204,7 @@ epics:
     title: 'Infrastructure & Observability'
     phase: mvp
     status: backlog
+    retrospective_status: not_started
     stories:
       - id: story-8.1
         title: 'System Health Monitoring Dashboard'
@@ -210,6 +217,7 @@ epics:
     title: 'Advanced Agent Intelligence (Phase 2)'
     phase: phase-2
     status: backlog
+    retrospective_status: not_started
     stories:
       - id: story-9.1
         title: 'Configurable LLM Backend Selection'
@@ -228,6 +236,7 @@ epics:
     title: 'TUI Advanced Gameplay (Phase 2)'
     phase: phase-2
     status: backlog
+    retrospective_status: not_started
     stories:
       - id: story-10.1
         title: 'Combat System'
@@ -249,6 +258,7 @@ epics:
     title: 'Experiment Harness & Multi-Agent Research (Phase 2)'
     phase: phase-2
     status: backlog
+    retrospective_status: not_started
     stories:
       - id: story-11.1
         title: 'Multi-Agent Concurrent Launcher'
@@ -267,6 +277,7 @@ epics:
     title: 'World Extensibility (Phase 2)'
     phase: phase-2
     status: backlog
+    retrospective_status: not_started
     stories:
       - id: story-12.1
         title: 'Skill File Authoring for New Worlds'
@@ -279,6 +290,7 @@ epics:
     title: 'Platform Expansion (Phase 3)'
     phase: phase-3
     status: backlog
+    retrospective_status: not_started
     stories:
       - id: story-13.1
         title: 'Auto-Generate Skill Files from SpacetimeDB Schema'
