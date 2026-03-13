@@ -72,7 +72,7 @@ epics:
   - id: epic-3
     title: 'BitCraft BLS Game Action Handler'
     phase: mvp
-    status: backlog
+    status: in-progress
     retrospective_status: not_started
     stories:
       - id: story-3.1
@@ -305,4 +305,4 @@ sprint_metadata:
   phase2_stories: 15
   phase3_stories: 1
   last_updated: 2026-03-13
-  current_sprint_focus: epic-2
+  current_sprint_focus: epic-3
