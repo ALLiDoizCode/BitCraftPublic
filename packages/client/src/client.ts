@@ -5,7 +5,7 @@
  * - Nostr identity management (client.identity)
  * - SpacetimeDB integration (client.spacetimedb)
  * - Nostr event publishing (future: client.nostr)
- * - ILP packet publishing (future: client.publish())
+ * - ILP packet publishing via @crosstown/client (client.publish())
  */
 
 import { EventEmitter } from 'events';
@@ -40,8 +40,7 @@ import {
   type ILPPacketOptions,
   type ILPPacketResult,
 } from './publish/ilp-packet';
-import { signEvent } from './publish/event-signing';
-import { CrosstownConnector } from './crosstown/crosstown-connector';
+import { CrosstownAdapter } from './crosstown/crosstown-adapter';
 
 /**
  * Client identity interface
@@ -88,9 +87,9 @@ export interface SigilClientConfig {
    */
   actionCostRegistryPath?: string;
   /**
-   * Crosstown connector HTTP URL (Story 2.2-2.3)
+   * Crosstown connector HTTP URL (Story 2.2-2.5)
    *
-   * Used for wallet balance queries and ILP packet routing.
+   * Used for ILP packet routing via @crosstown/client.
    * Defaults to 'http://localhost:4041'.
    *
    * SECURITY: In production (NODE_ENV=production), must use https:// protocol.
@@ -101,15 +100,29 @@ export interface SigilClientConfig {
    */
   crosstownConnectorUrl?: string;
   /**
-   * Publish timeout in milliseconds (Story 2.3)
+   * Publish timeout in milliseconds (Story 2.3-2.5)
    *
-   * Maximum time to wait for publish confirmation (Crosstown + BLS + Nostr relay).
+   * Maximum time to wait for publish CONFIRMATION on Nostr relay.
+   * This is separate from CrosstownClient's internal transport timeout.
    * Defaults to 2000ms (2 seconds).
    *
    * @example 2000 (default)
    * @example 5000 (5 seconds for slower networks)
    */
   publishTimeout?: number;
+  /**
+   * BTP WebSocket endpoint for CrosstownClient (Story 2.5)
+   *
+   * Optional BTP endpoint for CrosstownClient's ILP routing.
+   * Falls back to BTP_ENDPOINT env var, then default localhost endpoint.
+   *
+   * SECURITY: In production (NODE_ENV=production), wss:// is required.
+   * In development, ws://localhost is permitted for local Docker stack.
+   *
+   * @example 'wss://btp.example.com:3000' (production)
+   * @example 'wss://custom-btp:3001' (custom production)
+   */
+  btpEndpoint?: string;
 }
 
 /**
@@ -135,7 +148,7 @@ interface PendingPublish {
 /**
  * Publish API namespace
  *
- * Provides action cost queries, affordability checks, and publish() method (Story 2.2-2.3).
+ * Provides action cost queries, affordability checks, and publish() method (Story 2.2-2.5).
  */
 export interface PublishAPI {
   /**
@@ -172,41 +185,22 @@ export interface PublishAPI {
   /**
    * Publish a game action via ILP packet
    *
-   * Constructs a signed ILP packet and routes it through Crosstown to BLS handler.
+   * Constructs a content-only ILP packet template and delegates signing,
+   * TOON encoding, and transport to @crosstown/client via CrosstownAdapter.
    * Waits for confirmation event from Nostr relay before resolving.
    *
-   * Flow:
-   * 1. Validate client state (identity, Crosstown, cost registry)
+   * Flow (Story 2.5):
+   * 1. Validate client state (identity, CrosstownAdapter, cost registry)
    * 2. Look up action cost from registry
    * 3. Check wallet balance (fail fast if insufficient)
-   * 4. Construct unsigned ILP packet (kind 30078 Nostr event)
-   * 5. Sign event with private key (NFR9: key never leaves client)
-   * 6. Submit to Crosstown connector via HTTP POST
-   * 7. Wait for confirmation event via Nostr subscription
-   * 8. Return confirmation details
+   * 4. Construct content-only ILP packet template (kind 30078)
+   * 5. Submit to CrosstownAdapter.publishEvent() -- signs, TOON-encodes, ILP-routes
+   * 6. Wait for confirmation event via Nostr subscription
+   * 7. Return confirmation details
    *
    * @param options - Reducer name and arguments
    * @returns Promise resolving to confirmation details
-   * @throws SigilError with various codes:
-   *   - IDENTITY_NOT_LOADED: Identity not loaded (call loadIdentity first)
-   *   - CROSSTOWN_NOT_CONFIGURED: Crosstown URL not configured
-   *   - REGISTRY_NOT_LOADED: Cost registry not loaded
-   *   - INSUFFICIENT_BALANCE: Wallet balance < action cost
-   *   - NETWORK_TIMEOUT: Crosstown unreachable or slow
-   *   - CONFIRMATION_TIMEOUT: No confirmation received within timeout
-   *   - SIGNING_FAILED: Event signing failed
-   *   - PUBLISH_FAILED: Crosstown rejected the event
-   *
-   * @example
-   * ```typescript
-   * const result = await client.publish({
-   *   reducer: 'player_move',
-   *   args: [100, 200]
-   * });
-   *
-   * console.log('Action confirmed:', result.eventId);
-   * console.log('Fee paid:', result.fee);
-   * ```
+   * @throws SigilError with various codes
    */
   publish(options: ILPPacketOptions): Promise<ILPPacketResult>;
 }
@@ -226,11 +220,12 @@ export class SigilClient extends EventEmitter {
   private _wallet: WalletClient | null = null;
   private _publish: PublishAPI;
   private crosstownConnectorUrl: string;
-  private crosstownConnector: CrosstownConnector | null = null;
+  private crosstownAdapter: CrosstownAdapter | null = null;
   private pendingPublishes: Map<string, PendingPublish> = new Map();
   private confirmationSubscriptionId: string | null = null;
   private publishTimeout: number;
   private pendingPublishCleanupInterval: NodeJS.Timeout | null = null;
+  private btpEndpoint?: string;
 
   constructor(config?: SigilClientConfig) {
     super();
@@ -240,6 +235,9 @@ export class SigilClient extends EventEmitter {
 
     // Store publish timeout (default: 2000ms)
     this.publishTimeout = config?.publishTimeout ?? 2000;
+
+    // Store BTP endpoint for deferred CrosstownAdapter creation
+    this.btpEndpoint = config?.btpEndpoint;
 
     // Initialize SpacetimeDB surface
     this._spacetimedb = createSpacetimeDBSurface(config?.spacetimedb, this);
@@ -296,19 +294,14 @@ export class SigilClient extends EventEmitter {
       this.actionCostRegistry = loader.load(config.actionCostRegistryPath);
     }
 
-    // Initialize Crosstown connector if URL provided (Story 2.3)
-    if (config?.crosstownConnectorUrl) {
-      this.crosstownConnector = new CrosstownConnector({
-        connectorUrl: this.crosstownConnectorUrl,
-        timeout: this.publishTimeout,
-      });
-    }
+    // CrosstownAdapter is NOT created here -- needs secretKey from identity
+    // It will be lazily created in connect() after identity is loaded
 
     // Initialize wallet client (Story 2.2)
     // Note: Wallet client requires identity to be loaded first for public key
     // We'll initialize it lazily in the wallet getter
 
-    // Initialize publish API (Story 2.2-2.3)
+    // Initialize publish API (Story 2.2-2.5)
     this._publish = {
       getCost: (actionName: string): number => {
         if (!this.actionCostRegistry) {
@@ -359,16 +352,6 @@ export class SigilClient extends EventEmitter {
    * Provides wallet balance queries via Crosstown connector HTTP API.
    *
    * @throws Error if identity not loaded (call loadIdentity first)
-   *
-   * @example
-   * ```typescript
-   * const client = new SigilClient({
-   *   crosstownConnectorUrl: 'http://localhost:4041'
-   * });
-   * await client.loadIdentity('passphrase');
-   *
-   * const balance = await client.wallet.getBalance(); // Returns 10000
-   * ```
    */
   get wallet(): WalletClient {
     if (!this._wallet) {
@@ -385,15 +368,9 @@ export class SigilClient extends EventEmitter {
   }
 
   /**
-   * Access publish API (Story 2.2)
+   * Access publish API (Story 2.2-2.5)
    *
-   * Provides action cost queries and affordability checks.
-   *
-   * @example
-   * ```typescript
-   * const cost = client.publish.getCost('player_move'); // Returns 1
-   * const canAfford = await client.publish.canAfford('player_move'); // Returns true/false
-   * ```
+   * Provides action cost queries, affordability checks, and publish().
    */
   get publish(): PublishAPI {
     return this._publish;
@@ -401,22 +378,6 @@ export class SigilClient extends EventEmitter {
 
   /**
    * Access SpacetimeDB surface
-   *
-   * Provides connection, subscriptions, table accessors, static data, and latency monitoring.
-   *
-   * @example
-   * ```typescript
-   * const client = new SigilClient({
-   *   spacetimedb: { host: 'localhost', port: 3000, database: 'bitcraft' }
-   * });
-   *
-   * await client.connect();
-   * const handle = await client.spacetimedb.subscribe('player_state', {});
-   * const players = client.spacetimedb.tables.player_state.getAll();
-   *
-   * // Access static data
-   * const item = client.spacetimedb.staticData.get('item_desc', 1);
-   * ```
    */
   get spacetimedb(): SpacetimeDBSurface {
     return this._spacetimedb;
@@ -424,25 +385,6 @@ export class SigilClient extends EventEmitter {
 
   /**
    * Access Nostr client
-   *
-   * Provides Nostr relay connection, subscriptions, and event publishing (Story 2.1+).
-   *
-   * @example
-   * ```typescript
-   * const client = new SigilClient({
-   *   nostrRelay: { url: 'ws://localhost:4040' }
-   * });
-   *
-   * await client.connect();
-   *
-   * // Subscribe to action confirmations
-   * const sub = client.nostr.subscribe([{ kinds: [30078] }], (event) => {
-   *   console.log('Action confirmed:', event);
-   * });
-   *
-   * // Later...
-   * sub.unsubscribe();
-   * ```
    */
   get nostr(): NostrClient {
     return this._nostr;
@@ -450,15 +392,6 @@ export class SigilClient extends EventEmitter {
 
   /**
    * Access static data loader (convenience accessor)
-   *
-   * Provides quick access to static data queries.
-   * Same as `client.spacetimedb.staticData`.
-   *
-   * @example
-   * ```typescript
-   * const item = client.staticData.get('item_desc', 1);
-   * const allItems = client.staticData.getAll('item_desc');
-   * ```
    */
   get staticData() {
     return this._spacetimedb.staticData;
@@ -472,24 +405,32 @@ export class SigilClient extends EventEmitter {
   }
 
   /**
-   * Connect to SpacetimeDB server and Nostr relay
+   * Connect to SpacetimeDB server, Nostr relay, and Crosstown connector
    *
-   * Establishes WebSocket connections to both services.
-   * If autoLoadStaticData is true (default), static data loads automatically.
-   *
-   * @example
-   * ```typescript
-   * const client = new SigilClient({
-   *   spacetimedb: { host: 'localhost', port: 3000, database: 'bitcraft' },
-   *   nostrRelay: { url: 'ws://localhost:4040' }
-   * });
-   * await client.connect();
-   * // Both SpacetimeDB and Nostr relay are now connected
-   * ```
+   * Establishes connections to all services in parallel.
+   * CrosstownAdapter is lazily created here if identity is loaded and URL is configured.
    */
   async connect(): Promise<void> {
-    // Connect to both SpacetimeDB and Nostr relay in parallel
-    await Promise.all([this._spacetimedb.connection.connect(), this._nostr.connect()]);
+    // Create CrosstownAdapter if identity loaded and URL configured
+    if (this.keypair && this.crosstownConnectorUrl) {
+      try {
+        this.crosstownAdapter = new CrosstownAdapter({
+          secretKey: this.keypair.privateKey,
+          connectorUrl: this.crosstownConnectorUrl,
+          btpEndpoint: this.btpEndpoint,
+        });
+      } catch (error) {
+        // Emit error but don't fail connection if adapter creation fails
+        this.emit('crosstownAdapterError', error);
+      }
+    }
+
+    // Connect to SpacetimeDB, Nostr relay, and optionally Crosstown in parallel
+    await Promise.all([
+      this._spacetimedb.connection.connect(),
+      this._nostr.connect(),
+      this.crosstownAdapter?.start(),
+    ]);
 
     // Auto-load static data if configured
     if (this.autoLoadStaticData) {
@@ -499,20 +440,14 @@ export class SigilClient extends EventEmitter {
         // Emit error event instead of console.error for proper error handling
         this.emit('staticDataLoadError', error);
         // Don't fail connection if static data loading fails
-        // User can manually retry with client.staticData.load()
       }
     }
   }
 
   /**
-   * Disconnect from SpacetimeDB server and Nostr relay
+   * Disconnect from SpacetimeDB server, Nostr relay, and Crosstown connector
    *
-   * Cleanly closes both connections and unsubscribes from all tables/subscriptions.
-   *
-   * @example
-   * ```typescript
-   * await client.disconnect();
-   * ```
+   * Cleanly closes all connections and unsubscribes from all tables/subscriptions.
    */
   async disconnect(): Promise<void> {
     // Mark as manual disconnect (skip auto-reconnection)
@@ -524,6 +459,16 @@ export class SigilClient extends EventEmitter {
     if (this.pendingPublishCleanupInterval) {
       clearInterval(this.pendingPublishCleanupInterval);
       this.pendingPublishCleanupInterval = null;
+    }
+
+    // Stop CrosstownAdapter before clearing pending publishes
+    if (this.crosstownAdapter) {
+      try {
+        await this.crosstownAdapter.stop();
+      } catch {
+        // Ignore adapter stop errors during disconnect
+      }
+      this.crosstownAdapter = null;
     }
 
     // Reject all pending publishes with CLIENT_DISCONNECTED error
@@ -542,9 +487,6 @@ export class SigilClient extends EventEmitter {
 
     // Unsubscribe from confirmation subscription
     if (this.confirmationSubscriptionId) {
-      // Find and unsubscribe (NostrClient should have unsubscribe method)
-      // Note: NostrClient.subscribe returns Subscription with unsubscribe()
-      // We stored only the ID, so we'll let disconnect handle cleanup
       this.confirmationSubscriptionId = null;
     }
 
@@ -552,7 +494,6 @@ export class SigilClient extends EventEmitter {
     this._spacetimedb.subscriptions.unsubscribeAll();
 
     // Clear table caches (internal method from createSpacetimeDBSurface)
-    // Type assertion is safe because we know createSpacetimeDBSurface adds this method
     const surface = this._spacetimedb as SpacetimeDBSurface & {
       _clearTableCache?: () => void;
     };
@@ -596,15 +537,6 @@ export class SigilClient extends EventEmitter {
 
   /**
    * Subscribe to table updates (convenience method)
-   *
-   * @param tableName - Name of table to subscribe to
-   * @param query - Query filter (empty object {} for all rows)
-   * @returns Promise resolving to subscription handle
-   *
-   * @example
-   * ```typescript
-   * const handle = await client.spacetimedb.subscribe('player_state', {});
-   * ```
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async subscribe(tableName: string, query: any): Promise<any> {
@@ -615,16 +547,6 @@ export class SigilClient extends EventEmitter {
    * Load user identity from encrypted file
    *
    * Must be called before accessing the identity property.
-   *
-   * @param passphrase - Passphrase to decrypt the identity file
-   * @param filePath - Optional custom path to identity file (defaults to ~/.sigil/identity)
-   *
-   * @example
-   * ```typescript
-   * const client = new SigilClient();
-   * await client.loadIdentity('my-passphrase');
-   * console.log('Logged in as:', client.identity.publicKey.npub);
-   * ```
    */
   async loadIdentity(passphrase: string, filePath?: string): Promise<void> {
     this.keypair = await loadKeypair(passphrase, filePath);
@@ -634,8 +556,6 @@ export class SigilClient extends EventEmitter {
    * Handle action confirmation event from Nostr relay
    *
    * Matches confirmation to pending publish and resolves promise.
-   *
-   * @param confirmation - Action confirmation event
    */
   private handleActionConfirmation(confirmation: {
     eventId: string;
@@ -647,17 +567,12 @@ export class SigilClient extends EventEmitter {
   }): void {
     const pending = this.pendingPublishes.get(confirmation.eventId);
     if (!pending) {
-      // Not a pending publish (or already resolved), ignore
       return;
     }
 
-    // Clear timeout
     clearTimeout(pending.timeoutId);
-
-    // Remove from pending map
     this.pendingPublishes.delete(confirmation.eventId);
 
-    // Resolve promise with confirmation
     pending.resolve({
       eventId: confirmation.eventId,
       reducer: confirmation.reducer,
@@ -670,10 +585,6 @@ export class SigilClient extends EventEmitter {
 
   /**
    * Cleanup a pending publish
-   *
-   * Removes from map and clears timeout.
-   *
-   * @param eventId - Event ID to cleanup
    */
   private cleanupPendingPublish(eventId: string): void {
     const pending = this.pendingPublishes.get(eventId);
@@ -685,22 +596,9 @@ export class SigilClient extends EventEmitter {
 
   /**
    * Cleanup stale pending publishes (ISSUE-3 fix)
-   *
-   * Removes entries that have been pending for more than 2x publishTimeout.
-   * This prevents memory leaks if confirmations are never received.
-   *
-   * Called periodically by cleanup interval.
    */
   private cleanupStalePendingPublishes(): void {
-    // Note: We don't have a timestamp on PendingPublish, so we can't check age
-    // Instead, we rely on the timeout mechanism to clean up entries
-    // This method is a safety net for edge cases where timeout doesn't fire
-    // In practice, timeouts should always fire, so this is defensive
-
-    // For now, we'll just ensure the map doesn't grow unbounded
-    // If map size exceeds 1000 entries, reject oldest entries
     if (this.pendingPublishes.size > 1000) {
-      // Get first entry (oldest in insertion order for Map)
       const firstEntry = this.pendingPublishes.entries().next();
       if (!firstEntry.done) {
         const [oldEventId, oldPending] = firstEntry.value;
@@ -720,17 +618,12 @@ export class SigilClient extends EventEmitter {
 
   /**
    * Ensure confirmation subscription is active
-   *
-   * Creates a global subscription for kind 30078 events (action confirmations)
-   * if not already created. Reuses subscription for all publish() calls.
    */
   private ensureConfirmationSubscription(): void {
     if (this.confirmationSubscriptionId) {
-      // Already subscribed
       return;
     }
 
-    // Subscribe to kind 30078 events (ILP confirmations) from self
     if (!this.keypair) {
       throw new SigilError(
         'Identity not loaded. Call loadIdentity() first.',
@@ -744,13 +637,8 @@ export class SigilClient extends EventEmitter {
     const subscription = this._nostr.subscribe(
       [{ kinds: [30078], authors: [publicKeyHex] }],
       (event: NostrEvent) => {
-        // Parse ILP packet content
         try {
-          // Validate event content structure (parsed for side-effect validation)
           JSON.parse(event.content) as { reducer?: string; args?: unknown };
-
-          // Emit actionConfirmed event (already handled by NostrClient)
-          // The confirmation will be matched to pending publish in handleActionConfirmation
         } catch {
           // Ignore malformed events
         }
@@ -763,10 +651,8 @@ export class SigilClient extends EventEmitter {
   /**
    * Publish a game action via ILP packet
    *
-   * Internal implementation of client.publish() method.
-   *
-   * @param options - Reducer and args
-   * @returns Promise resolving to confirmation
+   * Story 2.5: Uses CrosstownAdapter instead of direct CrosstownConnector.
+   * Constructs content-only template, delegates signing/transport to @crosstown/client.
    */
   private async publishAction(options: ILPPacketOptions): Promise<ILPPacketResult> {
     // 1. Validate client state
@@ -778,9 +664,9 @@ export class SigilClient extends EventEmitter {
       );
     }
 
-    if (!this.crosstownConnector) {
+    if (!this.crosstownAdapter) {
       throw new SigilError(
-        'Crosstown connector not configured. Provide crosstownConnectorUrl in SigilClientConfig.',
+        'Crosstown adapter not configured. Provide crosstownConnectorUrl in SigilClientConfig and call connect().',
         'CROSSTOWN_NOT_CONFIGURED',
         'publish'
       );
@@ -804,37 +690,34 @@ export class SigilClient extends EventEmitter {
         `Insufficient balance for action '${options.reducer}'. Required: ${cost}, Available: ${balance}`,
         'INSUFFICIENT_BALANCE',
         'crosstown',
-        { action: options.reducer, required: cost, available: balance, timestamp: Date.now() } // ISSUE-4 fix
+        { action: options.reducer, required: cost, available: balance, timestamp: Date.now() }
       );
     }
 
-    // 4. Construct unsigned ILP packet
-    const publicKeyHex = bytesToHex(this.keypair.publicKey);
-    const unsignedEvent = constructILPPacket(options, cost, publicKeyHex);
+    // 4. Construct content-only ILP packet template (no pubkey, no signing)
+    const eventTemplate = constructILPPacket(options, cost);
 
-    // 5. Sign event
-    const signedEvent = signEvent(unsignedEvent, this.keypair.privateKey);
-
-    // 6. Ensure confirmation subscription is active
+    // 5. Ensure confirmation subscription is active
     this.ensureConfirmationSubscription();
 
-    // 7. Create promise for confirmation wait
+    // 6. Submit to CrosstownAdapter -- signs, TOON-encodes, ILP-routes
+    const publishResult: ILPPacketResult = await this.crosstownAdapter.publishEvent(eventTemplate);
+
+    // 7. Create promise for confirmation wait (using eventId from adapter result)
     const confirmationPromise = new Promise<ILPPacketResult>((resolve, reject) => {
-      // Set timeout for confirmation
       const timeoutId = setTimeout(() => {
-        this.cleanupPendingPublish(signedEvent.id);
+        this.cleanupPendingPublish(publishResult.eventId);
         reject(
           new SigilError(
-            `Confirmation timeout for event ${signedEvent.id} after ${this.publishTimeout}ms`,
+            `Confirmation timeout for event ${publishResult.eventId} after ${this.publishTimeout}ms`,
             'CONFIRMATION_TIMEOUT',
             'crosstown',
-            { eventId: signedEvent.id, timeout: this.publishTimeout }
+            { eventId: publishResult.eventId, timeout: this.publishTimeout }
           )
         );
       }, this.publishTimeout);
 
-      // Track pending publish
-      this.pendingPublishes.set(signedEvent.id, {
+      this.pendingPublishes.set(publishResult.eventId, {
         resolve,
         reject,
         timeoutId,
@@ -844,16 +727,7 @@ export class SigilClient extends EventEmitter {
       });
     });
 
-    // 8. Submit to Crosstown connector
-    try {
-      await this.crosstownConnector.publishEvent(signedEvent);
-    } catch (error) {
-      // Cleanup pending publish on submission error
-      this.cleanupPendingPublish(signedEvent.id);
-      throw error;
-    }
-
-    // 9. Wait for confirmation
+    // 8. Wait for confirmation
     return confirmationPromise;
   }
 
@@ -862,25 +736,6 @@ export class SigilClient extends EventEmitter {
    *
    * Provides public key and signing capability.
    * The private key is NEVER exposed.
-   *
-   * @throws Error if identity not loaded (call loadIdentity first)
-   *
-   * @example
-   * ```typescript
-   * const client = new SigilClient();
-   * await client.loadIdentity('my-passphrase');
-   *
-   * // Access public key
-   * console.log('npub:', client.identity.publicKey.npub);
-   *
-   * // Sign an event
-   * const signed = await client.identity.sign({
-   *   kind: 1,
-   *   created_at: Math.floor(Date.now() / 1000),
-   *   tags: [],
-   *   content: 'Hello, Nostr!',
-   * });
-   * ```
    */
   get identity(): ClientIdentity {
     if (!this.keypair) {
@@ -901,7 +756,7 @@ export class SigilClient extends EventEmitter {
         }
 
         // Sign event using nostr-tools finalizeEvent
-        // This automatically adds id, pubkey, and sig fields
+        // This is SEPARATE from the publish pipeline -- identity.sign() is for arbitrary events
         const signedEvent = finalizeEvent(event, this.keypair.privateKey);
 
         // Verify signature (sanity check)

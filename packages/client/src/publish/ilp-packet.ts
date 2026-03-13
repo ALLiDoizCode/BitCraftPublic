@@ -1,12 +1,15 @@
 /**
  * ILP Packet Construction
- * Story 2.3: ILP Packet Construction & Signing
+ * Story 2.3 (original), Story 2.5 (simplified)
  *
- * Constructs kind 30078 Nostr events containing game action ILP packets.
+ * Constructs content-only event templates for kind 30078 ILP packets.
+ * After Story 2.5, constructILPPacket returns only { kind, content, tags }.
+ * CrosstownClient fills in pubkey, created_at, id, and sig from its secretKey.
  */
 
 import type { NostrEvent } from '../nostr/types';
 import { SigilError } from '../nostr/nostr-client';
+import type { UnsignedEventTemplate } from '../crosstown/crosstown-adapter';
 
 /**
  * ILP packet options for publish() call
@@ -41,33 +44,34 @@ export interface ILPPacketResult {
 }
 
 /**
- * Construct an unsigned ILP packet as a kind 30078 Nostr event
+ * Construct an unsigned event template for a kind 30078 ILP packet
  *
- * Creates the event structure before signing. The event content contains
- * JSON-serialized reducer and args. The id and sig fields are empty strings
- * (will be filled by signing function).
+ * Creates a content-only event template with kind, content, and tags.
+ * CrosstownClient fills in pubkey, created_at, id, and sig from its secretKey.
+ *
+ * NOTE: Function name preserved for public API stability (Implementation Constraint 5).
  *
  * @param options - Reducer and args for the game action
  * @param fee - ILP cost for this action (from cost registry)
- * @param pubkey - User's Nostr public key (hex format, 64 characters)
- * @returns Unsigned Nostr event ready for signing
+ * @returns Unsigned event template with kind, content, and tags only
  * @throws SigilError with code INVALID_ACTION if validation fails
  *
  * @example
  * ```typescript
- * const unsignedEvent = constructILPPacket(
+ * const template = constructILPPacket(
  *   { reducer: 'player_move', args: [100, 200] },
- *   1,
- *   '32e1827635450ebb3c5a7d12c1f8e7b2b514439ac10a67eef3d9fd9c5c68e245'
+ *   1
  * );
- * // unsignedEvent.content = '{"reducer":"player_move","args":[100,200]}'
+ * // template.kind = 30078
+ * // template.content = '{"reducer":"player_move","args":[100,200]}'
+ * // template.tags = [['d', 'player_move_...'], ['fee', '1']]
+ * // No pubkey, created_at, id, or sig -- CrosstownClient adds those
  * ```
  */
 export function constructILPPacket(
   options: ILPPacketOptions,
-  fee: number,
-  pubkey: string
-): Omit<NostrEvent, 'id' | 'sig'> {
+  fee: number
+): UnsignedEventTemplate {
   // Validation: reducer must be non-empty string
   if (!options.reducer || typeof options.reducer !== 'string') {
     throw new SigilError('Reducer name must be a non-empty string', 'INVALID_ACTION', 'publish');
@@ -87,15 +91,6 @@ export function constructILPPacket(
   if (!reducerPattern.test(options.reducer)) {
     throw new SigilError(
       `Reducer name contains invalid characters: '${options.reducer}'. Only alphanumeric and underscore allowed.`,
-      'INVALID_ACTION',
-      'publish'
-    );
-  }
-
-  // Validation: pubkey must be valid 64-character hex string (ISSUE-2 fix)
-  if (typeof pubkey !== 'string' || !/^[0-9a-f]{64}$/i.test(pubkey)) {
-    throw new SigilError(
-      `Public key must be a 64-character hex string. Got: ${typeof pubkey === 'string' ? pubkey.substring(0, 16) + '...' : typeof pubkey}`,
       'INVALID_ACTION',
       'publish'
     );
@@ -122,23 +117,20 @@ export function constructILPPacket(
     );
   }
 
-  // Construct kind 30078 Nostr event (NIP-78: Application-specific Data)
-  // Kind 30078 is a parameterized replaceable event (NIP-33)
-  const event: Omit<NostrEvent, 'id' | 'sig'> = {
-    pubkey, // 64-character hex public key
-    created_at: Math.floor(Date.now() / 1000), // Unix timestamp in seconds
-    kind: 30078, // NIP-78: Application-specific Data
+  // Construct content-only template for kind 30078 (NIP-78: Application-specific Data)
+  // CrosstownClient fills in pubkey, created_at, id, and sig from its secretKey
+  const template: UnsignedEventTemplate = {
+    kind: 30078,
     tags: [
       // NIP-33: Parameterized replaceable events require a 'd' tag
-      // Use reducer name + timestamp as unique identifier
       ['d', `${options.reducer}_${Date.now()}`],
-      // Add fee as a tag for easy relay filtering
+      // Fee tag for relay filtering
       ['fee', fee.toString()],
     ],
-    content: contentJson, // JSON-serialized { reducer, args }
+    content: contentJson,
   };
 
-  return event;
+  return template;
 }
 
 /**
@@ -204,17 +196,6 @@ export function parseILPPacket(event: NostrEvent): ILPPacketOptions | null {
  * };
  *
  * const fee = extractFeeFromEvent(event); // Returns 10
- * ```
- *
- * @example
- * ```typescript
- * const eventWithoutFee = {
- *   kind: 30078,
- *   tags: [['d', 'player_move_123']],
- *   // ... other fields
- * };
- *
- * const fee = extractFeeFromEvent(eventWithoutFee); // Returns 0
  * ```
  */
 export function extractFeeFromEvent(event: NostrEvent): number {

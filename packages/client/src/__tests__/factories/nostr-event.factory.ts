@@ -3,11 +3,12 @@
  * Story 2.4: BLS Handler Integration Contract & Testing
  *
  * Factory functions for generating test Nostr events with valid/invalid signatures.
+ * Uses nostr-tools finalizeEvent directly (signEvent was removed in Story 2.5).
  */
 
 import type { NostrEvent } from '../../nostr/types';
 import { generateKeypair } from '../../nostr/keypair';
-import { signEvent } from '../../publish/event-signing';
+import { finalizeEvent } from 'nostr-tools/pure';
 import { bytesToHex } from '@noble/hashes/utils';
 
 /**
@@ -28,8 +29,8 @@ export async function createNostrEvent(
     ...overrides,
   };
 
-  // Sign the event
-  const signedEvent = signEvent(eventTemplate, keypair.privateKey);
+  // Sign the event using nostr-tools finalizeEvent
+  const signedEvent = finalizeEvent(eventTemplate, keypair.privateKey);
 
   return signedEvent;
 }
@@ -40,7 +41,7 @@ export async function createNostrEvent(
 export async function createKind30078Event(
   overrides: {
     reducer?: string;
-    args?: any[];
+    args?: unknown[];
     content?: string;
   } = {}
 ): Promise<NostrEvent> {
@@ -59,7 +60,7 @@ export async function createKind30078Event(
   };
 
   // Sign with generated keypair
-  const signedEvent = signEvent(eventTemplate, keypair.privateKey);
+  const signedEvent = finalizeEvent(eventTemplate, keypair.privateKey);
 
   return signedEvent;
 }
@@ -81,7 +82,7 @@ export async function createInvalidEvent(
     content: JSON.stringify({ reducer: 'test_action', args: [] }),
   };
 
-  const signedEvent = signEvent(eventTemplate, keypair.privateKey);
+  const signedEvent = finalizeEvent(eventTemplate, keypair.privateKey);
 
   switch (type) {
     case 'bad-sig':

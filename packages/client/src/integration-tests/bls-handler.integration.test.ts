@@ -12,7 +12,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { NostrClient } from '../nostr/nostr-client';
 import { generateKeypair, type NostrKeypair } from '../nostr/keypair';
-import { signEvent } from '../publish/event-signing';
+import { finalizeEvent } from 'nostr-tools/pure';
 import type { NostrEvent } from '../nostr/types';
 import { BLSErrorCode } from '../bls/types';
 import { bytesToHex } from '@noble/hashes/utils';
@@ -48,7 +48,7 @@ describe.skipIf(!runIntegrationTests || !blsHandlerDeployed)(
     /**
      * Helper function to publish a game action event
      */
-    async function publishAction(action: { reducer: string; args: any[] }): Promise<NostrEvent> {
+    async function publishAction(action: { reducer: string; args: unknown[] }): Promise<NostrEvent> {
       const content = JSON.stringify(action);
       const pubkeyHex = bytesToHex(keypair.publicKey);
 
@@ -62,7 +62,7 @@ describe.skipIf(!runIntegrationTests || !blsHandlerDeployed)(
       };
 
       // Sign event with private key
-      const signedEvent = signEvent(eventTemplate, keypair.privateKey);
+      const signedEvent = finalizeEvent(eventTemplate, keypair.privateKey);
 
       // TODO: Publish event to Crosstown relay
       // This will be implemented when NostrClient.publishEvent() is added in a future story
@@ -74,7 +74,7 @@ describe.skipIf(!runIntegrationTests || !blsHandlerDeployed)(
      * Helper function to wait for BLS response
      * TODO: Implement when BLS handler response mechanism is defined
      */
-    async function waitForBLSResponse(_eventId: string, _timeoutMs = 5000): Promise<any> {
+    async function waitForBLSResponse(_eventId: string, _timeoutMs = 5000): Promise<unknown> {
       // Placeholder - actual implementation depends on BLS/Crosstown relay integration
       throw new Error('BLS handler response mechanism not yet implemented');
     }
@@ -140,7 +140,7 @@ describe.skipIf(!runIntegrationTests || !blsHandlerDeployed)(
           content: '{invalid json content', // Malformed JSON
         };
 
-        const signedEvent = signEvent(eventTemplate, keypair.privateKey);
+        const signedEvent = finalizeEvent(eventTemplate, keypair.privateKey);
 
         // Then: Event is created but content is invalid
         expect(signedEvent.content).toBe('{invalid json content');
@@ -161,7 +161,7 @@ describe.skipIf(!runIntegrationTests || !blsHandlerDeployed)(
 
         const event = await publishAction(action);
 
-        // Then: Signature is valid (verified by signEvent)
+        // Then: Signature is valid (verified by nostr-tools finalizeEvent)
         expect(event.sig).toBeTruthy();
         expect(event.sig).toMatch(/^[0-9a-f]{128}$/); // 64-byte hex signature
 
@@ -181,7 +181,7 @@ describe.skipIf(!runIntegrationTests || !blsHandlerDeployed)(
           content: JSON.stringify({ reducer: 'test_action', args: [] }),
         };
 
-        const signedEvent = signEvent(eventTemplate, keypair.privateKey);
+        const signedEvent = finalizeEvent(eventTemplate, keypair.privateKey);
 
         // Corrupt the signature to make it invalid
         const invalidEvent = {

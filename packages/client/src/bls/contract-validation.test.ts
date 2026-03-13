@@ -12,7 +12,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { signEvent } from '../publish/event-signing';
+import { finalizeEvent } from 'nostr-tools/pure';
 import { generateKeypair } from '../nostr/keypair';
 import { bytesToHex } from '@noble/hashes/utils';
 import type { NostrEvent } from '../nostr/types';
@@ -33,7 +33,7 @@ describe('BLS Handler Contract Validation', () => {
         content: JSON.stringify({ reducer: 'test_action', args: [] }),
       };
 
-      const signedEvent = signEvent(eventTemplate, keypair.privateKey);
+      const signedEvent = finalizeEvent(eventTemplate, keypair.privateKey);
 
       // Then: Event has all required NIP-01 fields
       expect(signedEvent).toHaveProperty('id');
@@ -77,7 +77,7 @@ describe('BLS Handler Contract Validation', () => {
         content: JSON.stringify({ reducer: 'player_move', args: [] }),
       };
 
-      const signedEvent = signEvent(eventTemplate, keypair.privateKey);
+      const signedEvent = finalizeEvent(eventTemplate, keypair.privateKey);
 
       // Then: Kind must be exactly 30078
       expect(signedEvent.kind).toBe(30078);
@@ -99,7 +99,7 @@ describe('BLS Handler Contract Validation', () => {
         content: '{"reducer":"test","args":[]}',
       };
 
-      const signedEvent = signEvent(eventTemplate, keypair.privateKey);
+      const signedEvent = finalizeEvent(eventTemplate, keypair.privateKey);
 
       // Then: All 7 NIP-01 fields are present
       const requiredFields = ['id', 'pubkey', 'created_at', 'kind', 'tags', 'content', 'sig'];
@@ -136,7 +136,7 @@ describe('BLS Handler Contract Validation', () => {
         content: JSON.stringify(action),
       };
 
-      const signedEvent = signEvent(eventTemplate, keypair.privateKey);
+      const signedEvent = finalizeEvent(eventTemplate, keypair.privateKey);
 
       // Then: Content is valid JSON string
       expect(() => JSON.parse(signedEvent.content)).not.toThrow();
@@ -236,7 +236,7 @@ describe('BLS Handler Contract Validation', () => {
           content: JSON.stringify(action),
         };
 
-        const signedEvent = signEvent(eventTemplate, keypair.privateKey);
+        const signedEvent = finalizeEvent(eventTemplate, keypair.privateKey);
 
         // Then: Content is valid JSON
         const parsed = JSON.parse(signedEvent.content);
@@ -269,7 +269,7 @@ describe('BLS Handler Contract Validation', () => {
           content: JSON.stringify({ reducer, args: [] }),
         };
 
-        const signedEvent = signEvent(eventTemplate, keypair.privateKey);
+        const signedEvent = finalizeEvent(eventTemplate, keypair.privateKey);
         const parsed = JSON.parse(signedEvent.content);
 
         // Then: Reducer name is preserved
@@ -316,7 +316,7 @@ describe('BLS Handler Contract Validation', () => {
         content: JSON.stringify({ reducer: 'test', args: [] }),
       };
 
-      const signedEvent = signEvent(eventTemplate, keypair.privateKey);
+      const signedEvent = finalizeEvent(eventTemplate, keypair.privateKey);
 
       // Then: Signature is 128-character hex string (64 bytes Schnorr)
       expect(signedEvent.sig).toMatch(/^[0-9a-f]{128}$/);
@@ -329,7 +329,7 @@ describe('BLS Handler Contract Validation', () => {
         ...eventTemplate,
         created_at: eventTemplate.created_at + 1,
       };
-      const signedEvent2 = signEvent(eventTemplate2, keypair.privateKey);
+      const signedEvent2 = finalizeEvent(eventTemplate2, keypair.privateKey);
       expect(signedEvent2.sig).not.toBe(signedEvent.sig);
     });
 
@@ -347,8 +347,8 @@ describe('BLS Handler Contract Validation', () => {
       };
 
       // When: Signing the same template twice
-      const signedEvent1 = signEvent(eventTemplate, keypair.privateKey);
-      const signedEvent2 = signEvent(eventTemplate, keypair.privateKey);
+      const signedEvent1 = finalizeEvent(eventTemplate, keypair.privateKey);
+      const signedEvent2 = finalizeEvent(eventTemplate, keypair.privateKey);
 
       // Then: Event IDs are identical (deterministic)
       expect(signedEvent1.id).toBe(signedEvent2.id);
@@ -373,7 +373,7 @@ describe('BLS Handler Contract Validation', () => {
         content: JSON.stringify({ reducer: 'test', args: [] }),
       };
 
-      const signedEvent = signEvent(eventTemplate, keypair.privateKey);
+      const signedEvent = finalizeEvent(eventTemplate, keypair.privateKey);
 
       // When: Corrupting the signature
       const corruptedSignatures = [
@@ -418,7 +418,7 @@ describe('BLS Handler Contract Validation', () => {
         content: JSON.stringify({ reducer: 'test', args: [] }),
       };
 
-      const signedEvent = signEvent(eventTemplate, keypair.privateKey);
+      const signedEvent = finalizeEvent(eventTemplate, keypair.privateKey);
       const originalId = signedEvent.id;
 
       // When: Tampering with event ID
@@ -458,7 +458,7 @@ describe('BLS Handler Contract Validation', () => {
         content: JSON.stringify({ reducer: 'test', args: [] }),
       };
 
-      const signedEvent = signEvent(eventTemplate, keypair.privateKey);
+      const signedEvent = finalizeEvent(eventTemplate, keypair.privateKey);
 
       // When: Tampering with content
       const tamperedContents = [
@@ -495,7 +495,7 @@ describe('BLS Handler Contract Validation', () => {
         content: JSON.stringify({ reducer: 'player_move', args: [{ x: 1 }, { x: 2 }] }),
       };
 
-      const signedEvent = signEvent(eventTemplate, keypair.privateKey);
+      const signedEvent = finalizeEvent(eventTemplate, keypair.privateKey);
 
       // Then: Event has pubkey field for identity extraction
       expect(signedEvent.pubkey).toBeTruthy();
@@ -529,7 +529,7 @@ describe('BLS Handler Contract Validation', () => {
       };
 
       // When: Signing event
-      const signedEvent = signEvent(eventTemplate, keypair.privateKey);
+      const signedEvent = finalizeEvent(eventTemplate, keypair.privateKey);
 
       // Then: Pubkey is preserved exactly
       expect(signedEvent.pubkey).toBe(originalPubkey);
@@ -564,7 +564,7 @@ describe('BLS Handler Contract Validation', () => {
           content: JSON.stringify(action),
         };
 
-        const signedEvent = signEvent(eventTemplate, keypair.privateKey);
+        const signedEvent = finalizeEvent(eventTemplate, keypair.privateKey);
 
         // Then: Content is valid JSON with required fields
         const parsed = JSON.parse(signedEvent.content);
@@ -594,7 +594,7 @@ describe('BLS Handler Contract Validation', () => {
           content: JSON.stringify({ reducer, args: [] }),
         };
 
-        const signedEvent = signEvent(eventTemplate, keypair.privateKey);
+        const signedEvent = finalizeEvent(eventTemplate, keypair.privateKey);
         const parsed = JSON.parse(signedEvent.content);
 
         // Then: Reducer name is valid format (alphanumeric + underscore)
@@ -629,7 +629,7 @@ describe('BLS Handler Contract Validation', () => {
           content,
         };
 
-        const signedEvent = signEvent(eventTemplate, keypair.privateKey);
+        const signedEvent = finalizeEvent(eventTemplate, keypair.privateKey);
 
         // Then: Event is created successfully
         expect(signedEvent).toBeDefined();
@@ -660,7 +660,7 @@ describe('BLS Handler Contract Validation', () => {
       const iterations = 100;
 
       for (let i = 0; i < iterations; i++) {
-        signEvent(eventTemplate, keypair.privateKey);
+        finalizeEvent(eventTemplate, keypair.privateKey);
       }
 
       const endTime = performance.now();

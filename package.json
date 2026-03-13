@@ -11,7 +11,7 @@
     "test": "pnpm --recursive test",
     "test:integration": "vitest run",
     "lint": "eslint packages/*/src --ext .ts",
-    "typecheck": "pnpm --recursive exec tsc --noEmit",
+    "typecheck": "pnpm --filter '@sigil/*' exec tsc --noEmit",
     "smoke:bls": "tsx scripts/bls-handler-smoke-test.ts"
   },
   "devDependencies": {

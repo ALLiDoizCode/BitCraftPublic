@@ -46,7 +46,7 @@ export {
   type FrequencyEnum,
 } from './publish/action-cost-registry';
 
-// ILP packet construction (Story 2.3)
+// ILP packet construction (Story 2.3, simplified in Story 2.5)
 export {
   type ILPPacketOptions,
   type ILPPacketResult,
@@ -55,14 +55,13 @@ export {
   extractFeeFromEvent,
 } from './publish/ilp-packet';
 
-// Event signing (Story 2.3)
-export { signEvent, redactPrivateKey } from './publish/event-signing';
-
-// Crosstown connector (Story 2.3)
+// Crosstown adapter (Story 2.5 - replaces CrosstownConnector from Story 2.3)
 export {
-  CrosstownConnector,
-  type CrosstownConnectorOptions,
-} from './crosstown/crosstown-connector';
+  CrosstownAdapter,
+  type CrosstownAdapterConfig,
+  type UnsignedEventTemplate,
+  type CrosstownStartResult,
+} from './crosstown/crosstown-adapter';
 
 // Wallet client (Story 2.2)
 export { WalletClient } from './wallet/wallet-client';

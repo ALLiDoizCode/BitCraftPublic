@@ -63,7 +63,7 @@ epics:
         status: done
       - id: story-2.5
         title: '@crosstown/client Integration & Scaffolding Removal'
-        status: backlog
+        status: done
         note: 'Integrate @crosstown/client@^0.4.2 for signing/ILP/transport, remove custom scaffolding (event-signing.ts, crosstown-connector.ts), simplify ilp-packet.ts to content-only'
       # Stories 2.6 (Identity Propagation) and 2.7 (ILP Fee Collection) REMOVED 2026-03-13
       # Reason: Moved to Epic 3 (BitCraft BLS). Spec'd in Story 2.4, implemented in Epic 3.
