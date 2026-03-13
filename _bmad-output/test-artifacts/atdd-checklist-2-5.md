@@ -1,5 +1,13 @@
 ---
-stepsCompleted: ['step-01-preflight-and-context', 'step-02-generation-mode', 'step-03-test-strategy', 'step-04-generate-tests', 'step-04c-aggregate', 'step-05-validate-and-complete']
+stepsCompleted:
+  [
+    'step-01-preflight-and-context',
+    'step-02-generation-mode',
+    'step-03-test-strategy',
+    'step-04-generate-tests',
+    'step-04c-aggregate',
+    'step-05-validate-and-complete',
+  ]
 lastStep: 'step-05-validate-and-complete'
 lastSaved: '2026-03-13'
 workflowType: 'testarch-atdd'
@@ -50,6 +58,7 @@ This story transitions the Sigil Client publish pipeline from custom scaffolding
 - **TEA Config Flags:** tea_use_playwright_utils=true (N/A for backend), tea_browser_automation=auto (N/A), test_stack_type=auto (resolved: backend)
 
 ### Knowledge Base Fragments Loaded
+
 - data-factories.md (core) - Factory patterns with overrides
 - test-quality.md (core) - Deterministic, isolated, explicit test patterns
 - test-levels-framework.md (backend) - Unit vs Integration vs E2E selection
@@ -73,23 +82,25 @@ This story transitions the Sigil Client publish pipeline from custom scaffolding
 ## Test Strategy
 
 ### Generation Mode: AI Generation
+
 Backend project with clear Given/When/Then acceptance criteria. No browser recording needed.
 
 ### Test Level Mapping
 
-| AC | Test Level | Priority | Rationale |
-|----|-----------|----------|-----------|
-| AC1 | Unit | P1 | Dependency verification -- low logic risk |
-| AC2 | Unit | P0 | Core publish pipeline -- content-only construction + adapter delegation |
-| AC3 | Unit | P0 | Lifecycle correctness -- resource management, identity dependency |
-| AC4 | Unit | P1 | Refactoring verification -- error codes preserved, scaffolding removed |
-| AC5 | Unit | P2 | Conditional behavior -- likely retained (WalletClient) |
-| AC6 | Unit + Integration | P0 | Security-critical -- signing integrity, FR4/FR5 guarantees |
-| AC7 | Meta | P0 | Regression prevention -- all existing behavior maintained |
+| AC  | Test Level         | Priority | Rationale                                                               |
+| --- | ------------------ | -------- | ----------------------------------------------------------------------- |
+| AC1 | Unit               | P1       | Dependency verification -- low logic risk                               |
+| AC2 | Unit               | P0       | Core publish pipeline -- content-only construction + adapter delegation |
+| AC3 | Unit               | P0       | Lifecycle correctness -- resource management, identity dependency       |
+| AC4 | Unit               | P1       | Refactoring verification -- error codes preserved, scaffolding removed  |
+| AC5 | Unit               | P2       | Conditional behavior -- likely retained (WalletClient)                  |
+| AC6 | Unit + Integration | P0       | Security-critical -- signing integrity, FR4/FR5 guarantees              |
+| AC7 | Meta               | P0       | Regression prevention -- all existing behavior maintained               |
 
 ### Test Scenario Breakdown
 
 #### CrosstownAdapter Unit Tests (AC2, AC3, AC4, AC6) -- P0
+
 1. Constructor validates connectorUrl (SSRF protection ported from crosstown-connector.ts)
 2. Constructor validates secretKey is Uint8Array (32 bytes)
 3. Constructor creates CrosstownClient with correct config (connectorUrl, secretKey, ilpInfo, toonEncoder/toonDecoder)
@@ -108,6 +119,7 @@ Backend project with clear Given/When/Then acceptance criteria. No browser recor
 16. secretKey is NEVER logged (NFR9)
 
 #### SSRF Protection Tests (AC4) -- P0
+
 17. Accept valid http:// URL in development mode
 18. Accept valid https:// URL
 19. Reject invalid URL format -> INVALID_CONFIG
@@ -115,10 +127,11 @@ Backend project with clear Given/When/Then acceptance criteria. No browser recor
 21. Reject non-HTTP protocols (file://, ftp://)
 22. Reject http:// in production mode
 23. Reject localhost in production mode
-24. Reject internal IP ranges in production (10.*, 172.16-31.*, 192.168.*, 169.254.*)
+24. Reject internal IP ranges in production (10._, 172.16-31._, 192.168._, 169.254._)
 25. Allow Docker IPs in development mode
 
 #### ILP Packet (Simplified) Tests (AC2, AC4) -- P1
+
 26. constructILPPacket(options, cost) returns content-only template (kind, content, tags only -- no pubkey, no created_at)
 27. Return type is UnsignedEventTemplate (no pubkey, created_at, id, sig)
 28. constructILPPacket signature no longer accepts pubkey parameter
@@ -127,6 +140,7 @@ Backend project with clear Given/When/Then acceptance criteria. No browser recor
 31. parseILPPacket() and extractFeeFromEvent() unchanged
 
 #### Client Publish Flow Tests (AC2, AC3) -- P0
+
 32. client.publish() constructs content-only template (no pubkey, no signing)
 33. client.publish() calls adapter.publishEvent(eventTemplate), NOT connector.publishEvent(signedEvent)
 34. CrosstownAdapter is lazily created after identity load (needs secretKey)
@@ -135,6 +149,7 @@ Backend project with clear Given/When/Then acceptance criteria. No browser recor
 37. Precondition errors unchanged: IDENTITY_NOT_LOADED, CROSSTOWN_NOT_CONFIGURED, REGISTRY_NOT_LOADED
 
 #### Confirmation Flow Tests (AC2, AC7) -- P0
+
 38. Confirmation subscription still works with adapter (kind 30078 filter)
 39. Pending publish tracking uses eventId from adapter result
 40. Timeout behavior unchanged (CONFIRMATION_TIMEOUT from publishTimeout)
@@ -142,14 +157,18 @@ Backend project with clear Given/When/Then acceptance criteria. No browser recor
 42. Pending publishes cleaned up on disconnect
 
 #### Wallet Balance Tests (AC5) -- P2
+
 43. WalletClient retained if @crosstown/client has no balance API
 44. client.publish.canAfford() still works correctly
 
 #### Integration Tests (AC6, AC7) -- P0
+
 45. End-to-end: publish via adapter -> confirmation received on Nostr relay (skipped until Docker)
 
 ### Red Phase Requirements
+
 All tests designed to fail before implementation:
+
 - CrosstownAdapter class does not exist yet -> constructor tests fail
 - ilp-packet.ts still has pubkey parameter -> signature tests fail
 - client.ts still uses CrosstownConnector -> adapter wiring tests fail
@@ -378,6 +397,7 @@ All tests designed to fail before implementation:
 ## Data Factories Created
 
 No dedicated data factories required for this story. Test data uses:
+
 - `generateKeypair()` from `packages/client/src/nostr/keypair.ts` for identity
 - `saveKeypair()` from `packages/client/src/nostr/storage.ts` for identity persistence
 - In-memory cost registry JSON for action costs
@@ -388,6 +408,7 @@ No dedicated data factories required for this story. Test data uses:
 ## Fixtures Created
 
 No new Playwright-style fixtures needed (backend project). Existing patterns used:
+
 - `beforeEach` / `afterEach` for test directory setup and cleanup
 - `vi.fn()` and `vi.spyOn()` for mocking CrosstownClient
 - `tmpdir()` for ephemeral test directories
@@ -401,6 +422,7 @@ No new Playwright-style fixtures needed (backend project). Existing patterns use
 CrosstownClient from `@crosstown/client` will be mocked in unit tests:
 
 **Mock Interface:**
+
 ```typescript
 const mockCrosstownClient = {
   start: vi.fn().mockResolvedValue({ peersDiscovered: 1, mode: 'http' }),
@@ -412,6 +434,7 @@ const mockCrosstownClient = {
 ```
 
 **Mock Setup:**
+
 ```typescript
 vi.mock('@crosstown/client', () => ({
   CrosstownClient: vi.fn().mockImplementation(() => mockCrosstownClient),

@@ -19,6 +19,7 @@
 - **Test Architecture:** Well-structured with unit, acceptance, comprehensive, and integration test layers
 
 **Key Findings:**
+
 1. ✅ All 4 acceptance criteria have comprehensive test coverage
 2. ✅ Test architecture follows best practices (unit → acceptance → comprehensive → integration)
 3. ✅ 316 total tests passing in client package (0 failures)
@@ -30,11 +31,13 @@
 ## Test File Architecture
 
 ### 1. Unit Tests
+
 **File:** `packages/client/src/spacetimedb/__tests__/static-data-loader.test.ts`
 **Tests:** 56 tests (6 skipped - marked for integration testing)
 **Focus:** Core `StaticDataLoader` class methods and internal logic
 
 **Test Suites:**
+
 - Initial state (3 tests)
 - load() method (7 tests, 6 skipped for integration)
 - get() method (6 tests)
@@ -51,6 +54,7 @@
 - Batch loading configuration (3 tests)
 
 **Coverage Details:**
+
 - ✅ State management (idle → loading → loaded → error)
 - ✅ Cache operations (get, getAll, query, clear)
 - ✅ Primary key detection (id, desc_id, type_id, table-specific)
@@ -59,6 +63,7 @@
 - ✅ Configuration constants (batch size, timeout, retries)
 
 ### 2. Acceptance Criteria Tests
+
 **File:** `packages/client/src/spacetimedb/__tests__/static-data-acceptance-criteria.test.ts`
 **Tests:** 17 tests (all passing)
 **Focus:** Direct validation of AC1-AC4 using ATDD approach
@@ -66,17 +71,20 @@
 **Test Suites by Acceptance Criteria:**
 
 **AC1: Static data loading on connection (3 tests)**
-- ✅ Load all *_desc tables when connect() is called with autoLoadStaticData: true
+
+- ✅ Load all \*\_desc tables when connect() is called with autoLoadStaticData: true
 - ✅ Build queryable lookup maps keyed by primary ID
 - ✅ Load all tables listed in STATIC_DATA_TABLES
 
 **AC2: Loading performance requirement - NFR6 (4 tests)**
+
 - ✅ Complete static data loading within 10 seconds
 - ✅ Emit staticDataLoaded event when complete
 - ✅ Track loading metrics including total time
 - ✅ Emit loadingProgress events during load
 
 **AC3: Type-safe static data access (5 tests)**
+
 - ✅ Return typed records from lookup maps
 - ✅ Return undefined for non-existent IDs
 - ✅ Support getAll() to retrieve all records
@@ -84,6 +92,7 @@
 - ✅ Throw error when accessing data before load
 
 **AC4: Static data caching (5 tests)**
+
 - ✅ Persist cache across connection loss and restore
 - ✅ Not reload static data on reconnection by default
 - ✅ Support manual cache refresh with forceReload()
@@ -91,6 +100,7 @@
 - ✅ Indicate cache status with isCached()
 
 ### 3. Comprehensive Coverage Tests
+
 **File:** `packages/client/src/spacetimedb/__tests__/static-data-comprehensive.test.ts`
 **Tests:** 25 tests (all passing)
 **Focus:** Edge cases and scenarios not fully covered by unit/acceptance tests
@@ -98,12 +108,14 @@
 **Test Suites:**
 
 **AC1 Complete Coverage (4 tests)**
+
 - ✅ Verify STATIC_DATA_TABLES constant contains expected table list
 - ✅ Build lookup maps keyed by primary ID for different key patterns (id, desc_id, type_id)
 - ✅ Handle tables with missing or null primary keys gracefully
 - ✅ Detect and warn about duplicate primary keys
 
 **AC2 Complete Coverage (5 tests)**
+
 - ✅ Validate loadingProgress event structure
 - ✅ Emit staticDataLoaded event with metrics after successful load
 - ✅ Emit loadingMetrics event with performance data
@@ -111,6 +123,7 @@
 - ✅ Log warning if loading exceeds 10 second NFR6 threshold
 
 **AC3 Complete Coverage (6 tests)**
+
 - ✅ Return correctly typed data with get<T>()
 - ✅ Return undefined for non-existent IDs without throwing
 - ✅ Handle string IDs correctly
@@ -120,6 +133,7 @@
 - ✅ Throw Error when accessing data before loading
 
 **AC4 Complete Coverage (6 tests)**
+
 - ✅ Persist cache across simulated connection loss and reconnection
 - ✅ Not reload on subsequent load() calls when already cached
 - ✅ Clear cache and reload with forceReload()
@@ -128,17 +142,20 @@
 - ✅ Track cache timestamp in metrics
 
 **Edge Cases and Error Handling (4 tests)**
+
 - ✅ Handle empty table snapshots gracefully
 - ✅ Prevent load() when not connected
 - ✅ Handle very large row counts efficiently (10,000 rows, O(1) lookup < 10ms)
 - ✅ Cache size warnings when exceeding MAX_ROWS_PER_TABLE (50,000) and MAX_TOTAL_CACHE_SIZE (1,000,000)
 
 ### 4. Integration Tests
+
 **File:** `packages/client/src/spacetimedb/__tests__/static-data-integration.test.ts`
 **Tests:** 1 test suite (16 tests, all skipped unless `INTEGRATION=true`)
 **Focus:** Live server validation against Docker stack from Story 1.3
 
 **Prerequisites:**
+
 - Docker stack running: `cd docker && docker compose up`
 - BitCraft server accessible at `ws://localhost:3000`
 - Environment variable: `INTEGRATION=true` or `CI=true`
@@ -146,28 +163,33 @@
 **Test Suites:**
 
 **AC1 Integration (3 tests)**
-- Connect to live BitCraft server and load all *_desc tables
+
+- Connect to live BitCraft server and load all \*\_desc tables
 - Build queryable lookup maps with actual game data
 - Handle actual table count from BitCraft schema
 
 **AC2 Integration (3 tests)**
+
 - Complete static data loading within 10 seconds (NFR6) on live server
 - Emit staticDataLoaded event after live server load
 - Provide accurate metrics after live load
 
 **AC3 Integration (4 tests)**
+
 - Return actual game data with get() method
 - Return all rows for a table with getAll()
 - Support filtering with query() on live data
 - Handle queries on multiple table types (item_desc, recipe_desc, terrain_desc)
 
 **AC4 Integration (4 tests)**
+
 - Persist cache across disconnect and reconnect on live server
 - Reload data with forceReload() on live server
 - Auto-load static data when autoLoadStaticData is true
 - Maintain cache across multiple connection cycles
 
 **Performance and Reliability (2 tests)**
+
 - Handle concurrent queries efficiently (1000 queries < 100ms)
 - Recover gracefully from server errors
 
@@ -175,17 +197,18 @@
 
 ## Acceptance Criteria Traceability Matrix
 
-| AC | Description | Unit Tests | Acceptance Tests | Comprehensive Tests | Integration Tests | Total Coverage |
-|---|---|---|---|---|---|---|
-| **AC1** | Static data loading on connection | 14 tests | 3 tests | 4 tests | 3 tests | **24 tests** ✅ |
-| **AC2** | Loading performance requirement (NFR6) | 8 tests | 4 tests | 5 tests | 3 tests | **20 tests** ✅ |
-| **AC3** | Type-safe static data access | 18 tests | 5 tests | 6 tests | 4 tests | **33 tests** ✅ |
-| **AC4** | Static data caching | 16 tests | 5 tests | 6 tests | 4 tests | **31 tests** ✅ |
-| **Total** | | **56 tests** | **17 tests** | **25 tests** | **16 tests** | **114 tests** |
+| AC        | Description                            | Unit Tests   | Acceptance Tests | Comprehensive Tests | Integration Tests | Total Coverage  |
+| --------- | -------------------------------------- | ------------ | ---------------- | ------------------- | ----------------- | --------------- |
+| **AC1**   | Static data loading on connection      | 14 tests     | 3 tests          | 4 tests             | 3 tests           | **24 tests** ✅ |
+| **AC2**   | Loading performance requirement (NFR6) | 8 tests      | 4 tests          | 5 tests             | 3 tests           | **20 tests** ✅ |
+| **AC3**   | Type-safe static data access           | 18 tests     | 5 tests          | 6 tests             | 4 tests           | **33 tests** ✅ |
+| **AC4**   | Static data caching                    | 16 tests     | 5 tests          | 6 tests             | 4 tests           | **31 tests** ✅ |
+| **Total** |                                        | **56 tests** | **17 tests**     | **25 tests**        | **16 tests**      | **114 tests**   |
 
 ### AC1: Static data loading on connection
 
 **Acceptance Criteria:**
+
 > **Given** an active SpacetimeDB connection
 > **When** I call the static data loading function
 > **Then** all `*_desc` tables (148 static data tables) are loaded from SpacetimeDB
@@ -194,6 +217,7 @@
 **Test Coverage: ✅ COMPLETE (24 tests)**
 
 **Unit Tests (14 tests):**
+
 1. `load()` should skip loading if already cached
 2. `load()` should throw if connection not established
 3. `load()` should warn if loading exceeds 10 seconds (NFR6)
@@ -210,22 +234,26 @@
 14. Lookup map building: support string primary keys
 
 **Acceptance Tests (3 tests):**
-1. Should load all *_desc tables when connect() is called with autoLoadStaticData: true
+
+1. Should load all \*\_desc tables when connect() is called with autoLoadStaticData: true
 2. Should build queryable lookup maps keyed by primary ID with O(1) performance
 3. Should load all tables listed in STATIC_DATA_TABLES
 
 **Comprehensive Tests (4 tests):**
+
 1. Verify STATIC_DATA_TABLES constant contains expected table list
 2. Build lookup maps for different key patterns (id, desc_id, type_id)
 3. Handle tables with missing or null primary keys gracefully
 4. Detect and warn about duplicate primary keys
 
 **Integration Tests (3 tests):**
-1. Connect to live BitCraft server and load all *_desc tables
+
+1. Connect to live BitCraft server and load all \*\_desc tables
 2. Build queryable lookup maps with actual game data
 3. Handle actual table count from BitCraft schema
 
 **Coverage Highlights:**
+
 - ✅ Table loading from SpacetimeDB
 - ✅ Lookup map construction with primary key detection
 - ✅ Support for multiple key patterns (id, desc_id, type_id, table-specific)
@@ -237,6 +265,7 @@
 ### AC2: Loading performance requirement (NFR6)
 
 **Acceptance Criteria:**
+
 > **Given** static data loading has started
 > **When** the loading completes
 > **Then** it finishes within 10 seconds on first connection (NFR6)
@@ -245,6 +274,7 @@
 **Test Coverage: ✅ COMPLETE (20 tests)**
 
 **Unit Tests (8 tests):**
+
 1. `load()` should warn if loading exceeds 10 seconds
 2. Batch loading configuration: appropriate batch size for performance
 3. Batch loading configuration: 10 second timeout configured (NFR6)
@@ -255,12 +285,14 @@
 8. Event emission: staticDataLoaded event (skipped, tested in acceptance)
 
 **Acceptance Tests (4 tests):**
+
 1. Should complete static data loading within 10 seconds (NFR6)
 2. Should emit staticDataLoaded event when complete
 3. Should track loading metrics including total time
 4. Should emit loadingProgress events during load
 
 **Comprehensive Tests (5 tests):**
+
 1. Validate loadingProgress event structure (loaded, total, tableName)
 2. Emit staticDataLoaded event with metrics after successful load
 3. Emit loadingMetrics event with performance data (totalTime, tableCount, avgTimePerTable)
@@ -268,11 +300,13 @@
 5. Log warning if loading exceeds 10 second NFR6 threshold
 
 **Integration Tests (3 tests):**
+
 1. Complete static data loading within 10 seconds (NFR6) on live server
 2. Emit staticDataLoaded event after live server load
 3. Provide accurate metrics after live load (loadTime, tableCount, cachedAt, failedTables)
 
 **Coverage Highlights:**
+
 - ✅ 10-second timeout enforcement (NFR6)
 - ✅ Loading metrics tracking (loadTime, tableCount, avgTimePerTable, failedTables)
 - ✅ staticDataLoaded event emission
@@ -284,6 +318,7 @@
 ### AC3: Type-safe static data access
 
 **Acceptance Criteria:**
+
 > **Given** loaded static data
 > **When** I query a lookup map (e.g., `staticData.get('item_desc', itemId)`)
 > **Then** the corresponding static data record is returned with correct types
@@ -291,6 +326,7 @@
 **Test Coverage: ✅ COMPLETE (33 tests)**
 
 **Unit Tests (18 tests):**
+
 1. `get()` should throw if data not loaded
 2. `get()` should throw if table name is invalid
 3. `get()` should throw if table does not exist in cache
@@ -311,6 +347,7 @@
 18. Table validation: should throw TypeError for invalid table names (3 tests)
 
 **Acceptance Tests (5 tests):**
+
 1. Should return typed records from lookup maps
 2. Should return undefined for non-existent IDs
 3. Should support getAll() to retrieve all records
@@ -318,6 +355,7 @@
 5. Should throw error when accessing data before load
 
 **Comprehensive Tests (6 tests):**
+
 1. Return correctly typed data with get<T>()
 2. Return undefined for non-existent IDs without throwing
 3. Handle string IDs correctly
@@ -326,12 +364,14 @@
 6. Throw Error when accessing data before loading
 
 **Integration Tests (4 tests):**
+
 1. Return actual game data with get() method
 2. Return all rows for a table with getAll()
 3. Support filtering with query() on live data
 4. Handle queries on multiple table types
 
 **Coverage Highlights:**
+
 - ✅ Type-safe get<T>() method with generics
 - ✅ Type-safe getAll<T>() method
 - ✅ Type-safe query<T>() method with predicate
@@ -344,6 +384,7 @@
 ### AC4: Static data caching
 
 **Acceptance Criteria:**
+
 > **Given** static data is loaded
 > **When** the SpacetimeDB connection is lost and restored
 > **Then** the static data remains cached (static tables don't change at runtime)
@@ -351,6 +392,7 @@
 **Test Coverage: ✅ COMPLETE (31 tests)**
 
 **Unit Tests (16 tests):**
+
 1. `isCached()` should return false if state is not loaded
 2. `isCached()` should return false if cache is empty
 3. `isCached()` should return true if state is loaded and cache is populated
@@ -369,6 +411,7 @@
 16. Cache timestamp tracked in metrics
 
 **Acceptance Tests (5 tests):**
+
 1. Should persist cache across connection loss and restore
 2. Should not reload static data on reconnection by default
 3. Should support manual cache refresh with forceReload()
@@ -376,6 +419,7 @@
 5. Should indicate cache status with isCached()
 
 **Comprehensive Tests (6 tests):**
+
 1. Persist cache across simulated connection loss and reconnection
 2. Not reload on subsequent load() calls when already cached
 3. Clear cache and reload with forceReload()
@@ -384,12 +428,14 @@
 6. Track cache timestamp in metrics
 
 **Integration Tests (4 tests):**
+
 1. Persist cache across disconnect and reconnect on live server
 2. Reload data with forceReload() on live server
 3. Auto-load static data when autoLoadStaticData is true
 4. Maintain cache across multiple connection cycles
 
 **Coverage Highlights:**
+
 - ✅ Cache persistence across connection loss/restore
 - ✅ Skip reload when cache exists
 - ✅ forceReload() clears and reloads cache
@@ -416,6 +462,7 @@ All 4 acceptance criteria have comprehensive test coverage across unit, acceptan
 ### Test Structure Quality: ✅ EXCELLENT
 
 **Strengths:**
+
 1. **Layered Architecture:** Clear separation of concerns
    - Unit tests → Core logic with mocks
    - Acceptance tests → ATDD validation of ACs
@@ -443,6 +490,7 @@ All 4 acceptance criteria have comprehensive test coverage across unit, acceptan
 ### Test Execution Performance: ✅ GOOD
 
 **Execution Times (from test run):**
+
 - `static-data-loader.test.ts`: 13ms (56 tests)
 - `static-data-acceptance-criteria.test.ts`: 28ms (17 tests)
 - `static-data-comprehensive.test.ts`: 731ms (25 tests)
@@ -451,6 +499,7 @@ All 4 acceptance criteria have comprehensive test coverage across unit, acceptan
 **Total Client Package Test Time:** 3.34s (316 tests passing, 54 skipped)
 
 **Performance Notes:**
+
 - Comprehensive tests slower due to async event handling (731ms)
 - Unit tests very fast due to mocking (13ms for 56 tests)
 - Integration tests skipped in normal CI (require Docker stack)
@@ -458,6 +507,7 @@ All 4 acceptance criteria have comprehensive test coverage across unit, acceptan
 ### Test Maintainability: ✅ EXCELLENT
 
 **Strengths:**
+
 1. **DRY Principle:** Shared setup in beforeEach/afterEach hooks
 2. **Clear Comments:** Each test file has header explaining purpose
 3. **Helper Functions:** Private method testing through (loader as any) pattern
@@ -465,6 +515,7 @@ All 4 acceptance criteria have comprehensive test coverage across unit, acceptan
 5. **Resource Cleanup:** afterEach hooks ensure client disconnection
 
 **Potential Improvements:**
+
 1. Extract common mock setup to shared test utilities
 2. Add custom matchers for common assertions (e.g., `toBeValidStaticDataRow()`)
 3. Consider test data builders for complex mock scenarios
@@ -476,6 +527,7 @@ All 4 acceptance criteria have comprehensive test coverage across unit, acceptan
 ### Security & Safety: ✅ EXCELLENT
 
 **Security Measures Tested:**
+
 1. **Input Validation:**
    - Table name validation against `_desc` suffix pattern (tests verify TypeError on invalid names)
    - Primary key type validation (string | number only)
@@ -495,6 +547,7 @@ All 4 acceptance criteria have comprehensive test coverage across unit, acceptan
 ### Performance Characteristics: ✅ EXCELLENT
 
 **Performance Tests:**
+
 1. **O(1) Lookup Performance:**
    - Acceptance test: 1000 lookups < 10ms
    - Comprehensive test: Single lookup from 10,000 rows < 10ms
@@ -512,6 +565,7 @@ All 4 acceptance criteria have comprehensive test coverage across unit, acceptan
 ### Type Safety: ✅ GOOD
 
 **Type Safety Features:**
+
 1. **Generic Methods:**
    - `get<T>(tableName, id): T | undefined`
    - `getAll<T>(tableName): T[]`
@@ -587,6 +641,7 @@ All acceptance criteria have comprehensive test coverage. No critical gaps ident
 ### Optional Enhancements
 
 1. **Extract Test Utilities**
+
    ```typescript
    // packages/client/src/__tests__/utils/static-data-mocks.ts
    export function createMockStaticDataLoader(options?: {
@@ -598,6 +653,7 @@ All acceptance criteria have comprehensive test coverage. No critical gaps ident
    ```
 
 2. **Custom Matchers**
+
    ```typescript
    // packages/client/src/__tests__/utils/matchers.ts
    expect.extend({
@@ -637,32 +693,32 @@ All acceptance criteria have comprehensive test coverage. No critical gaps ident
 
 ### Story 1.5 Acceptance Criteria Compliance
 
-| Criterion | Status | Test Count | Coverage |
-|-----------|--------|-----------|----------|
-| AC1: Static data loading on connection | ✅ PASS | 24 tests | 100% |
-| AC2: Loading performance requirement (NFR6) | ✅ PASS | 20 tests | 100% |
-| AC3: Type-safe static data access | ✅ PASS | 33 tests | 100% |
-| AC4: Static data caching | ✅ PASS | 31 tests | 100% |
+| Criterion                                   | Status  | Test Count | Coverage |
+| ------------------------------------------- | ------- | ---------- | -------- |
+| AC1: Static data loading on connection      | ✅ PASS | 24 tests   | 100%     |
+| AC2: Loading performance requirement (NFR6) | ✅ PASS | 20 tests   | 100%     |
+| AC3: Type-safe static data access           | ✅ PASS | 33 tests   | 100%     |
+| AC4: Static data caching                    | ✅ PASS | 31 tests   | 100%     |
 
 ### Non-Functional Requirements Compliance
 
-| Requirement | Status | Evidence |
-|------------|--------|----------|
-| **NFR6:** Static data loading < 10s | ✅ PASS | 10 tests validate timeout, metrics, and live performance |
-| **NFR5:** Real-time update latency < 500ms | ✅ PASS | Inherited from Story 1.4, snapshot subscriptions tested |
-| **NFR18:** SDK backwards compatibility | ✅ PASS | Uses SpacetimeDB SDK 1.3.3, compatible with 1.6.x modules |
-| **NFR22:** Cross-platform compatibility | ✅ PASS | Pure TypeScript, platform-agnostic tests pass on macOS |
+| Requirement                                | Status  | Evidence                                                  |
+| ------------------------------------------ | ------- | --------------------------------------------------------- |
+| **NFR6:** Static data loading < 10s        | ✅ PASS | 10 tests validate timeout, metrics, and live performance  |
+| **NFR5:** Real-time update latency < 500ms | ✅ PASS | Inherited from Story 1.4, snapshot subscriptions tested   |
+| **NFR18:** SDK backwards compatibility     | ✅ PASS | Uses SpacetimeDB SDK 1.3.3, compatible with 1.6.x modules |
+| **NFR22:** Cross-platform compatibility    | ✅ PASS | Pure TypeScript, platform-agnostic tests pass on macOS    |
 
 ### Quality Metrics
 
-| Metric | Value | Status |
-|--------|-------|--------|
-| **Test Pass Rate** | 100% (316/316) | ✅ EXCELLENT |
-| **AC Coverage** | 100% (4/4) | ✅ COMPLETE |
-| **Integration Tests** | Skipped (Docker required) | ⚠️ MANUAL VALIDATION |
-| **Code Review Passes** | 3 (0 critical, 0 high, 0 medium, 1 low) | ✅ APPROVED |
-| **Security Analysis** | OWASP Top 10 (2021) PASS | ✅ SECURE |
-| **Test Execution Time** | 3.34s (316 tests) | ✅ FAST |
+| Metric                  | Value                                   | Status               |
+| ----------------------- | --------------------------------------- | -------------------- |
+| **Test Pass Rate**      | 100% (316/316)                          | ✅ EXCELLENT         |
+| **AC Coverage**         | 100% (4/4)                              | ✅ COMPLETE          |
+| **Integration Tests**   | Skipped (Docker required)               | ⚠️ MANUAL VALIDATION |
+| **Code Review Passes**  | 3 (0 critical, 0 high, 0 medium, 1 low) | ✅ APPROVED          |
+| **Security Analysis**   | OWASP Top 10 (2021) PASS                | ✅ SECURE            |
+| **Test Execution Time** | 3.34s (316 tests)                       | ✅ FAST              |
 
 ---
 
@@ -673,6 +729,7 @@ All acceptance criteria have comprehensive test coverage. No critical gaps ident
 Story 1.5 (Static Data Table Loading) has comprehensive test coverage across all 4 acceptance criteria with **114 dedicated tests** across 4 test files. The test architecture follows best practices with clear separation between unit, acceptance, comprehensive, and integration test layers.
 
 **Key Achievements:**
+
 - ✅ 100% acceptance criteria coverage (all 4 ACs tested)
 - ✅ 316 tests passing in client package (0 failures)
 - ✅ Comprehensive edge case coverage (missing keys, duplicates, large datasets)
@@ -727,17 +784,17 @@ pnpm --filter @sigil/client test --reporter=verbose
 
 ### Appendix D: Test Metrics Summary
 
-| Metric | Value |
-|--------|-------|
-| **Total Test Files** | 4 |
-| **Total Tests** | 114 (across static data test files) |
-| **Client Package Total** | 316 tests (16 files) |
-| **Pass Rate** | 100% (316/316) |
-| **Skipped Tests** | 54 (mostly integration tests) |
-| **Execution Time** | 3.34s (full client package) |
-| **Fastest Test File** | static-data-loader.test.ts (13ms, 56 tests) |
-| **Slowest Test File** | static-data-comprehensive.test.ts (731ms, 25 tests) |
-| **Average Test Time** | ~10ms per test |
+| Metric                   | Value                                               |
+| ------------------------ | --------------------------------------------------- |
+| **Total Test Files**     | 4                                                   |
+| **Total Tests**          | 114 (across static data test files)                 |
+| **Client Package Total** | 316 tests (16 files)                                |
+| **Pass Rate**            | 100% (316/316)                                      |
+| **Skipped Tests**        | 54 (mostly integration tests)                       |
+| **Execution Time**       | 3.34s (full client package)                         |
+| **Fastest Test File**    | static-data-loader.test.ts (13ms, 56 tests)         |
+| **Slowest Test File**    | static-data-comprehensive.test.ts (731ms, 25 tests) |
+| **Average Test Time**    | ~10ms per test                                      |
 
 ---
 
@@ -745,4 +802,3 @@ pnpm --filter @sigil/client test --reporter=verbose
 **Analysis Duration:** ~15 minutes
 **Agent:** Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 **Command:** `/bmad-tea-testarch-trace /Users/jonathangreen/Documents/BitCraftPublic/_bmad-output/implementation-artifacts/1-5-static-data-table-loading.md yolo`
-

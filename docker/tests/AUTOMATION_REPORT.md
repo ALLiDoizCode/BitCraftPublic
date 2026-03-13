@@ -32,13 +32,13 @@ Successfully automated comprehensive test coverage for Story 1.3 (Docker Local D
 
 ### Acceptance Criteria Coverage
 
-| AC# | Description | Integration Tests | Smoke Tests | Total |
-|-----|-------------|-------------------|-------------|-------|
-| AC1 | Docker compose starts BitCraft server and Crosstown node | 13 | 3 | 16 |
-| AC2 | SpacetimeDB client can connect and subscribe | 6 | 3 | 9 |
-| AC3 | Cross-platform compatibility | 4 | 1 | 5 |
-| AC4 | Development overrides with compose override file | 6 | 1 | 7 |
-| **Total** | | **29** | **8** | **37** |
+| AC#       | Description                                              | Integration Tests | Smoke Tests | Total  |
+| --------- | -------------------------------------------------------- | ----------------- | ----------- | ------ |
+| AC1       | Docker compose starts BitCraft server and Crosstown node | 13                | 3           | 16     |
+| AC2       | SpacetimeDB client can connect and subscribe             | 6                 | 3           | 9      |
+| AC3       | Cross-platform compatibility                             | 4                 | 1           | 5      |
+| AC4       | Development overrides with compose override file         | 6                 | 1           | 7      |
+| **Total** |                                                          | **29**            | **8**       | **37** |
 
 ### Additional Test Coverage
 
@@ -260,6 +260,7 @@ The test suite provides strong confidence that the Docker local development envi
 ### Quality Review Summary
 
 After thorough review, the test suite demonstrates:
+
 - ✅ Complete AC coverage with redundancy (multiple tests per requirement)
 - ✅ Robust error handling with detailed diagnostics
 - ✅ Graceful degradation (warnings vs errors where appropriate)

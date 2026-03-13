@@ -1,4 +1,5 @@
 # Story 2.4: BLS Handler Integration Contract & Testing
+
 # Test Coverage Report
 
 **Story:** 2.4 - BLS Handler Integration Contract & Testing
@@ -41,17 +42,20 @@
 **Automated Test Coverage:** ✅ Partial (structure validation only)
 
 **Unit Tests (Automated Now):**
+
 - ✅ Kind 30078 event structure validation
 - ✅ All required NIP-01 fields present (id, pubkey, created_at, kind, tags, content, sig)
 - ✅ Kind field enforced as exactly 30078
 - ✅ Field format validation (hex strings, timestamps, arrays)
 
 **Integration Tests (Skipped Until BLS Handler Deployed):**
+
 - ⏸️ BLS handler receives and acknowledges kind 30078 events
 - ⏸️ ILP routing from Crosstown relay to BLS handler
 - ⏸️ End-to-end event flow validation
 
 **Test Files:**
+
 - `src/bls/contract-validation.test.ts` - Lines 82-104 (3 tests)
 - `src/integration-tests/bls-handler.integration.test.ts` - Lines 82-104 (1 test, skipped)
 
@@ -64,6 +68,7 @@
 **Automated Test Coverage:** ✅ Full (client-side validation)
 
 **Unit Tests (Automated Now):**
+
 - ✅ Valid JSON content creation with reducer and args
 - ✅ Malformed JSON detection (6 invalid JSON variants tested)
 - ✅ Missing required field detection (5 invalid content variants tested)
@@ -72,10 +77,12 @@
 - ✅ Unsafe reducer name detection (5 unsafe patterns tested)
 
 **Integration Tests (Skipped Until BLS Handler Deployed):**
+
 - ⏸️ BLS handler parses valid content successfully
 - ⏸️ BLS handler rejects malformed content with INVALID_CONTENT error
 
 **Test Files:**
+
 - `src/bls/contract-validation.test.ts` - Lines 106-331 (6 tests)
 - `src/integration-tests/bls-handler.integration.test.ts` - Lines 106-152 (2 tests, skipped)
 
@@ -88,6 +95,7 @@
 **Automated Test Coverage:** ✅ Full (structure and format validation)
 
 **Unit Tests (Automated Now):**
+
 - ✅ Valid Schnorr signature structure (128-char hex)
 - ✅ Deterministic event ID computation (SHA256)
 - ✅ Corrupted signature detection (6 corruption scenarios tested)
@@ -95,11 +103,13 @@
 - ✅ Content tampering detection (3 tampering scenarios tested)
 
 **Integration Tests (Skipped Until BLS Handler Deployed):**
+
 - ⏸️ BLS handler validates signature using secp256k1
 - ⏸️ BLS handler rejects invalid signatures with INVALID_SIGNATURE error
 - ⏸️ BLS handler validates event ID matches computed hash
 
 **Test Files:**
+
 - `src/bls/contract-validation.test.ts` - Lines 333-469 (5 tests)
 - `src/integration-tests/bls-handler.integration.test.ts` - Lines 154-199 (2 tests, skipped)
 
@@ -112,16 +122,19 @@
 **Automated Test Coverage:** ✅ Partial (identity structure only)
 
 **Unit Tests (Automated Now):**
+
 - ✅ Pubkey extraction for identity propagation
 - ✅ Pubkey preservation through event lifecycle
 - ✅ Args array prepending structure ([pubkey, ...args])
 
 **Integration Tests (Skipped Until BLS Handler Deployed):**
+
 - ⏸️ BLS handler invokes SpacetimeDB reducer via HTTP POST
 - ⏸️ BLS handler prepends pubkey to args array
 - ⏸️ SpacetimeDB receives correct reducer call with identity
 
 **Test Files:**
+
 - `src/bls/contract-validation.test.ts` - Lines 471-532 (2 tests)
 - `src/integration-tests/bls-handler.integration.test.ts` - Lines 201-228 (1 test, skipped)
 
@@ -134,16 +147,19 @@
 **Automated Test Coverage:** ✅ Full (client-side validation)
 
 **Unit Tests (Automated Now):**
+
 - ✅ Valid reducer name format validation
 - ✅ Unsafe reducer name detection (path traversal, injection, XSS)
 - ✅ Events structured to avoid UNKNOWN_REDUCER errors
 
 **Integration Tests (Skipped Until BLS Handler Deployed):**
+
 - ⏸️ BLS handler rejects unknown reducer with UNKNOWN_REDUCER error
 - ⏸️ No SpacetimeDB call made for unknown reducers
 - ⏸️ Error propagated to sender
 
 **Test Files:**
+
 - `src/bls/contract-validation.test.ts` - Lines 306-331, 569-600 (3 tests)
 - `src/integration-tests/bls-handler.integration.test.ts` - Lines 230-248 (1 test, skipped)
 
@@ -156,6 +172,7 @@
 **Automated Test Coverage:** ✅ Partial (error structure only)
 
 **Unit Tests (Automated Now):**
+
 - ✅ All error codes defined and documented (4 error codes)
 - ✅ Error response structure validation
 - ✅ Retryable field semantics (non-retryable: 3 codes, retryable: 1 code)
@@ -163,11 +180,13 @@
 - ✅ Detailed error context support
 
 **Integration Tests (Skipped Until BLS Handler Deployed):**
+
 - ⏸️ BLS handler logs all errors with event context
 - ⏸️ BLS handler returns explicit errors for all failure modes
 - ⏸️ No silent failures occur
 
 **Test Files:**
+
 - `src/bls/types.test.ts` - Lines 14-318 (13 tests)
 - `src/bls/contract-validation.test.ts` - Lines 534-567 (1 test)
 - `src/integration-tests/bls-handler.integration.test.ts` - Lines 250-268 (1 test, skipped)
@@ -181,6 +200,7 @@
 **Automated Test Coverage:** ✅ Full (error structure and type guards)
 
 **Unit Tests (Automated Now):**
+
 - ✅ BLSErrorResponse structure validation (4 error codes tested)
 - ✅ BLSSuccessResponse structure validation
 - ✅ Error/success type guards (isBLSError, isBLSSuccess)
@@ -189,11 +209,13 @@
 - ✅ Retryable semantics (4 error codes categorized)
 
 **Integration Tests (Skipped Until BLS Handler Deployed):**
+
 - ⏸️ BLS handler returns error responses to Crosstown relay
 - ⏸️ Relay forwards errors to sender via Nostr NOTICE/OK
 - ⏸️ Error includes event ID, error code, human-readable message
 
 **Test Files:**
+
 - `src/bls/types.test.ts` - Lines 40-318 (14 tests)
 - `src/integration-tests/bls-handler.integration.test.ts` - Lines 270-292 (1 test, skipped)
 
@@ -206,16 +228,19 @@
 **Automated Test Coverage:** ✅ Partial (client-side performance only)
 
 **Unit Tests (Automated Now):**
+
 - ✅ Event creation efficiency (<20ms average for 100 events)
 - ✅ Content size handling (small, medium, large)
 - ✅ Performance monitoring and logging
 
 **Integration Tests (Skipped Until BLS Handler Deployed):**
+
 - ⏸️ Full round-trip performance (<2s requirement)
 - ⏸️ Performance degradation warning (>1s threshold)
 - ⏸️ Normal load simulation (<50ms latency, single client)
 
 **Test Files:**
+
 - `src/bls/contract-validation.test.ts` - Lines 602-668 (2 tests)
 - `src/integration-tests/bls-handler.integration.test.ts` - Lines 294-327 (1 test, skipped)
 
@@ -225,16 +250,16 @@
 
 ## Test Traceability Matrix
 
-| AC/NFR | Requirement | Unit Tests | Integration Tests | Total Coverage |
-|--------|-------------|-----------|-------------------|----------------|
-| AC1 | BLS receives kind 30078 events | 3 tests (structure) | 1 test (skipped) | 40% |
-| AC2 | Event content parsing | 6 tests (validation) | 2 tests (skipped) | 80% |
-| AC3 | Signature validation | 5 tests (format) | 2 tests (skipped) | 70% |
-| AC4 | Reducer invocation with identity | 2 tests (structure) | 1 test (skipped) | 30% |
-| AC5 | Unknown reducer handling | 3 tests (validation) | 1 test (skipped) | 60% |
-| AC6 | Zero silent failures | 14 tests (error types) | 1 test (skipped) | 50% |
-| AC7 | Error response propagation | 14 tests (structure) | 1 test (skipped) | 70% |
-| NFR3 | Round-trip performance | 2 tests (client-side) | 1 test (skipped) | 30% |
+| AC/NFR | Requirement                      | Unit Tests             | Integration Tests | Total Coverage |
+| ------ | -------------------------------- | ---------------------- | ----------------- | -------------- |
+| AC1    | BLS receives kind 30078 events   | 3 tests (structure)    | 1 test (skipped)  | 40%            |
+| AC2    | Event content parsing            | 6 tests (validation)   | 2 tests (skipped) | 80%            |
+| AC3    | Signature validation             | 5 tests (format)       | 2 tests (skipped) | 70%            |
+| AC4    | Reducer invocation with identity | 2 tests (structure)    | 1 test (skipped)  | 30%            |
+| AC5    | Unknown reducer handling         | 3 tests (validation)   | 1 test (skipped)  | 60%            |
+| AC6    | Zero silent failures             | 14 tests (error types) | 1 test (skipped)  | 50%            |
+| AC7    | Error response propagation       | 14 tests (structure)   | 1 test (skipped)  | 70%            |
+| NFR3   | Round-trip performance           | 2 tests (client-side)  | 1 test (skipped)  | 30%            |
 
 **Overall Automated Coverage:** 55% (47 tests passing now, 10 tests skipped until BLS deployment)
 
@@ -247,6 +272,7 @@
 **File:** `src/bls/types.test.ts`
 
 **Coverage:**
+
 - BLSErrorCode enum validation (3 tests)
 - BLSErrorResponse structure (4 tests)
 - BLSSuccessResponse structure (2 tests)
@@ -266,6 +292,7 @@
 **File:** `src/bls/contract-validation.test.ts`
 
 **Coverage:**
+
 - AC1: Kind 30078 event structure (3 tests)
 - AC2: Event content parsing (6 tests)
 - AC3: Signature validation structure (5 tests)
@@ -282,6 +309,7 @@
 **File:** `src/integration-tests/bls-handler.integration.test.ts`
 
 **Coverage:**
+
 - AC1: BLS receives kind 30078 events (1 test)
 - AC2: Event content parsing (2 tests)
 - AC3: Signature validation (2 tests)
@@ -304,6 +332,7 @@ pnpm --filter @sigil/client test src/bls/
 ```
 
 **Expected Output:**
+
 ```
 ✓ src/bls/types.test.ts (27 tests)
 ✓ src/bls/contract-validation.test.ts (20 tests)
@@ -332,16 +361,19 @@ pnpm --filter @sigil/client test src/integration-tests/bls-handler.integration.t
 ### Code Coverage
 
 **BLS Types Module:**
+
 - Types: 100% coverage
 - Type guards: 100% coverage
 - Enums: 100% coverage
 
 **Event Signing Module:**
+
 - signEvent: 100% coverage (via contract validation tests)
 - Event structure: 100% coverage
 - Content validation: 100% coverage
 
 **Integration Contract:**
+
 - Event structure: 100% coverage
 - Content parsing: 100% coverage
 - Signature format: 100% coverage
@@ -350,6 +382,7 @@ pnpm --filter @sigil/client test src/integration-tests/bls-handler.integration.t
 ### Test Completeness
 
 **Unit Tests:**
+
 - ✅ All error codes tested (4/4)
 - ✅ All type guards tested (2/2)
 - ✅ All response types tested (2/2)
@@ -357,6 +390,7 @@ pnpm --filter @sigil/client test src/integration-tests/bls-handler.integration.t
 - ✅ Edge cases covered (malformed JSON, corrupted signatures, tampering)
 
 **Integration Tests:**
+
 - ⏸️ All ACs have integration tests (7/7)
 - ⏸️ All NFRs have integration tests (1/1)
 - ⏸️ Tests properly skipped until BLS deployed (10/10)
@@ -364,12 +398,14 @@ pnpm --filter @sigil/client test src/integration-tests/bls-handler.integration.t
 ### Test Maintainability
 
 **Documentation:**
+
 - ✅ All tests have descriptive names
 - ✅ All tests have Given/When/Then structure
 - ✅ All tests include AC traceability comments
 - ✅ All tests include contract requirement references
 
 **Test Isolation:**
+
 - ✅ Unit tests have no external dependencies
 - ✅ Integration tests clearly marked with skip conditions
 - ✅ No test pollution (each test generates fresh keypairs)
@@ -382,6 +418,7 @@ pnpm --filter @sigil/client test src/integration-tests/bls-handler.integration.t
 ### Gaps Addressed by New Tests
 
 **Before (Story 2.4 implementation):**
+
 - ❌ No unit tests for BLS types
 - ❌ No validation tests for event structure
 - ❌ No validation tests for content parsing
@@ -390,6 +427,7 @@ pnpm --filter @sigil/client test src/integration-tests/bls-handler.integration.t
 - ❌ Integration tests existed but not comprehensive
 
 **After (This test automation work):**
+
 - ✅ 27 unit tests for BLS types (complete coverage)
 - ✅ 20 contract validation tests (client-side validation)
 - ✅ All error codes tested
@@ -402,6 +440,7 @@ pnpm --filter @sigil/client test src/integration-tests/bls-handler.integration.t
 ### Still Requires BLS Handler Deployment
 
 **Deferred Until BLS Handler Available:**
+
 1. Cryptographic signature verification (secp256k1)
 2. SpacetimeDB HTTP API integration
 3. Error propagation through Crosstown relay
@@ -410,6 +449,7 @@ pnpm --filter @sigil/client test src/integration-tests/bls-handler.integration.t
 6. Wallet balance checks (removed from scope per BLOCKER-2)
 
 **Why Deferred:**
+
 - BLS handler is external dependency (Crosstown repository)
 - Integration tests properly skipped with BLS_HANDLER_DEPLOYED flag
 - Client-side validation is complete and automated
@@ -422,18 +462,21 @@ pnpm --filter @sigil/client test src/integration-tests/bls-handler.integration.t
 ### Unit Test Performance
 
 **BLS Types Tests:**
+
 - File: `src/bls/types.test.ts`
 - Tests: 27
 - Duration: ~6ms
 - Avg per test: ~0.22ms
 
 **Contract Validation Tests:**
+
 - File: `src/bls/contract-validation.test.ts`
 - Tests: 20
 - Duration: ~424ms (includes cryptographic operations)
 - Avg per test: ~21ms
 
 **Total Unit Tests:**
+
 - Tests: 47
 - Total Duration: ~430ms
 - Performance: ✅ Excellent (all tests <30ms average)
@@ -441,6 +484,7 @@ pnpm --filter @sigil/client test src/integration-tests/bls-handler.integration.t
 ### Integration Test Performance
 
 **Integration Tests:**
+
 - File: `src/integration-tests/bls-handler.integration.test.ts`
 - Tests: 10 (all skipped)
 - Duration: ~0ms (skipped)
@@ -510,6 +554,7 @@ pnpm --filter @sigil/client test src/integration-tests/bls-handler.integration.t
 ## Change Log
 
 **2026-02-28:** Initial test coverage report created
+
 - 47 new automated tests added (27 types, 20 contract validation)
 - All tests passing
 - Integration tests properly skipped until BLS deployment

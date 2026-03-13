@@ -20,6 +20,7 @@ The BitCraft v1 server runs SpacetimeDB 1.6.x. The question was: Should we use S
 ## Problem Statement
 
 We need to choose a SpacetimeDB SDK version that:
+
 1. **Works with BitCraft v1 server** (SpacetimeDB 1.6.x)
 2. **Provides good developer experience** (TypeScript types, modern API)
 3. **Future-proofs the codebase** (when SpacetimeDB 2.0 servers become available)
@@ -32,11 +33,13 @@ We need to choose a SpacetimeDB SDK version that:
 ### Option 1: Use SDK 1.6.x (Match Server Version)
 
 **Pros:**
+
 - Guaranteed compatibility (matching versions)
 - Well-tested with production servers
 - No risk of protocol mismatches
 
 **Cons:**
+
 - Older TypeScript types (less ergonomic)
 - May require migration effort when upgrading to SDK 2.0 later
 - Less future-proof (locked to old API)
@@ -46,12 +49,14 @@ We need to choose a SpacetimeDB SDK version that:
 ### Option 2: Use SDK 2.0 with 1.6.x Server (Backwards Compatibility)
 
 **Pros:**
+
 - Better TypeScript types (improved DX)
 - Modern API surface (easier to use)
 - Future-proof (no migration needed when 2.0 servers arrive)
 - Backwards compatibility maintained by SDK maintainers
 
 **Cons:**
+
 - Risk: SDK 2.0 may have compatibility issues with 1.6.x servers
 - Less battle-tested (newer SDK)
 - Requires validation testing (Story 1.4)
@@ -63,6 +68,7 @@ We need to choose a SpacetimeDB SDK version that:
 **We chose Option 2: Use SpacetimeDB SDK 2.0 (`@clockworklabs/spacetimedb-sdk` ^1.3.3) with SpacetimeDB 1.6.x servers.**
 
 Dependency declaration:
+
 ```json
 {
   "dependencies": {
@@ -101,17 +107,20 @@ Dependency declaration:
 ## Consequences
 
 ### Positive
+
 - ✅ **Better DX**: TypeScript types make development faster and less error-prone
 - ✅ **Future-proof**: No migration effort when servers upgrade to 2.0
 - ✅ **Validated**: Epic 1 testing proved compatibility (937 tests, 100% pass rate)
 - ✅ **Community support**: SDK 2.0 is actively maintained
 
 ### Negative
+
 - ⚠️ **Risk mitigated but present**: Newer SDK may have edge-case bugs not present in 1.6.x
 - ⚠️ **Less battle-tested**: SDK 2.0 has fewer production deployments than 1.6.x
 - ⚠️ **Dependency on SDK maintainers**: Relies on Clockwork Labs maintaining backwards compatibility
 
 ### Mitigation Strategies
+
 1. **Comprehensive testing**: 127 integration tests cover SpacetimeDB interactions (Story 1.4)
 2. **Version pinning**: Use `^1.3.3` (caret range) to get patch updates but avoid breaking changes
 3. **Monitoring**: Track SDK releases and test against new versions before upgrading

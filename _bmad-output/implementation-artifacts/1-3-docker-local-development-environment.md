@@ -338,6 +338,7 @@ Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 **Outcome**: 18 issues found and fixed across 4 severity levels
 
 **Issues Found and Fixed**:
+
 - **Critical (3)**: BitCraft container running as root, init.sh using non-POSIX stat command, wrong UID documented for permissions
 - **High (5)**: Docker Compose version field removal not documented, Rust 1.83 upgrade not validated, SpacetimeDB using :latest tag, init.sh starts server before validation, missing error handling for Crosstown config
 - **Medium (6)**: Hardcoded wait time in init.sh, Crosstown binary validation missing, smoke test timeouts hardcoded, .env.example defaults to unimplemented remote mode, healthcheck retry budget undocumented, unlimited event retention risk
@@ -345,7 +346,7 @@ Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 
 **Files Modified**: 9 files (docker/bitcraft/Dockerfile, docker/bitcraft/init.sh, docker/crosstown/Dockerfile, docker/crosstown/config.toml, docker/crosstown/crosstown-src/src/main.rs, docker/.env.example, docker/README.md, docker/tests/smoke-test.sh, docker/scripts/reset-dev-env.sh)
 
-**Files Created**: 1 file (_bmad-output/implementation-artifacts/1-3-code-review-report.md)
+**Files Created**: 1 file (\_bmad-output/implementation-artifacts/1-3-code-review-report.md)
 
 **Sign-Off**: ✅ **APPROVED WITH FIXES** - All issues resolved, ready for commit after manual Linux testing
 
@@ -358,6 +359,7 @@ Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 **Outcome**: All previous fixes verified, no new issues found
 
 **Issues Found and Fixed**:
+
 - **Critical (0)**: All critical issues from pass #1 successfully resolved
 - **High (0)**: All high severity issues from pass #1 successfully resolved
 - **Medium (0)**: All medium severity issues from pass #1 successfully resolved
@@ -378,6 +380,7 @@ Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 **Outcome**: 12 security issues identified and fixed (0 critical, 3 high, 5 medium, 4 low)
 
 **Security Frameworks Applied**:
+
 - ✅ OWASP Top 10 (2021) vulnerabilities
 - ✅ Authentication/Authorization flaws
 - ✅ Injection risks (command injection, path traversal)
@@ -387,6 +390,7 @@ Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 - ✅ Container security best practices
 
 **Issues Found and Fixed**:
+
 - **Critical (0)**: No critical security issues found
 - **High (3)**: Missing input validation in init.sh, unvalidated environment variables, no rate limiting on Nostr relay
 - **Medium (5)**: Overly permissive CORS, missing security headers, no log sanitization, healthcheck timeout (already configured), image pinning (already done)
@@ -397,6 +401,7 @@ Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 **Files Created**: 3 files (code review reports, security hardening documentation, and test validation artifacts)
 
 **Key Security Improvements**:
+
 - Input validation and sanitization (path traversal, PID, log injection)
 - Rate limiting (100 events/60s per WebSocket connection)
 - CORS and security headers (X-Content-Type-Options, X-Frame-Options, X-XSS-Protection)

@@ -17,6 +17,7 @@
 **Vulnerabilities:** 0 (pnpm audit clean)
 
 All OWASP Top 10 categories reviewed. No critical, high, or medium severity issues identified. Code demonstrates strong security practices including:
+
 - Proper cryptographic key handling (private keys never exposed)
 - Comprehensive input validation and sanitization
 - SSRF protection with environment-aware URL validation
@@ -32,12 +33,14 @@ All OWASP Top 10 categories reviewed. No critical, high, or medium severity issu
 **Review Focus:** Rate limiting, authorization bypass prevention
 
 **Findings:**
+
 - ✅ Rate limiting handled by Crosstown connector (429 response with Retry-After header)
 - ✅ No authentication bypass vectors (Nostr signature required for all actions)
 - ✅ Error handling for rate limiting includes retry-after information
 - ✅ No privilege escalation vectors identified
 
 **Code References:**
+
 - `crosstown-connector.ts:241-249` - Rate limit handling with context
 - `error-codes.md:236-262` - RATE_LIMITED error documentation
 
@@ -50,6 +53,7 @@ All OWASP Top 10 categories reviewed. No critical, high, or medium severity issu
 **Review Focus:** Private key handling, encryption, secure transmission
 
 **Findings:**
+
 - ✅ Private key never transmitted over network (AC6 validated)
 - ✅ Private key never logged (redactPrivateKey utility in event-signing.ts:113-115)
 - ✅ Private key never in error messages (sanitized in catch blocks)
@@ -60,12 +64,14 @@ All OWASP Top 10 categories reviewed. No critical, high, or medium severity issu
 - ✅ Event ID format validation (64-char hex at event-signing.ts:81)
 
 **Code References:**
+
 - `event-signing.ts:48-103` - signEvent with private key protection
 - `event-signing.ts:113-115` - redactPrivateKey utility
 - `crosstown-connector.ts:119-126` - Production HTTPS requirement
 - `ilp-packet.ts:95-102` - Public key format validation
 
 **Security Measures:**
+
 1. Private key only used in `signEvent()` function (event-signing.ts)
 2. Private key validated before use (length check)
 3. Error messages sanitized (event-signing.ts:90-101)
@@ -81,6 +87,7 @@ All OWASP Top 10 categories reviewed. No critical, high, or medium severity issu
 **Review Focus:** SQL injection, command injection, SSRF, XSS
 
 **Findings:**
+
 - ✅ Reducer name validation (alphanumeric + underscore only, pattern: `/^[a-zA-Z0-9_]+$/`)
 - ✅ Reducer length validation (1-64 characters)
 - ✅ JSON serialization safe (no eval, no code execution)
@@ -90,6 +97,7 @@ All OWASP Top 10 categories reviewed. No critical, high, or medium severity issu
 - ✅ Public key format validation (64-char hex, prevents injection)
 
 **Code References:**
+
 - `ilp-packet.ts:86-93` - Reducer name pattern validation
 - `ilp-packet.ts:76-83` - Reducer length validation
 - `ilp-packet.ts:95-102` - Public key format validation
@@ -97,12 +105,13 @@ All OWASP Top 10 categories reviewed. No critical, high, or medium severity issu
 - `crosstown-connector.ts:86-161` - Comprehensive URL validation
 
 **SSRF Protection Details:**
+
 1. URL format validation (new URL() parser)
 2. Protocol allowlist (http/https only)
 3. Production restrictions:
    - Only https:// protocol allowed
    - Localhost blocked (127.0.0.1, ::1)
-   - Internal IP ranges blocked (10.*, 172.16-31.*, 192.168.*, 169.254.*)
+   - Internal IP ranges blocked (10._, 172.16-31._, 192.168._, 169.254._)
 4. Development mode allows localhost/Docker networks
 5. Credentials in URLs rejected (username/password)
 6. DNS rebinding protection documented (crosstown-connector.ts:163-184)
@@ -116,6 +125,7 @@ All OWASP Top 10 categories reviewed. No critical, high, or medium severity issu
 **Review Focus:** Fail-fast patterns, secure defaults, error handling
 
 **Findings:**
+
 - ✅ Fail-fast validation (balance check BEFORE packet construction)
 - ✅ Secure defaults (timeout: 2000ms, no auto-retry)
 - ✅ Error handling fails securely (no partial state updates)
@@ -124,12 +134,14 @@ All OWASP Top 10 categories reviewed. No critical, high, or medium severity issu
 - ✅ No race conditions in pending publish tracking
 
 **Code References:**
+
 - `client.ts:805-814` - Balance check before packet construction (fail fast)
 - `client.ts:816-822` - Packet construction and signing
 - `client.ts:827-850` - Confirmation promise with timeout cleanup
 - `crosstown-connector.ts:60-65` - Secure timeout default (2000ms)
 
 **Design Patterns:**
+
 1. Pre-flight validation (identity, connector, registry checks)
 2. Balance check before any network activity
 3. Pending publish cleanup on error/timeout/disconnect
@@ -145,6 +157,7 @@ All OWASP Top 10 categories reviewed. No critical, high, or medium severity issu
 **Review Focus:** Environment-specific validation, defaults, configuration
 
 **Findings:**
+
 - ✅ Production vs development mode (NODE_ENV check)
 - ✅ Environment-specific URL validation
 - ✅ Timeout configuration (user-configurable, secure default)
@@ -152,13 +165,15 @@ All OWASP Top 10 categories reviewed. No critical, high, or medium severity issu
 - ✅ Error messages sanitized for production
 
 **Code References:**
+
 - `crosstown-connector.ts:117-158` - Environment-aware URL validation
 - `client.ts:293-301` - Configuration validation
 - `crosstown-connector.ts:60-65` - Timeout configuration
 
 **Configuration Security:**
+
 1. Production mode enforces https:// and blocks internal IPs
-2. Development mode allows localhost/Docker (172.*/127.0.0.1)
+2. Development mode allows localhost/Docker (172.\*/127.0.0.1)
 3. Timeout configurable but defaults to safe value (2000ms)
 4. No configuration allows credential leakage
 5. URL validation at construction time (early failure)
@@ -172,17 +187,20 @@ All OWASP Top 10 categories reviewed. No critical, high, or medium severity issu
 **Review Focus:** Dependency vulnerabilities, library versions
 
 **Findings:**
+
 - ✅ `pnpm audit` clean (no known vulnerabilities)
 - ✅ `nostr-tools` used for cryptographic operations (battle-tested)
 - ✅ Native fetch API (Node.js 20+ built-in, no external HTTP library)
 - ✅ No deprecated dependencies
 
 **Dependencies Review:**
+
 1. `nostr-tools/pure` - Cryptographic signing (NIP-01 compliant)
 2. Native `fetch` API - HTTP requests (no external dependency)
 3. Native `AbortController` - Timeout handling (standard web API)
 
 **Audit Results:**
+
 ```
 No known vulnerabilities found
 ```
@@ -196,6 +214,7 @@ No known vulnerabilities found
 **Review Focus:** Authentication mechanism, session management
 
 **Findings:**
+
 - ✅ Nostr signature required for all actions (no weak authentication)
 - ✅ Identity validation before publish (client.ts:778-784)
 - ✅ No session tokens (stateless Nostr signatures)
@@ -203,11 +222,13 @@ No known vulnerabilities found
 - ✅ Signature verification at BLS (end-to-end crypto validation)
 
 **Code References:**
+
 - `client.ts:778-784` - Identity validation (IDENTITY_NOT_LOADED check)
 - `event-signing.ts:48-103` - Signature generation and validation
 - `ilp-packet.ts:66-142` - ILP packet construction with pubkey
 
 **Authentication Flow:**
+
 1. Identity must be loaded before publish (client.loadIdentity)
 2. Private key used to sign event (Schnorr signature)
 3. Public key included in event (attribution)
@@ -223,6 +244,7 @@ No known vulnerabilities found
 **Review Focus:** Event integrity, signature verification, tampering prevention
 
 **Findings:**
+
 - ✅ Event ID verification (SHA256 hash matches content)
 - ✅ Signature verification after signing (event-signing.ts:72-78)
 - ✅ ILP packet signature verified at BLS (end-to-end)
@@ -230,11 +252,13 @@ No known vulnerabilities found
 - ✅ Content tampering prevented by cryptographic hash
 
 **Code References:**
+
 - `event-signing.ts:69` - finalizeEvent computes SHA256 ID and signature
 - `event-signing.ts:72-87` - Signature and ID format validation
 - `ilp-packet.ts:125-139` - Event structure with content hash
 
 **Integrity Mechanisms:**
+
 1. Event ID = SHA256(serialized event) per NIP-01
 2. Signature = Schnorr(event ID, private key)
 3. Public key in event for verification
@@ -250,6 +274,7 @@ No known vulnerabilities found
 **Review Focus:** Private key exposure in logs, error message sanitization
 
 **Findings:**
+
 - ✅ Private key redacted in all logs (redactPrivateKey utility)
 - ✅ Error messages sanitized (no private keys)
 - ✅ No console.log with sensitive data (only JSDoc examples)
@@ -257,11 +282,13 @@ No known vulnerabilities found
 - ✅ No stack traces with private keys
 
 **Code References:**
+
 - `event-signing.ts:113-115` - redactPrivateKey utility
 - `event-signing.ts:90-101` - Error sanitization
 - `client.ts:809-813` - Error context with debugging info (no secrets)
 
 **Logging Security:**
+
 1. Private key never logged (protected by redactPrivateKey)
 2. Error messages include context but no secrets
 3. Timestamps added to errors for audit trail (ISSUE-4 fix)
@@ -269,6 +296,7 @@ No known vulnerabilities found
 5. No console.log in production code (only test files)
 
 **Grep Results:**
+
 - console.log in ilp-packet.ts:167-168 (JSDoc example only) ✅
 - console.log in crosstown-connector.ts:53 (JSDoc example only) ✅
 - No actual console.log calls in production code ✅
@@ -282,6 +310,7 @@ No known vulnerabilities found
 **Review Focus:** URL validation, internal network access, DNS rebinding
 
 **Findings:**
+
 - ✅ Comprehensive URL validation (crosstown-connector.ts:86-161)
 - ✅ Allowlist approach (http/https only)
 - ✅ Internal network protection in production
@@ -289,6 +318,7 @@ No known vulnerabilities found
 - ✅ DNS rebinding protection documented (partial implementation)
 
 **Code References:**
+
 - `crosstown-connector.ts:86-161` - validateConnectorUrl method
 - `crosstown-connector.ts:163-184` - validateResolvedIp (DNS rebinding documentation)
 - `crosstown-connector.ts:99-106` - Credential rejection
@@ -303,7 +333,7 @@ No known vulnerabilities found
 2. **Production Mode Restrictions:**
    - HTTPS required (http:// rejected)
    - Localhost blocked (127.0.0.1, ::1, localhost)
-   - Internal IPs blocked (10.*, 172.16-31.*, 192.168.*, 169.254.*)
+   - Internal IPs blocked (10._, 172.16-31._, 192.168._, 169.254._)
 
 3. **Development Mode Allowances:**
    - http://localhost allowed (for local testing)
@@ -321,33 +351,35 @@ No known vulnerabilities found
    - Trade-off: Browser compatibility vs full DNS rebinding protection
 
 **Production SSRF Test Cases:**
+
 ```typescript
 // ❌ Blocked in production
-'http://localhost:4041'          // HTTP protocol
-'https://127.0.0.1:4041'         // Localhost
-'https://10.0.0.1:4041'          // Internal IP (10.*)
-'https://172.16.0.1:4041'        // Internal IP (172.16-31.*)
-'https://192.168.1.1:4041'       // Internal IP (192.168.*)
-'https://169.254.1.1:4041'       // Link-local
-'https://user:pass@example.com'  // Embedded credentials
-'file:///etc/passwd'             // Non-HTTP protocol
-'ftp://example.com'              // Non-HTTP protocol
+'http://localhost:4041'; // HTTP protocol
+'https://127.0.0.1:4041'; // Localhost
+'https://10.0.0.1:4041'; // Internal IP (10.*)
+'https://172.16.0.1:4041'; // Internal IP (172.16-31.*)
+'https://192.168.1.1:4041'; // Internal IP (192.168.*)
+'https://169.254.1.1:4041'; // Link-local
+'https://user:pass@example.com'; // Embedded credentials
+'file:///etc/passwd'; // Non-HTTP protocol
+'ftp://example.com'; // Non-HTTP protocol
 
 // ✅ Allowed in production
-'https://crosstown.example.com'  // Public HTTPS
-'https://api.example.com:8080'   // Public HTTPS with port
+'https://crosstown.example.com'; // Public HTTPS
+'https://api.example.com:8080'; // Public HTTPS with port
 ```
 
 **Development SSRF Test Cases:**
+
 ```typescript
 // ✅ Allowed in development
-'http://localhost:4041'          // Local testing
-'http://127.0.0.1:4041'          // Local testing
-'http://172.17.0.2:4041'         // Docker network
+'http://localhost:4041'; // Local testing
+'http://127.0.0.1:4041'; // Local testing
+'http://172.17.0.2:4041'; // Docker network
 
 // ❌ Still blocked in development
-'https://user:pass@example.com'  // Embedded credentials
-'file:///etc/passwd'             // Non-HTTP protocol
+'https://user:pass@example.com'; // Embedded credentials
+'file:///etc/passwd'; // Non-HTTP protocol
 ```
 
 **Verdict:** No issues found (DNS rebinding partially mitigated, documented as acceptable trade-off)
@@ -357,18 +389,21 @@ No known vulnerabilities found
 ## Code Quality Review
 
 ### Type Safety ✅ PASS
+
 - ✅ No `any` types in production code
 - ✅ All function parameters typed
 - ✅ Error types properly defined (SigilError with boundaries)
 - ✅ Unknown used instead of any for JSON parsing
 
 ### Error Handling ✅ PASS
+
 - ✅ All errors use SigilError with boundary tags
 - ✅ Error context includes debugging information
 - ✅ No swallowed exceptions (all errors thrown or logged)
 - ✅ Error recovery strategies documented (error-codes.md)
 
 ### Testing ✅ PASS
+
 - ✅ 544 total tests passing (100% pass rate)
 - ✅ 61 tests for Story 2.3 specifically
 - ✅ Test traceability documented (AC → Test mapping)
@@ -417,9 +452,11 @@ const client = new SigilClient({
 ```
 
 **File Modified:**
+
 - `packages/client/src/publish/confirmation-flow.test.ts:594-610`
 
 **Verification:**
+
 - ✅ All 18 confirmation-flow tests now pass
 - ✅ All 544 total tests pass
 - ✅ No flakiness observed in 3 consecutive test runs
@@ -432,27 +469,32 @@ None required (test-only issue, no production impact)
 ## Security Best Practices Observed
 
 ### ✅ Defense in Depth
+
 - Multiple validation layers (input validation, SSRF protection, signature verification)
 - Fail-fast patterns (early validation before expensive operations)
 - Secure defaults (2s timeout, no auto-retry, HTTPS in production)
 
 ### ✅ Principle of Least Privilege
+
 - Private key never exposed beyond signing function
 - Error messages include minimum necessary information
 - No excessive logging of sensitive data
 
 ### ✅ Fail Securely
+
 - Errors throw instead of returning null/undefined
 - No partial state updates on failure
 - Pending publishes cleaned up on error/timeout/disconnect
 
 ### ✅ Input Validation
+
 - Allowlist approach (reducer name pattern, URL protocols)
 - Length limits (reducer: 1-64 chars, pubkey: 64 chars)
 - Type validation (Uint8Array, finite numbers)
 - JSON serialization with circular reference detection
 
 ### ✅ Cryptographic Hygiene
+
 - Battle-tested libraries (nostr-tools/pure)
 - Format validation after cryptographic operations
 - No custom crypto implementation
@@ -497,6 +539,7 @@ None required. All critical, high, and medium severity issues resolved.
 ## Compliance Summary
 
 ### OWASP Top 10 (2021): ✅ PASS
+
 - A01: Broken Access Control - PASS
 - A02: Cryptographic Failures - PASS
 - A03: Injection - PASS
@@ -509,6 +552,7 @@ None required. All critical, high, and medium severity issues resolved.
 - A10: SSRF - PASS
 
 ### Team Agreement (AGREEMENT-2): ✅ PASS
+
 "Every story must pass OWASP Top 10 review before marking 'done'. No exceptions."
 
 **Status:** PASSED - All 10 categories reviewed and approved
@@ -525,6 +569,7 @@ None required. All critical, high, and medium severity issues resolved.
 Story 2.3 demonstrates excellent security practices with comprehensive input validation, proper cryptographic key handling, SSRF protection, and secure error handling. No critical, high, or medium severity issues identified. One low severity test flakiness issue fixed. Code is production-ready from a security perspective.
 
 **Next Steps:**
+
 1. ✅ Complete Definition of Done checklist
 2. ✅ Update story status to "code-review-complete"
 3. Proceed to integration testing (Task 7)
@@ -533,6 +578,7 @@ Story 2.3 demonstrates excellent security practices with comprehensive input val
 ---
 
 **Review Metadata:**
+
 - Review Duration: ~30 minutes
 - Lines of Code Reviewed: ~1500
 - Test Coverage: 544 tests (100% pass rate)

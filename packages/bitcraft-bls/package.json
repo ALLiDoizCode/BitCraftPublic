@@ -1,0 +1,39 @@
+{
+  "name": "@sigil/bitcraft-bls",
+  "version": "0.1.0",
+  "description": "BitCraft BLS Game Action Handler - Crosstown node for processing ILP-routed game actions",
+  "license": "Apache-2.0",
+  "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:unit": "vitest run --exclude '**/integration.test.ts'",
+    "test:integration": "RUN_INTEGRATION_TESTS=true vitest run --include '**/integration.test.ts'",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@crosstown/sdk": "workspace:^0.1.4",
+    "@noble/hashes": "^1.6.1"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "tsup": "latest",
+    "typescript": "^5.0.0",
+    "vitest": "latest"
+  }
+}

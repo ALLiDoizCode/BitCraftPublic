@@ -14,6 +14,7 @@
 **RESULT: ✅ PASSED - ZERO SECURITY ISSUES FOUND**
 
 All files created or modified in Story 2.3 passed comprehensive security scanning with:
+
 - **0 Critical vulnerabilities**
 - **0 High severity issues**
 - **0 Medium severity issues**
@@ -46,18 +47,13 @@ All files created or modified in Story 2.3 passed comprehensive security scannin
 ### Files Scanned
 
 **Implementation Files:**
+
 1. `packages/client/src/publish/ilp-packet.ts` (229 lines)
 2. `packages/client/src/publish/event-signing.ts` (116 lines)
 3. `packages/client/src/crosstown/crosstown-connector.ts` (334 lines)
 4. `packages/client/src/client.ts` (modified, ~1800 lines)
 
-**Test Files:**
-5. `packages/client/src/publish/ilp-packet.test.ts` (739 lines)
-6. `packages/client/src/publish/event-signing.test.ts` (485 lines)
-7. `packages/client/src/crosstown/crosstown-connector.test.ts` (627 lines)
-8. `packages/client/src/publish/client-publish.test.ts` (892 lines)
-9. `packages/client/src/publish/confirmation-flow.test.ts` (872 lines)
-10. `packages/client/src/publish/action-cost-registry.test.ts` (1162 lines)
+**Test Files:** 5. `packages/client/src/publish/ilp-packet.test.ts` (739 lines) 6. `packages/client/src/publish/event-signing.test.ts` (485 lines) 7. `packages/client/src/crosstown/crosstown-connector.test.ts` (627 lines) 8. `packages/client/src/publish/client-publish.test.ts` (892 lines) 9. `packages/client/src/publish/confirmation-flow.test.ts` (872 lines) 10. `packages/client/src/publish/action-cost-registry.test.ts` (1162 lines)
 
 **Total Code Coverage:** ~7,256 lines of code scanned
 
@@ -72,12 +68,14 @@ All files created or modified in Story 2.3 passed comprehensive security scannin
 **Findings:** 0
 
 **Validation:**
+
 - Rate limiting handled by Crosstown connector (429 response handling)
 - No authentication bypass vectors detected
 - Nostr signature verification enforced (end-to-end)
 - No unauthorized access to private keys or sensitive data
 
 **Code Patterns Checked:**
+
 - Authorization bypass attempts
 - Insecure direct object references (IDOR)
 - Path traversal attacks
@@ -93,6 +91,7 @@ All files created or modified in Story 2.3 passed comprehensive security scannin
 **Findings:** 0
 
 **Validation:**
+
 - ✅ Private key NEVER transmitted over network (validated in `event-signing.ts`)
 - ✅ Private key NEVER logged (redaction via `redactPrivateKey()` function)
 - ✅ Private key NEVER in error messages (sanitization in catch blocks)
@@ -102,6 +101,7 @@ All files created or modified in Story 2.3 passed comprehensive security scannin
 - ✅ Signature format validation: 128-character hex string (validated in `event-signing.ts:72`)
 
 **Code Patterns Checked:**
+
 - Weak encryption algorithms
 - Hardcoded cryptographic keys
 - Insecure random number generation
@@ -110,6 +110,7 @@ All files created or modified in Story 2.3 passed comprehensive security scannin
 - Unencrypted storage of secrets
 
 **Security Implementation:**
+
 ```typescript
 // event-signing.ts:54-59
 if (!(privateKey instanceof Uint8Array) || privateKey.length !== 32) {
@@ -131,6 +132,7 @@ if (!(privateKey instanceof Uint8Array) || privateKey.length !== 32) {
 **Findings:** 0
 
 **Validation:**
+
 - ✅ SSRF protection: URL validation with allowlist approach (`crosstown-connector.ts:86-161`)
 - ✅ Reducer name validation: Alphanumeric + underscore only (`ilp-packet.ts:86-93`)
 - ✅ JSON serialization safe: No `eval()`, no code execution, no template injection
@@ -140,6 +142,7 @@ if (!(privateKey instanceof Uint8Array) || privateKey.length !== 32) {
 - ✅ No LDAP injection: No LDAP queries
 
 **Code Patterns Checked:**
+
 - Command injection (shell execution)
 - SQL injection (database queries)
 - NoSQL injection (MongoDB, etc.)
@@ -150,6 +153,7 @@ if (!(privateKey instanceof Uint8Array) || privateKey.length !== 32) {
 - Template injection
 
 **Security Implementation:**
+
 ```typescript
 // ilp-packet.ts:86-93 - Reducer name validation (injection prevention)
 const reducerPattern = /^[a-zA-Z0-9_]+$/;
@@ -191,6 +195,7 @@ for (const pattern of ipPatterns) {
 **Findings:** 0
 
 **Validation:**
+
 - ✅ Secure defaults: 2000ms timeout, no auto-retry, HTTPS in production
 - ✅ Error handling fails securely: No partial state updates
 - ✅ Balance check before packet construction: Fail-fast pattern
@@ -199,6 +204,7 @@ for (const pattern of ipPatterns) {
 - ✅ Timeout configuration: Prevents infinite hangs
 
 **Code Patterns Checked:**
+
 - Missing security defaults
 - Insecure business logic
 - Race conditions
@@ -207,6 +213,7 @@ for (const pattern of ipPatterns) {
 - Missing error handling
 
 **Security Implementation:**
+
 ```typescript
 // client.ts - Fail-fast balance check (prevents wasted signing operations)
 const balance = await this.wallet.getBalance();
@@ -229,6 +236,7 @@ if (balance < cost) {
 **Findings:** 0
 
 **Validation:**
+
 - ✅ Production vs development mode: Environment-specific validation (`NODE_ENV` check)
 - ✅ Timeout configuration: Default 2000ms, user-configurable
 - ✅ No default credentials: Identity uses Nostr keypair, no defaults
@@ -237,6 +245,7 @@ if (balance < cost) {
 - ✅ No unnecessary services: Minimal dependencies
 
 **Code Patterns Checked:**
+
 - Default credentials
 - Unnecessary features enabled
 - Verbose error messages
@@ -245,6 +254,7 @@ if (balance < cost) {
 - Outdated components
 
 **Security Implementation:**
+
 ```typescript
 // crosstown-connector.ts:117-126 - Production HTTPS enforcement
 const isProduction = process.env.NODE_ENV === 'production';
@@ -267,18 +277,21 @@ if (isProduction && url.protocol !== 'https:') {
 **Findings:** 0
 
 **Dependency Audit:**
+
 ```bash
 $ pnpm audit --audit-level=moderate
 No known vulnerabilities found
 ```
 
 **Key Dependencies Reviewed:**
+
 - `nostr-tools@^2.9.3` - Up-to-date, widely used, audited cryptographic library
 - `@spacetimedb/sdk@^1.6.0` - Up-to-date, official SpacetimeDB SDK
 - Node.js built-in `fetch` API - No external dependencies for HTTP requests
 - Vitest for testing - Latest stable version
 
 **Code Patterns Checked:**
+
 - Outdated npm packages
 - Known CVEs in dependencies
 - Deprecated APIs
@@ -293,6 +306,7 @@ No known vulnerabilities found
 **Findings:** 0
 
 **Validation:**
+
 - ✅ Nostr signature verification: End-to-end cryptographic authentication
 - ✅ No weak authentication: Nostr-only identity (Schnorr signatures)
 - ✅ No session fixation: No sessions (stateless authentication)
@@ -300,6 +314,7 @@ No known vulnerabilities found
 - ✅ Private key protection: Never exposed, never transmitted
 
 **Code Patterns Checked:**
+
 - Weak password policies
 - Credential stuffing
 - Session fixation
@@ -308,6 +323,7 @@ No known vulnerabilities found
 - Brute force vulnerabilities
 
 **Security Implementation:**
+
 ```typescript
 // event-signing.ts:62-69 - Nostr signature generation (cryptographic authentication)
 const signedEvent = finalizeEvent(event, privateKey);
@@ -327,6 +343,7 @@ const signedEvent = finalizeEvent(event, privateKey);
 **Findings:** 0
 
 **Validation:**
+
 - ✅ ILP packet signature verification: BLS validates Nostr signatures
 - ✅ Event ID verification: SHA256 hash matches content (NIP-01 compliance)
 - ✅ No unsigned/unverified data accepted: All events must be signed
@@ -334,6 +351,7 @@ const signedEvent = finalizeEvent(event, privateKey);
 - ✅ Integrity checks: Signature format (128 chars), event ID format (64 chars)
 
 **Code Patterns Checked:**
+
 - Insecure deserialization
 - Missing integrity checks
 - Unsigned code execution
@@ -341,6 +359,7 @@ const signedEvent = finalizeEvent(event, privateKey);
 - Lack of digital signatures
 
 **Security Implementation:**
+
 ```typescript
 // event-signing.ts:72-77 - Signature format validation
 if (!signedEvent.sig || signedEvent.sig.length !== 128) {
@@ -361,6 +380,7 @@ if (!signedEvent.sig || signedEvent.sig.length !== 128) {
 **Findings:** 0
 
 **Validation:**
+
 - ✅ Private key redacted in all logs: `redactPrivateKey()` utility function
 - ✅ Error messages do not leak sensitive data: Sanitization in all catch blocks
 - ✅ Audit trail for publish attempts: Error context includes timestamps, actions
@@ -368,6 +388,7 @@ if (!signedEvent.sig || signedEvent.sig.length !== 128) {
 - ✅ Structured error context: SigilError with code, boundary, context fields
 
 **Code Patterns Checked:**
+
 - Logging of sensitive data
 - Missing audit trails
 - Insufficient logging
@@ -375,6 +396,7 @@ if (!signedEvent.sig || signedEvent.sig.length !== 128) {
 - Verbose error messages
 
 **Security Implementation:**
+
 ```typescript
 // event-signing.ts:90-102 - Private key sanitization in error handling
 try {
@@ -404,14 +426,16 @@ try {
 **Findings:** 0
 
 **Validation:**
+
 - ✅ Crosstown URL validation: Allowlist approach with protocol/IP checks
-- ✅ Internal network protection: Block 10.*, 172.16-31.*, 192.168.*, 169.254.* in production
+- ✅ Internal network protection: Block 10._, 172.16-31._, 192.168._, 169.254._ in production
 - ✅ No credentials in URLs: Reject `http://user:pass@host` format
 - ✅ Production HTTPS requirement: Reject HTTP in production mode
-- ✅ Development mode allowance: Permit localhost, 127.0.0.1, Docker networks (172.*)
-- ⚠️  DNS rebinding: Partially mitigated (documented trade-off, see line 163-184)
+- ✅ Development mode allowance: Permit localhost, 127.0.0.1, Docker networks (172.\*)
+- ⚠️ DNS rebinding: Partially mitigated (documented trade-off, see line 163-184)
 
 **Code Patterns Checked:**
+
 - SSRF via URL manipulation
 - Internal IP access
 - Localhost bypass
@@ -419,6 +443,7 @@ try {
 - Redirect following to internal resources
 
 **Security Implementation:**
+
 ```typescript
 // crosstown-connector.ts:99-106 - Credential rejection (SSRF prevention)
 if (url.username || url.password) {
@@ -432,6 +457,7 @@ if (url.username || url.password) {
 
 **DNS Rebinding Note:**
 Full DNS rebinding protection requires runtime DNS resolution checks, which are:
+
 - Not available in browser environments (fetch API handles DNS)
 - Optional in Node.js environments (requires `dns` module)
 - Deferred to Epic 3+ (see `crosstown-connector.ts:163-184` for detailed documentation)
@@ -449,6 +475,7 @@ Construction-time validation provides strong SSRF protection. Runtime DNS check 
 **Findings:** 0
 
 **Validation:**
+
 - No hardcoded API keys
 - No hardcoded passwords
 - No hardcoded tokens
@@ -467,6 +494,7 @@ All test fixtures use dynamically generated Nostr keypairs via `generateKeypair(
 **Findings:** 0
 
 **Validation:**
+
 - No shell command execution (no `exec`, `spawn`, `child_process`)
 - No template string injection into shell commands
 - No user input passed to shell
@@ -482,6 +510,7 @@ All test fixtures use dynamically generated Nostr keypairs via `generateKeypair(
 **Findings:** 0
 
 **Validation:**
+
 - Production URLs require HTTPS (validated in `crosstown-connector.ts:120`)
 - No HTTP-only communication in production mode
 - Development mode allows HTTP for localhost/Docker (acceptable for local dev)
@@ -495,6 +524,7 @@ All test fixtures use dynamically generated Nostr keypairs via `generateKeypair(
 **Findings:** 0
 
 **Validation:**
+
 - No DOM manipulation (client library, not web app)
 - No HTML generation
 - No template rendering
@@ -549,6 +579,7 @@ All test fixtures use dynamically generated Nostr keypairs via `generateKeypair(
 ### 1. Defense in Depth
 
 Multiple validation layers:
+
 - Input validation (reducer name, fee, pubkey, args)
 - URL validation (protocol, credentials, internal IPs)
 - Signature validation (format, length, verification)
@@ -618,18 +649,18 @@ Multiple validation layers:
 
 ## Compliance Summary
 
-| OWASP Category | Status | Rules Run | Findings | Notes |
-|----------------|--------|-----------|----------|-------|
-| A01: Broken Access Control | ✅ PASS | 58 | 0 | Rate limiting, signature verification |
-| A02: Cryptographic Failures | ✅ PASS | 71 | 0 | Private key protection, HTTPS enforcement |
-| A03: Injection | ✅ PASS | 94 | 0 | SSRF protection, input validation |
-| A04: Insecure Design | ✅ PASS | 42 | 0 | Secure defaults, fail-fast pattern |
-| A05: Security Misconfiguration | ✅ PASS | 38 | 0 | Environment-specific validation |
-| A06: Vulnerable Components | ✅ PASS | N/A | 0 | No known vulnerabilities (pnpm audit) |
-| A07: Authentication Failures | ✅ PASS | 52 | 0 | Nostr signatures, no weak auth |
-| A08: Integrity Failures | ✅ PASS | 47 | 0 | Signature verification, event ID checks |
-| A09: Logging Failures | ✅ PASS | 29 | 0 | Private key redaction, audit trail |
-| A10: SSRF | ✅ PASS | 68 | 0 | URL validation, internal IP blocking |
+| OWASP Category                 | Status  | Rules Run | Findings | Notes                                     |
+| ------------------------------ | ------- | --------- | -------- | ----------------------------------------- |
+| A01: Broken Access Control     | ✅ PASS | 58        | 0        | Rate limiting, signature verification     |
+| A02: Cryptographic Failures    | ✅ PASS | 71        | 0        | Private key protection, HTTPS enforcement |
+| A03: Injection                 | ✅ PASS | 94        | 0        | SSRF protection, input validation         |
+| A04: Insecure Design           | ✅ PASS | 42        | 0        | Secure defaults, fail-fast pattern        |
+| A05: Security Misconfiguration | ✅ PASS | 38        | 0        | Environment-specific validation           |
+| A06: Vulnerable Components     | ✅ PASS | N/A       | 0        | No known vulnerabilities (pnpm audit)     |
+| A07: Authentication Failures   | ✅ PASS | 52        | 0        | Nostr signatures, no weak auth            |
+| A08: Integrity Failures        | ✅ PASS | 47        | 0        | Signature verification, event ID checks   |
+| A09: Logging Failures          | ✅ PASS | 29        | 0        | Private key redaction, audit trail        |
+| A10: SSRF                      | ✅ PASS | 68        | 0        | URL validation, internal IP blocking      |
 
 **Total:** 10/10 categories PASS
 
@@ -640,6 +671,7 @@ Multiple validation layers:
 **No fixes required.** All security checks passed.
 
 The code as written demonstrates:
+
 - Industry-standard cryptographic practices
 - Comprehensive input validation
 - Defense-in-depth security architecture
@@ -664,6 +696,7 @@ The code as written demonstrates:
 **All files created or modified in Story 2.3 are secure and ready for production.**
 
 The implementation demonstrates exemplary security practices, particularly in:
+
 - Private key handling (NFR9: never exposed)
 - SSRF protection (A10:2021: comprehensive URL validation)
 - Input validation (A03:2021: allowlist approach)
@@ -682,6 +715,7 @@ The implementation demonstrates exemplary security practices, particularly in:
 **Status:** ✅ APPROVED
 
 **Next Steps:**
+
 - Story 2.3 security review COMPLETE
 - No remediation required
 - Ready for integration testing (Task 7)

@@ -130,7 +130,7 @@ So that I can make informed decisions about spending before executing actions.
   - [x] Implement `client.publish.getCost(actionName: string): number`:
     - If registry is null, throw `SigilError` with code `REGISTRY_NOT_LOADED` and boundary `action-cost-registry` and message "Action cost registry not loaded. Provide actionCostRegistryPath in SigilClientOptions."
     - If action exists in registry, return `registry.actions[actionName].cost`
-    - If action does NOT exist, log warning at WARN level: `logger.warn(\`Action "${actionName}" not found in cost registry. Using defaultCost: ${registry.defaultCost}\`)` and return `registry.defaultCost`
+    - If action does NOT exist, log warning at WARN level: `logger.warn(\`Action "${actionName}" not found in cost registry. Using defaultCost: ${registry.defaultCost}\`)`and return`registry.defaultCost`
   - [x] Add type exports to `packages/client/src/index.ts` for `ActionCostRegistry`, `ActionCostEntry`, `ActionCostRegistryOptions`
 
 - [x] Task 4: Implement wallet balance query via Crosstown HTTP API (AC4, AC5)
@@ -146,7 +146,7 @@ So that I can make informed decisions about spending before executing actions.
   - [x] Use native `fetch` API (Node.js 20+ is required per project prerequisites, no polyfill needed)
   - [x] SSRF protection: Validate `crosstownConnectorUrl` in constructor:
     - Must be valid HTTP/HTTPS URL (use URL constructor, catch parse errors)
-    - In development (NODE_ENV !== 'production'): Allow localhost, 127.0.0.1, ::1, 0.0.0.0, and Docker internal IPs (172.* range)
+    - In development (NODE_ENV !== 'production'): Allow localhost, 127.0.0.1, ::1, 0.0.0.0, and Docker internal IPs (172.\* range)
     - In production: Only allow configured production URLs (reject localhost, internal IPs)
     - Throw `SigilError` with code `INVALID_CONFIG` if URL validation fails
   - [x] **STUB MODE IMPLEMENTATION (if Crosstown API not yet available):**
@@ -266,7 +266,7 @@ So that I can make informed decisions about spending before executing actions.
   - [x] **A07:2021 - Authentication Failures:** Code review Task 4 - verify identity public key is required parameter (no anonymous balance queries)
   - [x] **A08:2021 - Software and Data Integrity:** Code review Task 1 - verify JSON validation rejects NaN, Infinity, negative values, invalid enums
   - [x] **A09:2021 - Logging Failures:** Code review Task 2, Task 3, Task 4 - verify logging at appropriate levels (DEBUG for load success, WARN for unknown actions/stub mode, ERROR for failures)
-  - [x] **A10:2021 - SSRF:** Code review Task 4 - verify Crosstown URL validation (allow localhost/127.0.0.1/::1/0.0.0.0/172.* in dev, reject in production)
+  - [x] **A10:2021 - SSRF:** Code review Task 4 - verify Crosstown URL validation (allow localhost/127.0.0.1/::1/0.0.0.0/172.\* in dev, reject in production)
   - [x] **NFR12 Compliance:** Verify Task 8 creates publicly auditable cost registry (JSON in version control, readable by all)
   - [x] **NFR17 Compliance:** Document in Task 7 - balance accuracy tested in integration tests (if API available)
   - [x] **NFR24 Compliance:** Code review Task 4 - verify timeout enforced (500ms), no retry loops on balance query failures
@@ -302,6 +302,7 @@ So that I can make informed decisions about spending before executing actions.
 **Critical Technical Requirements:**
 
 1. **JSON Schema Version 1:**
+
    ```json
    {
      "version": 1,
@@ -313,6 +314,7 @@ So that I can make informed decisions about spending before executing actions.
      }
    }
    ```
+
    - `version`: Positive integer (currently only version 1 supported)
    - `defaultCost`: Non-negative number (fallback cost for unmapped actions)
    - `actions`: Object with string keys (reducer names) → `ActionCostEntry` values
@@ -338,7 +340,7 @@ So that I can make informed decisions about spending before executing actions.
      - Invalid response (missing balance, negative balance, non-JSON) → `SigilError` code `INVALID_RESPONSE`, boundary `crosstown-connector`
      - HTTP 404 or 501 (endpoint not implemented) → Activate stub mode (return 10000, log warning)
    - **Stub Mode:** Force-enable via `SIGIL_WALLET_STUB=true` env var, or auto-activate on 404 response
-   - **SSRF Protection:** Validate URL in constructor (allow localhost/127.0.0.1/::1/0.0.0.0/172.* in dev, reject in production)
+   - **SSRF Protection:** Validate URL in constructor (allow localhost/127.0.0.1/::1/0.0.0.0/172.\* in dev, reject in production)
 
 4. **Cost Lookup Performance:**
    - `getCost()` is synchronous (in-memory lookup from loaded registry)
@@ -353,11 +355,13 @@ So that I can make informed decisions about spending before executing actions.
 **Crosstown Integration Notes:**
 
 **Stub Mode (Epic 1-2):**
+
 - Crosstown stub mode does NOT implement wallet balance queries or ILP payment validation
 - All actions succeed without payment (no balance deduction)
 - Story 2.2 MAY implement a stub balance API that returns a fixed value (e.g., 10000)
 
 **Production Mode (Story 2.5+):**
+
 - Full BLS handler validates ILP payments and deducts fees from wallet balance
 - Balance queries reflect actual Crosstown ledger state
 - Integration tests verify balance accuracy after confirmed transactions
@@ -365,6 +369,7 @@ So that I can make informed decisions about spending before executing actions.
 **Testing Strategy:**
 
 **Unit Tests (no Docker required):**
+
 - Test cost registry loading (valid JSON, invalid JSON, missing fields)
 - Test `getCost()` for known and unknown actions
 - Test `canAfford()` with mocked balance queries
@@ -372,6 +377,7 @@ So that I can make informed decisions about spending before executing actions.
 - Test error handling (file not found, network timeout, invalid response)
 
 **Integration Tests (requires Docker):**
+
 - Load cost registry from real JSON file
 - Query wallet balance from real Crosstown connector (if API exists)
 - Verify balance accuracy (if Crosstown provides verification endpoint)
@@ -379,16 +385,16 @@ So that I can make informed decisions about spending before executing actions.
 
 **Test Traceability (AC → Test Mapping per AGREEMENT-1):**
 
-| Acceptance Criteria | Unit Test Coverage | Integration Test Coverage | Test Files |
-|---------------------|-------------------|--------------------------|------------|
-| AC1: Load cost registry | Valid JSON load, verify all actions present, defaultCost set | Load from real file in integration test suite | `action-cost-registry.test.ts`, `client.test.ts` |
-| AC2: getCost() for known action | Mock registry, verify cost returned for "player_move" | Load real registry, query known actions | `action-cost-registry.test.ts`, `client.test.ts` |
-| AC3: getCost() for unknown action | Mock registry, verify defaultCost returned, warning logged | Query action not in real registry | `action-cost-registry.test.ts`, `client.test.ts` |
-| AC4: getBalance() HTTP query | Mock fetch response, verify balance returned | Query real Crosstown connector (if API exists) | `wallet-client.test.ts`, `wallet-balance.test.ts` (integration) |
-| AC5: Balance accuracy and errors | Mock timeout, verify SigilError thrown | Verify balance from real Crosstown | `wallet-client.test.ts`, `wallet-balance.test.ts` (integration) |
-| AC6: canAfford() logic | Mock getCost() and getBalance(), verify boolean logic | Test with real registry + real balance query | `client.test.ts`, `wallet-balance.test.ts` (integration) |
-| AC7: Invalid registry handling | Test malformed JSON, missing fields, negative costs | N/A (unit test only) | `action-cost-registry.test.ts` |
-| AC8: Version validation | Test unsupported version, missing version field | N/A (unit test only) | `action-cost-registry.test.ts` |
+| Acceptance Criteria               | Unit Test Coverage                                           | Integration Test Coverage                      | Test Files                                                      |
+| --------------------------------- | ------------------------------------------------------------ | ---------------------------------------------- | --------------------------------------------------------------- |
+| AC1: Load cost registry           | Valid JSON load, verify all actions present, defaultCost set | Load from real file in integration test suite  | `action-cost-registry.test.ts`, `client.test.ts`                |
+| AC2: getCost() for known action   | Mock registry, verify cost returned for "player_move"        | Load real registry, query known actions        | `action-cost-registry.test.ts`, `client.test.ts`                |
+| AC3: getCost() for unknown action | Mock registry, verify defaultCost returned, warning logged   | Query action not in real registry              | `action-cost-registry.test.ts`, `client.test.ts`                |
+| AC4: getBalance() HTTP query      | Mock fetch response, verify balance returned                 | Query real Crosstown connector (if API exists) | `wallet-client.test.ts`, `wallet-balance.test.ts` (integration) |
+| AC5: Balance accuracy and errors  | Mock timeout, verify SigilError thrown                       | Verify balance from real Crosstown             | `wallet-client.test.ts`, `wallet-balance.test.ts` (integration) |
+| AC6: canAfford() logic            | Mock getCost() and getBalance(), verify boolean logic        | Test with real registry + real balance query   | `client.test.ts`, `wallet-balance.test.ts` (integration)        |
+| AC7: Invalid registry handling    | Test malformed JSON, missing fields, negative costs          | N/A (unit test only)                           | `action-cost-registry.test.ts`                                  |
+| AC8: Version validation           | Test unsupported version, missing version field              | N/A (unit test only)                           | `action-cost-registry.test.ts`                                  |
 
 **Performance Considerations:**
 
@@ -565,7 +571,10 @@ This section documents security review per AGREEMENT-2. All items must pass befo
   ```typescript
   import path from 'path';
   const client = new SigilClient({
-    actionCostRegistryPath: path.join(process.cwd(), 'packages/client/config/default-action-costs.json'),
+    actionCostRegistryPath: path.join(
+      process.cwd(),
+      'packages/client/config/default-action-costs.json'
+    ),
   });
   console.log(client.publish.getCost('player_move')); // Expect: 1
   ```
@@ -641,41 +650,49 @@ After Story 2.2 completion, proceed to **Story 2.3: ILP Packet Construction & Si
 #### Acceptance Criteria Compliance (8/8 PASS)
 
 ✅ **AC1: Load action cost registry** - IMPLEMENTED
+
 - Registry loaded at client instantiation
 - All required fields validated
 - Fail-fast on errors
 - Evidence: `action-cost-registry.ts` lines 329-397
 
 ✅ **AC2: Query ILP cost for known action** - IMPLEMENTED
+
 - `getCost()` method working correctly
 - Performance <10ms verified
 - Evidence: `client.ts` lines 212-231
 
 ✅ **AC3: Query ILP cost for unknown action** - IMPLEMENTED
+
 - Returns defaultCost with warning
 - Evidence: `client.ts` lines 226-230
 
 ✅ **AC4: Query wallet balance via HTTP** - IMPLEMENTED
+
 - HTTP GET to `/wallet/balance/{pubkey}`
 - Stub mode on 404/501
 - 500ms timeout enforced
 - Evidence: `wallet-client.ts` lines 127-246
 
 ✅ **AC5: Wallet balance accuracy** - IMPLEMENTED
+
 - Validates response structure
 - Rejects negative balances
 - Evidence: `wallet-client.ts` lines 184-220
 
 ✅ **AC6: Pre-flight cost check** - IMPLEMENTED
+
 - `canAfford()` method implemented
 - Evidence: `client.ts` lines 233-241
 
 ✅ **AC7: Cost registry validation** - IMPLEMENTED
+
 - Validates JSON, rejects negative costs
 - Path traversal protection
 - Evidence: `action-cost-registry.ts` lines 118-309
 
 ✅ **AC8: Version validation** - IMPLEMENTED
+
 - Version field required, integer >= 1
 - Only version 1 supported
 - Evidence: `action-cost-registry.ts` lines 129-169
@@ -683,41 +700,50 @@ After Story 2.2 completion, proceed to **Story 2.3: ILP Packet Construction & Si
 #### Security Review (OWASP Top 10 - ALL PASS)
 
 ✅ **A01: Broken Access Control** - PASS
+
 - Wallet queries scoped to identity public key
 
 ✅ **A03: Injection** - PASS
+
 - Path traversal blocked
 - SSRF protection (localhost blocked in production)
 - JSON parsing wrapped in try/catch
 
 ✅ **A04: Insecure Design** - PASS
+
 - Non-negative cost validation
 - Timeout enforced
 
 ✅ **A05: Security Misconfiguration** - PASS
+
 - Paths sanitized in error messages
 - HTTPS required in production
 
 ✅ **A08: Data Integrity** - PASS
+
 - NaN, Infinity rejected
 - Version validation
 
 ✅ **A09: Logging** - PASS
+
 - Appropriate log levels (DEBUG, WARN, ERROR)
 
 ✅ **A10: SSRF** - PASS
+
 - URL validation in constructor
 - Localhost allowed in dev only
 
 #### Test Coverage (ALL REQUIREMENTS MET)
 
 ✅ **Unit Tests:** 69 new tests added
+
 - `action-cost-registry.test.ts`: 37 tests
 - `wallet-client.test.ts`: 24 tests
 - `client-publish.test.ts`: 14 tests
 - **Status:** All passing (463 total, 71 skipped)
 
 ✅ **Integration Tests:** 6 tests added
+
 - `wallet-balance.test.ts`: 6 integration tests
 - Graceful skipping when Crosstown unavailable
 
@@ -736,6 +762,7 @@ After Story 2.2 completion, proceed to **Story 2.3: ILP Packet Construction & Si
 #### Files Verified
 
 **Created (7 files):**
+
 - ✅ `packages/client/src/publish/action-cost-registry.ts` (406 lines)
 - ✅ `packages/client/src/publish/action-cost-registry.test.ts` (463 lines)
 - ✅ `packages/client/src/wallet/wallet-client.ts` (274 lines)
@@ -745,6 +772,7 @@ After Story 2.2 completion, proceed to **Story 2.3: ILP Packet Construction & Si
 - ✅ `packages/client/config/default-action-costs.json` (57 lines)
 
 **Modified (2 files):**
+
 - ✅ `packages/client/src/client.ts` (added cost registry + wallet integration)
 - ✅ `packages/client/src/index.ts` (added exports)
 
@@ -753,6 +781,7 @@ After Story 2.2 completion, proceed to **Story 2.3: ILP Packet Construction & Si
 **Status:** ✅ **APPROVED - READY FOR PRODUCTION**
 
 Story 2.2 implementation is **EXCEPTIONAL**. Zero issues found across all categories:
+
 - All 8 acceptance criteria fully implemented and verified
 - OWASP Top 10 security review passed with zero findings
 - 69 unit tests + 6 integration tests, all passing
@@ -775,6 +804,7 @@ Story 2.2 implementation is **EXCEPTIONAL**. Zero issues found across all catego
 **Review Duration:** ~10 minutes
 
 **Issues Found:**
+
 - **Critical:** 0
 - **High:** 0
 - **Medium:** 0
@@ -786,6 +816,7 @@ Story 2.2 implementation is **EXCEPTIONAL**. Zero issues found across all catego
 Second code review pass confirmed all findings from pass #1 remain accurate. No code modifications were needed as the implementation is already in excellent state.
 
 **Verification Results:**
+
 - ✅ All 8 acceptance criteria remain fully implemented
 - ✅ OWASP Top 10 compliance verified (no new security issues)
 - ✅ 69 unit tests + 6 integration tests still passing
@@ -795,6 +826,7 @@ Second code review pass confirmed all findings from pass #1 remain accurate. No 
 - ✅ Test traceability validated
 
 **Key Observations:**
+
 - Code quality remains exceptional
 - No regression issues found
 - Previous review findings confirmed accurate
@@ -814,6 +846,7 @@ Story 2.2 remains in DONE status. Second review confirms the implementation is p
 **Review Duration:** ~15 minutes
 
 **Issues Found:**
+
 - **Critical:** 0
 - **High:** 0
 - **Medium:** 0
@@ -825,6 +858,7 @@ Story 2.2 remains in DONE status. Second review confirms the implementation is p
 Final code review pass (third and final review) confirmed the implementation remains in exceptional state. All previous findings from passes #1 and #2 remain valid.
 
 **Verification Results:**
+
 - ✅ All 8 acceptance criteria fully implemented and verified
 - ✅ OWASP Top 10 compliance confirmed (all 10 categories PASS)
 - ✅ Test coverage verified: 463 tests passing, 71 skipped
@@ -834,6 +868,7 @@ Final code review pass (third and final review) confirmed the implementation rem
 - ✅ Test traceability complete (AC → Test mapping documented)
 
 **Key Observations:**
+
 - Code quality remains exceptional across all files
 - No regression issues detected
 - All security controls functioning correctly
@@ -842,6 +877,7 @@ Final code review pass (third and final review) confirmed the implementation rem
 - Logging at appropriate levels (DEBUG/WARN/ERROR)
 
 **OWASP Top 10 Final Verification:**
+
 - ✅ A01 (Broken Access Control) - PASS
 - ✅ A02 (Cryptographic Failures) - N/A
 - ✅ A03 (Injection) - PASS (path traversal & SSRF protected)
@@ -870,6 +906,7 @@ Story 2.2 implementation is complete and production-ready. No code changes neces
 **Story Creation Method:** BMAD workflow via `/bmad-bmm-create-story story 2.2 yolo`
 
 **Story Creation Notes:**
+
 - Story 2.2 created following Story 2.1 template structure
 - Acceptance criteria extracted from `_bmad-output/planning-artifacts/epics.md`
 - Task breakdown follows BMAD standards with AC traceability
@@ -879,6 +916,7 @@ Story 2.2 implementation is complete and production-ready. No code changes neces
 - Default action cost registry JSON schema based on `_bmad-output/planning-artifacts/architecture/8-action-cost-registry.md`
 
 **Files Created:**
+
 - `/Users/jonathangreen/Documents/BitCraftPublic/_bmad-output/implementation-artifacts/2-2-action-cost-registry-and-wallet-balance.md`
 
 **Adversarial Review (2026-02-27):**
@@ -891,46 +929,22 @@ Story 2.2 implementation is complete and production-ready. No code changes neces
 **Issues Fixed (Summary by Severity):**
 
 **Critical (4):**
+
 1. Missing critical dependency on PREP-4 completion → Added stub mode strategy, no longer blocking
 2. Inconsistent file path handling documentation → Clarified dev vs production path rules
 3. Incomplete test traceability for AC8 → Added explicit tests for missing version, zero version, negative version, non-integer version
 4. Vague DECISION POINT in Task 4 → Specified stub mode behavior (return 10000, log warning, feature flag support)
 
-**High (6):**
-5. Missing performance validation tests → Added performance tests for getCost() <10ms and getBalance() <500ms
-6. Incomplete security review for A03 (Injection) → Assigned path validation to Task 2, SSRF validation to Task 4
-7. Task 8 doesn't specify action costs → Listed all 10 actions from architecture doc with costs
-8. Missing error code exports → Added error codes to Task 9 export list
-9. Integration test dependency unclear → Clarified stub mode test strategy, added skip conditions
-10. Wallet balance units ambiguous → Specified "game currency units" (non-negative integer), removed Bitcoin reference
+**High (6):** 5. Missing performance validation tests → Added performance tests for getCost() <10ms and getBalance() <500ms 6. Incomplete security review for A03 (Injection) → Assigned path validation to Task 2, SSRF validation to Task 4 7. Task 8 doesn't specify action costs → Listed all 10 actions from architecture doc with costs 8. Missing error code exports → Added error codes to Task 9 export list 9. Integration test dependency unclear → Clarified stub mode test strategy, added skip conditions 10. Wallet balance units ambiguous → Specified "game currency units" (non-negative integer), removed Bitcoin reference
 
-**Medium (10):**
-11. Task 3 doesn't validate registry before client fully initializes → Clarified constructor throws immediately on failure
-12. Missing fetch polyfill specification → Confirmed Node.js 20+ native fetch (no polyfill needed)
-13. AC6 error handling inconsistency → Documented error propagation behavior in AC6 and Task 5
-14. Missing validation for category and frequency fields → Added enums (CategoryEnum, FrequencyEnum) with explicit allowed values
-15. Logging levels inconsistent → Specified DEBUG/WARN/ERROR levels in tasks, added log level validation tests
-16. No specification for cache memory limits → Documented as future consideration (not in scope for Story 2.2)
-17. Task 9 export list incomplete → Added ActionCostRegistryOptions and error codes to exports
-18. Retry logic for balance queries missing → Documented as intentional (no retry on balance query, fail fast)
-19. SSRF validation too permissive → Specified allowed IPs (localhost, 127.0.0.1, ::1, 0.0.0.0, 172.* in dev only)
-20. Missing definition of "normal load" for AC4 → Defined as "single client, <50ms network latency"
+**Medium (10):** 11. Task 3 doesn't validate registry before client fully initializes → Clarified constructor throws immediately on failure 12. Missing fetch polyfill specification → Confirmed Node.js 20+ native fetch (no polyfill needed) 13. AC6 error handling inconsistency → Documented error propagation behavior in AC6 and Task 5 14. Missing validation for category and frequency fields → Added enums (CategoryEnum, FrequencyEnum) with explicit allowed values 15. Logging levels inconsistent → Specified DEBUG/WARN/ERROR levels in tasks, added log level validation tests 16. No specification for cache memory limits → Documented as future consideration (not in scope for Story 2.2) 17. Task 9 export list incomplete → Added ActionCostRegistryOptions and error codes to exports 18. Retry logic for balance queries missing → Documented as intentional (no retry on balance query, fail fast) 19. SSRF validation too permissive → Specified allowed IPs (localhost, 127.0.0.1, ::1, 0.0.0.0, 172.\* in dev only) 20. Missing definition of "normal load" for AC4 → Defined as "single client, <50ms network latency"
 
-**Low (5):**
-21. Frontmatter validation status inconsistent → Changed status to "validated"
-22. Example in Definition of Done uses relative path → Updated to use absolute path with path.join()
-23. Task ordering suggestions are overly prescriptive → Acknowledged (kept for clarity, implementer can parallelize if desired)
-24. JSDoc example format not specified → Added @example tag requirement to Task 9
-25. Technical debt IDs use inconsistent format → Acknowledged (DEBT-2.2.* format matches story number)
+**Low (5):** 21. Frontmatter validation status inconsistent → Changed status to "validated" 22. Example in Definition of Done uses relative path → Updated to use absolute path with path.join() 23. Task ordering suggestions are overly prescriptive → Acknowledged (kept for clarity, implementer can parallelize if desired) 24. JSDoc example format not specified → Added @example tag requirement to Task 9 25. Technical debt IDs use inconsistent format → Acknowledged (DEBT-2.2.\* format matches story number)
 
-**Documentation/Clarity (5):**
-26. Dev Notes claim "minimal" but file is 574 lines → Acknowledged (comprehensive is better than minimal for story specs)
-27. Duplicate Handoff section → Removed duplicate section
-28. Reference to "Story 2.5 (BLS Handler Integration)" → Validated against epics.md (Story 2.5 exists)
-29. AC formatting inconsistent → Acknowledged (AC1 format acceptable for complex criteria)
-30. Missing cross-references to architecture docs → Validated architecture/8-action-cost-registry.md exists
+**Documentation/Clarity (5):** 26. Dev Notes claim "minimal" but file is 574 lines → Acknowledged (comprehensive is better than minimal for story specs) 27. Duplicate Handoff section → Removed duplicate section 28. Reference to "Story 2.5 (BLS Handler Integration)" → Validated against epics.md (Story 2.5 exists) 29. AC formatting inconsistent → Acknowledged (AC1 format acceptable for complex criteria) 30. Missing cross-references to architecture docs → Validated architecture/8-action-cost-registry.md exists
 
 **Key Improvements:**
+
 - Added comprehensive enum validation for category/frequency fields
 - Specified stub mode strategy for missing Crosstown API (no longer blocking)
 - Added performance tests with measurable assertions
@@ -943,6 +957,7 @@ Story 2.2 implementation is complete and production-ready. No code changes neces
 - Enhanced test coverage (30+ new test cases specified)
 
 **Next Steps:**
+
 1. ✅ Adversarial review complete (this review)
 2. ✅ Begin implementation following task order in Handoff section
 3. ✅ Start with Task 1 (schema/types), Task 2 (loader), Task 8 (default registry JSON)
@@ -958,6 +973,7 @@ Story 2.2 implementation is complete and production-ready. No code changes neces
 ### Completion Notes List
 
 **Task 1: Define action cost registry schema and types**
+
 - Created `packages/client/src/publish/action-cost-registry.ts` with complete type definitions
 - Implemented `validateRegistry()` function with comprehensive validation (version, defaultCost, actions, category, frequency)
 - Defined `ActionCostRegistryLoader` class with file loading, caching, and error handling
@@ -965,11 +981,13 @@ Story 2.2 implementation is complete and production-ready. No code changes neces
 - Implemented all required error codes: INVALID_CONFIG, UNSUPPORTED_VERSION, FILE_NOT_FOUND, INVALID_JSON, REGISTRY_NOT_LOADED
 
 **Task 2: Implement action cost registry loader**
+
 - Completed in Task 1 (combined for efficiency)
 - Loader validates paths, reads files synchronously, parses JSON, and caches results
 - Path sanitization in error messages (basename in production, full path in dev)
 
 **Task 3: Create wallet balance HTTP client**
+
 - Created `packages/client/src/wallet/wallet-client.ts` with `WalletClient` class
 - Implemented `getBalance()` with HTTP GET to `/wallet/balance/{pubkey}`
 - Added stub mode support (auto-activate on 404/501, force via SIGIL_WALLET_STUB env var)
@@ -978,6 +996,7 @@ Story 2.2 implementation is complete and production-ready. No code changes neces
 - Comprehensive error handling: NETWORK_ERROR, INVALID_RESPONSE
 
 **Task 4: Integrate cost registry and wallet with SigilClient**
+
 - Updated `packages/client/src/client.ts` with new fields and config options
 - Added `actionCostRegistryPath` and `crosstownConnectorUrl` to `SigilClientConfig`
 - Implemented `PublishAPI` interface with `getCost()` and `canAfford()` methods
@@ -986,11 +1005,13 @@ Story 2.2 implementation is complete and production-ready. No code changes neces
 - Default Crosstown URL: `http://localhost:4041`
 
 **Task 5: Create default action costs JSON file**
+
 - Created `packages/client/config/default-action-costs.json` with all 10 actions from architecture doc
 - Costs: player_move (1), player_teleport_home (20), portal_enter (5), attack_start (10), harvest_start (5), project_site_place (50), trade_with_player (10), chat_post_message (1), empire_form (100), craft_item (15)
 - Version 1 schema, defaultCost: 10
 
 **Task 6: Write comprehensive unit tests**
+
 - Created `packages/client/src/publish/action-cost-registry.test.ts` (34 tests)
 - Created `packages/client/src/wallet/wallet-client.test.ts` (21 tests)
 - Created `packages/client/src/client-publish.test.ts` (14 tests)
@@ -999,18 +1020,21 @@ Story 2.2 implementation is complete and production-ready. No code changes neces
 - All validation tests: version, costs, categories, frequencies, path traversal, SSRF
 
 **Task 7: Write integration tests**
+
 - Created `packages/client/src/__tests__/integration/wallet-balance.test.ts` (6 integration tests)
 - Tests verify real Crosstown connector behavior (with graceful stub mode fallback)
 - Health check before tests, skip if Crosstown unavailable
 - Tests: balance query, stub mode activation, performance, accuracy, canAfford integration
 
 **Task 8: Update documentation and exports**
+
 - Updated `packages/client/src/index.ts` with all new exports
 - Exported types: ActionCostRegistry, ActionCostEntry, ActionCostRegistryOptions, CategoryEnum, FrequencyEnum, WalletClient, PublishAPI
 - Added JSDoc comments with examples to all public APIs
 - Documented config options in `SigilClientConfig`
 
 **Task 9: Security review (OWASP Top 10)**
+
 - Completed OWASP Top 10 review per AGREEMENT-2
 - A01: Access control verified (wallet balance scoped to identity)
 - A03: Injection protected (path traversal blocked, SSRF validated)
@@ -1023,6 +1047,7 @@ Story 2.2 implementation is complete and production-ready. No code changes neces
 ### File List
 
 **Files Created:**
+
 - `packages/client/src/publish/action-cost-registry.ts` (458 lines)
 - `packages/client/src/publish/action-cost-registry.test.ts` (463 lines)
 - `packages/client/src/wallet/wallet-client.ts` (236 lines)
@@ -1032,12 +1057,14 @@ Story 2.2 implementation is complete and production-ready. No code changes neces
 - `packages/client/config/default-action-costs.json` (52 lines)
 
 **Files Modified:**
+
 - `packages/client/src/client.ts` (added cost registry and wallet integration)
 - `packages/client/src/index.ts` (added exports)
 
 ### Change Log
 
 **2026-02-27: Story 2.2 Implementation Complete**
+
 - Implemented action cost registry with JSON file loading and validation
 - Implemented wallet balance HTTP client with stub mode support
 - Integrated cost registry and wallet client with SigilClient
@@ -1072,6 +1099,7 @@ None. All ACs met, all tests passing, build successful, security review complete
 5. **In-memory caching**: Cost registry is cached in-memory after first load. No cache size limits (registry is small, ~2KB).
 
 ---
+
 # Story 2.2 Test Architecture Traceability Analysis
 
 **Story:** 2.2 - Action Cost Registry & Wallet Balance
@@ -1089,6 +1117,7 @@ None. All ACs met, all tests passing, build successful, security review complete
 **Architecture Compliance:** ✅ COMPLIANT (test structure follows BMAD standards)
 
 **Key Metrics:**
+
 - **Unit Tests:** 69 new tests for Story 2.2
 - **Integration Tests:** 6 tests (graceful degradation when Crosstown unavailable)
 - **Test Files:** 4 test files created
@@ -1106,11 +1135,13 @@ None. All ACs met, all tests passing, build successful, security review complete
 **Test Coverage:** ✅ COMPLETE (9 tests)
 
 **Test Files:**
+
 - `action-cost-registry.test.ts` (validateRegistry suite)
 - `action-cost-registry.test.ts` (ActionCostRegistryLoader suite)
 - `client-publish.test.ts` (Cost Registry Integration suite)
 
 **Tests:**
+
 1. ✅ `validates a valid registry (AC1, AC8)` - Verifies complete registry structure
 2. ✅ `loads valid registry file with absolute path (AC1)` - File loading with absolute path
 3. ✅ `loads valid registry file with relative path (AC1)` - File loading with relative path
@@ -1130,10 +1161,12 @@ None. All ACs met, all tests passing, build successful, security review complete
 **Test Coverage:** ✅ COMPLETE (5 tests)
 
 **Test Files:**
+
 - `client-publish.test.ts` (Cost Registry Integration suite)
 - `action-cost-registry.test.ts` (ActionCostRegistryLoader suite)
 
 **Tests:**
+
 1. ✅ `getCost returns correct cost for known action (AC2)` - Returns correct cost value
 2. ✅ `getCost completes in <10ms (AC2)` - Performance requirement validated
 3. ✅ `measures load performance for getCost target <10ms (AC2)` - First load performance
@@ -1141,11 +1174,13 @@ None. All ACs met, all tests passing, build successful, security review complete
 5. ✅ `loads default action costs file (AC1)` - Verifies player_move cost = 1
 
 **Performance Evidence:**
+
 - getCost() measured at <1ms (cached access)
 - First load measured at <500ms (file I/O + parsing)
 - Performance target <10ms met with significant margin
 
 **Public Auditability (NFR12):**
+
 - Default registry in version control: `packages/client/config/default-action-costs.json`
 - JSON format is human-readable
 - Git tracks all cost changes
@@ -1157,9 +1192,11 @@ None. All ACs met, all tests passing, build successful, security review complete
 **Test Coverage:** ✅ COMPLETE (3 tests)
 
 **Test Files:**
+
 - `client-publish.test.ts` (Cost Registry Integration suite)
 
 **Tests:**
+
 1. ✅ `getCost returns defaultCost for unknown action with warning (AC3)` - Returns defaultCost
 2. ✅ `throws REGISTRY_NOT_LOADED if registry not configured (AC3)` - Error when no registry
 3. ✅ Warning logging validated - Verifies console.warn called with action name and default cost
@@ -1173,11 +1210,13 @@ None. All ACs met, all tests passing, build successful, security review complete
 **Test Coverage:** ✅ COMPLETE (11 tests)
 
 **Test Files:**
+
 - `wallet-client.test.ts` (getBalance suite)
 - `client-publish.test.ts` (Wallet Integration suite)
 - `wallet-balance.test.ts` (integration tests)
 
 **Tests:**
+
 1. ✅ `returns balance from HTTP API (AC4)` - HTTP GET to `/wallet/balance/{pubkey}`
 2. ✅ `returns balance in reasonable time <500ms (AC4)` - Performance with 50ms mock delay
 3. ✅ `activates stub mode on 404 response (AC4)` - Stub mode on endpoint not found
@@ -1191,12 +1230,14 @@ None. All ACs met, all tests passing, build successful, security review complete
 11. ✅ `completes balance query within 500ms (AC4)` - Integration performance test
 
 **Stub Mode Evidence:**
+
 - Environment variable `SIGIL_WALLET_STUB=true` force-enables stub
 - 404/501 responses auto-activate stub mode
 - Stub returns 10000 with warning log
 - Warning includes TODO reference to Story 2.5
 
 **HTTP API Details Verified:**
+
 - Endpoint: `GET ${crosstownConnectorUrl}/wallet/balance/${identityPublicKey}`
 - Response structure: `{ balance: number }`
 - Timeout: 500ms (AbortController)
@@ -1209,10 +1250,12 @@ None. All ACs met, all tests passing, build successful, security review complete
 **Test Coverage:** ✅ COMPLETE (12 tests)
 
 **Test Files:**
+
 - `wallet-client.test.ts` (getBalance suite, edge cases suite)
 - `wallet-balance.test.ts` (integration tests)
 
 **Tests:**
+
 1. ✅ `throws NETWORK_ERROR on timeout (AC5)` - 500ms timeout enforced
 2. ✅ `throws NETWORK_ERROR on HTTP error (AC5)` - HTTP 500 error handling
 3. ✅ `throws INVALID_RESPONSE if response is not JSON (AC5)` - JSON parse error
@@ -1227,12 +1270,14 @@ None. All ACs met, all tests passing, build successful, security review complete
 12. ✅ `verifies balance accuracy (AC5)` - Integration test for consistency
 
 **Error Handling Evidence:**
+
 - All errors wrapped in `SigilError`
 - Error codes: `NETWORK_ERROR`, `INVALID_RESPONSE`
 - Boundary: `crosstown-connector`
 - Timeout enforced via AbortController
 
 **Consistency Evidence:**
+
 - Balance queried twice returns same value (integration test)
 - Non-negative validation enforced
 - Finite number validation (no NaN/Infinity)
@@ -1244,10 +1289,12 @@ None. All ACs met, all tests passing, build successful, security review complete
 **Test Coverage:** ✅ COMPLETE (5 tests)
 
 **Test Files:**
+
 - `client-publish.test.ts` (canAfford Integration suite)
 - `wallet-balance.test.ts` (integration tests)
 
 **Tests:**
+
 1. ✅ `returns true if balance >= cost (AC6)` - Sufficient balance
 2. ✅ `returns false if balance < cost (AC6)` - Insufficient balance
 3. ✅ `propagates error if getCost throws (AC6)` - Registry not loaded error
@@ -1255,12 +1302,14 @@ None. All ACs met, all tests passing, build successful, security review complete
 5. ✅ `integrates with canAfford API (AC6)` - Integration test with real registry + balance
 
 **Logic Verified:**
+
 - `canAfford()` calls `getCost()` (synchronous)
 - `canAfford()` calls `getBalance()` (async)
 - Returns `balance >= cost` (boolean)
 - Errors NOT caught (propagated to caller)
 
 **JSDoc Documentation:**
+
 - Method signature documented
 - Error propagation behavior documented
 - Example usage provided
@@ -1272,9 +1321,11 @@ None. All ACs met, all tests passing, build successful, security review complete
 **Test Coverage:** ✅ COMPLETE (15 tests)
 
 **Test Files:**
+
 - `action-cost-registry.test.ts` (validateRegistry suite, ActionCostRegistryLoader suite)
 
 **Tests:**
+
 1. ✅ `throws INVALID_CONFIG if data is not an object (AC7)` - Type validation
 2. ✅ `throws INVALID_CONFIG if defaultCost field is missing (AC7)` - Required field
 3. ✅ `throws INVALID_CONFIG if defaultCost is not a number (AC7)` - Type validation
@@ -1291,12 +1342,10 @@ None. All ACs met, all tests passing, build successful, security review complete
 14. ✅ `throws FILE_NOT_FOUND if file does not exist (AC7)` - File not found error
 15. ✅ `throws INVALID_JSON if JSON is malformed (AC7)` - JSON parse error
 
-**Path Security Tests:**
-16. ✅ `sanitizes file paths in error messages in production (AC7)` - basename only
-17. ✅ `includes full path in error messages in development (AC7)` - full path in dev
-18. ✅ `allows absolute paths in development (AC7)` - Absolute path allowed in dev
+**Path Security Tests:** 16. ✅ `sanitizes file paths in error messages in production (AC7)` - basename only 17. ✅ `includes full path in error messages in development (AC7)` - full path in dev 18. ✅ `allows absolute paths in development (AC7)` - Absolute path allowed in dev
 
 **Evidence:**
+
 - All validation errors throw `SigilError` with code `INVALID_CONFIG`
 - Boundary: `action-cost-registry`
 - Constructor fails immediately (no partial client created)
@@ -1310,9 +1359,11 @@ None. All ACs met, all tests passing, build successful, security review complete
 **Test Coverage:** ✅ COMPLETE (11 tests)
 
 **Test Files:**
+
 - `action-cost-registry.test.ts` (validateRegistry suite, ActionCostRegistryLoader suite)
 
 **Tests:**
+
 1. ✅ `throws INVALID_CONFIG if version field is missing (AC8)` - Required field
 2. ✅ `throws INVALID_CONFIG if version is not a number (AC8)` - Type validation
 3. ✅ `throws INVALID_CONFIG if version is not an integer (AC8)` - Integer validation
@@ -1326,12 +1377,14 @@ None. All ACs met, all tests passing, build successful, security review complete
 11. ✅ `validates all frequency enums (AC8)` - All 5 frequency values tested
 
 **Enum Validation Evidence:**
+
 - Categories: movement, combat, resource, building, economy, social, governance, crafting (8 total)
 - Frequencies: very_low, low, medium, high, very_high (5 total)
 - All enum values tested individually
 - Invalid enum values rejected with clear error message
 
 **Version Validation Evidence:**
+
 - Version must be present (required field)
 - Version must be number type
 - Version must be integer (no floats)
@@ -1344,12 +1397,16 @@ None. All ACs met, all tests passing, build successful, security review complete
 ## Security Testing (OWASP Top 10 - AGREEMENT-2)
 
 ### A01: Broken Access Control
+
 **Tests:** 2
+
 - ✅ Wallet balance queries scoped to identity public key (no cross-identity access)
 - ✅ Identity required before wallet access (lazy initialization test)
 
 ### A03: Injection
+
 **Tests:** 8
+
 - ✅ Path traversal protection (`..` segments rejected)
 - ✅ SSRF protection (localhost blocked in production)
 - ✅ URL validation (invalid URLs rejected)
@@ -1360,7 +1417,9 @@ None. All ACs met, all tests passing, build successful, security review complete
 - ✅ Invalid enum values rejected
 
 ### A04: Insecure Design
+
 **Tests:** 5
+
 - ✅ Non-negative cost validation (no negative costs)
 - ✅ Finite number validation (NaN/Infinity rejected)
 - ✅ Timeout enforced (500ms on balance queries)
@@ -1368,13 +1427,17 @@ None. All ACs met, all tests passing, build successful, security review complete
 - ✅ Zero balance valid (no phantom funds)
 
 ### A05: Security Misconfiguration
+
 **Tests:** 3
+
 - ✅ Path sanitization in error messages (basename in production)
 - ✅ Default registry in version control (not hardcoded)
 - ✅ HTTPS enforcement in production
 
 ### A08: Data Integrity
+
 **Tests:** 6
+
 - ✅ NaN rejected (defaultCost, action costs, balance)
 - ✅ Infinity rejected (defaultCost, action costs, balance)
 - ✅ Version validation (integer >= 1)
@@ -1383,17 +1446,21 @@ None. All ACs met, all tests passing, build successful, security review complete
 - ✅ Negative values rejected (costs, balance)
 
 ### A09: Logging
+
 **Tests:** 3
+
 - ✅ Unknown action warning logged (console.warn with action name + default cost)
 - ✅ Stub mode warning logged (console.warn with TODO reference)
 - ✅ Error messages include context (SigilError with code + boundary)
 
 ### A10: SSRF
+
 **Tests:** 4
+
 - ✅ URL validation in constructor
 - ✅ Localhost allowed in development
 - ✅ Localhost blocked in production
-- ✅ Docker internal IPs (172.*) allowed in dev, blocked in production
+- ✅ Docker internal IPs (172.\*) allowed in dev, blocked in production
 
 **Security Test Coverage:** ✅ 31 security tests (excellent coverage)
 
@@ -1402,16 +1469,20 @@ None. All ACs met, all tests passing, build successful, security review complete
 ## Performance Testing
 
 ### getCost() Performance (AC2)
+
 **Target:** <10ms
 **Tests:** 2
+
 - ✅ Cached access: <1ms (measured)
 - ✅ First load: <500ms (includes file I/O, generous for CI)
 
 **Evidence:** Performance requirement met with significant margin.
 
 ### getBalance() Performance (AC4)
+
 **Target:** <500ms under normal conditions (single client, <50ms network latency)
 **Tests:** 2
+
 - ✅ Unit test: 50ms mock delay → completes <500ms
 - ✅ Integration test: Real Crosstown connector → completes <500ms
 
@@ -1422,7 +1493,9 @@ None. All ACs met, all tests passing, build successful, security review complete
 ## Edge Cases & Error Handling
 
 ### Registry Loading Edge Cases
+
 **Tests:** 8
+
 - ✅ File not found
 - ✅ Malformed JSON
 - ✅ Missing required fields
@@ -1433,7 +1506,9 @@ None. All ACs met, all tests passing, build successful, security review complete
 - ✅ Unsupported version
 
 ### Wallet Balance Edge Cases
+
 **Tests:** 7
+
 - ✅ Network timeout
 - ✅ HTTP 500 error
 - ✅ Invalid JSON response
@@ -1443,7 +1518,9 @@ None. All ACs met, all tests passing, build successful, security review complete
 - ✅ String balance (type validation)
 
 ### Stub Mode Edge Cases
+
 **Tests:** 4
+
 - ✅ Force-enable via environment variable
 - ✅ Auto-activate on 404
 - ✅ Auto-activate on 501
@@ -1458,6 +1535,7 @@ None. All ACs met, all tests passing, build successful, security review complete
 **Graceful Degradation:** ✅ Tests skip if Crosstown unavailable
 
 **Tests:**
+
 1. ✅ Query wallet balance from real Crosstown connector
 2. ✅ Activate stub mode on 404 response
 3. ✅ Complete balance query within 500ms
@@ -1474,24 +1552,28 @@ None. All ACs met, all tests passing, build successful, security review complete
 ## Test Architecture Quality Assessment
 
 ### Test Organization: ✅ EXCELLENT
+
 - **Separation of concerns:** Unit tests, integration tests, edge cases in separate suites
 - **File structure:** Co-located with implementation (`*.test.ts` pattern)
 - **Naming convention:** Descriptive test names with AC references
 - **Test grouping:** Logical describe() blocks by feature/AC
 
 ### Test Maintainability: ✅ HIGH
+
 - **Setup/teardown:** Proper beforeEach/afterEach for temp files
 - **Mock management:** Vi.js mocks properly restored
 - **Test isolation:** No shared state between tests
 - **Clear assertions:** Explicit expect() statements with descriptive messages
 
 ### Test Documentation: ✅ COMPREHENSIVE
+
 - **AC references:** Test names include AC numbers (e.g., "AC1", "AC2")
 - **Story references:** File headers reference Story 2.2
 - **Integration test headers:** Clear instructions for Docker setup
 - **Edge case documentation:** Tests document expected behavior
 
 ### Test Coverage Gaps: ✅ NONE IDENTIFIED
+
 - All 8 ACs have explicit test coverage
 - Security tests cover OWASP Top 10 requirements
 - Performance tests validate NFR requirements
@@ -1504,6 +1586,7 @@ None. All ACs met, all tests passing, build successful, security review complete
 **Status:** ✅ NONE
 
 All 8 acceptance criteria have comprehensive test coverage:
+
 - AC1: ✅ 9 tests
 - AC2: ✅ 5 tests
 - AC3: ✅ 3 tests
@@ -1520,21 +1603,25 @@ All 8 acceptance criteria have comprehensive test coverage:
 ## Recommendations
 
 ### Test Architecture: ✅ NO CHANGES NEEDED
+
 - Current test structure is excellent
 - Clear AC traceability
 - Comprehensive coverage
 
 ### Test Coverage: ✅ NO GAPS IDENTIFIED
+
 - All ACs covered
 - Security requirements met (AGREEMENT-2)
 - Performance requirements validated
 
 ### Integration Tests: ✅ GRACEFUL DEGRADATION WORKING
+
 - Tests skip when Crosstown unavailable
 - Clear messages guide developers to start Docker stack
 - Stub mode documented as expected behavior
 
 ### Future Improvements (Optional):
+
 1. **Story 2.5 Integration:** When Crosstown balance API is implemented, update integration tests to validate real API behavior (remove stub mode fallback).
 2. **Load Testing:** Consider adding load tests for high-frequency getCost() calls (beyond current performance tests).
 3. **Chaos Testing:** Consider simulating Crosstown API flakiness (intermittent 500 errors, slow responses).
@@ -1546,6 +1633,7 @@ All 8 acceptance criteria have comprehensive test coverage:
 **Story 2.2 Test Architecture: ✅ EXEMPLARY**
 
 The test architecture for Story 2.2 demonstrates exceptional quality:
+
 - **100% AC coverage** with explicit test-to-AC mapping
 - **Comprehensive security testing** (OWASP Top 10 compliant)
 - **Performance validation** (getCost <10ms, getBalance <500ms)
@@ -1553,6 +1641,7 @@ The test architecture for Story 2.2 demonstrates exceptional quality:
 - **Clear documentation** (AC references, setup instructions, edge case explanations)
 
 **BMAD Standards Compliance:** ✅ FULLY COMPLIANT
+
 - Test-first approach (AGREEMENT-1)
 - Security review complete (AGREEMENT-2)
 - Test traceability documented
@@ -1567,18 +1656,22 @@ All acceptance criteria met, all tests passing, zero uncovered ACs. Story 2.2 is
 ## Appendix: Test File Inventory
 
 ### Unit Test Files (3 files)
+
 1. `packages/client/src/publish/action-cost-registry.test.ts` (37 tests)
 2. `packages/client/src/wallet/wallet-client.test.ts` (24 tests)
 3. `packages/client/src/client-publish.test.ts` (14 tests)
 
 ### Integration Test Files (1 file)
+
 4. `packages/client/src/__tests__/integration/wallet-balance.test.ts` (6 tests)
 
 ### Implementation Files (2 files)
+
 1. `packages/client/src/publish/action-cost-registry.ts` (406 lines)
 2. `packages/client/src/wallet/wallet-client.ts` (274 lines)
 
 ### Configuration Files (1 file)
+
 1. `packages/client/config/default-action-costs.json` (57 lines)
 
 **Total Lines of Test Code:** ~1,553 lines
@@ -1588,7 +1681,6 @@ All acceptance criteria met, all tests passing, zero uncovered ACs. Story 2.2 is
 ---
 
 **Analysis Complete** ✅
-
 
 ---
 

@@ -33,18 +33,21 @@ So that the Crosstown BLS handler (implemented separately) can be verified to co
 ## Architectural Decisions (2026-02-28)
 
 **Decision 1: Modify BitCraft Reducers (BLOCKER-1 RESOLVED)**
+
 - BitCraft reducers WILL be modified to accept `identity: String` as the first parameter
 - This enables identity propagation from Nostr events through to SpacetimeDB game state
 - The "run unmodified" principle is superseded by the practical need for authenticated actions
 - No technical debt - this is the accepted architectural approach
 
 **Decision 2: Remove Wallet Balance Checks (BLOCKER-2 RESOLVED)**
+
 - Wallet balance checks and ILP fee deduction are OUT OF SCOPE for this story
 - Wallets are EVM onchain wallets, not SpacetimeDB state
 - Wallet balance management is handled externally to SpacetimeDB
 - Related acceptance criteria (AC7, AC9) removed
 
 **Decision 3: Crosstown Implementation Specs (BLOCKER-3 RESOLVED)**
+
 - Detailed implementation specification created: `docs/crosstown-bls-implementation-spec.md`
 - Crosstown team will implement BLS handler using these specifications
 - Integration tests in Sigil SDK validate the contract once Crosstown implementation is complete
@@ -108,11 +111,13 @@ So that the Crosstown BLS handler (implemented separately) can be verified to co
 **IMPORTANT NOTE:** This story involves implementing the BLS game action handler, which is NOT part of the Sigil SDK codebase. The BLS handler lives in the Crosstown project (separate repository). The tasks below document the BLS implementation requirements and integration contract, but implementation MUST occur in the Crosstown repository.
 
 **Sigil SDK Scope (Story 2.4):**
+
 - Document BLS handler integration contract (event format, HTTP API, error responses)
 - Add integration tests in Sigil Client that verify end-to-end action execution through BLS
 - Update Sigil Client documentation with BLS handler requirements
 
 **Crosstown BLS Scope (separate repository, separate story):**
+
 - Implement BLS game action handler per contract below
 - Add signature validation via secp256k1
 - Add SpacetimeDB HTTP reducer call logic
@@ -200,6 +205,7 @@ So that the Crosstown BLS handler (implemented separately) can be verified to co
   - [x] Document BLS handler contract reference (link to `docs/bls-handler-contract.md`)
   - [x] Document error handling for BLS responses (via `client.on('publishError', handler)`)
   - [x] Add example of handling publish errors:
+
     ```typescript
     client.on('publishError', (error) => {
       console.error(`Action failed: ${error.message} (code: ${error.code})`);
@@ -243,7 +249,7 @@ So that the Crosstown BLS handler (implemented separately) can be verified to co
       eventId: string;
       errorCode: BLSErrorCode;
       message: string;
-      retryable: boolean;  // true for REDUCER_FAILED, false for INVALID_SIGNATURE/UNKNOWN_REDUCER/INVALID_CONTENT
+      retryable: boolean; // true for REDUCER_FAILED, false for INVALID_SIGNATURE/UNKNOWN_REDUCER/INVALID_CONTENT
     }
     ```
   - [x] Export `BLSSuccessResponse` interface:
@@ -280,26 +286,27 @@ So that the Crosstown BLS handler (implemented separately) can be verified to co
 
 ## NFR Traceability
 
-| NFR | Requirement | AC Coverage |
-|-----|-------------|-------------|
-| NFR8 | Cryptographic verification using Nostr signatures (secp256k1) and NIP-01 event IDs | AC3 |
-| NFR13 | No action attributed without valid signature from private key | AC3, AC6 |
-| NFR19 | NIP-01 compliant Nostr relay integration (via Crosstown built-in relay) | AC1, AC2 |
-| NFR27 | Zero silent failures (explicit errors returned for all failure modes) | AC6, AC8 |
+| NFR   | Requirement                                                                        | AC Coverage |
+| ----- | ---------------------------------------------------------------------------------- | ----------- |
+| NFR8  | Cryptographic verification using Nostr signatures (secp256k1) and NIP-01 event IDs | AC3         |
+| NFR13 | No action attributed without valid signature from private key                      | AC3, AC6    |
+| NFR19 | NIP-01 compliant Nostr relay integration (via Crosstown built-in relay)            | AC1, AC2    |
+| NFR27 | Zero silent failures (explicit errors returned for all failure modes)              | AC6, AC8    |
 
 ## FR Traceability
 
-| FR | Requirement | AC Coverage |
-|-----|-------------|-------------|
-| FR4 | Every game action attributed to authoring Nostr public key via BLS identity propagation | AC4 |
+| FR   | Requirement                                                                                   | AC Coverage   |
+| ---- | --------------------------------------------------------------------------------------------- | ------------- |
+| FR4  | Every game action attributed to authoring Nostr public key via BLS identity propagation       | AC4           |
 | FR19 | Agents can publish game actions via Nostr relay events (kind 30078) and receive confirmations | AC1, AC2, AC4 |
-| FR47 | BLS validates ILP payments and forwards actions to SpacetimeDB with identity propagation | AC1, AC3, AC4 |
+| FR47 | BLS validates ILP payments and forwards actions to SpacetimeDB with identity propagation      | AC1, AC3, AC4 |
 
 **Note:** FR20 (ILP fee collection) is out of scope for this story. Wallet balance checks and fee deduction are removed as wallets are EVM onchain wallets, not SpacetimeDB state.
 
 ## Dependencies
 
 **Required (Must Complete Before Story 2.4):**
+
 - Story 1.2 (Nostr Identity Management) - DONE
 - Story 1.4 (SpacetimeDB Connection) - DONE
 - Story 2.1 (Crosstown Relay Connection) - DONE
@@ -307,6 +314,7 @@ So that the Crosstown BLS handler (implemented separately) can be verified to co
 - Story 2.3 (ILP Packet Construction & Signing) - DONE
 
 **External Dependency (Crosstown Team):**
+
 - **BLS Game Action Handler Implementation** (Crosstown repository)
   - Implementation specification: `/docs/crosstown-bls-implementation-spec.md`
   - Scope: Implement BLS handler per specification (signature validation, SpacetimeDB HTTP calls, error handling)
@@ -314,6 +322,7 @@ So that the Crosstown BLS handler (implemented separately) can be verified to co
   - Handoff: Crosstown team implements BLS handler, Sigil SDK team validates with integration tests
 
 **Blocks (Cannot Start Until Story 2.4 Complete):**
+
 - Story 2.5 (Crosstown Client Adapter Refactoring) - replaces custom HTTP connector with @crosstown/client
 - Story 2.6 (Identity Propagation & Verification) - depends on BLS reducer calls working
 
@@ -321,7 +330,9 @@ So that the Crosstown BLS handler (implemented separately) can be verified to co
 
 ```typescript
 // AC1: BLS receives kind 30078 events via ILP routing
-const client = new SigilClient({ /* config */ });
+const client = new SigilClient({
+  /* config */
+});
 await client.connect();
 await client.loadIdentity('~/.sigil/identity');
 
@@ -366,7 +377,12 @@ client.on('publishError', (error) => {
   // All BLS errors arrive here with explicit error codes
   console.error(`Publish failed: ${error.code} - ${error.message}`);
   expect(error.eventId).toBeDefined();
-  expect(error.code).toBeOneOf(['INVALID_SIGNATURE', 'UNKNOWN_REDUCER', 'REDUCER_FAILED', 'INVALID_CONTENT']);
+  expect(error.code).toBeOneOf([
+    'INVALID_SIGNATURE',
+    'UNKNOWN_REDUCER',
+    'REDUCER_FAILED',
+    'INVALID_CONTENT',
+  ]);
 });
 
 // AC7: Error response propagation
@@ -375,7 +391,9 @@ try {
 } catch (error) {
   expect(error).toMatchObject({
     eventId: expect.any(String),
-    errorCode: expect.stringMatching(/INVALID_SIGNATURE|UNKNOWN_REDUCER|REDUCER_FAILED|INVALID_CONTENT/),
+    errorCode: expect.stringMatching(
+      /INVALID_SIGNATURE|UNKNOWN_REDUCER|REDUCER_FAILED|INVALID_CONTENT/
+    ),
     message: expect.any(String),
     retryable: expect.any(Boolean),
   });
@@ -387,12 +405,14 @@ try {
 ## Story Sizing
 
 **Complexity:** Medium
+
 - Contract documentation and integration tests (Sigil SDK side) is straightforward
 - BLS handler implementation (Crosstown side) is more complex (signature validation, HTTP calls, error handling)
 - Integration testing requires coordinating Docker stack with BLS + relay + SpacetimeDB
 - Wallet balance checks removed (out of scope) reduces complexity
 
 **Effort Estimate (Sigil SDK Only):** 10 hours
+
 - Task 1: BLS contract documentation - 2 hours
 - Task 2: Docker configuration documentation - 1 hour
 - Task 3: Integration tests - 4 hours (reduced from 6 hours - wallet tests removed)
@@ -404,6 +424,7 @@ try {
 **NOTE:** Crosstown BLS handler implementation effort is external to this story. The comprehensive implementation specification (`/docs/crosstown-bls-implementation-spec.md`) provides the Crosstown team with all necessary details.
 
 **Risk Areas:**
+
 1. **Crosstown BLS handler implementation** - Requires coordination with Crosstown team
    - Mitigation: Comprehensive implementation specification provided (`/docs/crosstown-bls-implementation-spec.md`)
 2. **Signature validation complexity** - secp256k1 verification, NIP-01 event ID computation
@@ -427,14 +448,16 @@ The BLS handler receives kind 30078 events from the Crosstown relay and processe
 2. **Signature Validation** (secp256k1)
    - Validate `event.id` is correctly computed:
      ```typescript
-     const eventId = sha256(JSON.stringify([
-       0,                    // Reserved for future use
-       event.pubkey,         // Hex public key
-       event.created_at,     // Unix timestamp
-       event.kind,           // 30078
-       event.tags,           // Array of tag arrays
-       event.content,        // JSON string
-     ]));
+     const eventId = sha256(
+       JSON.stringify([
+         0, // Reserved for future use
+         event.pubkey, // Hex public key
+         event.created_at, // Unix timestamp
+         event.kind, // 30078
+         event.tags, // Array of tag arrays
+         event.content, // JSON string
+       ])
+     );
      ```
    - Verify `event.sig` is valid signature of `event.id` using `event.pubkey` (secp256k1 ECDSA)
    - Reject if signature invalid or missing (return `INVALID_SIGNATURE` error)
@@ -476,11 +499,13 @@ The BLS handler receives kind 30078 events from the Crosstown relay and processe
 ### Identity Propagation via HTTP Header
 
 The BLS handler propagates identity to SpacetimeDB via the `X-Nostr-Pubkey` HTTP header. SpacetimeDB must be configured to:
+
 1. Read `X-Nostr-Pubkey` header from HTTP requests
 2. Set `ctx.sender` (reducer context) to the Nostr public key from the header
 3. Validate header is present (reject if missing)
 
 **SpacetimeDB Reducer Context:**
+
 ```rust
 #[reducer]
 fn player_move(ctx: &ReducerContext, origin: Point, dest: Point, running: bool) {
@@ -490,17 +515,19 @@ fn player_move(ctx: &ReducerContext, origin: Point, dest: Point, running: bool) 
 ```
 
 **Note:** SpacetimeDB v1.6.x does NOT natively support custom identity propagation via HTTP headers. This requires either:
+
 - **Option A:** Modify SpacetimeDB server to read `X-Nostr-Pubkey` header and set `ctx.sender` (BLOCKED by upstream dependency)
 - **Option B:** Pass Nostr pubkey as first argument to every reducer (simpler, no server modification needed)
 
 **DECISION (from PREP-5):** Use **Option B** for MVP. BLS handler prepends `event.pubkey` to args array before calling reducer:
+
 ```typescript
 // BLS handler transformation
 const reducerArgs = [event.pubkey, ...parsedContent.args];
 const response = await fetch(`${SPACETIMEDB_URL}/database/${database}/call/${reducer}`, {
   method: 'POST',
   headers: {
-    'Authorization': `Bearer ${token}`,
+    Authorization: `Bearer ${token}`,
     'Content-Type': 'application/json',
   },
   body: JSON.stringify(reducerArgs),
@@ -508,6 +535,7 @@ const response = await fetch(`${SPACETIMEDB_URL}/database/${database}/call/${red
 ```
 
 **SpacetimeDB Reducer Pattern (Option B):**
+
 ```rust
 #[reducer]
 fn player_move(ctx: &ReducerContext, nostr_pubkey: String, origin: Point, dest: Point, running: bool) {
@@ -524,20 +552,23 @@ fn player_move(ctx: &ReducerContext, nostr_pubkey: String, origin: Point, dest: 
 ### Error Handling Contract
 
 All BLS errors follow this format:
+
 ```typescript
 interface BLSErrorResponse {
-  eventId: string;          // Event ID that failed
-  errorCode: BLSErrorCode;  // INVALID_SIGNATURE | UNKNOWN_REDUCER | INSUFFICIENT_BALANCE | REDUCER_FAILED | INVALID_CONTENT
-  message: string;          // Human-readable error message
+  eventId: string; // Event ID that failed
+  errorCode: BLSErrorCode; // INVALID_SIGNATURE | UNKNOWN_REDUCER | INSUFFICIENT_BALANCE | REDUCER_FAILED | INVALID_CONTENT
+  message: string; // Human-readable error message
 }
 ```
 
 Errors are returned to Crosstown relay, which forwards them to sender via Nostr OK message:
+
 ```json
 ["OK", "<event_id>", false, "<errorCode>: <message>"]
 ```
 
 Example:
+
 ```json
 ["OK", "abc123...", false, "INVALID_SIGNATURE: Signature verification failed for event abc123"]
 ```
@@ -545,6 +576,7 @@ Example:
 ### Testing Strategy
 
 **Unit Tests (Crosstown BLS):**
+
 - Test signature validation (valid sig, invalid sig, missing sig)
 - Test content parsing (valid JSON, invalid JSON, missing fields)
 - Test wallet balance checks (sufficient, insufficient, edge cases)
@@ -552,12 +584,14 @@ Example:
 - Test error response construction (all error codes)
 
 **Integration Tests (Sigil SDK):**
+
 - Test end-to-end action execution (client.publish → BLS → SpacetimeDB)
 - Test error propagation (invalid sig → client receives error)
 - Test wallet deduction (fee charged on success)
 - Test unknown reducer handling (error returned to client)
 
 **Smoke Test:**
+
 - Quick validation that BLS handler is running and functional
 - Runs in CI after Docker stack starts
 - Catches basic integration issues before running full test suite
@@ -565,24 +599,29 @@ Example:
 ## Security Considerations (OWASP Top 10)
 
 **A01: Broken Access Control**
+
 - Mitigation: Signature validation ensures only owner of private key can publish actions for that public key
 - BLS rejects all actions without valid signature (AC3)
 
 **A02: Cryptographic Failures**
+
 - Mitigation: Use secp256k1 for signature validation (industry standard for Nostr)
 - Validate event.id computation per NIP-01 spec (canonical serialization)
 - No custom crypto implementation (use well-tested libraries)
 
 **A03: Injection**
+
 - Mitigation: Validate reducer name (alphanumeric only, no path traversal)
 - Validate args are valid JSON (reject malformed content)
 - SpacetimeDB reducer args are type-checked by SpacetimeDB (no SQL injection risk)
 
 **A04: Insecure Design**
+
 - Mitigation: Zero silent failures (AC6) - every error is explicit and logged
 - Atomic fee deduction (AC7) - fee charged only if reducer succeeds
 
 **A05: Security Misconfiguration**
+
 - Mitigation: Document all BLS environment variables (Task 2)
 - Require explicit configuration for SpacetimeDB token (no defaults)
 - **RISK (MVP):** Using admin token for BLS handler (Open Question Q2) - overly permissive, grants full SpacetimeDB access
@@ -590,28 +629,34 @@ Example:
   - **Mitigation (Production):** Create service account with reducer-only permissions before production deployment
 
 **A06: Vulnerable and Outdated Components**
+
 - Mitigation: Use latest secp256k1 library version
 - Add dependency audit to CI (`pnpm audit`, `cargo audit`)
 
 **A07: Identification and Authentication Failures**
+
 - Mitigation: Nostr signature = authentication (AC3)
 - No password or session-based auth (stateless, signature-based only)
 
 **A08: Software and Data Integrity Failures**
+
 - Mitigation: Validate event.id matches computed hash (prevents event tampering)
 - Signature validation prevents event forgery
 
 **A09: Security Logging and Monitoring Failures**
+
 - Mitigation: Log all BLS events (AC6) - event ID, pubkey, reducer, success/failure
 - Log errors with full context (error code, message, event details)
 
 **A10: Server-Side Request Forgery (SSRF)**
+
 - Mitigation: SpacetimeDB URL is configured (not user-controlled)
 - No dynamic URL construction from event content
 
 ## Open Questions
 
 **Q1: How does BLS handler access wallet balance state from Story 2.2?**
+
 - Answer: Wallet state lives in-memory in `@sigil/client`. BLS needs separate wallet state.
 - Options:
   - A) BLS maintains own wallet state (duplicate of client state) - Simple but inconsistent
@@ -620,6 +665,7 @@ Example:
 - **DECISION (for Story 2.4):** Use **Option B**. Add `wallets` table to SpacetimeDB schema with columns `(nostr_pubkey, balance)`. BLS queries this table before reducer call. Story 2.2 should seed initial wallet balances in this table.
 
 **Q2: What is the SpacetimeDB authentication token for BLS reducer calls?**
+
 - Answer: SpacetimeDB v1.6.x uses token-based auth for HTTP API. BLS needs a token with reducer execution permissions.
 - Options:
   - A) Admin token (full permissions) - Simple but overly permissive
@@ -627,6 +673,7 @@ Example:
 - **DECISION (for Story 2.4):** Use **Option A** for MVP (admin token). Document in Task 2. Future: add service account support.
 
 **Q3: How does BLS handle SpacetimeDB downtime or network errors?**
+
 - Answer: Retry logic needed for transient failures (network timeout, 503 Service Unavailable).
 - Options:
   - A) Retry with exponential backoff (same pattern as Story 1.6 reconnection) - Robust
@@ -634,17 +681,20 @@ Example:
 - **DECISION (for Story 2.4):** Use **Option B** for MVP. BLS returns `REDUCER_FAILED` error immediately. Client can retry via `client.publish()` again. Future: add BLS-side retry logic.
 
 **Q4: What happens if reducer execution is slow (>30s timeout)?**
+
 - Answer: HTTP timeout needed to prevent hanging BLS handler.
 - **DECISION (for Story 2.4):** BLS uses 30s HTTP timeout for SpacetimeDB calls. If timeout exceeded, return `REDUCER_FAILED` error with "timeout" message. Document in Task 1.
 
 ## Definition of Done
 
 **Blockers Resolved:**
+
 - [x] BLOCKER-1: Identity propagation architecture decision documented (DEBT-4 added, proceed with Option B)
 - [x] BLOCKER-2: Wallet balance checks removed from scope (EVM onchain wallets)
 - [x] BLOCKER-3: Crosstown implementation specification created (`/docs/crosstown-bls-implementation-spec.md`)
 
 **Sigil SDK Deliverables:**
+
 - [ ] All acceptance criteria (AC1-AC7) have passing tests
 - [ ] BLS handler integration contract documented (`docs/bls-handler-contract.md`)
 - [ ] Integration tests added for all ACs (marked `@skip` until Crosstown BLS handler deployed)
@@ -661,6 +711,7 @@ Example:
 - [ ] Linting: `pnpm --filter @sigil/client lint` (zero errors)
 
 **Integration Validation (requires external dependencies):**
+
 - [ ] Crosstown BLS handler implementation completed per specification
 - [ ] Integration tests unmarked from `@skip` and passing
 - [ ] Smoke test unmarked from `@skip` and passing
@@ -775,9 +826,11 @@ docker/
 **Dependency Versions:**
 
 **Required (packages/client):**
+
 - No new production dependencies needed (uses SDK from Story 1.4, nostr-tools from Story 1.2)
 
 **Crosstown BLS (external):**
+
 - Recommended: `@noble/secp256k1` for signature validation (Node.js)
 - Recommended: `node-fetch` or `axios` for SpacetimeDB HTTP calls
 - See `/docs/crosstown-bls-implementation-spec.md` for full dependency recommendations
@@ -926,6 +979,7 @@ Run these commands to verify completion:
 **Review Status:** Adversarial review completed 2026-02-27, architectural decisions resolved 2026-02-28, **READY**
 
 **Story Quality Metrics:**
+
 - Acceptance Criteria: 7 (reduced from 9, removed AC7 and AC9 wallet balance checks)
 - FR Coverage: 3 (FR4, FR19, FR47 - FR20 out of scope)
 - NFR Coverage: 4 (NFR8, NFR13, NFR19, NFR27)
@@ -934,6 +988,7 @@ Run these commands to verify completion:
 - Dependencies: 5 required (all complete), 1 external (Crosstown BLS handler implementation - spec provided)
 
 **Adversarial Review Findings:**
+
 - **30 issues identified** across critical (3), major (5), medium (5), minor (11), and optimization (6) categories
 - **3 CRITICAL BLOCKERS** prevent implementation from starting:
   1. Identity propagation violates "run BitCraft unmodified" design principle
@@ -942,6 +997,7 @@ Run these commands to verify completion:
 - **All 30 issues documented and addressed** in this review iteration
 
 **Key Design Decisions (Updated):**
+
 1. **CHANGED:** Story scope limited to contract documentation and validation (NOT BLS implementation)
 2. **CHANGED:** Identity propagation uses Option B (prepend pubkey to args) - **design principle violation documented as DEBT-4**
 3. **CHANGED:** Wallet state MUST migrate to SpacetimeDB `wallets` table (Story 2.2.1 prerequisite added)
@@ -951,6 +1007,7 @@ Run these commands to verify completion:
 7. **NEW:** Integration tests marked `@skip` until external dependencies complete
 
 **Risks Identified (Updated):**
+
 1. **CRITICAL:** Design principle violation (Option B modifies reducer signatures)
 2. **CRITICAL:** Missing prerequisite Story 2.2.1 (wallet state migration)
 3. **CRITICAL:** No coordination mechanism with Crosstown team
@@ -960,6 +1017,7 @@ Run these commands to verify completion:
 7. Signature validation library compatibility
 
 **Mitigation Strategy (Updated):**
+
 - Document DEBT-4 for design principle violation, plan migration in Epic 6
 - Create Story 2.2.1 with 2-4 hour estimate for wallet table migration
 - Create Crosstown story CT-2.4 with 12-16 hour estimate, link as external dependency
@@ -969,11 +1027,13 @@ Run these commands to verify completion:
 - Security review flags admin token risk, plans service account migration
 
 **Architectural Decisions (2026-02-28):**
+
 1. ✅ **BLOCKER-1 RESOLVED:** Accept modifying BitCraft reducers to add identity parameter (first arg)
 2. ✅ **BLOCKER-2 RESOLVED:** Remove wallet balance checks from scope (EVM onchain wallets, not SpacetimeDB)
 3. ✅ **BLOCKER-3 RESOLVED:** Created comprehensive Crosstown implementation specification (`/docs/crosstown-bls-implementation-spec.md`)
 
 **Next Steps:**
+
 1. Implement Tasks 1-8 in Sigil SDK (10 hours estimated)
 2. Coordinate with Crosstown team to implement BLS handler using provided specification
 3. Integration tests can be marked `@skip` until Crosstown BLS handler is deployed
@@ -985,6 +1045,7 @@ Run these commands to verify completion:
 ## Change Log
 
 **2026-02-27:** Story created and adversarial review completed (30 issues found)
+
 - Initial story structure with integration contract focus
 - 9 acceptance criteria (later reduced to 7 after wallet removal)
 - 7 tasks for Sigil SDK scope
@@ -992,6 +1053,7 @@ Run these commands to verify completion:
 - All 30 adversarial review issues documented and addressed
 
 **2026-02-28:** Architectural decisions resolved, blockers cleared
+
 - BLOCKER-1 RESOLVED: Accept modifying BitCraft reducers (identity as first parameter)
 - BLOCKER-2 RESOLVED: Wallet balance checks removed (EVM onchain wallets, out of scope)
 - BLOCKER-3 RESOLVED: Crosstown implementation specification created (`/docs/crosstown-bls-implementation-spec.md`)
@@ -1001,6 +1063,7 @@ Run these commands to verify completion:
 - Story status: READY FOR IMPLEMENTATION
 
 **2026-02-28:** BMAD standards compliance review
+
 - Added Dev Notes section (Quick Reference, Architecture Context, Integration, File Structure, Implementation Priority, Key Decisions, Testing Strategy, Edge Cases, Dependency Versions)
 - Added Implementation Constraints section (10 constraints)
 - Added Verification Steps section (12 verification commands)
@@ -1011,6 +1074,7 @@ Run these commands to verify completion:
 - All sections now match BMAD story template standards (Stories 1.2, 1.5)
 
 **2026-02-28:** Story implementation completed
+
 - Task 1 (BLS Handler Contract Documentation): Created docs/bls-handler-contract.md (600+ lines)
 - Task 2 (Docker README Updates): Added BLS configuration section (100+ lines)
 - Task 3 (Smoke Test): Created scripts/bls-handler-smoke-test.ts with pnpm smoke:bls script
@@ -1039,6 +1103,7 @@ No debug logs required - implementation completed without issues.
 ### Completion Notes List
 
 **Task 1: Document BLS Handler Integration Contract (AC1-AC7)**
+
 - Created comprehensive `docs/bls-handler-contract.md` with 600+ lines of documentation
 - Documented event format (kind 30078 Nostr events per NIP-01, NIP-33, NIP-78)
 - Documented signature validation requirements (secp256k1 Schnorr, SHA256 event ID)
@@ -1055,6 +1120,7 @@ No debug logs required - implementation completed without issues.
 - Referenced existing Crosstown BLS implementation spec
 
 **Task 2: Add BLS Handler Configuration Documentation (AC1)**
+
 - Updated `docker/README.md` with comprehensive BLS handler configuration section (100+ lines)
 - Documented environment variables (SPACETIMEDB_URL, SPACETIMEDB_DATABASE, SPACETIMEDB_TOKEN)
 - Documented Docker Compose configuration with example YAML
@@ -1064,6 +1130,7 @@ No debug logs required - implementation completed without issues.
 - Added references to integration contract and implementation spec
 
 **Task 3: Add Integration Tests for BLS Handler (AC1-AC7)**
+
 - Integration tests already exist at `packages/client/src/integration-tests/bls-handler.integration.test.ts`
 - Added NFR3 performance test (round-trip <2s requirement)
 - Tests properly use `describe.skipIf` with BLS_HANDLER_DEPLOYED flag
@@ -1071,6 +1138,7 @@ No debug logs required - implementation completed without issues.
 - All tests marked to run only when both RUN_INTEGRATION_TESTS=true and BLS_HANDLER_DEPLOYED=true
 
 **Task 4: Update Client API Documentation (AC4)**
+
 - Updated `packages/client/README.md` with comprehensive BLS handler section (100+ lines)
 - Documented that `client.publish()` requires BLS handler
 - Documented error handling patterns with all 4 error codes
@@ -1079,9 +1147,11 @@ No debug logs required - implementation completed without issues.
 - Added references to BLS handler contract and Docker configuration
 
 **Task 5: Contract Validation (OPTIONAL)**
+
 - Skipped - deferred to future work as marked optional in story
 
 **Task 6: Add Error Code Enum and Types (AC7)**
+
 - Error types already exist at `packages/client/src/bls/types.ts`
 - Contains BLSErrorCode enum with 4 error codes
 - Contains BLSErrorResponse interface with retryable field
@@ -1090,6 +1160,7 @@ No debug logs required - implementation completed without issues.
 - All types fully documented with TSDoc comments
 
 **Task 7: Add BLS Handler Smoke Test (AC1-AC7)**
+
 - Created `scripts/bls-handler-smoke-test.ts` with comprehensive smoke test (250+ lines)
 - Script checks BLS_HANDLER_DEPLOYED flag and skips if not set
 - Script validates BLS handler is running and functional
@@ -1099,16 +1170,19 @@ No debug logs required - implementation completed without issues.
 - Provides helpful troubleshooting messages on failure
 
 **Task 8: Provide Crosstown Implementation Specification**
+
 - Already complete - `docs/crosstown-bls-implementation-spec.md` exists (32KB, 800+ lines)
 - Specification includes event flow architecture, data structures, implementation requirements, pseudocode, testing strategy, configuration, and handoff process
 
 ### File List
 
 **Created:**
+
 - `docs/bls-handler-contract.md` - Integration contract documentation (600+ lines)
 - `scripts/bls-handler-smoke-test.ts` - BLS handler smoke test script (250+ lines)
 
 **Modified:**
+
 - `docker/README.md` - Added BLS handler configuration section (100+ lines added)
 - `packages/client/README.md` - Added BLS handler documentation section (100+ lines added)
 - `packages/client/src/integration-tests/bls-handler.integration.test.ts` - Added NFR3 performance test (30+ lines added)
@@ -1118,6 +1192,7 @@ No debug logs required - implementation completed without issues.
 None
 
 **Existing (from previous stories):**
+
 - `packages/client/src/bls/types.ts` - BLS error types (already existed)
 - `packages/client/src/integration-tests/bls-handler.integration.test.ts` - Integration tests (already existed, enhanced)
 - `docs/crosstown-bls-implementation-spec.md` - BLS implementation spec (already existed)
@@ -1135,6 +1210,7 @@ None
 **Outcome:** Success ✅
 
 **Issue Counts by Severity:**
+
 - Critical: 0
 - High: 0
 - Medium: 0
@@ -1145,6 +1221,7 @@ None
 **Total Issues Found:** 0
 
 All code artifacts passed review without requiring changes. The story implementation successfully completed with:
+
 - All 8 tasks completed and documented
 - All acceptance criteria (AC1-AC7) have test coverage
 - 47 unit tests passing, 10 integration tests properly skipped until BLS handler deployment
@@ -1165,6 +1242,7 @@ No review follow-ups or action items created.
 **Outcome:** Success ✅
 
 **Issue Counts by Severity:**
+
 - Critical: 0
 - High: 0
 - Medium: 0
@@ -1185,6 +1263,7 @@ All code artifacts passed second review without requiring changes. The story doc
 **Outcome:** Success ✅
 
 **Issue Counts by Severity:**
+
 - Critical: 0
 - High: 0
 - Medium: 0
@@ -1208,6 +1287,7 @@ All code artifacts passed final review without requiring changes. The story impl
 ### Story Quality Metrics
 
 **Completeness: 100%**
+
 - ✅ All required sections present (Story, AC, Tasks, Dependencies, NFRs, Technical Notes, DoD, Examples, Dev Notes)
 - ✅ 8 tasks with detailed subtasks (average 5-7 subtasks per task)
 - ✅ 7 acceptance criteria with Given/When/Then format
@@ -1217,6 +1297,7 @@ All code artifacts passed final review without requiring changes. The story impl
 - ✅ Documentation tasks complete (contract, configuration, API docs)
 
 **Format Consistency: 100%**
+
 - ✅ AC1-AC7 format matches Story 1.2, 1.5 standards
 - ✅ Dev Notes section structure matches exemplar stories
 - ✅ File structure diagram present and accurate
@@ -1228,6 +1309,7 @@ All code artifacts passed final review without requiring changes. The story impl
 - ✅ Change Log documents all major revisions
 
 **Technical Quality: 95%**
+
 - ✅ Clear integration with Story 2.3 (ILP packets), 2.1 (relay), 1.2 (identity)
 - ✅ External dependency clearly documented (Crosstown BLS handler)
 - ✅ Architectural decisions resolved (BLOCKER-1, BLOCKER-2, BLOCKER-3)
@@ -1237,6 +1319,7 @@ All code artifacts passed final review without requiring changes. The story impl
 - ⚠️ Minor: Integration tests cannot run until external dependency complete (acceptable - marked `@skip`)
 
 **Traceability: 100%**
+
 - ✅ FR4 mapped to AC4 (identity propagation)
 - ✅ FR19 mapped to AC1, AC2, AC4 (Nostr event publishing)
 - ✅ FR47 mapped to AC1, AC3, AC4 (BLS validation and forwarding)
@@ -1248,6 +1331,7 @@ All code artifacts passed final review without requiring changes. The story impl
 - ✅ External dependency on Crosstown BLS handler tracked
 
 **Testability: 100%**
+
 - ✅ Integration test requirements defined (Task 3, AC1-AC7)
 - ✅ Smoke test requirements defined (Task 7, quick validation)
 - ✅ Performance test requirements defined (NFR3, <2s round-trip)
@@ -1256,6 +1340,7 @@ All code artifacts passed final review without requiring changes. The story impl
 - ✅ Mock BLS responses alternative suggested in Task 3
 
 **Security Review: 100%**
+
 - ✅ OWASP Top 10 analysis complete (A01-A10 coverage in Security Considerations)
 - ✅ Signature validation required (AC3, NFR8, NFR13)
 - ✅ Input validation documented (table names, reducer names, event content)
@@ -1267,24 +1352,20 @@ All code artifacts passed final review without requiring changes. The story impl
 ### Issues Found and Fixed
 
 **Total Issues: 8**
+
 - Critical: 0
 - High: 2 (fixed)
 - Medium: 3 (fixed)
 - Low: 3 (fixed)
 
 **HIGH (2) - FIXED:**
+
 1. **Missing Dev Notes Section** - Story lacked comprehensive Dev Notes with Quick Reference, File Structure, Architecture Context. Added complete Dev Notes section matching Stories 1.2, 1.5 format.
 2. **Missing Implementation Constraints** - No explicit constraints documented. Added 10 implementation constraints covering package scope, external dependencies, test skip strategy, TypeScript strict mode, error type requirements, and documentation scope.
 
-**MEDIUM (3) - FIXED:**
-3. **Missing Verification Steps** - Story lacked numbered verification commands with expected outputs. Added 12 verification steps covering install, build, test, typecheck, lint, documentation existence, and post-deployment validation.
-4. **Missing Anti-Patterns Section** - No anti-patterns documented. Added 13 critical anti-patterns to avoid, including BLS implementation in wrong repo, running unskipped integration tests, silent failures, missing error codes, and security violations.
-5. **Incomplete References Section** - References used relative paths and lacked full traceability. Enhanced with absolute paths, Epic/FR/NFR references, story dependencies, and external documentation links.
+**MEDIUM (3) - FIXED:** 3. **Missing Verification Steps** - Story lacked numbered verification commands with expected outputs. Added 12 verification steps covering install, build, test, typecheck, lint, documentation existence, and post-deployment validation. 4. **Missing Anti-Patterns Section** - No anti-patterns documented. Added 13 critical anti-patterns to avoid, including BLS implementation in wrong repo, running unskipped integration tests, silent failures, missing error codes, and security violations. 5. **Incomplete References Section** - References used relative paths and lacked full traceability. Enhanced with absolute paths, Epic/FR/NFR references, story dependencies, and external documentation links.
 
-**LOW (3) - FIXED:**
-6. **Missing Acceptance Test Examples** - No TypeScript code examples for acceptance criteria. Added comprehensive examples for all 7 ACs with expected inputs/outputs and error cases.
-7. **Missing Change Log** - Story lacked revision history. Added Change Log with 3 major revisions (initial creation, blocker resolution, standards compliance).
-8. **Incomplete Definition of Done** - DoD lacked build/test/lint verification steps. Enhanced with comprehensive checklist including all verification commands and commit message format.
+**LOW (3) - FIXED:** 6. **Missing Acceptance Test Examples** - No TypeScript code examples for acceptance criteria. Added comprehensive examples for all 7 ACs with expected inputs/outputs and error cases. 7. **Missing Change Log** - Story lacked revision history. Added Change Log with 3 major revisions (initial creation, blocker resolution, standards compliance). 8. **Incomplete Definition of Done** - DoD lacked build/test/lint verification steps. Enhanced with comprehensive checklist including all verification commands and commit message format.
 
 ### Files Modified
 
@@ -1293,17 +1374,20 @@ All code artifacts passed final review without requiring changes. The story impl
 ### Summary
 
 **Total Issues Found: 8**
+
 - Critical: 0
 - High: 2 (100% fixed)
 - Medium: 3 (100% fixed)
 - Low: 3 (100% fixed)
 
 **Total Issues Fixed: 8 (100%)**
+
 - All automatically fixed in YOLO mode
 - Zero issues remaining
 - Story now matches BMAD quality standards (Stories 1.2, 1.5 exemplars)
 
 **Key Improvements:**
+
 1. Added comprehensive Dev Notes section (Quick Reference, Architecture Context, File Structure, Implementation Priority, Testing Strategy, Edge Cases, Dependency Versions)
 2. Added 10 Implementation Constraints for clear scope boundaries
 3. Added 12 Verification Steps with expected outputs
@@ -1315,6 +1399,7 @@ All code artifacts passed final review without requiring changes. The story impl
 9. Standardized all section formatting to BMAD template
 
 **Compliance Status:**
+
 - ✅ Story structure: Complete
 - ✅ Acceptance criteria: 7 ACs with Given/When/Then
 - ✅ Task breakdown: 8 tasks with detailed subtasks
@@ -1340,23 +1425,25 @@ All code artifacts passed final review without requiring changes. The story impl
 
 ### Test Suite Overview
 
-| Test File | Type | Tests | Status | Coverage |
-|-----------|------|-------|--------|----------|
-| `src/bls/types.test.ts` | Unit | 27 | ✅ Passing | Error types, response structures, type guards |
-| `src/bls/contract-validation.test.ts` | Unit | 20 | ✅ Passing | Event structure, content validation, signature format |
-| `src/integration-tests/bls-handler.integration.test.ts` | Integration | 10 | ⏭️ Skipped | End-to-end BLS handler validation (requires deployment) |
-| `scripts/bls-handler-smoke-test.ts` | Smoke | 1 | ⏭️ Skipped | Operational validation (requires deployment) |
+| Test File                                               | Type        | Tests | Status     | Coverage                                                |
+| ------------------------------------------------------- | ----------- | ----- | ---------- | ------------------------------------------------------- |
+| `src/bls/types.test.ts`                                 | Unit        | 27    | ✅ Passing | Error types, response structures, type guards           |
+| `src/bls/contract-validation.test.ts`                   | Unit        | 20    | ✅ Passing | Event structure, content validation, signature format   |
+| `src/integration-tests/bls-handler.integration.test.ts` | Integration | 10    | ⏭️ Skipped | End-to-end BLS handler validation (requires deployment) |
+| `scripts/bls-handler-smoke-test.ts`                     | Smoke       | 1     | ⏭️ Skipped | Operational validation (requires deployment)            |
 
 ### Acceptance Criteria to Test Mapping
 
 #### AC1: BLS receives kind 30078 events via ILP routing
 
 **Contract Validation Tests (Unit):**
+
 - ✅ `should create valid kind 30078 event structure` - Validates NIP-01 fields, kind 30078
 - ✅ `should enforce kind 30078 for game actions` - Ensures correct event kind
 - ✅ `should include all required Nostr fields` - Validates 7 required fields
 
 **Integration Tests (Skipped until BLS deployed):**
+
 - ⏭️ `should accept kind 30078 event via ILP routing` - End-to-end event acceptance
 
 **Status:** ✅ **COMPLETE** - Contract validation ensures events are properly structured, integration test ready for BLS deployment
@@ -1366,6 +1453,7 @@ All code artifacts passed final review without requiring changes. The story impl
 #### AC2: Event content parsing and validation
 
 **Contract Validation Tests (Unit):**
+
 - ✅ `should create valid JSON content with reducer and args` - Validates content structure
 - ✅ `should detect malformed JSON content` - Tests 6 invalid JSON cases
 - ✅ `should detect missing required content fields` - Tests 5 missing/invalid field cases
@@ -1375,6 +1463,7 @@ All code artifacts passed final review without requiring changes. The story impl
 - ✅ `should structure events to avoid INVALID_CONTENT errors` - Positive test cases
 
 **Integration Tests (Skipped until BLS deployed):**
+
 - ⏭️ `should parse valid event content with reducer and args` - End-to-end parsing validation
 - ⏭️ `should reject event with invalid JSON content` - INVALID_CONTENT error verification
 
@@ -1385,6 +1474,7 @@ All code artifacts passed final review without requiring changes. The story impl
 #### AC3: Nostr signature validation
 
 **Contract Validation Tests (Unit):**
+
 - ✅ `should create valid Schnorr signature structure` - Validates 128-char hex signature
 - ✅ `should create deterministic event ID` - Tests SHA256 event ID computation
 - ✅ `should detect corrupted signatures` - Tests 6 signature corruption scenarios
@@ -1392,6 +1482,7 @@ All code artifacts passed final review without requiring changes. The story impl
 - ✅ `should detect content tampering` - Tests 3 content tampering scenarios
 
 **Integration Tests (Skipped until BLS deployed):**
+
 - ⏭️ `should accept event with valid Nostr signature` - End-to-end signature validation
 - ⏭️ `should reject event with invalid signature` - INVALID_SIGNATURE error verification
 
@@ -1402,10 +1493,12 @@ All code artifacts passed final review without requiring changes. The story impl
 #### AC4: SpacetimeDB reducer invocation with identity
 
 **Contract Validation Tests (Unit):**
+
 - ✅ `should extract pubkey for identity propagation` - Validates pubkey extraction and prepending
 - ✅ `should preserve pubkey through event lifecycle` - Tests identity preservation
 
 **Integration Tests (Skipped until BLS deployed):**
+
 - ⏭️ `should invoke SpacetimeDB reducer with prepended identity` - End-to-end identity propagation
 
 **Status:** ✅ **COMPLETE** - Identity propagation structure validated, end-to-end test ready for BLS deployment
@@ -1415,9 +1508,11 @@ All code artifacts passed final review without requiring changes. The story impl
 #### AC5: Unknown reducer handling
 
 **Contract Validation Tests (Unit):**
+
 - ✅ `should create events that avoid UNKNOWN_REDUCER errors` - Validates reducer name format
 
 **Integration Tests (Skipped until BLS deployed):**
+
 - ⏭️ `should reject event with unknown reducer name` - UNKNOWN_REDUCER error verification
 
 **Status:** ✅ **COMPLETE** - Reducer name validation in place, error handling test ready for BLS deployment
@@ -1427,6 +1522,7 @@ All code artifacts passed final review without requiring changes. The story impl
 #### AC6: Zero silent failures
 
 **Integration Tests (Skipped until BLS deployed):**
+
 - ⏭️ `should log all errors with event context` - Validates error logging with event ID, pubkey, reducer, reason
 
 **Status:** ✅ **COMPLETE** - Test ready for BLS deployment, validates logging requirements
@@ -1436,6 +1532,7 @@ All code artifacts passed final review without requiring changes. The story impl
 #### AC7: Error response propagation
 
 **Type Tests (Unit):**
+
 - ✅ `should define all required error codes` - Validates 4 error codes
 - ✅ `should validate structure of INVALID_SIGNATURE error` - Tests error response structure
 - ✅ `should validate structure of UNKNOWN_REDUCER error` - Tests error response structure
@@ -1450,6 +1547,7 @@ All code artifacts passed final review without requiring changes. The story impl
 - ✅ `should mark reducer execution errors as retryable` - Retryable semantics validation
 
 **Integration Tests (Skipped until BLS deployed):**
+
 - ⏭️ `should propagate errors to sender with retryable field` - End-to-end error propagation
 
 **Status:** ✅ **COMPLETE** - All error types, structures, and semantics validated
@@ -1459,9 +1557,11 @@ All code artifacts passed final review without requiring changes. The story impl
 #### NFR3: Round-trip performance (<2s under normal load)
 
 **Performance Tests (Unit):**
+
 - ✅ `should create events efficiently` - Tests 100 iterations, validates <20ms average (actual: ~3ms)
 
 **Integration Tests (Skipped until BLS deployed):**
+
 - ⏭️ `should complete round-trip within 2 seconds under normal load` - End-to-end performance validation
 
 **Status:** ✅ **COMPLETE** - Client-side performance validated, end-to-end test ready for BLS deployment
@@ -1507,6 +1607,7 @@ All code artifacts passed final review without requiring changes. The story impl
 ### Test Fixtures & Helpers
 
 **Factory Functions:**
+
 - ✅ `createBLSErrorResponse()` - Generic error response factory
 - ✅ `createBLSSuccessResponse()` - Generic success response factory
 - ✅ `BLSErrorFactories.invalidSignature()` - Specific error factory
@@ -1515,12 +1616,14 @@ All code artifacts passed final review without requiring changes. The story impl
 - ✅ `BLSErrorFactories.reducerFailed()` - Specific error factory
 
 **Helper Functions:**
+
 - ✅ `publishAction()` - Integration test helper for publishing events
 - ✅ `waitForBLSResponse()` - Integration test helper for BLS responses (placeholder)
 
 ### Integration Test Skip Strategy
 
 All integration tests use proper skip condition:
+
 ```typescript
 describe.skipIf(!runIntegrationTests || !blsHandlerDeployed)(
   'BLS Handler Integration Tests',
@@ -1529,6 +1632,7 @@ describe.skipIf(!runIntegrationTests || !blsHandlerDeployed)(
 ```
 
 **Flags:**
+
 - `RUN_INTEGRATION_TESTS=true` - Enables integration tests
 - `BLS_HANDLER_DEPLOYED=true` - Indicates BLS handler is available
 
@@ -1541,6 +1645,7 @@ describe.skipIf(!runIntegrationTests || !blsHandlerDeployed)(
 **Status:** Skipped until `BLS_HANDLER_DEPLOYED=true`
 
 **Smoke Test Coverage:**
+
 1. Identity generation
 2. Sigil client creation
 3. Crosstown relay connection
@@ -1551,6 +1656,7 @@ describe.skipIf(!runIntegrationTests || !blsHandlerDeployed)(
 ### Verification Commands
 
 All tests passing:
+
 ```bash
 pnpm --filter @sigil/client test bls --run
 # Result: 47 passed, 10 skipped (expected)
@@ -1576,12 +1682,14 @@ pnpm --filter @sigil/client test bls --run
 **For Story 2.4:** ✅ **NO CHANGES REQUIRED** - Test suite is production-ready and meets all DoD criteria.
 
 **For Future Work (Optional):**
+
 1. Add factory function unit tests (nice-to-have, not blocking)
 2. Add timeout handling integration test when BLS deployed
 3. Consider lowering performance threshold to 10ms (current: 3ms average vs 20ms threshold)
 4. Add JSON serialization round-trip tests (defense in depth)
 
 **For BLS Handler Deployment:**
+
 1. Set `BLS_HANDLER_DEPLOYED=true` environment variable
 2. Run integration tests: `RUN_INTEGRATION_TESTS=true BLS_HANDLER_DEPLOYED=true pnpm test:integration`
 3. Run smoke test: `BLS_HANDLER_DEPLOYED=true pnpm smoke:bls`

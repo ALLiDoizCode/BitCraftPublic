@@ -20,6 +20,7 @@ The Static Data Loader implementation demonstrates proper architectural support 
 - ✅ **Comprehensive metrics** tracking load time, table count, and failures
 
 **Key Findings:**
+
 - Implementation explicitly documents NFR6 compliance with `LOADING_TIMEOUT_MS = 10000` constant
 - Warning logged if load time exceeds 10 seconds (NFR6 violation detection)
 - Unit tests verify timeout behavior and error handling
@@ -36,6 +37,7 @@ The Static Data Loader implementation demonstrates proper architectural support 
 **NFR6:** Static data loading (all `*_desc` tables) completes within 10 seconds on first connection
 
 **Source:**
+
 - `/Users/jonathangreen/Documents/BitCraftPublic/_bmad-output/planning-artifacts/epics.md:105`
 - `/Users/jonathangreen/Documents/BitCraftPublic/_bmad-output/planning-artifacts/prd/non-functional-requirements.md:10`
 
@@ -52,12 +54,14 @@ The Static Data Loader implementation demonstrates proper architectural support 
 #### 1. Timeout Enforcement
 
 **Lines 90-91:**
+
 ```typescript
 /** Maximum time to wait for static data loading (NFR6: 10 seconds) */
 private readonly LOADING_TIMEOUT_MS = 10000;
 ```
 
 **Assessment:** ✅ COMPLIANT
+
 - Explicit NFR6 reference in code comment
 - 10-second timeout constant defined
 - Used in `loadTable()` method for per-table timeout (line 234)
@@ -65,6 +69,7 @@ private readonly LOADING_TIMEOUT_MS = 10000;
 #### 2. NFR6 Violation Detection
 
 **Lines 200-205:**
+
 ```typescript
 // Warn if NFR6 violated (>10s)
 if (totalTime > this.LOADING_TIMEOUT_MS) {
@@ -75,6 +80,7 @@ if (totalTime > this.LOADING_TIMEOUT_MS) {
 ```
 
 **Assessment:** ✅ COMPLIANT
+
 - Active monitoring of total load time
 - Explicit warning when NFR6 is violated
 - Warning message references NFR6 by name for traceability
@@ -82,18 +88,21 @@ if (totalTime > this.LOADING_TIMEOUT_MS) {
 #### 3. Performance Optimization
 
 **Lines 93-94:**
+
 ```typescript
 /** Number of tables to load in parallel (tuned for optimal throughput) */
 private readonly BATCH_SIZE = 30;
 ```
 
 **Loading Strategy (lines 148-178):**
+
 - Tables split into batches of 30
 - Each batch loaded in parallel via `Promise.all()`
 - Sequential batch processing to avoid overwhelming connections
 - Estimated performance: ~100-200ms for parallel batch loading (documented in story artifact)
 
 **Assessment:** ✅ COMPLIANT
+
 - Batch size optimized for network throughput
 - Parallel loading reduces wall-clock time
 - Architecture provides "comfortable margin (50x headroom)" per story documentation
@@ -101,6 +110,7 @@ private readonly BATCH_SIZE = 30;
 #### 4. Retry Logic
 
 **Lines 96-100, 252-259:**
+
 ```typescript
 /** Maximum retry attempts for failed table loads */
 private readonly MAX_RETRIES = 3;
@@ -117,6 +127,7 @@ if (retryCount < this.MAX_RETRIES) {
 ```
 
 **Assessment:** ✅ COMPLIANT
+
 - Up to 3 retries per failed table
 - Exponential backoff (100ms, 200ms, 400ms)
 - Prevents cascade failures from blocking NFR6 compliance
@@ -124,6 +135,7 @@ if (retryCount < this.MAX_RETRIES) {
 #### 5. Metrics Collection
 
 **Lines 180-198:**
+
 ```typescript
 // Calculate metrics
 const totalTime = Date.now() - startTime;
@@ -147,6 +159,7 @@ this.emit('loadingMetrics', {
 ```
 
 **Assessment:** ✅ COMPLIANT
+
 - Accurate wall-clock time measurement (`Date.now()`)
 - Metrics include total time, table count, average time per table
 - Failed tables tracked separately (don't block loading)
@@ -161,11 +174,13 @@ this.emit('loadingMetrics', {
 **File:** `/Users/jonathangreen/Documents/BitCraftPublic/packages/client/src/spacetimedb/__tests__/static-data-loader.test.ts`
 
 **Test Results:**
+
 ```
 ✓ src/spacetimedb/__tests__/static-data-loader.test.ts (31 tests) 7ms
 ```
 
 **NFR6-Related Tests:**
+
 1. ✅ Initial state verification (idle, not cached, null metrics)
 2. ✅ Connection state guard (throws if not connected)
 3. ✅ Cache persistence (skips reload if already cached)
@@ -176,6 +191,7 @@ this.emit('loadingMetrics', {
 8. ✅ Metrics retrieval tests
 
 **Assessment:** ✅ COMPLIANT
+
 - 31 unit tests passing
 - Covers all critical paths for NFR6 compliance
 - Timeout behavior tested (though full integration test needed for real timing)
@@ -185,11 +201,13 @@ this.emit('loadingMetrics', {
 **File:** `/Users/jonathangreen/Documents/BitCraftPublic/packages/client/src/spacetimedb/__tests__/static-data-acceptance-criteria.test.ts`
 
 **Test Results:**
+
 ```
 ✓ src/spacetimedb/__tests__/static-data-acceptance-criteria.test.ts (9 tests) 8ms
 ```
 
 **AC2 Test (NFR6 Performance Requirement):**
+
 ```typescript
 // From story artifact line 346-347:
 const loadTime = Date.now() - startTime;
@@ -197,6 +215,7 @@ expect(loadTime).toBeLessThan(10000); // <10s (NFR6)
 ```
 
 **Assessment:** ✅ COMPLIANT
+
 - Explicit NFR6 performance validation in acceptance tests
 - Test structure ready for integration testing (requires live server)
 - Current tests use mocks for fast execution
@@ -208,6 +227,7 @@ expect(loadTime).toBeLessThan(10000); // <10s (NFR6)
 ### Current Status
 
 **From test output:**
+
 ```
 ↓ src/spacetimedb/__tests__/integration.test.ts (16 tests | 16 skipped)
 ```
@@ -217,6 +237,7 @@ expect(loadTime).toBeLessThan(10000); // <10s (NFR6)
 ### Required for Full NFR6 Validation
 
 **Story Artifact Lines 138-150:**
+
 ```markdown
 - [x] Task 10: Write integration tests against live BitCraft server (AC: 1, 2, 3, 4)
   - [x] Test: connect to BitCraft server and call `client.staticData.load()`
@@ -226,6 +247,7 @@ expect(loadTime).toBeLessThan(10000); // <10s (NFR6)
 ```
 
 **Recommendation:** Run integration tests with Docker stack to validate real-world NFR6 compliance:
+
 ```bash
 # Start Docker stack from Story 1.3
 cd docker && docker compose up
@@ -245,17 +267,20 @@ pnpm --filter @sigil/client test:integration
 **Reference:** `/Users/jonathangreen/Documents/BitCraftPublic/_bmad-output/implementation-artifacts/nfr-traceability-matrix.md:112-129`
 
 **NFR6 Mapping:**
+
 ```markdown
 ### NFR6: Static Data <10s Load
 
-**Requirement:** All *_desc tables load within 10s
+**Requirement:** All \*\_desc tables load within 10s
 
 **Architecture Support:**
+
 - `packages/client/` → Static data loading module planned
 - SpacetimeDB SDK 1.3.3 → Batch subscription support
 - TypeScript async/await → Concurrent loading
 
 **Validation:**
+
 - ✅ SDK supports table queries
 - ✅ Client architecture allows parallel loading
 - ✅ TypeScript async patterns ready
@@ -268,6 +293,7 @@ pnpm --filter @sigil/client test:integration
 ### Story Dependencies
 
 **From Story 1.5 Artifact Lines 229-234:**
+
 ```markdown
 ## Dependencies
 
@@ -277,6 +303,7 @@ pnpm --filter @sigil/client test:integration
 ```
 
 **Assessment:** ✅ ALL DEPENDENCIES SATISFIED
+
 - Story 1.4 provides `SpacetimeDBConnection` and `SubscriptionManager`
 - Story 1.3 provides Docker stack for integration testing
 - Story 1.1 provides build tooling (tsup, vitest, TypeScript strict mode)
@@ -287,14 +314,15 @@ pnpm --filter @sigil/client test:integration
 
 ### Performance Risks
 
-| Risk | Likelihood | Impact | Mitigation | Status |
-|------|-----------|--------|------------|--------|
-| 148 tables exceed 10s on slow network | LOW | HIGH | Batch size tuning (30 tables/batch), parallel loading | ✅ MITIGATED |
-| Connection timeout on large tables | LOW | MEDIUM | Per-table timeout (10s), retry with backoff | ✅ MITIGATED |
-| Memory pressure from 148 tables | LOW | LOW | Map-based storage (~10-20MB footprint) | ✅ ACCEPTABLE |
-| Serial loading too slow | NONE | N/A | Already parallel batched | ✅ N/A |
+| Risk                                  | Likelihood | Impact | Mitigation                                            | Status        |
+| ------------------------------------- | ---------- | ------ | ----------------------------------------------------- | ------------- |
+| 148 tables exceed 10s on slow network | LOW        | HIGH   | Batch size tuning (30 tables/batch), parallel loading | ✅ MITIGATED  |
+| Connection timeout on large tables    | LOW        | MEDIUM | Per-table timeout (10s), retry with backoff           | ✅ MITIGATED  |
+| Memory pressure from 148 tables       | LOW        | LOW    | Map-based storage (~10-20MB footprint)                | ✅ ACCEPTABLE |
+| Serial loading too slow               | NONE       | N/A    | Already parallel batched                              | ✅ N/A        |
 
 **From Story Test Design (R-004):**
+
 ```markdown
 | R-004 | PERF | Static data loading (148 tables) may exceed 10s performance budget (NFR6) |
 | 2 | 3 | 6 |
@@ -302,6 +330,7 @@ pnpm --filter @sigil/client test:integration
 ```
 
 **Assessment:** ✅ RISK MITIGATED
+
 - Parallel batch loading implemented (not serial)
 - Connection pooling not needed (SpacetimeDB SDK handles connection reuse)
 - Risk rating reduced from 6 to 1 (likelihood: LOW, impact: LOW)
@@ -311,6 +340,7 @@ pnpm --filter @sigil/client test:integration
 **No direct security concerns for NFR6.**
 
 Static data tables are read-only game definitions. Loading performance does not impact:
+
 - NFR8-13: Identity/signing (handled by BLS layer)
 - NFR10: Reducer validation (loading happens post-connection)
 
@@ -320,18 +350,18 @@ Static data tables are read-only game definitions. Loading performance does not 
 
 ### NFR6 Compliance Checklist
 
-| Requirement Component | Status | Evidence |
-|----------------------|--------|----------|
-| **10-second timeout defined** | ✅ PASS | `LOADING_TIMEOUT_MS = 10000` (line 91) |
-| **Timeout enforced per table** | ✅ PASS | Timeout in `loadTable()` (line 234) |
-| **NFR6 violation detection** | ✅ PASS | Warning logged if >10s (lines 200-205) |
-| **Performance optimization** | ✅ PASS | Parallel batch loading (30 tables/batch) |
-| **Metrics tracking** | ✅ PASS | `LoadingMetrics` interface + emit (lines 180-198) |
-| **Retry logic** | ✅ PASS | Exponential backoff, max 3 retries (lines 252-259) |
-| **Unit test coverage** | ✅ PASS | 31 tests passing |
-| **Acceptance test coverage** | ✅ PASS | 9 ATDD tests passing (AC2 validates NFR6) |
-| **Integration test ready** | ⏳ READY | Tests written, require Docker stack |
-| **Documentation** | ✅ PASS | NFR6 referenced in code, story artifact, tests |
+| Requirement Component          | Status   | Evidence                                           |
+| ------------------------------ | -------- | -------------------------------------------------- |
+| **10-second timeout defined**  | ✅ PASS  | `LOADING_TIMEOUT_MS = 10000` (line 91)             |
+| **Timeout enforced per table** | ✅ PASS  | Timeout in `loadTable()` (line 234)                |
+| **NFR6 violation detection**   | ✅ PASS  | Warning logged if >10s (lines 200-205)             |
+| **Performance optimization**   | ✅ PASS  | Parallel batch loading (30 tables/batch)           |
+| **Metrics tracking**           | ✅ PASS  | `LoadingMetrics` interface + emit (lines 180-198)  |
+| **Retry logic**                | ✅ PASS  | Exponential backoff, max 3 retries (lines 252-259) |
+| **Unit test coverage**         | ✅ PASS  | 31 tests passing                                   |
+| **Acceptance test coverage**   | ✅ PASS  | 9 ATDD tests passing (AC2 validates NFR6)          |
+| **Integration test ready**     | ⏳ READY | Tests written, require Docker stack                |
+| **Documentation**              | ✅ PASS  | NFR6 referenced in code, story artifact, tests     |
 
 **Overall Compliance:** ✅ **10/10 PASS** (9 complete, 1 ready pending Docker stack)
 
@@ -344,6 +374,7 @@ Static data tables are read-only game definitions. Loading performance does not 
 **Connection:** Static data loading uses snapshot subscriptions (one-time load)
 
 **From Story Artifact Lines 242-245:**
+
 ```markdown
 - **NFR5**: Real-time update latency <500ms (inherited from Story 1.4)
   - Static data loading uses snapshot subscriptions (one-time load)
@@ -352,6 +383,7 @@ Static data tables are read-only game definitions. Loading performance does not 
 ```
 
 **Assessment:** ✅ RELATED BUT SEPARATE
+
 - NFR5 governs ongoing table subscription updates (handled by Story 1.4)
 - Static data loader unsubscribes after snapshot (no real-time updates)
 - Initial snapshot delivery is part of NFR6's 10-second budget
@@ -359,6 +391,7 @@ Static data tables are read-only game definitions. Loading performance does not 
 ### NFR18: SDK Backwards Compatibility
 
 **From Story Artifact Lines 247-249:**
+
 ```markdown
 - **NFR18**: SDK backwards compatibility (inherited from Story 1.4)
   - Uses SpacetimeDB SDK 1.3.3 from Story 1.4
@@ -366,6 +399,7 @@ Static data tables are read-only game definitions. Loading performance does not 
 ```
 
 **Assessment:** ✅ COMPLIANT
+
 - Uses `@clockworklabs/spacetimedb-sdk@^1.3.3` from Story 1.4
 - No SDK version conflicts
 - Static data loading uses standard SDK subscription API
@@ -373,6 +407,7 @@ Static data tables are read-only game definitions. Loading performance does not 
 ### NFR22: Cross-platform Compatibility
 
 **From Story Artifact Lines 251-253:**
+
 ```markdown
 - **NFR22**: Cross-platform compatibility
   - Static data loader is pure TypeScript (platform-agnostic)
@@ -380,6 +415,7 @@ Static data tables are read-only game definitions. Loading performance does not 
 ```
 
 **Assessment:** ✅ COMPLIANT
+
 - Pure TypeScript implementation (no platform-specific dependencies)
 - Uses Node.js EventEmitter (cross-platform)
 - Map-based storage (platform-agnostic)
@@ -399,6 +435,7 @@ Static data tables are read-only game definitions. Loading performance does not 
 ### For Test Design
 
 **From Story Test Design (Test-002):**
+
 ```markdown
 | Test-002 | Static data loading performance |
 | **Verification:** Measure cold-start static data load time, ensure ≤10s (NFR6). |
@@ -407,6 +444,7 @@ Static data tables are read-only game definitions. Loading performance does not 
 ```
 
 **Status Update:**
+
 - ✅ Parallel loading implemented (primary contingency)
 - ✅ Benchmark target: 148 tables (40 currently in `STATIC_DATA_TABLES`, expandable)
 - ⏳ Integration benchmark pending Docker stack

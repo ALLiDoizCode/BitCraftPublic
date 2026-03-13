@@ -1,6 +1,7 @@
 # Story 2.4 Partial Report (Pipeline Stopped)
 
 ## Overview
+
 - **Story file**: `_bmad-output/implementation-artifacts/2-4-bls-game-action-handler.md`
 - **Git start**: `0b52639dab6a859aebc50727d4d22a0cb5417db3`
 - **Duration**: Approximately 60 minutes (validation phase only)
@@ -22,12 +23,14 @@ The validation step (step 2) successfully completed its adversarial review and i
 **Issue**: The documented identity propagation approach (Option B: prepend Nostr pubkey to reducer args) requires modifying BitCraft reducer signatures to accept an additional `caller_identity: String` parameter as the first argument. This violates the fundamental design principle: **"BitCraft v1 server runs unmodified"**.
 
 **Impact**:
+
 - Violates project architecture decision (design principle #2)
 - Requires forking and maintaining modified BitCraft reducers
 - Increases maintenance burden and drift from upstream
 - Blocks Story 2.4 implementation until resolved
 
 **Recommended Resolution**:
+
 1. Accept Option B as technical debt for MVP (document as DEBT-4)
 2. Plan migration to Option A (custom HTTP headers) in Epic 6 when SpacetimeDB v2.x supports custom headers in HTTP reducer calls
 3. Document the trade-off: MVP ships faster with technical debt vs. delayed MVP with clean architecture
@@ -39,12 +42,14 @@ The validation step (step 2) successfully completed its adversarial review and i
 **Issue**: Story 2.4 Acceptance Criterion 4 requires BLS handler to query a SpacetimeDB `wallets` table before executing reducers to check ILP fee balances. However, the `wallets` table does not exist in the current schema, and Story 2.2 (completed) only implemented in-memory wallet state in the Sigil SDK client.
 
 **Impact**:
+
 - BLS handler cannot check wallet balances (no table to query)
 - Fee deduction logic cannot be implemented
 - AC4, AC6, and AC9 cannot be validated
 - Blocks Story 2.4 implementation until resolved
 
 **Required Action**: Create Story 2.2.1 "Migrate Wallet State to SpacetimeDB Table" to:
+
 1. Add `wallets` table to SpacetimeDB schema (columns: `identity TEXT PRIMARY KEY`, `balance BIGINT`, `updated_at TIMESTAMP`)
 2. Add reducer `initialize_wallet(identity: String)` to create new wallet entries
 3. Add reducer `get_wallet_balance(identity: String) -> u64` for balance queries
@@ -61,6 +66,7 @@ The validation step (step 2) successfully completed its adversarial review and i
 **Issue**: Story 2.4 documents the integration contract for the BLS handler, but the actual BLS handler implementation must be built in the Crosstown Nostr relay repository (separate codebase, potentially separate team). No corresponding Crosstown story exists, no coordination mechanism is in place, and no timeline is established.
 
 **Impact**:
+
 - BLS handler implementation is not planned or tracked
 - Integration tests in Sigil SDK will fail (no BLS handler to test against)
 - No visibility into when Crosstown work will complete
@@ -68,6 +74,7 @@ The validation step (step 2) successfully completed its adversarial review and i
 - Blocks Story 2.4 acceptance (tests cannot pass without live BLS handler)
 
 **Required Action**: Create Crosstown story CT-2.4 "Implement BLS Game Action Handler" with:
+
 1. Nostr kind 30078 event listener and parser
 2. secp256k1 signature validation (Nostr event signature verification)
 3. SpacetimeDB HTTP reducer call logic with identity propagation
@@ -80,6 +87,7 @@ The validation step (step 2) successfully completed its adversarial review and i
 **Estimated Effort**: 12-16 hours (Crosstown team)
 
 **Coordination Required**:
+
 - Establish Crosstown repository and team contact
 - Create CT-2.4 story in Crosstown backlog
 - Schedule CT-2.4 in Crosstown sprint (timeline TBD)
@@ -91,6 +99,7 @@ The validation step (step 2) successfully completed its adversarial review and i
 ## Pipeline Steps Completed
 
 ### Step 1: Story 2.4 Create
+
 - **Status**: Success
 - **Duration**: ~15 minutes
 - **What changed**: Created `_bmad-output/implementation-artifacts/2-4-bls-game-action-handler.md` (30KB, 595 lines)
@@ -104,6 +113,7 @@ The validation step (step 2) successfully completed its adversarial review and i
 - **Remaining concerns**: External dependency coordination, authentication strategy, atomic fee deduction, test sequencing
 
 ### Step 2: Story 2.4 Validate
+
 - **Status**: Success (with critical blockers found)
 - **Duration**: ~45 minutes
 - **What changed**: Modified `_bmad-output/implementation-artifacts/2-4-bls-game-action-handler.md`:
@@ -142,15 +152,19 @@ The validation step (step 2) successfully completed its adversarial review and i
   - No coordination mechanism exists for external Crosstown dependency
 
 ## Files Changed
+
 - `_bmad-output/implementation-artifacts/2-4-bls-game-action-handler.md` - Modified (story updated with blockers and validation fixes)
 
 ## Test Coverage
+
 No tests created (pipeline stopped at validation phase before reaching test generation steps).
 
 ## Code Review Findings
+
 No code reviews performed (pipeline stopped before development phase).
 
 ## Quality Gates
+
 No quality gates executed (pipeline stopped at validation phase).
 
 ## Known Risks & Gaps

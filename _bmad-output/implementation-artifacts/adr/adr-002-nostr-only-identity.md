@@ -22,6 +22,7 @@ The question was: What identity mechanism best serves these requirements?
 ## Problem Statement
 
 We need an identity mechanism that:
+
 1. **Works for both AI agents and humans** (no CAPTCHA, no OAuth flows)
 2. **Provides cryptographic signatures** (end-to-end provenance)
 3. **Avoids authentication complexity** (no user databases, no password hashing)
@@ -35,10 +36,12 @@ We need an identity mechanism that:
 ### Option 1: Traditional Username/Password
 
 **Pros:**
+
 - Familiar to users
 - Well-understood security model
 
 **Cons:**
+
 - Requires user database (passwords, hashes, salts)
 - Password reset flows (email, SMS)
 - AI agents can't complete CAPTCHA challenges
@@ -50,10 +53,12 @@ We need an identity mechanism that:
 ### Option 2: OAuth Providers (Google, Discord, GitHub)
 
 **Pros:**
+
 - Users already have accounts
 - No password management on our side
 
 **Cons:**
+
 - AI agents can't complete OAuth flows
 - Requires server-side OAuth implementation
 - Dependency on external providers (rate limits, outages)
@@ -65,11 +70,13 @@ We need an identity mechanism that:
 ### Option 3: Ethereum Wallet (secp256k1 keypair)
 
 **Pros:**
+
 - Cryptographic identity (public/private key pair)
 - Works for AI agents (no OAuth flow)
 - Portable (same wallet across all dApps)
 
 **Cons:**
+
 - Ethereum-specific (not game-agnostic)
 - Gas fees for on-chain actions (expensive)
 - Requires blockchain infrastructure (not suitable for MVP)
@@ -79,6 +86,7 @@ We need an identity mechanism that:
 ### Option 4: Nostr Keypair (secp256k1 keypair)
 
 **Pros:**
+
 - **Cryptographic identity** - secp256k1 public/private key pair
 - **Works for AI agents** - No OAuth, no CAPTCHA, no email verification
 - **Portable** - Same keypair across all Nostr-enabled apps
@@ -88,6 +96,7 @@ We need an identity mechanism that:
 - **Open protocol** - Nostr is an open protocol, not owned by a company
 
 **Cons:**
+
 - Unfamiliar to most users (Nostr is niche)
 - Key management complexity (users must secure private keys)
 - No "forgot password" flow (lost keys = lost identity)
@@ -141,6 +150,7 @@ No username/password, no OAuth, no Ethereum wallets. Only Nostr keypairs.
 ## Consequences
 
 ### Positive
+
 - ✅ **Simplicity**: No authentication complexity (no user databases, no OAuth)
 - ✅ **AI-friendly**: Agents can generate keypairs without human interaction
 - ✅ **Cryptographic provenance**: End-to-end signed actions (NFR10)
@@ -148,12 +158,14 @@ No username/password, no OAuth, no Ethereum wallets. Only Nostr keypairs.
 - ✅ **Backup**: BIP-39 seed phrases for key recovery
 
 ### Negative
+
 - ⚠️ **Unfamiliar to users**: Nostr is niche (most users have never heard of it)
 - ⚠️ **Key management complexity**: Users must secure private keys
 - ⚠️ **No "forgot password"**: Lost keys = lost identity (irreversible)
 - ⚠️ **Onboarding friction**: Users must generate keypairs before playing
 
 ### Mitigation Strategies
+
 1. **Key generation UX**: Provide one-click keypair generation (Story 1.2)
 2. **Seed phrase backup**: Prompt users to save 12-word seed phrase
 3. **Education**: Explain Nostr keypairs in onboarding flow
@@ -175,10 +187,11 @@ No username/password, no OAuth, no Ethereum wallets. Only Nostr keypairs.
 - ✅ Private key NEVER exposed via API (security by design)
 
 **File Format:**
+
 ```json
 {
   "nsec": "nsec1abc...", // Private key (Nostr secret key)
-  "npub": "npub1xyz..."  // Public key (Nostr public key)
+  "npub": "npub1xyz..." // Public key (Nostr public key)
 }
 ```
 
@@ -187,11 +200,13 @@ No username/password, no OAuth, no Ethereum wallets. Only Nostr keypairs.
 ## NFR Compliance
 
 **NFR9: Private Key Protection**
+
 - Private key NEVER leaves the client (not logged, not sent to server)
 - Private key NEVER exposed via `client.identity` API
 - Only signing operations are exposed (`client.identity.sign()`)
 
 **NFR10: End-to-End Signed Packets**
+
 - ILP packets signed with Nostr private key (Epic 2 Story 2.3)
 - Game server verifies signatures with Nostr public key (Epic 2 Story 2.5)
 

@@ -120,7 +120,7 @@ So that I can interact with the game world through the single write path.
   - [x] URL validation (SSRF protection):
     - Parse URL using `new URL(connectorUrl)` to validate format
     - In production (NODE_ENV=production): Only allow https:// protocol (reject http://)
-    - In production: Block internal networks (10.*, 172.16-31.*, 192.168.*, 169.254.*, localhost)
+    - In production: Block internal networks (10._, 172.16-31._, 192.168._, 169.254._, localhost)
     - In development: Allow http://localhost, http://127.0.0.1, http://172.* (Docker networks)
     - Reject URLs with credentials embedded: check `url.username` and `url.password` are empty
     - Reject file://, ftp://, and other non-HTTP protocols
@@ -299,7 +299,7 @@ So that I can interact with the game world through the single write path.
     - ✅ Audit trail for publish attempts (emit events, not console.log)
   - [ ] A10:2021 - Server-Side Request Forgery (SSRF):
     - ✅ Crosstown URL validation (allowlist approach)
-    - ✅ Internal network protection (block 10.*, 172.16-31.*, 192.168.* in production)
+    - ✅ Internal network protection (block 10._, 172.16-31._, 192.168.\* in production)
     - ✅ No credentials in URLs (reject http://user:pass@host format)
 
 - [x] Task 10: Add cleanup and lifecycle management
@@ -371,6 +371,7 @@ So that I can interact with the game world through the single write path.
 This story is considered "done" when ALL of the following are complete:
 
 **Implementation:**
+
 - [ ] All 12 tasks completed and checked off (Tasks 7, 11, 12 deferred)
 - [x] All 6 acceptance criteria validated with passing tests (unit tests; integration deferred)
 - [x] Code follows TypeScript naming conventions (kebab-case files, camelCase functions, PascalCase types)
@@ -378,6 +379,7 @@ This story is considered "done" when ALL of the following are complete:
 - [x] All error handling uses `SigilError` with correct boundary and code
 
 **Testing:**
+
 - [x] All unit tests passing (544 total, 77 for Story 2.3)
 - [ ] Test coverage >90% for new code (measured with `pnpm test:coverage`) - deferred to Task 11
 - [x] Test traceability report complete (AC → Test mapping in `_bmad-output/implementation-artifacts/reports/2-3-test-traceability.md`)
@@ -385,6 +387,7 @@ This story is considered "done" when ALL of the following are complete:
 - [ ] Performance tests validate NFR3 (p95 latency <2s) - deferred to Task 11
 
 **Security (AGREEMENT-2):**
+
 - [x] OWASP Top 10 security review complete (all 10 categories checked)
 - [x] No high/critical vulnerabilities in `pnpm audit`
 - [x] Private key never transmitted over network (validated with unit tests; network capture tests deferred)
@@ -392,6 +395,7 @@ This story is considered "done" when ALL of the following are complete:
 - [x] Error messages do not leak sensitive data (logs sanitized)
 
 **Documentation:**
+
 - [x] All error codes documented in `packages/client/src/errors/error-codes.md`
 - [ ] Performance baseline documented in `_bmad-output/implementation-artifacts/2-3-performance-baseline.md` - deferred to Task 11
 - [x] JSDoc comments complete for all public APIs
@@ -399,18 +403,21 @@ This story is considered "done" when ALL of the following are complete:
 - [x] Open questions resolved and documented in story file
 
 **Code Review:**
+
 - [x] Self-review completed using code review checklist (see `2-3-code-review-report.md`)
 - [ ] Pair review scheduled (AGREEMENT-3: ILP protocol, Nostr signing) - deferred to Epic 2 completion
 - [x] All review feedback addressed (9 issues found, 8 fixed, 1 documented)
 - [ ] PR approved by at least one team member - deferred to Epic 2 completion
 
 **Integration:**
+
 - [ ] Docker stack tests pass (BitCraft + Crosstown + BLS end-to-end) - deferred to Task 7
 - [x] Integrates correctly with Story 2.1 (Nostr relay) and Story 2.2 (wallet balance)
 - [x] No breaking changes to `@sigil/client` public API
 - [x] Types exported from `packages/client/src/index.ts`
 
 **Deployment Readiness:**
+
 - [x] CI/CD pipeline passes (lint, test, build)
 - [x] No new technical debt introduced (deferred work documented in code review report)
 - [ ] Story report created in `_bmad-output/implementation-artifacts/2-3-story-report.md` - not required (story doc serves this purpose)
@@ -427,16 +434,19 @@ This story is considered "done" when ALL of the following are complete:
 ## Dependencies
 
 **Depends On:**
+
 - Story 1.2: Nostr Identity Management (identity signing)
 - Story 2.1: Crosstown Relay Connection & Event Subscriptions (Nostr confirmations)
 - Story 2.2: Action Cost Registry & Wallet Balance (cost lookup, balance check)
 
 **Blocks:**
+
 - Story 2.4: BLS Game Action Handler (needs ILP packets to process)
 - Story 2.5: Crosstown Client Adapter Refactoring (replaces custom HTTP connector with @crosstown/client)
 - Story 2.6: Identity Propagation & Verification (needs end-to-end publish flow)
 
 **External Dependencies:**
+
 - `nostr-tools` library (signing functions)
 - `@crosstown/client` library (if used for connector integration)
 - Crosstown connector API (HTTP endpoint or library)
@@ -446,6 +456,7 @@ This story is considered "done" when ALL of the following are complete:
 
 **Status:** backlog
 **Estimated Effort:** 20 hours (2.5 days)
+
 - Task 1: 2 hours (packet types and construction with validation)
 - Task 2: 2 hours (event signing)
 - Task 3: 3 hours (Crosstown connector client with SSRF protection)
@@ -460,11 +471,13 @@ This story is considered "done" when ALL of the following are complete:
 - Task 12: 1 hour (observability and debugging support)
 
 **Test Count Target:** 79 tests (54 unit + 25 integration)
+
 - Unit tests: 20 (ilp-packet) + 15 (event-signing) + 10 (client-publish) + 5 (crosstown-connector) + 4 (cleanup)
 - Integration tests: 20 (ilp-publish) + 5 (ilp-performance)
-**Traceability:** All 6 acceptance criteria mapped to tests in traceability report
+  **Traceability:** All 6 acceptance criteria mapped to tests in traceability report
 
 **Risk Mitigation:**
+
 - **R2-003: ILP packet signing failures**
   - Mitigation: Use battle-tested `nostr-tools` library for signing (widely used, audited)
   - Validation: Test with NIP-01 official test vectors
@@ -500,6 +513,7 @@ This story is considered "done" when ALL of the following are complete:
 ### Implementation Notes
 
 **Architectural Decisions:**
+
 1. **ILP Packet Format:** Used kind 30078 Nostr events (NIP-78: Application-specific Data) with JSON content containing `{reducer, args}`. This aligns with PREP-4 research and provides compatibility with standard Nostr relays.
 
 2. **Event Signing:** Leveraged `nostr-tools/pure` `finalizeEvent` function for signing. This provides battle-tested cryptographic operations and ensures NIP-01 compliance. Private key security enforced through dedicated `redactPrivateKey` function.
@@ -511,11 +525,13 @@ This story is considered "done" when ALL of the following are complete:
 5. **Error Boundaries:** Extended SigilError with optional `context` field to support detailed error reporting (action name, cost, balance, etc.). All errors use appropriate boundary tags: `publish`, `crosstown`, `identity`.
 
 **Library Choices:**
+
 - `nostr-tools/pure` for event signing (finalizeEvent, verifyEvent)
 - Native `fetch` API for HTTP requests (Node.js 20+ built-in support)
 - `AbortController` for timeout handling (standard web API)
 
 **Edge Cases Handled:**
+
 - Reducer name validation: alphanumeric + underscore only, 1-64 characters
 - Fee validation: non-negative, finite numbers (including zero and floats)
 - JSON serialization errors: caught and wrapped in INVALID_ACTION error
@@ -527,16 +543,19 @@ This story is considered "done" when ALL of the following are complete:
 ### Blockers & Resolutions
 
 **BLOCKER-1: SigilError missing context field**
+
 - **Issue:** Original SigilError class didn't support error context (needed for balance check details, timeout info, etc.)
 - **Resolution:** Extended SigilError constructor with optional `context?: Record<string, unknown>` parameter. This maintains backward compatibility while enabling rich error reporting.
 - **Impact:** Required update to nostr-client.ts error class definition
 
 **BLOCKER-2: Integration test complexity**
+
 - **Issue:** Client-publish.test.ts requires complex mocking of identity loading, Nostr subscriptions, and Crosstown responses. Many tests failing due to async timing and mock setup.
 - **Resolution:** Focused on unit tests for individual components (ilp-packet, event-signing, crosstown-connector) which provide strong coverage of core logic. Integration tests deferred to Epic 2 integration test strategy (ACTION-1).
 - **Impact:** 61/79 unit tests passing (77% pass rate). Remaining 18 tests are integration-level and require Docker stack + live Nostr relay.
 
 **BLOCKER-3: Test identity file format**
+
 - **Issue:** Initial test setup used plain JSON for identity files, but loadIdentity expects encrypted format.
 - **Resolution:** Updated tests to use `saveKeypair(keypair, passphrase, path)` for proper encryption. Required async beforeEach hook.
 - **Impact:** Tests now properly encrypt/decrypt identity files
@@ -544,6 +563,7 @@ This story is considered "done" when ALL of the following are complete:
 ### Test Results Summary
 
 **Unit Tests:**
+
 - **ilp-packet.test.ts:** 24/24 passing ✅
   - Validates AC1 (packet construction, validation, error handling)
   - Tests: valid cases (10), validation errors (8), parsing (3), fee extraction (3)
@@ -562,6 +582,7 @@ This story is considered "done" when ALL of the following are complete:
 **Coverage:** Not yet measured (deferred to Task 11 performance validation)
 
 **Test Traceability:**
+
 - AC1: Fully validated (ilp-packet + event-signing tests)
 - AC2: Fully validated (crosstown-connector tests)
 - AC3: Partially validated (unit tests pass, integration tests deferred)
@@ -570,6 +591,7 @@ This story is considered "done" when ALL of the following are complete:
 - AC6: Fully validated (event-signing security tests)
 
 **Performance Metrics:**
+
 - Not yet measured (deferred to Task 11)
 
 ---
@@ -579,6 +601,7 @@ This story is considered "done" when ALL of the following are complete:
 **Ready for Implementation:** YES (All prerequisites complete, all open questions resolved)
 
 **Prerequisites:**
+
 - ✅ Story 2.1: Crosstown Relay Connection & Event Subscriptions (done)
   - Provides: Nostr relay connection, event subscription infrastructure, kind 30078 event handling
   - Integration point: Confirmation subscription reuses NostrClient from 2.1
@@ -590,6 +613,7 @@ This story is considered "done" when ALL of the following are complete:
   - Integration point: Packet construction follows PREP-4 specification exactly
 
 **Next Steps:**
+
 1. Review this story document for completeness and accuracy
 2. Confirm test design aligns with Epic 2 test plan (70 tests target)
 3. Verify all acceptance criteria are testable and have clear pass/fail conditions
@@ -600,24 +624,28 @@ This story is considered "done" when ALL of the following are complete:
 8. Update sprint status to `in-progress` when implementation begins
 
 **Integration Points:**
+
 - Nostr relay (Story 2.1): Subscribe to kind 30078 confirmation events
 - Wallet client (Story 2.2): Query balance before publish, verify balance decrement after
 - Identity (Story 1.2): Use private key for signing, public key for event attribution
 - Crosstown connector: HTTP API or library for ILP packet routing
 
 **Security Considerations:**
+
 - Private key MUST NEVER leave local system (NFR9, A02:2021)
 - URL validation required (SSRF prevention, A03:2021)
 - Error messages MUST NOT leak private keys or stack traces
 - Signature verification required end-to-end (validate at BLS)
 
 **Performance Targets:**
+
 - Packet construction: <10ms
 - Signing: <5ms
 - Round-trip (sign → route → BLS → confirm): <2s (NFR3)
 - Throughput: ≥1 action/second sustained
 
 **Open Questions:**
+
 - Q1: Should we use `@crosstown/client` library or raw HTTP API for connector integration?
   - **Decision:** Use HTTP POST approach initially. Rationale: (1) Crosstown connector HTTP API is simpler and better documented than library, (2) reduces dependency footprint, (3) provides explicit control over timeout/error handling. If `@crosstown/client` matures in Epic 3+, consider migration. Document HTTP endpoint contract in code comments.
 - Q2: Should `publish()` retry on network timeout, or leave retry logic to user?
@@ -628,24 +656,28 @@ This story is considered "done" when ALL of the following are complete:
 ### Completion Notes List
 
 **Task 1: Define ILP packet types and event construction ✅**
+
 - Created `packages/client/src/publish/ilp-packet.ts` with ILPPacketOptions, ILPPacketResult interfaces
 - Implemented `constructILPPacket` function with comprehensive validation (reducer pattern, fee, JSON serialization)
 - Added helper functions: `parseILPPacket`, `extractFeeFromEvent`
 - Validation includes: alphanumeric+underscore pattern, 1-64 char length, non-negative fee, JSON serializability
 
 **Task 2: Implement Nostr event signing ✅**
+
 - Created `packages/client/src/publish/event-signing.ts` with signEvent function
 - Used `nostr-tools/pure` finalizeEvent for SHA256 + Schnorr signature generation
 - Implemented private key redaction with `redactPrivateKey` utility
 - Security: private key never logged, never in error messages, validated 32-byte length
 
 **Task 3: Implement Crosstown connector client ✅**
+
 - Created `packages/client/src/crosstown/crosstown-connector.ts` with CrosstownConnector class
 - HTTP POST implementation with AbortController timeout (default 2000ms)
 - SSRF protection: URL validation, credential rejection, production https:// requirement, internal IP blocking
 - Error handling: NETWORK_TIMEOUT, NETWORK_ERROR, PUBLISH_FAILED, INVALID_RESPONSE, RATE_LIMITED
 
 **Task 4: Integrate publish API with SigilClient ✅**
+
 - Updated client.ts with publish() method in PublishAPI interface
 - Implemented publishAction with full flow: balance check → construct → sign → submit → wait for confirmation
 - Pending publish tracking: Map<eventId, PendingPublish> with timeout cleanup
@@ -653,29 +685,34 @@ This story is considered "done" when ALL of the following are complete:
 - Cleanup on disconnect: reject all pending with CLIENT_DISCONNECTED, clear timers, unsubscribe
 
 **Task 5: Configuration options ✅**
+
 - Added crosstownConnectorUrl and publishTimeout to SigilClientConfig
 - CrosstownConnector initialized in constructor if URL provided
 - Default timeout: 2000ms (configurable)
 - URL validation in constructor (throws INVALID_CONFIG for bad URLs)
 
 **Task 6: Write unit tests ✅ (61/79 passing)**
+
 - ilp-packet.test.ts: 24 tests (construction, validation, parsing)
 - event-signing.test.ts: 16 tests (signing, verification, security)
 - crosstown-connector.test.ts: 21 tests (HTTP client, SSRF, errors)
 - client-publish.test.ts: 0/28 (integration-level, deferred)
 
 **Task 7: Update type exports ✅**
+
 - Exported ILPPacketOptions, ILPPacketResult from publish/ilp-packet
 - Exported signEvent, redactPrivateKey from publish/event-signing
 - Exported CrosstownConnector, CrosstownConnectorOptions from crosstown/crosstown-connector
 - Updated src/index.ts with all new exports
 
 **Task 8: Extended SigilError ✅**
+
 - Added optional context parameter to SigilError constructor
 - Enables rich error reporting (balance details, timeout info, etc.)
 - Maintains backward compatibility
 
 **Tasks Deferred:**
+
 - Task 9: Security review (OWASP Top 10) - needs integration test validation
 - Task 10: Cleanup and lifecycle - implemented but not fully tested
 - Task 11: Performance validation (NFR3) - needs Docker stack + performance harness
@@ -684,6 +721,7 @@ This story is considered "done" when ALL of the following are complete:
 ### File List
 
 **Created:**
+
 - `packages/client/src/publish/ilp-packet.ts` (core packet construction logic)
 - `packages/client/src/publish/event-signing.ts` (Nostr event signing wrapper)
 - `packages/client/src/crosstown/crosstown-connector.ts` (HTTP client for Crosstown)
@@ -693,16 +731,19 @@ This story is considered "done" when ALL of the following are complete:
 - `packages/client/src/publish/client-publish.test.ts` (28 tests, integration-level)
 
 **Modified:**
+
 - `packages/client/src/client.ts` (added publish() method, pending publish tracking, confirmation subscription)
 - `packages/client/src/index.ts` (added new type exports)
 - `packages/client/src/nostr/nostr-client.ts` (added context parameter to SigilError)
 
 **Deleted:**
+
 - None
 
 ### Change Log
 
 **2026-02-27: Story 2.3 Implementation Session**
+
 - Implemented core ILP packet construction with kind 30078 Nostr events
 - Integrated nostr-tools finalizeEvent for cryptographic signing
 - Built Crosstown connector HTTP client with SSRF protection
@@ -713,6 +754,7 @@ This story is considered "done" when ALL of the following are complete:
 - **Next steps:** Complete PREP-5 (BLS handler spike), integrate publish() with BLS in Story 2.4
 
 **2026-02-27: Code Review Session #1**
+
 - Performed comprehensive OWASP Top 10 security review
 - Fixed ISSUE-1 (HIGH): Added DNS rebinding protection documentation to Crosstown connector
 - Fixed ISSUE-2 (MEDIUM): Added pubkey format validation (64-character hex)
@@ -725,6 +767,7 @@ This story is considered "done" when ALL of the following are complete:
 - **Status:** Code review complete, ready for integration testing
 
 **2026-02-27: Code Review Session #2 (Automated via BMAD)**
+
 - Reviewed Definition of Done checklist against actual implementation
 - Found CRITICAL-1: Status mismatch (story marked "code-review-complete" but tasks incomplete)
 - Found CRITICAL-2: Missing error-codes.md documentation file (required by Task 8 and DoD)
@@ -743,11 +786,13 @@ This story is considered "done" when ALL of the following are complete:
 ## Code Review Record
 
 ### Review Pass #1
+
 **Date:** 2026-02-27
 **Reviewer:** Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 **Review Type:** Automated code review with OWASP Top 10 security analysis
 
 **Issue Counts:**
+
 - Critical: 0
 - High: 1
 - Medium: 3
@@ -755,6 +800,7 @@ This story is considered "done" when ALL of the following are complete:
 - **Total:** 9 issues
 
 **Issues Found & Fixed:**
+
 1. **ISSUE-1 (HIGH):** Missing DNS rebinding protection documentation in Crosstown connector
    - **Fix:** Added comprehensive documentation about DNS rebinding attack vector and mitigation strategy
    - **Files:** `packages/client/src/crosstown/crosstown-connector.ts`
@@ -778,12 +824,14 @@ This story is considered "done" when ALL of the following are complete:
 6-9. **Additional LOW severity issues:** Code style, documentation formatting improvements
 
 **Test Results:**
+
 - All 544 unit tests passing (100% pass rate)
 - New tests added: 2 pubkey validation tests
 - Coverage: Not measured (deferred to performance validation task)
 - Security: `pnpm audit` clean (no vulnerabilities)
 
 **OWASP Top 10 Review:**
+
 - ✅ A01:2021 - Broken Access Control: Rate limiting handled
 - ✅ A02:2021 - Cryptographic Failures: Private key protection validated
 - ✅ A03:2021 - Injection: SSRF protection, input validation complete
@@ -796,15 +844,18 @@ This story is considered "done" when ALL of the following are complete:
 - ✅ A10:2021 - SSRF: Comprehensive URL validation
 
 **Outcome:** ✅ SUCCESS
+
 - All critical, high, medium, and low severity issues fixed
 - All tests passing
 - Security review complete
 - Code review approved, ready for integration testing
 
 **Follow-up Actions:**
+
 - None (all issues resolved in review session)
 
 **Review Notes:**
+
 - No action items or tasks requiring addition to Tasks/Subtasks section
 - All identified issues were fixed immediately during review session
 - No deferred work or technical debt introduced
@@ -812,11 +863,13 @@ This story is considered "done" when ALL of the following are complete:
 ---
 
 ### Review Pass #2
+
 **Date:** 2026-02-27 (later in day)
 **Reviewer:** Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 **Review Type:** Automated BMAD code review workflow with yolo mode (auto-fix all issues)
 
 **Issue Counts:**
+
 - Critical: 3
 - High: 0
 - Medium: 0
@@ -824,6 +877,7 @@ This story is considered "done" when ALL of the following are complete:
 - **Total:** 3 issues
 
 **Issues Found & Fixed:**
+
 1. **CRITICAL-1:** Story status mismatch - marked "code-review-complete" but Definition of Done incomplete
    - **Fix:** Updated status to "in-progress" (reflects deferred Tasks 7, 11, 12)
    - **Files:** `_bmad-output/implementation-artifacts/2-3-ilp-packet-construction-and-signing.md`
@@ -845,26 +899,27 @@ This story is considered "done" when ALL of the following are complete:
      - Clearly marked deferred items (Tasks 7, 11, 12)
    - **Files:** `_bmad-output/implementation-artifacts/2-3-ilp-packet-construction-and-signing.md`
 
-**Additional Updates:**
-4. Updated `sprint-status.yaml` story 2.3 status from "review" to "in-progress"
-5. Added Code Review Session #2 to change log
-6. Updated Code Review Record with this review pass
+**Additional Updates:** 4. Updated `sprint-status.yaml` story 2.3 status from "review" to "in-progress" 5. Added Code Review Session #2 to change log 6. Updated Code Review Record with this review pass
 
 **Test Results:**
+
 - All 544 unit tests still passing (100% pass rate)
 - No test changes required
 - Security: `pnpm audit` clean (no vulnerabilities)
 
 **Outcome:** ✅ SUCCESS
+
 - All critical issues fixed
 - Story status now accurately reflects implementation state
 - Documentation complete (error-codes.md created)
 - Ready for Tasks 7, 11, 12 or deferral decision
 
 **Follow-up Actions:**
+
 - None (all issues resolved automatically in yolo mode)
 
 **Review Notes:**
+
 - This review focused on process compliance (DoD, task tracking, documentation)
 - No code quality issues found (previous review was thorough)
 - Main gap was missing error-codes.md documentation file
@@ -873,11 +928,13 @@ This story is considered "done" when ALL of the following are complete:
 ---
 
 ### Review Pass #3
+
 **Date:** 2026-02-27 (automated BMAD review)
 **Reviewer:** Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
 **Review Type:** Comprehensive OWASP Top 10 security review with automated fix (yolo mode)
 
 **Issue Counts:**
+
 - Critical: 0
 - High: 0
 - Medium: 0
@@ -885,6 +942,7 @@ This story is considered "done" when ALL of the following are complete:
 - **Total:** 1 issue
 
 **Issues Found & Fixed:**
+
 1. **LOW-1:** Test flakiness in confirmation-flow.test.ts
    - **Description:** Test "should clear timeout when confirmation received" failed due to race condition in file creation (costs.json not available)
    - **Fix:** Added explicit file creation at test start to ensure costs.json exists before SigilClient construction
@@ -892,6 +950,7 @@ This story is considered "done" when ALL of the following are complete:
    - **Verification:** All 544 tests now pass (100% pass rate), no flakiness in 3 consecutive runs
 
 **Security Review Results:**
+
 - ✅ A01:2021 - Broken Access Control: PASS
 - ✅ A02:2021 - Cryptographic Failures: PASS
 - ✅ A03:2021 - Cryptographic Failures: PASS
@@ -904,6 +963,7 @@ This story is considered "done" when ALL of the following are complete:
 - ✅ A10:2021 - SSRF: PASS
 
 **Key Security Findings:**
+
 - Private key never transmitted over network (validated)
 - Comprehensive SSRF protection with environment-aware URL validation
 - Input validation uses allowlist approach (reducer pattern, URL protocols)
@@ -914,12 +974,14 @@ This story is considered "done" when ALL of the following are complete:
 - Defense in depth (multiple validation layers)
 
 **Test Results:**
+
 - All 544 unit tests passing (100% pass rate)
 - 61 tests for Story 2.3 specifically
 - Security tests included (private key redaction, SSRF validation)
 - Test traceability documented (AC → Test mapping)
 
 **Documentation Created:**
+
 - `_bmad-output/implementation-artifacts/2-3-security-review-report.md` (comprehensive 500+ line report)
   - Complete OWASP Top 10 analysis
   - SSRF protection test cases
@@ -928,6 +990,7 @@ This story is considered "done" when ALL of the following are complete:
   - Compliance summary
 
 **Outcome:** ✅ APPROVED
+
 - All OWASP Top 10 categories reviewed and passed
 - No critical, high, or medium severity issues
 - 1 low severity issue (test flakiness) fixed
@@ -935,13 +998,14 @@ This story is considered "done" when ALL of the following are complete:
 - Team Agreement AGREEMENT-2 satisfied
 
 **Follow-up Actions:**
+
 - None (all issues fixed automatically)
 
 **Review Notes:**
+
 - Comprehensive security review covering all OWASP Top 10 categories
 - Private key handling exemplary (never exposed in network/logs/errors)
 - SSRF protection comprehensive (production vs development modes)
 - DNS rebinding partially mitigated (documented as acceptable trade-off)
 - Security monitoring recommended for Epic 2+ (metrics, alerts)
 - Penetration testing recommended before production deployment
-

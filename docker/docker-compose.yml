@@ -17,7 +17,8 @@ services:
       - SPACETIMEDB_LOG_LEVEL=${SPACETIMEDB_LOG_LEVEL:-info}
       - SPACETIMEDB_BIND=0.0.0.0:3000
     healthcheck:
-      test: ['CMD', 'sh', '-c', 'spacetime describe bitcraft --server localhost --json >/dev/null 2>&1']
+      test:
+        ['CMD', 'sh', '-c', 'spacetime describe bitcraft --server localhost --json >/dev/null 2>&1']
       interval: 30s
       timeout: 10s
       retries: 5
@@ -71,4 +72,45 @@ services:
       resources:
         limits:
           memory: ${CROSSTOWN_MEMORY_LIMIT:-512M}
+          cpus: '1.0'
+
+  # REQUIRED: Set SPACETIMEDB_ADMIN_TOKEN in your environment or .env file.
+  # The BLS node will fail to start if this token is empty or missing.
+  bitcraft-bls:
+    build:
+      context: ..
+      dockerfile: packages/bitcraft-bls/Dockerfile
+    container_name: sigil-bitcraft-bls
+    networks:
+      - sigil-dev
+    ports:
+      - '127.0.0.1:${BLS_PORT:-3001}:3001'
+    environment:
+      - SPACETIMEDB_URL=http://bitcraft-server:3000
+      - SPACETIMEDB_DATABASE=bitcraft
+      - SPACETIMEDB_TOKEN=${SPACETIMEDB_ADMIN_TOKEN:?SPACETIMEDB_ADMIN_TOKEN must be set}
+      - BLS_SECRET_KEY=${BLS_SECRET_KEY:-}
+      - BLS_LOG_LEVEL=${BLS_LOG_LEVEL:-info}
+      - BLS_PORT=3001
+      - BLS_ILP_ADDRESS=${BLS_ILP_ADDRESS:-g.crosstown.bitcraft}
+      - BLS_BIND_HOST=0.0.0.0
+    depends_on:
+      bitcraft-server:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:3001/health']
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '3'
+    deploy:
+      resources:
+        limits:
+          memory: ${BLS_MEMORY_LIMIT:-512M}
           cpus: '1.0'

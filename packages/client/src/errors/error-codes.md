@@ -16,6 +16,7 @@ Errors originating from the publish API (`client.publish()`).
 **Cause:** Action (reducer) or arguments failed validation before ILP packet construction.
 
 **Scenarios:**
+
 - Reducer name is empty or not a string
 - Reducer name contains invalid characters (only alphanumeric and underscore allowed)
 - Reducer name is too long (>64 characters) or too short (<1 character)
@@ -24,16 +25,19 @@ Errors originating from the publish API (`client.publish()`).
 - Public key is not a valid 64-character hex string
 
 **User Action:**
+
 - Verify reducer name matches pattern `/^[a-zA-Z0-9_]+$/`
 - Ensure reducer name length is 1-64 characters
 - Ensure arguments can be serialized to JSON
 - Check for circular object references in arguments
 
 **Recovery Strategy:**
+
 - Fix the action parameters and retry
 - No state changes occur (fail-fast validation)
 
 **Example:**
+
 ```typescript
 try {
   await client.publish({ reducer: 'player-move', args: [] });
@@ -52,14 +56,17 @@ try {
 **Cause:** Attempted to publish without loading identity first.
 
 **User Action:**
+
 - Call `client.loadIdentity(path, passphrase)` before publishing
 - Ensure identity loading succeeded (check for errors)
 
 **Recovery Strategy:**
+
 - Load identity and retry publish
 - No state changes occur
 
 **Example:**
+
 ```typescript
 const client = new SigilClient({ crosstownConnectorUrl: 'http://localhost:4041' });
 
@@ -78,22 +85,25 @@ await client.publish({ reducer: 'player_move', args: [100, 200] });
 **Cause:** Attempted to publish without configuring Crosstown connector URL.
 
 **User Action:**
+
 - Provide `crosstownConnectorUrl` in `SigilClientConfig` when constructing client
 - Ensure URL is valid HTTP/HTTPS format
 - In production, ensure URL uses `https://` protocol
 
 **Recovery Strategy:**
+
 - Recreate client with valid `crosstownConnectorUrl`
 - No state changes occur
 
 **Example:**
+
 ```typescript
 // ❌ This will throw CROSSTOWN_NOT_CONFIGURED when publishing
 const client = new SigilClient();
 
 // ✅ Provide Crosstown URL
 const client = new SigilClient({
-  crosstownConnectorUrl: 'http://localhost:4041' // development
+  crosstownConnectorUrl: 'http://localhost:4041', // development
   // or 'https://crosstown.example.com' for production
 });
 ```
@@ -105,15 +115,18 @@ const client = new SigilClient({
 **Cause:** Attempted to publish without loading action cost registry.
 
 **User Action:**
+
 - Provide `actionCostRegistryPath` in `SigilClientConfig`
 - Ensure registry file exists and is valid JSON
 - Verify registry file contains the reducer being called
 
 **Recovery Strategy:**
+
 - Recreate client with valid `actionCostRegistryPath`
 - No state changes occur
 
 **Example:**
+
 ```typescript
 // ❌ This will throw REGISTRY_NOT_LOADED when publishing
 const client = new SigilClient({ crosstownConnectorUrl: 'http://localhost:4041' });
@@ -121,7 +134,7 @@ const client = new SigilClient({ crosstownConnectorUrl: 'http://localhost:4041' 
 // ✅ Provide action cost registry path
 const client = new SigilClient({
   crosstownConnectorUrl: 'http://localhost:4041',
-  actionCostRegistryPath: './config/action-costs.json'
+  actionCostRegistryPath: './config/action-costs.json',
 });
 ```
 
@@ -132,16 +145,19 @@ const client = new SigilClient({
 **Cause:** Client was disconnected while waiting for publish confirmation.
 
 **User Action:**
+
 - Check if `client.disconnect()` was called during publish
 - Verify network connection is stable
 - Check SpacetimeDB and Nostr relay connections
 
 **Recovery Strategy:**
+
 - Reconnect client with `client.connect()`
 - Retry publish operation
 - Check confirmation subscription status
 
 **Example:**
+
 ```typescript
 try {
   const promise = client.publish({ reducer: 'player_move', args: [100, 200] });
@@ -170,22 +186,26 @@ Errors originating from Crosstown connector or confirmation flow.
 **Cause:** Wallet balance is less than action cost.
 
 **Context Fields:**
+
 - `action`: Reducer name
 - `required`: Cost in ILP units
 - `available`: Current balance in ILP units
 - `timestamp`: When balance was checked (Unix ms)
 
 **User Action:**
+
 - Check wallet balance with `client.wallet.getBalance()`
 - Add funds to wallet before retrying
 - Use a cheaper action if available
 
 **Recovery Strategy:**
+
 - Wait for balance to increase (monitor via wallet events)
 - Fund wallet and retry
 - Cancel action
 
 **Example:**
+
 ```typescript
 try {
   await client.publish({ reducer: 'expensive_action', args: [] });
@@ -204,21 +224,25 @@ try {
 **Cause:** Crosstown connector publish request timed out.
 
 **Context Fields:**
+
 - `timeout`: Timeout duration in milliseconds
 - `url`: Crosstown connector URL
 
 **User Action:**
+
 - Check Crosstown connector is running and reachable
 - Verify network connectivity
 - Consider increasing `publishTimeout` in config (default: 2000ms)
 - Check Crosstown connector logs for performance issues
 
 **Recovery Strategy:**
+
 - Retry with exponential backoff
 - Increase timeout if consistent timeouts occur
 - Check Crosstown connector health
 
 **Example:**
+
 ```typescript
 async function publishWithRetry(options, maxRetries = 3) {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -227,7 +251,7 @@ async function publishWithRetry(options, maxRetries = 3) {
     } catch (error) {
       if (error.code === 'NETWORK_TIMEOUT' && attempt < maxRetries) {
         const delay = Math.min(1000 * 2 ** attempt, 10000); // Exponential backoff
-        await new Promise(resolve => setTimeout(resolve, delay));
+        await new Promise((resolve) => setTimeout(resolve, delay));
         continue;
       }
       throw error;
@@ -243,17 +267,20 @@ async function publishWithRetry(options, maxRetries = 3) {
 **Cause:** Network failure during Crosstown connector communication (DNS resolution, connection refused, etc.)
 
 **User Action:**
+
 - Check Crosstown connector is running: `curl http://localhost:4041/health`
 - Verify network connectivity
 - Check Docker services if using local stack
 - Verify DNS resolution for production URLs
 
 **Recovery Strategy:**
+
 - Wait and retry with backoff
 - Check Crosstown connector status
 - Restart Crosstown connector if needed
 
 **Example:**
+
 ```typescript
 try {
   await client.publish({ reducer: 'player_move', args: [100, 200] });
@@ -273,20 +300,24 @@ try {
 **Cause:** Crosstown connector rejected the publish request (4xx or 5xx HTTP status).
 
 **Context Fields:**
+
 - `statusCode`: HTTP status code (if available)
 
 **User Action:**
+
 - Check Crosstown connector logs for error details
 - Verify event signature is valid
 - Ensure Crosstown connector is properly configured
 - For 500 errors: report to Crosstown maintainers
 
 **Recovery Strategy:**
+
 - For 4xx errors: fix request and retry
 - For 5xx errors: wait and retry (server issue)
 - Check event format compliance
 
 **Example:**
+
 ```typescript
 try {
   await client.publish({ reducer: 'player_move', args: [100, 200] });
@@ -308,11 +339,13 @@ try {
 **Cause:** Crosstown connector returned invalid or malformed JSON response.
 
 **User Action:**
+
 - Check Crosstown connector version compatibility
 - Verify Crosstown connector is running correct version
 - Report issue to Crosstown maintainers
 
 **Recovery Strategy:**
+
 - Restart Crosstown connector
 - Check for version mismatches
 - Retry once (may be transient)
@@ -324,20 +357,24 @@ try {
 **Cause:** Crosstown connector returned 429 Too Many Requests (rate limit exceeded).
 
 **Context Fields:**
+
 - `retryAfter`: Seconds to wait before retry (from `Retry-After` header, if present)
 
 **User Action:**
+
 - Reduce publish frequency
 - Implement client-side rate limiting
 - Wait for rate limit window to reset
 - Contact Crosstown operator if limit seems too low
 
 **Recovery Strategy:**
+
 - Wait for `retryAfter` seconds (if provided)
 - Implement exponential backoff
 - Queue actions locally and batch if possible
 
 **Example:**
+
 ```typescript
 try {
   await client.publish({ reducer: 'player_move', args: [100, 200] });
@@ -345,7 +382,7 @@ try {
   if (error.code === 'RATE_LIMITED') {
     const retryAfter = error.context?.retryAfter || 60; // Default 60s
     console.log(`Rate limited. Retry after ${retryAfter} seconds`);
-    await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
+    await new Promise((resolve) => setTimeout(resolve, retryAfter * 1000));
     // Retry publish...
   }
 }
@@ -358,22 +395,26 @@ try {
 **Cause:** Confirmation event not received within timeout period (default: 2000ms).
 
 **Context Fields:**
+
 - `eventId`: Event ID that timed out
 - `timeout`: Timeout duration in milliseconds
 
 **User Action:**
+
 - Check Nostr relay connection: `client.nostr.getConnectionState()`
 - Verify Crosstown Nostr relay is running
 - Check confirmation subscription status
 - Consider increasing `publishTimeout` for slow networks
 
 **Recovery Strategy:**
+
 - Query blockchain to verify if action was actually applied
 - Retry publish if action didn't execute
 - Increase timeout if network is consistently slow
 - Check Nostr relay logs
 
 **Example:**
+
 ```typescript
 try {
   await client.publish({ reducer: 'player_move', args: [100, 200] });
@@ -393,16 +434,19 @@ try {
 **Cause:** Crosstown connector URL failed validation (SSRF protection, invalid protocol, etc.)
 
 **User Action:**
+
 - Use valid HTTP or HTTPS URL
 - In production, use `https://` only (not `http://`)
 - Don't embed credentials in URL (`http://user:pass@host` is rejected)
-- Don't use internal IPs in production (10.*, 192.168.*, etc.)
+- Don't use internal IPs in production (10._, 192.168._, etc.)
 
 **Recovery Strategy:**
+
 - Fix URL and recreate client
 - Use environment variables for production vs development URLs
 
 **Example:**
+
 ```typescript
 // ❌ Invalid URLs (will throw INVALID_CONFIG)
 const bad1 = new SigilClient({ crosstownConnectorUrl: 'ftp://localhost:4041' }); // Wrong protocol
@@ -425,17 +469,20 @@ Errors originating from identity management and cryptographic operations.
 **Cause:** Event signing failed (invalid private key, cryptographic error, etc.)
 
 **User Action:**
+
 - Verify identity was loaded correctly
 - Check private key format (must be 32-byte Uint8Array)
 - Reload identity from keypair file
 - If persists, regenerate identity
 
 **Recovery Strategy:**
+
 - Reload identity: `client.loadIdentity(path, passphrase)`
 - Verify keypair file is not corrupted
 - Regenerate keypair if needed (WARNING: loses access to previous identity)
 
 **Example:**
+
 ```typescript
 try {
   await client.publish({ reducer: 'player_move', args: [100, 200] });
@@ -530,7 +577,7 @@ async function publishWithRetry(action, maxRetries = 3) {
       }
 
       const delay = Math.min(1000 * 2 ** attempt, 10000);
-      await new Promise(resolve => setTimeout(resolve, delay));
+      await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
 }
@@ -555,6 +602,7 @@ client.on('publishFailure', ({ error }) => {
 ## Changelog
 
 ### 2026-02-27 - Initial version (Story 2.3)
+
 - Documented all error codes from publish, crosstown, and identity boundaries
 - Added examples, recovery strategies, and best practices
 - Organized by boundary and severity

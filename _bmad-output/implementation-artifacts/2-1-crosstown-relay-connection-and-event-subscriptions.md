@@ -220,7 +220,7 @@ So that I receive action confirmations, system notifications, and relay-sourced 
 5. **Dual Connection Management:** `SigilClient.connect()` now manages TWO WebSocket connections:
    - SpacetimeDB connection (ws://localhost:3000) - direct game world access
    - Nostr relay connection (ws://localhost:4040) - Crosstown for action confirmations
-   Both connections are independent and have separate reconnection logic.
+     Both connections are independent and have separate reconnection logic.
 
 **Critical Technical Requirements:**
 
@@ -231,24 +231,27 @@ So that I receive action confirmations, system notifications, and relay-sourced 
    - **Story 2.1 Scope:** Node.js support only. Browser support deferred to Epic 4.
 
 2. **Message Format:** All Nostr messages are JSON arrays sent as WebSocket text frames. Example:
+
    ```typescript
-   ws.send(JSON.stringify(["REQ", "sub-123", { kinds: [30078] }]));
+   ws.send(JSON.stringify(['REQ', 'sub-123', { kinds: [30078] }]));
    ```
 
 3. **Subscription ID Uniqueness:** Subscription IDs MUST be unique per WebSocket connection. Use `crypto.randomUUID()` (Node.js 14+) or a sequential counter prefixed with client instance ID.
 
 4. **Filter Structure:** NIP-01 filters use AND logic within a single filter object, OR logic across multiple filters in the REQ message. Example:
+
    ```typescript
    // Match (kind=1 AND author=abc...) OR (kind=30078)
    // REQ message format: ["REQ", subscription_id, filter1, filter2, ...]
    const reqMessage = [
-     "REQ",
-     "sub-1",
-     { kinds: [1], authors: ["abc123..."] },  // Filter 1 (AND within object)
-     { kinds: [30078] }                        // Filter 2 (OR across filters)
+     'REQ',
+     'sub-1',
+     { kinds: [1], authors: ['abc123...'] }, // Filter 1 (AND within object)
+     { kinds: [30078] }, // Filter 2 (OR across filters)
    ];
    ws.send(JSON.stringify(reqMessage));
    ```
+
    **Note:** Filters are JSON objects with optional fields. All fields within a filter are ANDed. Multiple filters in a REQ message are ORed. See NIP-01 spec for complete filter syntax.
 
 5. **EOSE Semantics:** EOSE (End of Stored Events) signals the relay has finished sending historical events. After EOSE, all EVENT messages are real-time updates.
@@ -262,26 +265,29 @@ So that I receive action confirmations, system notifications, and relay-sourced 
 **NIP-01 Message Reference:**
 
 **Client → Relay:**
+
 - `["EVENT", {event_object}]` - Publish event (Story 2.3)
 - `["REQ", subscription_id, filter1, filter2, ...]` - Subscribe
 - `["CLOSE", subscription_id]` - Unsubscribe
 
 **Relay → Client:**
+
 - `["EVENT", subscription_id, {event_object}]` - Deliver event
 - `["EOSE", subscription_id]` - End of stored events
 - `["OK", event_id, true/false, "message"]` - Acknowledge EVENT (Story 2.3)
 - `["NOTICE", "message"]` - Human-readable relay message
 
 **Event Structure (NIP-01):**
+
 ```typescript
 interface NostrEvent {
-  id: string;          // 32-byte lowercase hex (SHA256 of serialized event)
-  pubkey: string;      // 32-byte lowercase hex (author's public key)
-  created_at: number;  // Unix timestamp in seconds
-  kind: number;        // Event type (0-65535)
-  tags: string[][];    // Array of string arrays (e.g., [["d", "value"], ["e", "event_id"]])
-  content: string;     // Arbitrary string payload (JSON for kind 30078)
-  sig: string;         // 64-byte signature (Schnorr secp256k1)
+  id: string; // 32-byte lowercase hex (SHA256 of serialized event)
+  pubkey: string; // 32-byte lowercase hex (author's public key)
+  created_at: number; // Unix timestamp in seconds
+  kind: number; // Event type (0-65535)
+  tags: string[][]; // Array of string arrays (e.g., [["d", "value"], ["e", "event_id"]])
+  content: string; // Arbitrary string payload (JSON for kind 30078)
+  sig: string; // 64-byte signature (Schnorr secp256k1)
 }
 ```
 
@@ -291,11 +297,11 @@ This interface defines the payload structure for kind 30078 events. The `content
 
 ```typescript
 interface ILPPacket {
-  reducer: string;     // SpacetimeDB reducer name (e.g., "player_move", "craft_item")
-  args: any;           // Reducer arguments (JSON-serializable array or object)
-  fee: number;         // ILP cost in smallest unit (e.g., satoshis, or game currency)
-  timestamp?: number;  // Optional Unix timestamp (seconds) for action submission time
-  nonce?: string;      // Optional nonce for idempotency (prevents duplicate actions)
+  reducer: string; // SpacetimeDB reducer name (e.g., "player_move", "craft_item")
+  args: any; // Reducer arguments (JSON-serializable array or object)
+  fee: number; // ILP cost in smallest unit (e.g., satoshis, or game currency)
+  timestamp?: number; // Optional Unix timestamp (seconds) for action submission time
+  nonce?: string; // Optional nonce for idempotency (prevents duplicate actions)
 }
 ```
 
@@ -312,6 +318,7 @@ interface ILPPacket {
 **Testing Strategy:**
 
 **Unit Tests (no Docker required):**
+
 - Mock WebSocket to test connection lifecycle
 - Test REQ/CLOSE message formatting
 - Test subscription handler invocation
@@ -319,6 +326,7 @@ interface ILPPacket {
 - Test message parsing and error handling
 
 **Integration Tests (requires Docker):**
+
 - Connect to real Crosstown relay at ws://localhost:4040
 - Subscribe to kind 30078 events
 - Publish kind 30078 event via manual WebSocket client (or Story 2.3 implementation)
@@ -329,16 +337,16 @@ interface ILPPacket {
 
 **Test Traceability (AC → Test Mapping per AGREEMENT-1):**
 
-| Acceptance Criteria | Unit Test Coverage | Integration Test Coverage | Test Files |
-|---------------------|-------------------|--------------------------|------------|
-| AC1: WebSocket connection | Mock WebSocket, verify connect() establishes connection, state tracking | Connect to real Crosstown at ws://localhost:4040, verify connection established | `nostr-client.test.ts`, `nostr-relay.test.ts`, `client.test.ts` (dual connection) |
-| AC2: NIP-01 subscription | Mock REQ message sending, verify JSON format `["REQ", id, ...filters]`, subscription object returned | Subscribe to real relay with `{ kinds: [30078] }`, verify subscription active | `nostr-client.test.ts`, `nostr-relay.test.ts` |
-| AC3: EOSE handling | Mock EOSE message `["EOSE", id]`, verify `eose` event emitted, real-time events continue | Receive EOSE from Crosstown stub (immediate), verify timing <1s | `nostr-client.test.ts`, `nostr-relay.test.ts` |
-| AC4: Action confirmation | Mock kind 30078 event, parse ILP packet, verify `actionConfirmed` event with correct data | Publish real kind 30078 event, verify received + BLS stub log in Docker | `nostr-client.test.ts`, `nostr-relay.test.ts` |
-| AC5: Reconnection | Mock WebSocket close, verify backoff delays (1s, 2s, 4s, 8s, 30s cap), REQ re-send | Force disconnect, verify reconnection within 2s, subscription recovery | `nostr-client.test.ts`, `nostr-relay.test.ts` |
-| AC6: NIP-01 compatibility | Test default URL (ws://localhost:4040) vs custom URL, verify configurable | Connect to Crosstown, verify NIP-01 message format compliance | `nostr-client.test.ts`, `nostr-relay.test.ts` |
-| AC7: Error handling | Mock invalid JSON, verify SigilError emitted (code: `INVALID_MESSAGE`, boundary: `nostr-relay`), connection remains open | Test error handling paths (if possible via manual WebSocket client) | `nostr-client.test.ts`, `nostr-relay.test.ts` |
-| AC8: Rate limiting | Mock NOTICE message `["NOTICE", "Rate limit..."]`, verify warning event, client continues | Publish 101 events in 60s, verify NOTICE received from Crosstown | `nostr-client.test.ts`, `nostr-relay.test.ts` |
+| Acceptance Criteria       | Unit Test Coverage                                                                                                       | Integration Test Coverage                                                       | Test Files                                                                        |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| AC1: WebSocket connection | Mock WebSocket, verify connect() establishes connection, state tracking                                                  | Connect to real Crosstown at ws://localhost:4040, verify connection established | `nostr-client.test.ts`, `nostr-relay.test.ts`, `client.test.ts` (dual connection) |
+| AC2: NIP-01 subscription  | Mock REQ message sending, verify JSON format `["REQ", id, ...filters]`, subscription object returned                     | Subscribe to real relay with `{ kinds: [30078] }`, verify subscription active   | `nostr-client.test.ts`, `nostr-relay.test.ts`                                     |
+| AC3: EOSE handling        | Mock EOSE message `["EOSE", id]`, verify `eose` event emitted, real-time events continue                                 | Receive EOSE from Crosstown stub (immediate), verify timing <1s                 | `nostr-client.test.ts`, `nostr-relay.test.ts`                                     |
+| AC4: Action confirmation  | Mock kind 30078 event, parse ILP packet, verify `actionConfirmed` event with correct data                                | Publish real kind 30078 event, verify received + BLS stub log in Docker         | `nostr-client.test.ts`, `nostr-relay.test.ts`                                     |
+| AC5: Reconnection         | Mock WebSocket close, verify backoff delays (1s, 2s, 4s, 8s, 30s cap), REQ re-send                                       | Force disconnect, verify reconnection within 2s, subscription recovery          | `nostr-client.test.ts`, `nostr-relay.test.ts`                                     |
+| AC6: NIP-01 compatibility | Test default URL (ws://localhost:4040) vs custom URL, verify configurable                                                | Connect to Crosstown, verify NIP-01 message format compliance                   | `nostr-client.test.ts`, `nostr-relay.test.ts`                                     |
+| AC7: Error handling       | Mock invalid JSON, verify SigilError emitted (code: `INVALID_MESSAGE`, boundary: `nostr-relay`), connection remains open | Test error handling paths (if possible via manual WebSocket client)             | `nostr-client.test.ts`, `nostr-relay.test.ts`                                     |
+| AC8: Rate limiting        | Mock NOTICE message `["NOTICE", "Rate limit..."]`, verify warning event, client continues                                | Publish 101 events in 60s, verify NOTICE received from Crosstown                | `nostr-client.test.ts`, `nostr-relay.test.ts`                                     |
 
 **Performance Considerations:**
 
@@ -620,7 +628,7 @@ After Story 2.1 completion, proceed to **Story 2.2: Action Cost Registry & Walle
 
 **Story 2.1 VALIDATED - Ready for Implementation**
 
-STORY_FILE: /Users/jonathangreen/Documents/BitCraftPublic/_bmad-output/implementation-artifacts/2-1-crosstown-relay-connection-and-event-subscriptions.md
+STORY_FILE: /Users/jonathangreen/Documents/BitCraftPublic/\_bmad-output/implementation-artifacts/2-1-crosstown-relay-connection-and-event-subscriptions.md
 REVIEWED: 2026-02-27 (Adversarial General Review + Automatic Fixes)
 STATUS: ready → validated
 
@@ -634,6 +642,7 @@ STATUS: ready → validated
 **Test Review Status:** ✅ APPROVED - No blocking issues found
 
 **Test Review Summary:**
+
 - **Unit Tests:** 35/35 passing (100%)
 - **Integration Tests:** 12 tests present (require Docker)
 - **AC Coverage:** 8/8 ACs fully covered (100%)
@@ -650,6 +659,7 @@ STATUS: ready → validated
 **Agent Model Used:** Claude Sonnet 4.5 (model ID: claude-sonnet-4-5-20250929)
 
 **Completion Notes List:**
+
 - Task 1: Created Nostr client module structure with complete NIP-01 type definitions (NostrEvent, Filter, Subscription, ILPPacket). Added ws@^8.18.0 dependency and @types/ws for TypeScript support. Updated SigilClientOptions to include nostrRelay configuration.
 - Task 2: Implemented full WebSocket connection lifecycle with connection state tracking, proper error handling, and relay URL validation (prevents injection attacks). Connection timeout protection and graceful error propagation to SigilError boundary.
 - Task 3: Implemented NIP-01 compliant subscription protocol with REQ/CLOSE messages. Used crypto.randomUUID() for secure subscription IDs. Subscription tracking in Map with proper cleanup on unsubscribe.
@@ -662,14 +672,16 @@ STATUS: ready → validated
 - Task 11: Completed OWASP Top 10 security review. Ran pnpm audit (0 vulnerabilities in ws@^8.18.0). Verified subscription IDs use crypto.randomUUID(), relay URL validation prevents injection, exponential backoff prevents DoS, NOTICE rate limiting (max 10/minute), message parsing validates structure before processing.
 
 **File List:**
+
 - Created: packages/client/src/nostr/nostr-client.ts (full implementation, 700+ lines)
 - Modified: packages/client/src/nostr/types.ts (already existed, verified completeness)
 - Modified: packages/client/src/client.ts (integrated NostrClient, dual connection management)
 - Modified: packages/client/src/index.ts (exported Nostr types and classes)
 - Modified: packages/client/package.json (added ws@^8.18.0 and @types/ws)
-- Verified: packages/client/src/nostr/__tests__/nostr-integration.test.ts (integration tests already exist)
+- Verified: packages/client/src/nostr/**tests**/nostr-integration.test.ts (integration tests already exist)
 
 **Change Log:**
+
 - 2026-02-27: Story 2.1 implementation completed. Added full Nostr relay client with NIP-01 compliance, reconnection with exponential backoff, subscription management, action confirmation detection, and dual connection support in SigilClient. Security review passed (0 vulnerabilities, OWASP Top 10 compliant). Build successful, 346 tests passing. Ready for integration testing with Docker stack.
 
 ---
@@ -677,6 +689,7 @@ STATUS: ready → validated
 ## Code Review Record
 
 **Code Review Pass #1:**
+
 - **Date:** 2026-02-27
 - **Reviewer:** BMAD Code Review Agent (Claude Sonnet 4.5)
 - **Review Type:** Comprehensive Code Quality, Security & Standards Compliance
@@ -690,6 +703,7 @@ STATUS: ready → validated
 - **Review Details:** All fixes applied automatically during review pass. Issues included: code style inconsistencies, missing JSDoc comments, suboptimal error messages, minor type safety improvements, and documentation clarifications.
 
 **Code Review Pass #2:**
+
 - **Date:** 2026-02-27
 - **Reviewer:** BMAD Code Review Agent (Claude Sonnet 4.5)
 - **Review Type:** Adversarial Code Review with Automatic Fixes
@@ -711,6 +725,7 @@ STATUS: ready → validated
 - **Action Items Resolved:** No open action items from previous review passes to resolve
 
 **Code Review Pass #3:**
+
 - **Date:** 2026-02-27
 - **Reviewer:** BMAD Code Review Agent (Claude Sonnet 4.5)
 - **Review Type:** Final Code Review Pass
@@ -722,4 +737,3 @@ STATUS: ready → validated
   - **Total:** 0 issues (code already clean from previous reviews)
 - **Outcome:** ✅ APPROVED - Code is production-ready, all standards met
 - **Review Details:** Code passed final review with no additional issues found. All previous review recommendations have been implemented successfully. Code quality, security, and documentation standards fully met.
-

@@ -77,7 +77,7 @@ epics:
     stories:
       - id: story-3.1
         title: 'BLS Package Setup & Crosstown SDK Node'
-        status: backlog
+        status: done
       - id: story-3.2
         title: 'Game Action Handler (kind 30078)'
         status: backlog

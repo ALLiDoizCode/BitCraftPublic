@@ -141,12 +141,14 @@ This spike defines the complete architecture for BLS (Blockchain-Like Signing) h
 **NO Event object passing to SpacetimeDB reducers.**
 
 Instead:
+
 1. BLS parses Event.content → extracts reducer name and args
 2. BLS calls SpacetimeDB HTTP API with primitive args
 3. BLS passes Nostr pubkey via HTTP header
 4. SpacetimeDB reducers use existing signature with primitive types
 
 **Rationale:**
+
 - SpacetimeDB reducers are already defined with primitive types (Point, etc.)
 - No need to modify existing BitCraft reducers (runs unmodified)
 - Event validation happens in BLS (single responsibility)
@@ -162,7 +164,7 @@ Sigil Client already has all necessary components for creating and signing Nostr
 
 #### Implementation (Prototype)
 
-```typescript
+````typescript
 // File: packages/client/src/client.ts (future method)
 
 import { finalizeEvent, type Event as NostrEvent } from 'nostr-tools/pure';
@@ -243,11 +245,12 @@ private getActionCost(reducerName: string): number {
   // For now, return default cost
   return 1;
 }
-```
+````
 
 #### Dependencies
 
 **Already installed in `@sigil/client`:**
+
 - `nostr-tools` (v2.23.0) - Event signing and validation
 - `@noble/hashes` (v1.6.1) - Cryptographic utilities
 
@@ -790,11 +793,7 @@ fn validate_signature(event: &NostrEvent) -> Result<(), String> {
 JSON array of reducer arguments (order matters):
 
 ```json
-[
-  {"x": 100, "z": 200},
-  {"x": 110, "z": 200},
-  false
-]
+[{ "x": 100, "z": 200 }, { "x": 110, "z": 200 }, false]
 ```
 
 **Response:**
@@ -879,8 +878,8 @@ match response.status() {
 {
   "reducer": "player_move",
   "args": {
-    "origin": {"x": 100, "z": 200},
-    "destination": {"x": 110, "z": 200},
+    "origin": { "x": 100, "z": 200 },
+    "destination": { "x": 110, "z": 200 },
     "running": false
   }
 }
@@ -1422,31 +1421,37 @@ async fn test_bls_calls_spacetimedb() {
 ## Success Criteria Review
 
 ✅ **Sigil Client Integration (Story 2.3):**
+
 - Validated `nostr-tools` usage for Event creation and signing
 - Confirmed no additional dependencies needed
 - Prototyped `client.publish()` method
 
 ✅ **BLS → SpacetimeDB Integration:**
+
 - Identified HTTP reducer call mechanism (`/database/{name}/call/{reducer}`)
 - Confirmed no Event object passing to reducers (BLS extracts and forwards args)
 - Prototyped HTTP request with identity propagation
 
 ✅ **Event Decoder Pattern:**
+
 - NOT needed in SpacetimeDB modules (BLS handles Event parsing)
 - Reducers use existing signatures with primitive types
 - BitCraft modules run unmodified
 
 ✅ **Signature Validation:**
+
 - Identified `secp256k1` crate for Rust implementation
 - Validated Schnorr signature verification process
 - Estimated performance: ~0.1ms per signature
 
 ✅ **Identity Propagation:**
+
 - Documented three approaches (custom header, first arg, auth token)
 - Recommended custom header (`X-Nostr-Pubkey`) for MVP
 - Fallback to first arg if custom headers not supported
 
 ✅ **Performance:**
+
 - Throughput: 20-100 events/second (exceeds 1.67 events/second requirement)
 - Latency: 15-60ms (well under 2s requirement)
 - NFR-4 met (100 events/minute)
@@ -1501,6 +1506,7 @@ async fn test_bls_calls_spacetimedb() {
 **Sources:**
 
 Research conducted using:
+
 - [SpacetimeDB TypeScript SDK](https://spacetimedb.com/docs/clients/typescript/)
 - [SpacetimeDB HTTP API Reference](https://spacetimedb.com/docs/http/database/)
 - [SpacetimeDB Rust Reference](https://spacetimedb.com/docs/sdks/rust/)

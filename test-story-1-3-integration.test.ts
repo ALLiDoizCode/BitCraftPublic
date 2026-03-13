@@ -139,7 +139,7 @@ describe('Story 1.3: Docker Local Development Environment - Integration Tests', 
       const bitcraftSection = composeContent.split('crosstown-node:')[0];
 
       expect(bitcraftSection).toContain('healthcheck:');
-      expect(bitcraftSection).toMatch(/test:.*spacetime describe bitcraft/);
+      expect(bitcraftSection).toContain('spacetime describe bitcraft');
       expect(bitcraftSection).toContain('interval: 30s');
       expect(bitcraftSection).toContain('timeout: 10s');
       expect(bitcraftSection).toContain('retries: 5');
@@ -233,7 +233,7 @@ describe('Story 1.3: Docker Local Development Environment - Integration Tests', 
     });
 
     test('docker compose config validates successfully', () => {
-      const result = runCommand('docker compose -f docker-compose.yml config', DOCKER_DIR);
+      const result = runCommand('SPACETIMEDB_ADMIN_TOKEN=test-token docker compose -f docker-compose.yml config', DOCKER_DIR);
 
       // If docker is not available, skip this test
       if (
@@ -396,7 +396,7 @@ describe('Story 1.3: Docker Local Development Environment - Integration Tests', 
 
     test('docker compose with dev override validates successfully', () => {
       const result = runCommand(
-        'docker compose -f docker-compose.yml -f docker-compose.dev.yml config',
+        'SPACETIMEDB_ADMIN_TOKEN=test-token docker compose -f docker-compose.yml -f docker-compose.dev.yml config',
         DOCKER_DIR
       );
 

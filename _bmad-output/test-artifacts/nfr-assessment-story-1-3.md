@@ -527,12 +527,12 @@ done
 
 **Platform Support Table (from README):**
 
-| Platform           | macOS                      | Linux               |
-| ------------------ | -------------------------- | ------------------- |
-| OS Version         | macOS 10.15+ (Catalina)    | Kernel 3.10+        |
-| Docker             | Docker Desktop 4.0+        | Docker Engine 20.10+|
-| Architectures      | Intel (amd64), Apple Silicon (arm64) | amd64       |
-| Compose Version    | v2 (included)              | v2 (plugin)         |
+| Platform        | macOS                                | Linux                |
+| --------------- | ------------------------------------ | -------------------- |
+| OS Version      | macOS 10.15+ (Catalina)              | Kernel 3.10+         |
+| Docker          | Docker Desktop 4.0+                  | Docker Engine 20.10+ |
+| Architectures   | Intel (amd64), Apple Silicon (arm64) | amd64                |
+| Compose Version | v2 (included)                        | v2 (plugin)          |
 
 **Status:** Evidence AVAILABLE - cross-platform design documented, not yet runtime tested
 
@@ -664,11 +664,11 @@ done
 
 ### Evidence Gap Summary
 
-| NFR Category  | Criteria | Evidence Available | Evidence Gaps                                    |
-| ------------- | -------- | ------------------ | ------------------------------------------------ |
-| Testability   | 5        | 5                  | None (all tests implemented, not yet run)        |
-| Executability | 4        | 4                  | Smoke tests not executed, multi-platform not tested |
-| Alignment     | 4        | 4                  | None                                             |
+| NFR Category  | Criteria | Evidence Available | Evidence Gaps                                         |
+| ------------- | -------- | ------------------ | ----------------------------------------------------- |
+| Testability   | 5        | 5                  | None (all tests implemented, not yet run)             |
+| Executability | 4        | 4                  | Smoke tests not executed, multi-platform not tested   |
+| Alignment     | 4        | 4                  | None                                                  |
 | **TOTAL**     | **13**   | **13**             | **2 gaps (both testing - runtime validation needed)** |
 
 **Evidence Gaps Analysis:**
@@ -921,14 +921,14 @@ done
 
 ### Compliance Summary
 
-| Standard/Requirement              | Status  | Evidence                                        |
-| --------------------------------- | ------- | ----------------------------------------------- |
-| NFR22 (Cross-Platform)            | PASS ✅ | Multi-arch images, README documents support     |
-| NFR14 (Scalability)               | PASS ✅ | Resource limits: 1GB bitcraft, 512MB crosstown  |
-| NFR23 (Reliability Foundation)    | PASS ✅ | Healthchecks configured (full test in Story 1.6)|
-| Docker Compose v2                 | PASS ✅ | YAML format correct (no version field)          |
-| POSIX sh Compliance               | PASS ✅ | Smoke tests use POSIX sh (no bash-isms)         |
-| Architecture (2-Service Stack)    | PASS ✅ | BitCraft + Crosstown with healthchecks          |
+| Standard/Requirement           | Status  | Evidence                                         |
+| ------------------------------ | ------- | ------------------------------------------------ |
+| NFR22 (Cross-Platform)         | PASS ✅ | Multi-arch images, README documents support      |
+| NFR14 (Scalability)            | PASS ✅ | Resource limits: 1GB bitcraft, 512MB crosstown   |
+| NFR23 (Reliability Foundation) | PASS ✅ | Healthchecks configured (full test in Story 1.6) |
+| Docker Compose v2              | PASS ✅ | YAML format correct (no version field)           |
+| POSIX sh Compliance            | PASS ✅ | Smoke tests use POSIX sh (no bash-isms)          |
+| Architecture (2-Service Stack) | PASS ✅ | BitCraft + Crosstown with healthchecks           |
 
 **Overall Compliance:** 6/6 standards PASS ✅
 
@@ -936,34 +936,34 @@ done
 
 **Testability:**
 
-| Criterion             | Status      | Evidence                                  |
-| --------------------- | ----------- | ----------------------------------------- |
-| Smoke test coverage   | PASS ✅     | 12 tests, 100% AC coverage                |
-| Prerequisites check   | PASS ✅     | 4 tools validated with install guidance   |
-| Error reporting       | PASS ✅     | Descriptive messages with diagnostic info |
-| Test determinism      | PASS ✅     | POSIX sh, polling, no randomness          |
-| Test documentation    | PASS ✅     | README Smoke Tests section complete       |
-| **TOTAL**             | **5/5** ✅  | **All testability criteria PASS**         |
+| Criterion           | Status     | Evidence                                  |
+| ------------------- | ---------- | ----------------------------------------- |
+| Smoke test coverage | PASS ✅    | 12 tests, 100% AC coverage                |
+| Prerequisites check | PASS ✅    | 4 tools validated with install guidance   |
+| Error reporting     | PASS ✅    | Descriptive messages with diagnostic info |
+| Test determinism    | PASS ✅    | POSIX sh, polling, no randomness          |
+| Test documentation  | PASS ✅    | README Smoke Tests section complete       |
+| **TOTAL**           | **5/5** ✅ | **All testability criteria PASS**         |
 
 **Executability:**
 
-| Criterion               | Status         | Evidence                                    |
-| ----------------------- | -------------- | ------------------------------------------- |
-| Docker build success    | PASS ✅ (not tested) | Completion notes confirm builds    |
-| Service healthchecks    | PASS ✅ (not tested) | Configuration correct, not run     |
-| Configuration validation| PASS ✅        | docker compose config validates             |
-| Platform compatibility  | PASS ⚠️ (not tested) | Design correct, not runtime tested |
-| **TOTAL**               | **4/4** ⚠️     | **All criteria PASS (2 need runtime test)** |
+| Criterion                | Status               | Evidence                                    |
+| ------------------------ | -------------------- | ------------------------------------------- |
+| Docker build success     | PASS ✅ (not tested) | Completion notes confirm builds             |
+| Service healthchecks     | PASS ✅ (not tested) | Configuration correct, not run              |
+| Configuration validation | PASS ✅              | docker compose config validates             |
+| Platform compatibility   | PASS ⚠️ (not tested) | Design correct, not runtime tested          |
+| **TOTAL**                | **4/4** ⚠️           | **All criteria PASS (2 need runtime test)** |
 
 **Alignment:**
 
-| Criterion                | Status      | Evidence                                 |
-| ------------------------ | ----------- | ---------------------------------------- |
-| NFR22 compliance         | PASS ✅     | Cross-platform documented and designed   |
-| Architecture consistency | PASS ✅     | 2-service stack, healthchecks, logging   |
-| Documentation complete   | PASS ✅     | 17 sections, comprehensive README        |
-| Artifact quality         | PASS ✅     | YAML valid, POSIX sh, best practices     |
-| **TOTAL**                | **4/4** ✅  | **All alignment criteria PASS**          |
+| Criterion                | Status     | Evidence                               |
+| ------------------------ | ---------- | -------------------------------------- |
+| NFR22 compliance         | PASS ✅    | Cross-platform documented and designed |
+| Architecture consistency | PASS ✅    | 2-service stack, healthchecks, logging |
+| Documentation complete   | PASS ✅    | 17 sections, comprehensive README      |
+| Artifact quality         | PASS ✅    | YAML valid, POSIX sh, best practices   |
+| **TOTAL**                | **4/4** ✅ | **All alignment criteria PASS**        |
 
 **Overall TEA Score:** 13/13 criteria PASS (2 with runtime validation gap) ⚠️
 
@@ -980,10 +980,10 @@ done
 
 ### Evidence Gaps Requiring Action
 
-| Gap                         | Category      | Owner   | Deadline   | Impact |
-| --------------------------- | ------------- | ------- | ---------- | ------ |
-| Smoke test execution        | Executability | Dev/QA  | Pre-merge  | HIGH   |
-| Multi-platform testing      | Executability | Dev/QA  | Pre-merge  | MEDIUM |
+| Gap                    | Category      | Owner  | Deadline  | Impact |
+| ---------------------- | ------------- | ------ | --------- | ------ |
+| Smoke test execution   | Executability | Dev/QA | Pre-merge | HIGH   |
+| Multi-platform testing | Executability | Dev/QA | Pre-merge | MEDIUM |
 
 **Gap Details:**
 

@@ -20,18 +20,22 @@ The auto-reconnection architecture shows **strong alignment** with NFR requireme
 ### Performance Requirements
 
 #### NFR5: Real-time update latency <500ms
+
 **Status:** ✅ PASS (inherited, not changed)
 **Evidence:** SpacetimeDB subscription system unchanged from Story 1.4
 **Notes:** Reconnection manager does not introduce additional latency in the subscription data path
 
 #### NFR6: Static data loading <10 seconds
+
 **Status:** ✅ PASS (inherited from Story 1.5)
 **Evidence:** Static data loader unchanged, cache persistence verified in tests
 **Notes:** Story 1.6 preserves static data cache across reconnections (no reload)
 
 #### NFR23: Connection re-establishment <10 seconds
+
 **Status:** ⚠️ PARTIAL - Architecturally sound, measurement incomplete
 **Evidence:**
+
 - ✅ Code includes 10-second reconnection timeout (line 229)
 - ✅ Warning emitted if reconnection exceeds 10s (line 273-274)
 - ✅ Metrics track reconnection duration
@@ -39,6 +43,7 @@ The auto-reconnection architecture shows **strong alignment** with NFR requireme
 - ❌ Integration tests skipped (no live server)
 
 **Architecture Review:**
+
 ```typescript
 // reconnection-manager.ts line 227-230
 await Promise.race([
@@ -56,8 +61,10 @@ await Promise.race([
 ### Security Requirements
 
 #### NFR10: Exponential backoff with max 30s (Security through rate limiting)
+
 **Status:** ✅ PASS
 **Evidence:**
+
 ```typescript
 // reconnection-manager.ts line 25
 maxDelay: 30000, // 30 seconds (NFR10)
@@ -83,11 +90,13 @@ calculateBackoffDelay(attemptNumber: number): number {
 ### Integration Requirements
 
 #### NFR18: SpacetimeDB SDK compatibility
+
 **Status:** ✅ PASS
 **Evidence:** ReconnectionManager wraps SpacetimeDB connection interface without modifying SDK version
 **Notes:** Uses SpacetimeDB 2.0 TS client (backwards-compatible with 1.6.x servers) per Story 1.4
 
 #### NFR21: Uniform skill file format across frontends
+
 **Status:** ✅ PASS (not changed)
 **Evidence:** Reconnection manager is infrastructure - does not affect skill file consumption
 **Notes:** MCP server and TUI backend both consume @sigil/client with same reconnection behavior
@@ -97,23 +106,28 @@ calculateBackoffDelay(attemptNumber: number): number {
 ### Reliability Requirements
 
 #### NFR23: Auto-reconnect with state recovery <10s
+
 **Status:** ⚠️ PARTIAL (see Performance NFR23 above)
 **Primary Gap:** Subscription recovery incomplete
 
 #### NFR24: Failed ILP packets return clear errors
+
 **Status:** ✅ PASS (not changed)
 **Evidence:** ILP error handling unchanged from previous stories, orthogonal to reconnection
 
 #### NFR25: Agent state persists across restarts
+
 **Status:** ✅ PASS (not changed)
 **Evidence:** Decision logs and Agent.md configuration unchanged, orthogonal to reconnection
 
 #### NFR26: TUI handles disconnection gracefully
+
 **Status:** ⚠️ DEFERRED to TUI implementation
 **Evidence:** Connection state events emitted by ReconnectionManager, TUI consumption not yet implemented
 **Notes:** Architecture supports TUI requirement (connectionChange events), but TUI client incomplete
 
 #### NFR27: BLS identity propagation zero silent failures
+
 **Status:** ✅ PASS (not changed)
 **Evidence:** Identity propagation unchanged, orthogonal to reconnection
 
@@ -122,6 +136,7 @@ calculateBackoffDelay(attemptNumber: number): number {
 ### Cross-Platform Requirements
 
 #### NFR22: Docker compose on Linux/macOS
+
 **Status:** ✅ PASS (inherited from Story 1.3)
 **Evidence:** Reconnection manager is pure TypeScript, no platform-specific code
 **Notes:** Works on any platform supporting Node.js
@@ -130,13 +145,13 @@ calculateBackoffDelay(attemptNumber: number): number {
 
 ## Acceptance Criteria vs NFR Mapping
 
-| AC | Description | NFR Coverage | Status |
-|----|-------------|--------------|--------|
-| AC1 | Connection loss detection | NFR23 | ✅ PASS |
-| AC2 | Exponential backoff with cap | NFR10 | ✅ PASS |
-| AC3 | Reconnection + subscription recovery | NFR23, NFR5 | ⚠️ PARTIAL - Connection works, subscription recovery stubbed |
-| AC4 | State snapshot recovery | NFR5, NFR23 | ❌ NOT IMPLEMENTED |
-| AC5 | Reconnection failure handling | NFR23, NFR24 | ✅ PASS |
+| AC  | Description                          | NFR Coverage | Status                                                       |
+| --- | ------------------------------------ | ------------ | ------------------------------------------------------------ |
+| AC1 | Connection loss detection            | NFR23        | ✅ PASS                                                      |
+| AC2 | Exponential backoff with cap         | NFR10        | ✅ PASS                                                      |
+| AC3 | Reconnection + subscription recovery | NFR23, NFR5  | ⚠️ PARTIAL - Connection works, subscription recovery stubbed |
+| AC4 | State snapshot recovery              | NFR5, NFR23  | ❌ NOT IMPLEMENTED                                           |
+| AC5 | Reconnection failure handling        | NFR23, NFR24 | ✅ PASS                                                      |
 
 **AC Coverage:** 3/5 complete (60%)
 
@@ -145,17 +160,20 @@ calculateBackoffDelay(attemptNumber: number): number {
 ## Test Results Summary
 
 ### Unit Tests
+
 - **Total:** 18 tests for reconnection-manager.test.ts
 - **Pass Rate:** 10/18 (56%)
 - **Passing:** Connection loss detection, manual disconnect, backoff algorithm, jitter, backoff cap, failure handling, metrics tracking, retry limit, manual retry
 - **Failing:** Subscription recovery tests (4), snapshot merging tests (2), comprehensive failure handling (2)
 
 ### Integration Tests
+
 - **Status:** All skipped (requires live Docker server)
 - **Count:** 13 tests skipped
 - **Blocker:** No integration environment configured for CI
 
 ### Overall Test Pass Rate
+
 - **Unit:** 330 passed, 71 skipped (401 total across all stories)
 - **Integration:** 30 skipped (requires Docker)
 - **Epic 1 Total:** 17 test files passed, 3 skipped
@@ -165,14 +183,18 @@ calculateBackoffDelay(attemptNumber: number): number {
 ## Architecture Strengths
 
 ### 1. Event-Driven Design ✅
+
 ReconnectionManager uses EventEmitter pattern for loose coupling:
+
 ```typescript
 manager.on('connectionChange', ({ status, reason }) => { ... });
 manager.on('subscriptionsRecovered', ({ totalSubscriptions }) => { ... });
 ```
+
 All consumers (MCP server, TUI backend) receive uniform events.
 
 ### 2. Configurable Behavior ✅
+
 ```typescript
 new ReconnectionManager(connection, {
   autoReconnect: true,
@@ -182,13 +204,16 @@ new ReconnectionManager(connection, {
   jitterPercent: 10,
 });
 ```
+
 Defaults comply with NFRs, but extensible for different use cases.
 
 ### 3. State Machine ✅
+
 Clear state transitions: `disconnected` → `reconnecting` → `connected` / `failed`
 Events emitted on every transition for observability.
 
 ### 4. Metrics Tracking ✅
+
 ```typescript
 interface ReconnectionMetrics {
   attemptCount: number;
@@ -199,14 +224,17 @@ interface ReconnectionMetrics {
   lastReconnectTimestamp: Date | null;
 }
 ```
+
 Supports monitoring and NFR validation.
 
 ### 5. Manual Control ✅
+
 ```typescript
-manager.markManualDisconnect();  // Skip auto-reconnection
-manager.cancelReconnection();    // Stop in-progress reconnection
-manager.retryConnection();       // Manually retry after failure
+manager.markManualDisconnect(); // Skip auto-reconnection
+manager.cancelReconnection(); // Stop in-progress reconnection
+manager.retryConnection(); // Manually retry after failure
 ```
+
 Gives users control over reconnection behavior.
 
 ---
@@ -214,8 +242,10 @@ Gives users control over reconnection behavior.
 ## Architecture Weaknesses
 
 ### 1. Subscription Recovery Incomplete ❌
+
 **Impact:** Critical for AC3, AC4, NFR23
 **Current State:**
+
 ```typescript
 private async recoverSubscriptions(): Promise<void> {
   // Emits subscriptionRestore event for each subscription
@@ -223,31 +253,37 @@ private async recoverSubscriptions(): Promise<void> {
   this.emit('subscriptionRestore', sub);
 }
 ```
+
 **Required:** Integration with SubscriptionManager to re-subscribe to tables with original filters.
 
 **Recommendation:** Implement Task 5 fully:
+
 - Access `connection.subscriptions` map
 - Call `subscribe(tableName, query)` for each captured subscription
 - Wait for initial snapshot event
 - Emit `subscriptionsRecovered` with actual data
 
 ### 2. State Snapshot Merging Not Implemented ❌
+
 **Impact:** AC4 incomplete
 **Gap:** No logic to merge snapshot data into client state or emit table update events.
 
 **Recommendation:** Requires TableManager integration (out of scope for Story 1.6 per completion notes).
 
 ### 3. Integration Tests Skipped ❌
+
 **Impact:** Cannot validate NFR23 end-to-end
 **Blocker:** Docker environment not configured in CI
 
 **Recommendation:** Task 10 requirements:
+
 - Configure Docker compose in CI
 - Run BitCraft server locally
 - Validate reconnection timing against live server
 - Measure "disconnect → subscriptions restored" total time
 
 ### 4. Static Data Cache Persistence Not Tested in Reconnection Context ⚠️
+
 **Impact:** AC4 requirement "static data cache persists" not explicitly verified in reconnection tests
 **Gap:** Test exists in Story 1.5, but not re-verified in Story 1.6 integration tests
 
@@ -257,19 +293,19 @@ private async recoverSubscriptions(): Promise<void> {
 
 ## NFR Compliance Matrix
 
-| NFR | Requirement | Status | Evidence | Gaps |
-|-----|-------------|--------|----------|------|
-| NFR5 | Update latency <500ms | ✅ PASS | Inherited from Story 1.4 | None |
-| NFR6 | Static data load <10s | ✅ PASS | Inherited from Story 1.5 | None |
-| NFR10 | Backoff cap 30s | ✅ PASS | Line 25, tests verify | None |
-| NFR18 | SDK compatibility | ✅ PASS | Uses SpacetimeDB 2.0 TS client | None |
-| NFR21 | Uniform skill format | ✅ PASS | Not changed by reconnection | None |
-| NFR22 | Cross-platform | ✅ PASS | Pure TypeScript | None |
-| NFR23 | Reconnect <10s | ⚠️ PARTIAL | Connection timeout set, subscription recovery incomplete | Measure total time end-to-end |
-| NFR24 | Clear ILP errors | ✅ PASS | Not changed | None |
-| NFR25 | State persistence | ✅ PASS | Not changed | None |
-| NFR26 | TUI disconnection | ⚠️ DEFERRED | Events emitted, TUI consumption pending | TUI client incomplete |
-| NFR27 | BLS zero failures | ✅ PASS | Not changed | None |
+| NFR   | Requirement           | Status      | Evidence                                                 | Gaps                          |
+| ----- | --------------------- | ----------- | -------------------------------------------------------- | ----------------------------- |
+| NFR5  | Update latency <500ms | ✅ PASS     | Inherited from Story 1.4                                 | None                          |
+| NFR6  | Static data load <10s | ✅ PASS     | Inherited from Story 1.5                                 | None                          |
+| NFR10 | Backoff cap 30s       | ✅ PASS     | Line 25, tests verify                                    | None                          |
+| NFR18 | SDK compatibility     | ✅ PASS     | Uses SpacetimeDB 2.0 TS client                           | None                          |
+| NFR21 | Uniform skill format  | ✅ PASS     | Not changed by reconnection                              | None                          |
+| NFR22 | Cross-platform        | ✅ PASS     | Pure TypeScript                                          | None                          |
+| NFR23 | Reconnect <10s        | ⚠️ PARTIAL  | Connection timeout set, subscription recovery incomplete | Measure total time end-to-end |
+| NFR24 | Clear ILP errors      | ✅ PASS     | Not changed                                              | None                          |
+| NFR25 | State persistence     | ✅ PASS     | Not changed                                              | None                          |
+| NFR26 | TUI disconnection     | ⚠️ DEFERRED | Events emitted, TUI consumption pending                  | TUI client incomplete         |
+| NFR27 | BLS zero failures     | ✅ PASS     | Not changed                                              | None                          |
 
 **Summary:** 8 PASS, 2 PARTIAL, 1 DEFERRED
 
@@ -278,7 +314,9 @@ private async recoverSubscriptions(): Promise<void> {
 ## Critical Path Blocking Issues
 
 ### None - Story Can Proceed
+
 While subscription recovery is incomplete, the story has sufficient implementation to unblock Epic 1:
+
 - Core reconnection logic works
 - Exponential backoff complies with NFR10
 - Connection state tracking complete
@@ -292,35 +330,43 @@ While subscription recovery is incomplete, the story has sufficient implementati
 ## Recommendations for Full NFR Compliance
 
 ### Priority 1: Complete Subscription Recovery (Task 5)
+
 **Effort:** 4-6 hours
 **Impact:** Unlocks AC3, AC4, full NFR23 validation
 **Approach:**
+
 1. Expose `SubscriptionManager.subscriptions` map to ReconnectionManager
 2. Implement actual re-subscription in `recoverSubscriptions()`
 3. Wait for snapshot events before emitting `subscriptionsRecovered`
 4. Measure total time from disconnect to recovery
 
 ### Priority 2: Add Integration Tests (Task 10)
+
 **Effort:** 2-3 hours
 **Impact:** Validates NFR23 end-to-end, catches regression
 **Approach:**
+
 1. Configure Docker in CI (GitHub Actions)
 2. Start BitCraft server + Crosstown node
 3. Run integration tests against live server
 4. Measure reconnection timing with real network latency
 
 ### Priority 3: Validate Static Data Cache Persistence (Task 13)
+
 **Effort:** 1 hour
 **Impact:** Confirms AC4 requirement "cache persists"
 **Approach:**
+
 1. Add integration test: connect → load static data → disconnect → reconnect
 2. Verify `staticData.loadingState` remains `'loaded'`
 3. Verify no `staticDataLoaded` event emitted on reconnect
 
 ### Priority 4: Document NFR Compliance (Task 12)
+
 **Effort:** 2 hours
 **Impact:** User-facing documentation of performance characteristics
 **Approach:**
+
 1. Add "Performance" section to README
 2. Document NFR10 (backoff cap) and NFR23 (reconnection time)
 3. Provide configuration examples for different use cases
@@ -332,6 +378,7 @@ While subscription recovery is incomplete, the story has sufficient implementati
 **Overall NFR Compliance: 80% (8/10 validated)**
 
 The auto-reconnection architecture is **well-designed** and **NFR-aligned**:
+
 - Exponential backoff with jitter (NFR10) fully implemented
 - 10-second reconnection timeout set (NFR23 architecturally sound)
 - Event-driven design supports all consumers
@@ -348,6 +395,7 @@ The auto-reconnection architecture is **well-designed** and **NFR-aligned**:
 ## Appendix: Code Evidence
 
 ### NFR10 Compliance: Exponential Backoff Cap
+
 ```typescript
 // packages/client/src/spacetimedb/reconnection-manager.ts:345-356
 calculateBackoffDelay(attemptNumber: number): number {
@@ -366,6 +414,7 @@ calculateBackoffDelay(attemptNumber: number): number {
 ```
 
 ### NFR23 Compliance: 10-Second Timeout
+
 ```typescript
 // packages/client/src/spacetimedb/reconnection-manager.ts:227-230
 await Promise.race([
@@ -381,6 +430,7 @@ if (duration > 10000) {
 ```
 
 ### Event-Driven Architecture
+
 ```typescript
 // packages/client/src/spacetimedb/reconnection-manager.ts:144-148
 this._state = 'disconnected';
@@ -391,6 +441,7 @@ this.emit('connectionChange', {
 ```
 
 ### Metrics Tracking
+
 ```typescript
 // packages/client/src/spacetimedb/reconnection-manager.ts:265-270
 const duration = this.reconnectStartTime ? Date.now() - this.reconnectStartTime : 0;

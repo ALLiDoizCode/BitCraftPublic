@@ -49,13 +49,13 @@ so that temporary network issues don't disrupt my experience.
 
 ## Acceptance Criteria to Task Mapping
 
-| AC | Description | Tasks |
-|----|-------------|-------|
+| AC  | Description                                           | Tasks                          |
+| --- | ----------------------------------------------------- | ------------------------------ |
 | AC1 | Connection loss detection and reconnection initiation | Task 1, 2, 4, 7, 7a, 9, 10, 13 |
-| AC2 | Exponential backoff with cap | Task 1, 3, 4, 8, 9, 10 |
-| AC3 | Successful reconnection and subscription recovery | Task 1, 4, 5, 7a, 8, 9, 10, 14 |
-| AC4 | State snapshot recovery | Task 5, 9, 10, 13 |
-| AC5 | Reconnection failure handling | Task 1, 6, 7, 9, 10 |
+| AC2 | Exponential backoff with cap                          | Task 1, 3, 4, 8, 9, 10         |
+| AC3 | Successful reconnection and subscription recovery     | Task 1, 4, 5, 7a, 8, 9, 10, 14 |
+| AC4 | State snapshot recovery                               | Task 5, 9, 10, 13              |
+| AC5 | Reconnection failure handling                         | Task 1, 6, 7, 9, 10            |
 
 **Coverage:** All 5 acceptance criteria are covered by multiple tasks. Each task explicitly declares which ACs it addresses.
 
@@ -367,6 +367,7 @@ so that temporary network issues don't disrupt my experience.
   - [ ] Run linter: `pnpm --filter @sigil/client lint` and fix any issues
   - [ ] Update `packages/client/package.json` version if needed (follow semver)
   - [ ] Commit with message format:
+
     ```
     feat(1.6): auto-reconnection and state recovery complete
 
@@ -417,6 +418,7 @@ so that temporary network issues don't disrupt my experience.
 ### Reconnection Strategy
 
 **Exponential Backoff Algorithm:**
+
 - Formula: `delay = min(initialDelay * (2 ^ attemptNumber), maxDelay) * (1 + jitter)`
 - Initial delay: 1 second (1000ms)
 - Multiplier: 2x per attempt
@@ -426,6 +428,7 @@ so that temporary network issues don't disrupt my experience.
 - Example with jitter: [1100ms, 1950ms, 4200ms, 7800ms, 16500ms, 29100ms, 30300ms, ...]
 
 **Retry Limits:**
+
 - Default: 10 attempts before giving up
 - Configurable via `maxReconnectAttempts` option
 - 0 = infinite retries (for long-running services)
@@ -467,12 +470,14 @@ so that temporary network issues don't disrupt my experience.
 ### Subscription Recovery
 
 **Subscription State Tracking:**
+
 - Store table names, filters, and query IDs before disconnect
 - Preserve subscription metadata across reconnection attempts
 - Re-subscribe to all tables after successful reconnection
 - Wait for snapshot events to confirm subscription restoration
 
 **State Snapshot Merging:**
+
 - Receive fresh snapshot of current database state
 - Merge snapshot into existing client state (update, not replace)
 - Emit update events for changed rows
@@ -481,6 +486,7 @@ so that temporary network issues don't disrupt my experience.
 ### Performance Considerations
 
 **NFR23 Compliance (10s total reconnection):**
+
 - Time budget breakdown:
   - Connection establishment: <5 seconds (including WebSocket handshake)
   - Subscription restoration: <5 seconds (parallel re-subscription)
@@ -493,11 +499,13 @@ so that temporary network issues don't disrupt my experience.
 - Monitoring: Warn if reconnection exceeds 10s, error if >15s
 
 **Memory Management:**
+
 - Clean up timers on successful reconnection
 - Remove event listeners on disconnect
 - Prevent memory leaks from repeated reconnection cycles
 
 **Thundering Herd Prevention:**
+
 - Jitter added to backoff delays (±10%)
 - Prevents all clients reconnecting simultaneously
 - Reduces server load spikes after outage
@@ -512,16 +520,16 @@ so that temporary network issues don't disrupt my experience.
 
 ## Risks and Mitigation
 
-| Risk | Impact | Probability | Mitigation |
-|------|--------|-------------|------------|
-| Reconnection exceeds 10s (NFR23 violation) | High | Medium | Task 14: Performance profiling and optimization; parallel subscription restoration; reduced timeouts |
-| Memory leak from repeated reconnections | High | Medium | Task 13: Memory leak testing; proper cleanup of timers/listeners; heap snapshot verification |
-| Thundering herd (all clients reconnect simultaneously) | Medium | High | Task 3: Jitter implementation (±10%); staggered reconnection attempts |
-| State divergence during long disconnects | Medium | Low | Task 5: Snapshot merging (not replacement); server state is authoritative |
-| Race condition: concurrent reconnection attempts | Medium | Low | Task 13: Mutex/lock for reconnection; idempotent reconnect() method |
-| SpacetimeDB SDK reconnection incompatibility | High | Low | Task 9-10: Comprehensive testing with SDK 1.3.3; integration tests with live server |
-| Static data reload on reconnection (Story 1.5 regression) | Medium | Medium | Task 5: Explicit static data cache persistence check; integration test |
-| Connection during static data loading | Medium | Medium | Task 13: Edge case testing; resume/restart static data loading |
+| Risk                                                      | Impact | Probability | Mitigation                                                                                           |
+| --------------------------------------------------------- | ------ | ----------- | ---------------------------------------------------------------------------------------------------- |
+| Reconnection exceeds 10s (NFR23 violation)                | High   | Medium      | Task 14: Performance profiling and optimization; parallel subscription restoration; reduced timeouts |
+| Memory leak from repeated reconnections                   | High   | Medium      | Task 13: Memory leak testing; proper cleanup of timers/listeners; heap snapshot verification         |
+| Thundering herd (all clients reconnect simultaneously)    | Medium | High        | Task 3: Jitter implementation (±10%); staggered reconnection attempts                                |
+| State divergence during long disconnects                  | Medium | Low         | Task 5: Snapshot merging (not replacement); server state is authoritative                            |
+| Race condition: concurrent reconnection attempts          | Medium | Low         | Task 13: Mutex/lock for reconnection; idempotent reconnect() method                                  |
+| SpacetimeDB SDK reconnection incompatibility              | High   | Low         | Task 9-10: Comprehensive testing with SDK 1.3.3; integration tests with live server                  |
+| Static data reload on reconnection (Story 1.5 regression) | Medium | Medium      | Task 5: Explicit static data cache persistence check; integration test                               |
+| Connection during static data loading                     | Medium | Medium      | Task 13: Edge case testing; resume/restart static data loading                                       |
 
 ## Out of Scope
 
@@ -546,15 +554,16 @@ so that temporary network issues don't disrupt my experience.
 
 ## Test Coverage Matrix
 
-| Test Type | AC Coverage | Test Location | Test Count | NFR Coverage |
-|-----------|-------------|---------------|------------|--------------|
-| Unit Tests | AC1-5 (all) | `reconnection-manager.test.ts` | 24+ tests | NFR10, NFR23 |
-| Integration Tests | AC1-5 (all) | `reconnection.integration.test.ts` | 20+ tests | NFR5, NFR10, NFR18, NFR23 |
-| Edge Case Tests | AC1-5 (all) | Task 13 scenarios | 8 scenarios | NFR22 |
-| Performance Tests | AC2, AC3 | Task 14 | 2+ tests | NFR6, NFR23 |
-| Example Tests | AC1-5 (all) | `examples/auto-reconnection.ts` | Interactive | All |
+| Test Type         | AC Coverage | Test Location                      | Test Count  | NFR Coverage              |
+| ----------------- | ----------- | ---------------------------------- | ----------- | ------------------------- |
+| Unit Tests        | AC1-5 (all) | `reconnection-manager.test.ts`     | 24+ tests   | NFR10, NFR23              |
+| Integration Tests | AC1-5 (all) | `reconnection.integration.test.ts` | 20+ tests   | NFR5, NFR10, NFR18, NFR23 |
+| Edge Case Tests   | AC1-5 (all) | Task 13 scenarios                  | 8 scenarios | NFR22                     |
+| Performance Tests | AC2, AC3    | Task 14                            | 2+ tests    | NFR6, NFR23               |
+| Example Tests     | AC1-5 (all) | `examples/auto-reconnection.ts`    | Interactive | All                       |
 
 **Total Test Coverage:**
+
 - 50+ automated tests (unit + integration)
 - 8 edge case scenarios with explicit verification
 - Performance profiling for NFR23 compliance
@@ -577,12 +586,14 @@ Run these commands to verify completion:
 ## Success Metrics
 
 **Functional Metrics:**
+
 - 100% of unexpected disconnections trigger auto-reconnection within 1 second
 - 100% of subscriptions restored after successful reconnection (with original filters)
 - 0% static data reloads on reconnection (cache persists)
 - Manual disconnect does NOT trigger auto-reconnection (0% false positives)
 
 **Performance Metrics (NFRs):**
+
 - NFR23: 100% of reconnections complete within 10 seconds (P95 < 8 seconds target)
 - NFR10: Exponential backoff capped at 30 seconds (100% compliance)
 - NFR5: Real-time updates resume within 500ms after reconnection
@@ -590,12 +601,14 @@ Run these commands to verify completion:
 - Subscription restoration time: <5 seconds for 10 subscriptions (P95)
 
 **Quality Metrics:**
+
 - Unit test coverage: 100% for `reconnection-manager.ts`
 - Integration test pass rate: 100% with live BitCraft server
 - Edge case coverage: 8/8 scenarios tested and passing
 - Memory leak tests: 0% memory growth after 100 reconnections
 
 **Reliability Metrics:**
+
 - Successful reconnection rate: >95% when server is available
 - Failed reconnection detection: 100% after retry limit exhausted
 - Error reporting completeness: 100% of failures include reason and last error
@@ -630,7 +643,7 @@ describe('AC1: Connection loss detection and reconnection', () => {
     const client = new SigilClient({ spacetimedb: { host: 'localhost', port: 3000 } });
     await client.connect();
 
-    const disconnectPromise = new Promise<ConnectionChangeEvent>(resolve => {
+    const disconnectPromise = new Promise<ConnectionChangeEvent>((resolve) => {
       client.once('connectionChange', resolve);
     });
 
@@ -643,7 +656,7 @@ describe('AC1: Connection loss detection and reconnection', () => {
     expect(event.reason).toContain('connection lost');
 
     // Verify reconnection starts within 1 second
-    const reconnectingPromise = new Promise<ConnectionChangeEvent>(resolve => {
+    const reconnectingPromise = new Promise<ConnectionChangeEvent>((resolve) => {
       client.once('connectionChange', resolve);
     });
     const reconnectingEvent = await reconnectingPromise;
@@ -664,7 +677,7 @@ describe('AC1: Connection loss detection and reconnection', () => {
     await client.disconnect();
 
     // Wait and verify no reconnection attempted
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
     expect(reconnectingEmitted).toBe(false);
   });
 });
@@ -674,7 +687,7 @@ describe('AC2: Exponential backoff', () => {
   test('follows correct backoff sequence with jitter', async () => {
     const client = new SigilClient({
       spacetimedb: { host: 'localhost', port: 9999 }, // Invalid port
-      reconnection: { maxReconnectAttempts: 10 }
+      reconnection: { maxReconnectAttempts: 10 },
     });
 
     const delays: number[] = [];
@@ -687,7 +700,7 @@ describe('AC2: Exponential backoff', () => {
     await client.connect().catch(() => {}); // Will fail and trigger reconnection
 
     // Wait for all attempts
-    await new Promise(resolve => setTimeout(resolve, 60000));
+    await new Promise((resolve) => setTimeout(resolve, 60000));
 
     // Verify delays follow exponential pattern: 1s, 2s, 4s, 8s, 16s, 30s (capped)
     expect(delays[0]).toBeCloseTo(1000, -2); // ±10% jitter = ±100ms tolerance
@@ -714,14 +727,14 @@ describe('AC3: Reconnection and subscription recovery', () => {
     client.spacetimedb.connection.close();
 
     // Wait for reconnection
-    await new Promise<void>(resolve => {
+    await new Promise<void>((resolve) => {
       client.once('connectionChange', (event) => {
         if (event.status === 'connected') resolve();
       });
     });
 
     // Wait for subscriptions recovered
-    const recoveredEvent = await new Promise<SubscriptionsRecoveredEvent>(resolve => {
+    const recoveredEvent = await new Promise<SubscriptionsRecoveredEvent>((resolve) => {
       client.once('subscriptionsRecovered', resolve);
     });
 
@@ -754,7 +767,7 @@ describe('AC4: State snapshot recovery', () => {
     // (Server modifies player data during disconnect)
 
     // Wait for reconnection and recovery
-    await new Promise<void>(resolve => {
+    await new Promise<void>((resolve) => {
       client.once('subscriptionsRecovered', () => resolve());
     });
 
@@ -778,7 +791,7 @@ describe('AC4: State snapshot recovery', () => {
 
     // Disconnect and reconnect
     client.spacetimedb.connection.close();
-    await new Promise<void>(resolve => {
+    await new Promise<void>((resolve) => {
       client.once('connectionChange', (event) => {
         if (event.status === 'connected') resolve();
       });
@@ -797,10 +810,10 @@ describe('AC5: Reconnection failure handling', () => {
   test('emits failed status with error details after retry limit', async () => {
     const client = new SigilClient({
       spacetimedb: { host: 'localhost', port: 9999 }, // Invalid port
-      reconnection: { maxReconnectAttempts: 3 }
+      reconnection: { maxReconnectAttempts: 3 },
     });
 
-    const failedPromise = new Promise<ConnectionChangeEvent>(resolve => {
+    const failedPromise = new Promise<ConnectionChangeEvent>((resolve) => {
       client.on('connectionChange', (event) => {
         if (event.status === 'failed') resolve(event);
       });
@@ -819,7 +832,7 @@ describe('AC5: Reconnection failure handling', () => {
   test('allows manual retry after failure', async () => {
     const client = new SigilClient({
       spacetimedb: { host: 'localhost', port: 3000 },
-      reconnection: { maxReconnectAttempts: 2 }
+      reconnection: { maxReconnectAttempts: 2 },
     });
 
     await client.connect();
@@ -829,7 +842,7 @@ describe('AC5: Reconnection failure handling', () => {
     client.spacetimedb.connection.close();
 
     // Wait for failure
-    await new Promise<void>(resolve => {
+    await new Promise<void>((resolve) => {
       client.once('connectionChange', (event) => {
         if (event.status === 'failed') resolve();
       });
@@ -839,7 +852,7 @@ describe('AC5: Reconnection failure handling', () => {
     await startBitCraftDockerServer();
 
     // Manual retry
-    const connectedPromise = new Promise<void>(resolve => {
+    const connectedPromise = new Promise<void>((resolve) => {
       client.once('connectionChange', (event) => {
         if (event.status === 'connected') resolve();
       });
@@ -938,9 +951,11 @@ SigilClient gains automatic reconnection capability. On connection loss, `Reconn
 **Dependency Versions:**
 
 **Required (packages/client):**
+
 - No new production dependencies needed (uses SDK from Story 1.4)
 
 **Already installed from Story 1.1:**
+
 - `typescript@^5.0.0` (devDep at root)
 - `tsup@latest` (devDep)
 - `vitest@latest` (devDep)
@@ -948,6 +963,7 @@ SigilClient gains automatic reconnection capability. On connection loss, `Reconn
 - `tsx@latest` (for running examples)
 
 **Already installed from Story 1.4:**
+
 - `@clockworklabs/spacetimedb-sdk@^1.3.3` (CRITICAL - targets 1.6.x modules)
 
 **Build tooling:** Inherits from Story 1.1 monorepo (pnpm workspace, tsup, vitest, eslint, prettier)
@@ -994,6 +1010,7 @@ SigilClient gains automatic reconnection capability. On connection loss, `Reconn
 ## Change Log
 
 **2026-02-27 (Initial)**: Story created by Claude Sonnet 4.5
+
 - Initial story structure with 15 tasks
 - 5 acceptance criteria covering connection loss, backoff, reconnection, recovery, failure
 - NFR23 (10s reconnection) and NFR10 (exponential backoff) explicitly tracked
@@ -1008,6 +1025,7 @@ SigilClient gains automatic reconnection capability. On connection loss, `Reconn
 - References section with epic/FR/NFR/story links
 
 **2026-02-27 (Adversarial Review)**: Comprehensive review and improvements by Claude Sonnet 4.5
+
 - **Acceptance Criteria Improvements:**
   - AC1: Added specificity for "unexpected disconnect" vs manual, added 1-second start delay, added disconnect reason to event
   - AC2: Added explicit backoff sequence (1s, 2s, 4s, 8s, 16s, 30s), added jitter requirement (±10%), added status event before each attempt
@@ -1066,7 +1084,7 @@ SigilClient gains automatic reconnection capability. On connection loss, `Reconn
 
 ## Handoff
 
-**STORY_FILE:** /Users/jonathangreen/Documents/BitCraftPublic/_bmad-output/implementation-artifacts/1-6-auto-reconnection-and-state-recovery.md
+**STORY_FILE:** /Users/jonathangreen/Documents/BitCraftPublic/\_bmad-output/implementation-artifacts/1-6-auto-reconnection-and-state-recovery.md
 
 ## Dev Agent Record
 
@@ -1134,6 +1152,7 @@ SigilClient gains automatic reconnection capability. On connection loss, `Reconn
 **Change Log:**
 
 2026-02-27 - Implementation by Claude Sonnet 4.5:
+
 - Implemented core auto-reconnection functionality with exponential backoff and jitter
 - Created TypeScript type definitions for all reconnection events and configuration
 - Integrated ReconnectionManager into SigilClient with event forwarding
@@ -1144,6 +1163,7 @@ SigilClient gains automatic reconnection capability. On connection loss, `Reconn
 - **COMPLETED comprehensive test coverage: 28/28 tests passing (100%)**
 
 2026-02-27 - Test Automation (yolo mode) by Claude Sonnet 4.5:
+
 - Analyzed acceptance criteria and identified 11 test gaps
 - Added tests for AC1: disconnect reason verification
 - Unskipped and fixed AC3 tests: subscriptionsRecovered event metadata
@@ -1183,6 +1203,7 @@ SigilClient gains automatic reconnection capability. On connection loss, `Reconn
 **Test Status:** ✅ COMPLETE - All acceptance criteria covered with automated tests
 
 **Test Review (2026-02-27):**
+
 - Comprehensive review completed in yolo mode
 - 4 additional tests added to address minor gaps:
   1. `cancelReconnection()` cleanup test (Task 9 requirement)
@@ -1194,6 +1215,7 @@ SigilClient gains automatic reconnection capability. On connection loss, `Reconn
 - Detailed review report: `_bmad-output/implementation-artifacts/1-6-test-review-report.md`
 
 **Code Review & Auto-Fix (2026-02-27):**
+
 - Comprehensive code review completed in yolo mode
 - **12 issues identified and automatically fixed:**
   - **Critical:** 0 issues
@@ -1369,6 +1391,7 @@ Performed comprehensive OWASP Top 10 (2021) security audit:
 **Fix Applied:**
 
 Changed line 377 in `reconnection-manager.ts`:
+
 ```typescript
 // Before
 } catch (error) {
@@ -1401,14 +1424,14 @@ Changed line 377 in `reconnection-manager.ts`:
 
 **Coverage Analysis:**
 
-| Acceptance Criteria | Tests | Status | Gaps |
-|---------------------|-------|--------|------|
-| AC1: Connection loss detection | 4 tests | ✅ Complete | None |
-| AC2: Exponential backoff | 4 tests | ✅ Complete | None |
-| AC3: Successful reconnection | 5 tests | ✅ Complete | None |
-| AC4: State snapshot recovery | 3 tests | ✅ Complete | None |
-| AC5: Reconnection failure | 5 tests | ✅ Complete | None |
-| Edge cases & robustness | 11 tests | ✅ Complete | None |
+| Acceptance Criteria            | Tests    | Status      | Gaps |
+| ------------------------------ | -------- | ----------- | ---- |
+| AC1: Connection loss detection | 4 tests  | ✅ Complete | None |
+| AC2: Exponential backoff       | 4 tests  | ✅ Complete | None |
+| AC3: Successful reconnection   | 5 tests  | ✅ Complete | None |
+| AC4: State snapshot recovery   | 3 tests  | ✅ Complete | None |
+| AC5: Reconnection failure      | 5 tests  | ✅ Complete | None |
+| Edge cases & robustness        | 11 tests | ✅ Complete | None |
 
 **Non-Functional Requirements Coverage:**
 

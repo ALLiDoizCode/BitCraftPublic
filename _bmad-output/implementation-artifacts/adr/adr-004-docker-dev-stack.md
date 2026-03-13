@@ -9,6 +9,7 @@
 ## Context
 
 The Sigil SDK requires a local development environment for:
+
 1. **BitCraft SpacetimeDB server** (v1.6.x) - Game world simulation
 2. **Crosstown ILP relay node** - Nostr relay + ILP packet routing
 3. **BLS game action handler** (future, Epic 2) - Identity propagation
@@ -20,6 +21,7 @@ Developers need to run these services locally for integration testing and develo
 ## Problem Statement
 
 We need a local development environment that:
+
 1. **Runs BitCraft server** - SpacetimeDB 1.6.x with BitCraft game module
 2. **Runs Crosstown relay** - Nostr relay + ILP routing
 3. **Is easy to set up** - One-command startup
@@ -34,16 +36,19 @@ We need a local development environment that:
 ### Option 1: Native Installation (No Docker)
 
 **Setup:**
+
 - Install SpacetimeDB binary (`spacetime` CLI)
 - Clone BitCraft server, build from source
 - Clone Crosstown, build from source (Rust)
 - Configure services, start manually
 
 **Pros:**
+
 - No Docker dependency (lighter weight)
 - Faster startup (no container overhead)
 
 **Cons:**
+
 - **Setup complexity**: 30+ minute setup process (install deps, build from source)
 - **Platform differences**: Different setup instructions for macOS, Linux, Windows
 - **Dependency conflicts**: SpacetimeDB may conflict with other local services
@@ -55,11 +60,13 @@ We need a local development environment that:
 ### Option 2: Docker Compose (Recommended)
 
 **Setup:**
+
 ```bash
 docker compose -f docker/docker-compose.yml up -d
 ```
 
 **Pros:**
+
 - **One-command setup**: `docker compose up -d` (< 2 minutes)
 - **Cross-platform**: Works on macOS, Linux, Windows (with Docker Desktop)
 - **Isolated**: Services run in containers (no host pollution)
@@ -69,6 +76,7 @@ docker compose -f docker/docker-compose.yml up -d
 - **Realistic testing**: Integration tests use real services
 
 **Cons:**
+
 - **Docker dependency**: Requires Docker Desktop or Docker Engine
 - **Setup complexity for new contributors**: Must install Docker first
 - **Resource usage**: Containers consume CPU/memory
@@ -79,14 +87,17 @@ docker compose -f docker/docker-compose.yml up -d
 ### Option 3: Kubernetes (Overkill)
 
 **Setup:**
+
 - Install Minikube or kind (local Kubernetes cluster)
 - Write Kubernetes manifests (Deployments, Services, ConfigMaps)
 - Deploy to local cluster
 
 **Pros:**
+
 - Production-like environment (if deploying to Kubernetes later)
 
 **Cons:**
+
 - **Massive overkill for local dev** (adds 10x complexity)
 - **Steep learning curve**: Requires Kubernetes knowledge
 - **Slow**: Kubernetes startup is slower than Docker Compose
@@ -132,6 +143,7 @@ docker compose -f docker/docker-compose.yml up -d
 ## Consequences
 
 ### Positive
+
 - ✅ **Fast setup**: 1 command, < 2 minutes
 - ✅ **Cross-platform**: macOS + Linux (Windows future)
 - ✅ **Isolated**: No host pollution
@@ -140,12 +152,14 @@ docker compose -f docker/docker-compose.yml up -d
 - ✅ **Health checks**: Auto-restart on failure
 
 ### Negative
+
 - ⚠️ **Docker dependency**: Must install Docker Desktop (250MB download)
 - ⚠️ **Onboarding friction**: New contributors must install Docker first
 - ⚠️ **Resource usage**: Containers consume ~1GB RAM, 500MB disk
 - ⚠️ **Integration test complexity**: Tests must wait for services (health checks)
 
 ### Mitigation Strategies
+
 1. **Clear documentation**: `docker/README.md` has setup instructions + troubleshooting
 2. **Health check scripts**: `docker/scripts/health-check.sh` ensures services ready
 3. **Auto-skip tests**: Integration tests auto-skip if Docker not running (ACTION-1)
@@ -169,14 +183,14 @@ services:
     image: clockworklabs/spacetimedb:1.6.0
     container_name: bitcraft-server
     ports:
-      - "3000:3000"
+      - '3000:3000'
     volumes:
       - ./bitcraft:/opt/bitcraft:ro
       - ./volumes/spacetimedb:/var/lib/spacetimedb
     environment:
       - SPACETIMEDB_LOG=info
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/database/bitcraft/info"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000/database/bitcraft/info']
       interval: 5s
       timeout: 3s
       retries: 10
@@ -187,15 +201,15 @@ services:
     build: ./crosstown
     container_name: crosstown-node
     ports:
-      - "4040:4040"  # Nostr relay
-      - "4041:4041"  # HTTP API
+      - '4040:4040' # Nostr relay
+      - '4041:4041' # HTTP API
     volumes:
       - ./volumes/crosstown:/var/lib/crosstown
     environment:
       - CROSSTOWN_HTTP_PORT=4041
       - CROSSTOWN_NOSTR_PORT=4040
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4041/health"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:4041/health']
       interval: 5s
       timeout: 3s
       retries: 10
@@ -214,15 +228,18 @@ services:
 **Image:** `clockworklabs/spacetimedb:1.6.0` (pinned version, not `latest`)
 **Port:** 3000 (localhost-only, not exposed to internet)
 **Volumes:**
+
 - `./bitcraft:/opt/bitcraft:ro` - BitCraft game module (read-only)
 - `./volumes/spacetimedb:/var/lib/spacetimedb` - Persistent data
 
 **Health Check:**
+
 ```bash
 curl -f http://localhost:3000/database/bitcraft/info
 ```
 
 **Log Viewing:**
+
 ```bash
 docker compose -f docker/docker-compose.yml logs -f bitcraft-server
 ```
@@ -233,18 +250,22 @@ docker compose -f docker/docker-compose.yml logs -f bitcraft-server
 
 **Build:** `./crosstown/Dockerfile` (built from source)
 **Ports:**
+
 - 4040: Nostr relay (WebSocket)
 - 4041: HTTP API (health check, metrics)
 
 **Volumes:**
+
 - `./volumes/crosstown:/var/lib/crosstown` - Persistent relay data
 
 **Health Check:**
+
 ```bash
 curl -f http://localhost:4041/health
 ```
 
 **Log Viewing:**
+
 ```bash
 docker compose -f docker/docker-compose.yml logs -f crosstown-node
 ```
@@ -254,21 +275,25 @@ docker compose -f docker/docker-compose.yml logs -f crosstown-node
 ### Usage
 
 **Start services:**
+
 ```bash
 docker compose -f docker/docker-compose.yml up -d
 ```
 
 **Check service health:**
+
 ```bash
 docker compose -f docker/docker-compose.yml ps
 ```
 
 **Stop services:**
+
 ```bash
 docker compose -f docker/docker-compose.yml down
 ```
 
 **Reset environment (WARNING: deletes persistent data):**
+
 ```bash
 docker compose -f docker/docker-compose.yml down -v
 rm -rf docker/volumes/*
@@ -282,6 +307,7 @@ docker compose -f docker/docker-compose.yml up -d
 Story 1.3 code review identified and fixed 12 security issues (H-001 through L-004):
 
 **H-001: Path Traversal Prevention**
+
 ```bash
 # docker/bitcraft/init.sh
 if ! echo "$MODULE_PATH" | grep -q '^/opt/bitcraft/'; then
@@ -291,6 +317,7 @@ fi
 ```
 
 **H-002: Port Validation**
+
 ```rust
 // crosstown-src/src/main.rs
 if http_port < 1024 || nostr_port < 1024 {
@@ -300,6 +327,7 @@ if http_port < 1024 || nostr_port < 1024 {
 ```
 
 **H-003: Rate Limiting**
+
 ```rust
 // crosstown-src/src/main.rs
 let mut rate_limiter = RateLimiter::new(100, 60); // 100 events per 60 seconds
@@ -334,7 +362,7 @@ const DOCKER_AVAILABLE = await isDockerAvailable();
 describe.skipIf(!DOCKER_AVAILABLE)('SpacetimeDB Connection - Integration', () => {
   it('should connect to real BitCraft server', async () => {
     const client = new SigilClient({
-      spacetimedb: { url: 'ws://localhost:3000', databaseName: 'bitcraft' }
+      spacetimedb: { url: 'ws://localhost:3000', databaseName: 'bitcraft' },
     });
     await client.connect();
     expect(client.spacetimedb.connection.connectionState).toBe('connected');
@@ -349,11 +377,13 @@ describe.skipIf(!DOCKER_AVAILABLE)('SpacetimeDB Connection - Integration', () =>
 ## NFR Compliance
 
 **NFR16: Docker One-Command Setup**
+
 - ✅ Validated: `docker compose up -d` starts all services
 - ✅ Health checks ensure services ready before tests run
 - ✅ Documentation in `docker/README.md`
 
 **NFR22: Cross-Platform Support (Linux + macOS)**
+
 - ✅ macOS validated in Epic 1 (Intel + Apple Silicon)
 - ⚠️ Linux validation deferred to PREP-2 (Ubuntu 24.04)
 - 🔜 Windows support deferred to Phase 2 (Epic 7-10)
@@ -373,12 +403,12 @@ services:
     build: ./bls-handler
     container_name: bls-handler
     ports:
-      - "5000:5000"
+      - '5000:5000'
     depends_on:
       - crosstown-node
       - bitcraft-server
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:5000/health']
       interval: 5s
       timeout: 3s
       retries: 10

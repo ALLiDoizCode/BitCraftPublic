@@ -107,10 +107,10 @@ interface EventContent {
 
 The BLS handler uses the following tags:
 
-| Tag | Description | Example | Required |
-|-----|-------------|---------|----------|
-| `d` | NIP-33 identifier (reducer + timestamp) | `["d", "player_move_1709164800123"]` | Yes |
-| `fee` | ILP fee amount (integer string) | `["fee", "1"]` | Yes |
+| Tag   | Description                             | Example                              | Required |
+| ----- | --------------------------------------- | ------------------------------------ | -------- |
+| `d`   | NIP-33 identifier (reducer + timestamp) | `["d", "player_move_1709164800123"]` | Yes      |
+| `fee` | ILP fee amount (integer string)         | `["fee", "1"]`                       | Yes      |
 
 ---
 
@@ -125,12 +125,12 @@ The event ID is computed as the SHA256 hash of the canonical event serialization
 ```typescript
 // Canonical serialization (no whitespace)
 const serialized = JSON.stringify([
-  0,                  // Reserved for future use
-  event.pubkey,       // Public key (hex string)
-  event.created_at,   // Unix timestamp (number)
-  event.kind,         // Event kind (number)
-  event.tags,         // Tags array
-  event.content       // Content string
+  0, // Reserved for future use
+  event.pubkey, // Public key (hex string)
+  event.created_at, // Unix timestamp (number)
+  event.kind, // Event kind (number)
+  event.tags, // Tags array
+  event.content, // Content string
 ]);
 
 // Event ID
@@ -150,9 +150,9 @@ The signature is verified using secp256k1 Schnorr signature verification:
 ```typescript
 // Verify signature
 const isValid = secp256k1.schnorr.verify(
-  event.sig,      // Signature (128-char hex)
-  event.id,       // Event ID (64-char hex, computed above)
-  event.pubkey    // Public key (64-char hex)
+  event.sig, // Signature (128-char hex)
+  event.id, // Event ID (64-char hex, computed above)
+  event.pubkey // Public key (64-char hex)
 );
 
 if (!isValid) {
@@ -160,7 +160,7 @@ if (!isValid) {
     errorCode: 'INVALID_SIGNATURE',
     eventId: event.id,
     message: `Signature verification failed for event ${event.id}`,
-    retryable: false
+    retryable: false,
   };
 }
 ```
@@ -202,20 +202,20 @@ function parseEventContent(content: string): ParsedContent | BLSErrorResponse {
         errorCode: 'INVALID_CONTENT',
         eventId: event.id,
         message: 'Missing or invalid reducer field in event content',
-        retryable: false
+        retryable: false,
       };
     }
 
     return {
       reducer: parsed.reducer,
-      args: parsed.args
+      args: parsed.args,
     };
   } catch (error) {
     return {
       errorCode: 'INVALID_CONTENT',
       eventId: event.id,
       message: `Failed to parse event content as JSON: ${error.message}`,
-      retryable: false
+      retryable: false,
     };
   }
 }
@@ -223,10 +223,10 @@ function parseEventContent(content: string): ParsedContent | BLSErrorResponse {
 
 ### Content Validation
 
-| Field | Type | Validation | Error on Failure |
-|-------|------|------------|------------------|
-| `reducer` | string | Non-empty, 1-64 chars, alphanumeric + underscore | `INVALID_CONTENT` |
-| `args` | unknown | JSON-serializable (any type) | `INVALID_CONTENT` |
+| Field     | Type    | Validation                                       | Error on Failure  |
+| --------- | ------- | ------------------------------------------------ | ----------------- |
+| `reducer` | string  | Non-empty, 1-64 chars, alphanumeric + underscore | `INVALID_CONTENT` |
+| `args`    | unknown | JSON-serializable (any type)                     | `INVALID_CONTENT` |
 
 ---
 
@@ -260,6 +260,7 @@ The request body is a JSON array containing the Nostr public key prepended to th
 **Example:**
 
 For the event:
+
 ```json
 {
   "pubkey": "32e1827635450ebb3c5a7d12c1f8e7b2b514439ac10a67eef3d9fd9c5c68e245",
@@ -313,13 +314,13 @@ fn player_move(
 
 ### HTTP Response Handling
 
-| Status Code | Meaning | BLS Action |
-|-------------|---------|------------|
-| `200 OK` | Reducer executed successfully | Return success response |
-| `404 Not Found` | Unknown reducer name | Return `UNKNOWN_REDUCER` error |
-| `400 Bad Request` | Invalid reducer arguments | Return `REDUCER_FAILED` error |
-| `500 Internal Server Error` | SpacetimeDB runtime error | Return `REDUCER_FAILED` error |
-| Timeout (>30s) | Request timed out | Return `REDUCER_FAILED` error with timeout message |
+| Status Code                 | Meaning                       | BLS Action                                         |
+| --------------------------- | ----------------------------- | -------------------------------------------------- |
+| `200 OK`                    | Reducer executed successfully | Return success response                            |
+| `404 Not Found`             | Unknown reducer name          | Return `UNKNOWN_REDUCER` error                     |
+| `400 Bad Request`           | Invalid reducer arguments     | Return `REDUCER_FAILED` error                      |
+| `500 Internal Server Error` | SpacetimeDB runtime error     | Return `REDUCER_FAILED` error                      |
+| Timeout (>30s)              | Request timed out             | Return `REDUCER_FAILED` error with timeout message |
 
 ---
 
@@ -345,12 +346,12 @@ interface BLSErrorResponse {
 
 ### Error Codes
 
-| Error Code | Description | Retryable | Example |
-|------------|-------------|-----------|---------|
-| `INVALID_SIGNATURE` | Signature verification failed | No | Invalid sig, wrong pubkey, corrupted event |
-| `UNKNOWN_REDUCER` | Reducer not found in SpacetimeDB | No | Typo in reducer name, reducer doesn't exist |
-| `REDUCER_FAILED` | Reducer execution failed | Yes | Invalid args, precondition failure, timeout |
-| `INVALID_CONTENT` | Event content parsing failed | No | Malformed JSON, missing fields |
+| Error Code          | Description                      | Retryable | Example                                     |
+| ------------------- | -------------------------------- | --------- | ------------------------------------------- |
+| `INVALID_SIGNATURE` | Signature verification failed    | No        | Invalid sig, wrong pubkey, corrupted event  |
+| `UNKNOWN_REDUCER`   | Reducer not found in SpacetimeDB | No        | Typo in reducer name, reducer doesn't exist |
+| `REDUCER_FAILED`    | Reducer execution failed         | Yes       | Invalid args, precondition failure, timeout |
+| `INVALID_CONTENT`   | Event content parsing failed     | No        | Malformed JSON, missing fields              |
 
 ### Error Response Examples
 
@@ -450,7 +451,12 @@ The Crosstown relay forwards BLS responses as Nostr OK messages:
 **Example Error Propagation:**
 
 ```json
-["OK", "a1b2c3d4e5f6...", false, "INVALID_SIGNATURE: Signature verification failed for event a1b2c3d4e5f6"]
+[
+  "OK",
+  "a1b2c3d4e5f6...",
+  false,
+  "INVALID_SIGNATURE: Signature verification failed for event a1b2c3d4e5f6"
+]
 ```
 
 ---
@@ -459,11 +465,11 @@ The Crosstown relay forwards BLS responses as Nostr OK messages:
 
 The BLS handler requires the following environment variables:
 
-| Variable | Description | Default | Required |
-|----------|-------------|---------|----------|
-| `SPACETIMEDB_URL` | SpacetimeDB HTTP endpoint | `http://localhost:3000` | Yes |
-| `SPACETIMEDB_DATABASE` | Database name | `bitcraft` | Yes |
-| `SPACETIMEDB_TOKEN` | Authentication token | (none) | Yes |
+| Variable               | Description               | Default                 | Required |
+| ---------------------- | ------------------------- | ----------------------- | -------- |
+| `SPACETIMEDB_URL`      | SpacetimeDB HTTP endpoint | `http://localhost:3000` | Yes      |
+| `SPACETIMEDB_DATABASE` | Database name             | `bitcraft`              | Yes      |
+| `SPACETIMEDB_TOKEN`    | Authentication token      | (none)                  | Yes      |
 
 **Example Configuration:**
 
@@ -481,12 +487,12 @@ export SPACETIMEDB_TOKEN="admin_token_here"
 
 The BLS handler MUST meet the following performance requirements:
 
-| Metric | Requirement | Notes |
-|--------|-------------|-------|
+| Metric                   | Requirement  | Notes                                       |
+| ------------------------ | ------------ | ------------------------------------------- |
 | Event processing latency | <500ms (p99) | From ILP packet receipt to SpacetimeDB call |
-| Signature validation | <10ms (p99) | secp256k1 verification time |
-| SpacetimeDB call timeout | 30s | HTTP request timeout |
-| Round-trip latency | <2s (p99) | Client publish → confirmation (NFR3) |
+| Signature validation     | <10ms (p99)  | secp256k1 verification time                 |
+| SpacetimeDB call timeout | 30s          | HTTP request timeout                        |
+| Round-trip latency       | <2s (p99)    | Client publish → confirmation (NFR3)        |
 
 **Note:** Round-trip latency includes client → relay → connector → BLS → SpacetimeDB → response propagation.
 
@@ -558,7 +564,7 @@ try {
     eventId: event.id,
     errorCode: 'REDUCER_FAILED',
     message: `Reducer execution failed: ${error.message}`,
-    retryable: true
+    retryable: true,
   };
   console.error(errorResponse); // Log
   return errorResponse; // Return to client
@@ -633,6 +639,7 @@ BLS handler implementers MUST ensure the following:
 ## Change Log
 
 **2026-02-28:** Initial version created for Story 2.4
+
 - Documented event format (kind 30078 structure)
 - Documented signature validation (NIP-01 compliance)
 - Documented content parsing requirements

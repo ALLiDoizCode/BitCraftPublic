@@ -28,16 +28,19 @@ So that the SDK uses the official Crosstown library and the Sigil client only ow
 ## Dependencies
 
 **Required Complete (all done):**
+
 - **Story 2.1** (Crosstown Relay Connection & Event Subscriptions) -- Nostr relay client used for confirmation subscriptions
 - **Story 2.2** (Action Cost Registry & Wallet Balance) -- ActionCostRegistry, WalletClient, PublishAPI.getCost/canAfford
 - **Story 2.3** (ILP Packet Construction & Signing) -- scaffolding code being replaced: event-signing.ts, ilp-packet.ts, crosstown-connector.ts
 - **Story 2.4** (BLS Handler Contract) -- integration contract spec, BLS types (bls/types.ts) unchanged by this story
 
 **External Dependencies:**
+
 - `@crosstown/client@^0.4.2` published on npm
 - `@crosstown/relay@^0.4.2` published on npm
 
 **Blocks:**
+
 - Epic 3 (BitCraft BLS) depends on the publish pipeline being stable
 
 ## Acceptance Criteria
@@ -172,6 +175,7 @@ So that the SDK uses the official Crosstown library and the Sigil client only ow
 This story transitions the Sigil Client from a custom publish pipeline (built as scaffolding in Stories 2.3-2.4) to the official `@crosstown/client` library. `@crosstown/client` provides a complete ILP publish pipeline including event signing, TOON encoding, payment channel management, and transport -- all the things we manually implemented in the scaffolding.
 
 **Before (Stories 2.3-2.4 scaffolding):**
+
 ```
 client.publish()
   -> constructILPPacket(options, cost, pubkey) [builds Nostr event with pubkey/created_at]
@@ -181,6 +185,7 @@ client.publish()
 ```
 
 **After (Story 2.5 with @crosstown/client):**
+
 ```
 client.publish()
   -> constructILPPacket(options, cost) [content-only template: kind, content, tags]
@@ -199,7 +204,7 @@ import { encodeEventToToon, decodeEventFromToon } from '@crosstown/relay';
 
 const client = new CrosstownClient({
   connectorUrl: process.env.CONNECTOR_URL || 'http://localhost:8080',
-  secretKey,  // 32-byte Uint8Array -- derives both Nostr pubkey and EVM address
+  secretKey, // 32-byte Uint8Array -- derives both Nostr pubkey and EVM address
   ilpInfo: {
     pubkey,
     ilpAddress: `g.crosstown.agent.${pubkey.slice(0, 8)}`,
@@ -217,13 +222,14 @@ await client.start();
 const result = await client.publishEvent(eventTemplate);
 // PublishEventResult: { success, eventId, fulfillment?, error? }
 
-client.getPublicKey();   // x-only Schnorr pubkey (64 hex chars)
-client.getEvmAddress();  // EIP-55 checksummed 0x address
+client.getPublicKey(); // x-only Schnorr pubkey (64 hex chars)
+client.getEvmAddress(); // EIP-55 checksummed 0x address
 
 await client.stop();
 ```
 
 Key methods:
+
 - `start()` -> `CrosstownStartResult` -- connect, discover peers
 - `stop()` -- graceful shutdown
 - `publishEvent(event, options?)` -> `PublishEventResult` -- sign + TOON + ILP route
@@ -234,6 +240,7 @@ Key methods:
 ### secretKey Identity Model
 
 `@crosstown/client` uses a single `secretKey` (32-byte Uint8Array) that derives BOTH:
+
 - **Nostr pubkey** (x-only Schnorr, 64 hex chars) -- for event signing
 - **EVM address** (EIP-55 checksummed 0x) -- for payment channels
 
@@ -242,59 +249,61 @@ This is the SAME `keypair.privateKey` from Story 1.2's identity management. The 
 ### SSRF Protection Must Be Ported
 
 The existing `crosstown-connector.ts` has comprehensive SSRF protection in `validateConnectorUrl()` (lines 86-161):
+
 - Rejects embedded credentials in URL
 - Rejects non-HTTP protocols (file://, ftp://)
-- Production mode: requires https://, blocks internal IPs (10.*, 172.16-31.*, 192.168.*, 169.254.*, localhost)
+- Production mode: requires https://, blocks internal IPs (10._, 172.16-31._, 192.168._, 169.254._, localhost)
 - Development mode: allows http://localhost, http://127.0.0.1
 
 **This logic MUST be ported to the `CrosstownAdapter` constructor.** `CrosstownClient` does not perform SSRF validation -- it accepts any connectorUrl. Dropping this check would be a security regression (OWASP A05).
 
 ### Files to Delete
 
-| File | Reason |
-|------|--------|
-| `packages/client/src/publish/event-signing.ts` | Signing delegated to @crosstown/client |
-| `packages/client/src/publish/event-signing.test.ts` | Tests for removed module |
-| `packages/client/src/crosstown/crosstown-connector.ts` | Transport delegated to @crosstown/client |
-| `packages/client/src/crosstown/crosstown-connector.test.ts` | Tests for removed module |
+| File                                                        | Reason                                   |
+| ----------------------------------------------------------- | ---------------------------------------- |
+| `packages/client/src/publish/event-signing.ts`              | Signing delegated to @crosstown/client   |
+| `packages/client/src/publish/event-signing.test.ts`         | Tests for removed module                 |
+| `packages/client/src/crosstown/crosstown-connector.ts`      | Transport delegated to @crosstown/client |
+| `packages/client/src/crosstown/crosstown-connector.test.ts` | Tests for removed module                 |
 
 ### Files to Create
 
-| File | Purpose |
-|------|---------|
-| `packages/client/src/crosstown/crosstown-adapter.ts` | Adapter wrapping CrosstownClient for SigilClient |
-| `packages/client/src/crosstown/crosstown-adapter.test.ts` | Unit tests for adapter |
+| File                                                                          | Purpose                                          |
+| ----------------------------------------------------------------------------- | ------------------------------------------------ |
+| `packages/client/src/crosstown/crosstown-adapter.ts`                          | Adapter wrapping CrosstownClient for SigilClient |
+| `packages/client/src/crosstown/crosstown-adapter.test.ts`                     | Unit tests for adapter                           |
 | `packages/client/src/integration-tests/crosstown-adapter.integration.test.ts` | Integration test (skip until Docker stack ready) |
 
 ### Files to Modify
 
-| File | Changes |
-|------|---------|
-| `packages/client/package.json` | Add @crosstown/client and @crosstown/relay deps |
-| `packages/client/src/client.ts` | Replace CrosstownConnector with CrosstownAdapter, remove signEvent import, update publishAction(), add adapter to connect()/disconnect() |
-| `packages/client/src/publish/ilp-packet.ts` | Simplify to content-only construction, remove pubkey param |
-| `packages/client/src/publish/ilp-packet.test.ts` | Update for simplified API |
-| `packages/client/src/publish/client-publish.test.ts` | Update mocks for adapter |
-| `packages/client/src/publish/confirmation-flow.test.ts` | Verify unchanged behavior |
-| `packages/client/src/index.ts` | Update exports |
-| `packages/client/README.md` | Update documentation |
+| File                                                    | Changes                                                                                                                                  |
+| ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/client/package.json`                          | Add @crosstown/client and @crosstown/relay deps                                                                                          |
+| `packages/client/src/client.ts`                         | Replace CrosstownConnector with CrosstownAdapter, remove signEvent import, update publishAction(), add adapter to connect()/disconnect() |
+| `packages/client/src/publish/ilp-packet.ts`             | Simplify to content-only construction, remove pubkey param                                                                               |
+| `packages/client/src/publish/ilp-packet.test.ts`        | Update for simplified API                                                                                                                |
+| `packages/client/src/publish/client-publish.test.ts`    | Update mocks for adapter                                                                                                                 |
+| `packages/client/src/publish/confirmation-flow.test.ts` | Verify unchanged behavior                                                                                                                |
+| `packages/client/src/index.ts`                          | Update exports                                                                                                                           |
+| `packages/client/README.md`                             | Update documentation                                                                                                                     |
 
 ### Error Code Preservation
 
 The existing SigilError codes MUST be preserved for backward compatibility. The adapter maps CrosstownClient errors:
 
-| CrosstownClient Error | SigilError Code | SigilError Boundary |
-|----------------------|-----------------|---------------------|
-| Connection refused / DNS failure | `NETWORK_ERROR` | `crosstown` |
-| Timeout / AbortError | `NETWORK_TIMEOUT` | `crosstown` |
-| ILP payment failure (F04, F06) | `PUBLISH_FAILED` | `crosstown` |
-| Signature failure | `SIGNING_FAILED` | `identity` |
-| Rate limit (429) | `RATE_LIMITED` | `crosstown` |
-| Invalid response format | `INVALID_RESPONSE` | `crosstown` |
+| CrosstownClient Error            | SigilError Code    | SigilError Boundary |
+| -------------------------------- | ------------------ | ------------------- |
+| Connection refused / DNS failure | `NETWORK_ERROR`    | `crosstown`         |
+| Timeout / AbortError             | `NETWORK_TIMEOUT`  | `crosstown`         |
+| ILP payment failure (F04, F06)   | `PUBLISH_FAILED`   | `crosstown`         |
+| Signature failure                | `SIGNING_FAILED`   | `identity`          |
+| Rate limit (429)                 | `RATE_LIMITED`     | `crosstown`         |
+| Invalid response format          | `INVALID_RESPONSE` | `crosstown`         |
 
 ### publishTimeout Clarification
 
 `publishTimeout` in `SigilClientConfig` controls TWO timeouts that must remain separate:
+
 1. **CONFIRMATION_TIMEOUT** -- how long `publishAction()` waits for a confirmation event on the Nostr relay (lines 824-834 in current client.ts). This is NOT handled by CrosstownClient.
 2. CrosstownClient has its own internal transport timeout for the HTTP/BTP request.
 
@@ -303,6 +312,7 @@ The existing SigilError codes MUST be preserved for backward compatibility. The 
 ### Testing Strategy
 
 **Unit Tests:**
+
 - CrosstownAdapter: mock `CrosstownClient` via dependency injection or module mocking
 - ilp-packet: test content-only construction (no Nostr envelope fields)
 - client.publish(): mock adapter, verify content-only template passed
@@ -310,10 +320,12 @@ The existing SigilError codes MUST be preserved for backward compatibility. The 
 - SSRF protection: test URL validation ported from crosstown-connector.ts
 
 **Integration Tests (skip until Docker stack):**
+
 - End-to-end publish via adapter -> confirmation on relay
 - CrosstownClient.start() / stop() lifecycle with real Crosstown node
 
 **Regression Tests:**
+
 - All existing `client.publish.getCost()` tests pass unchanged
 - All existing `client.publish.canAfford()` tests pass unchanged
 - Confirmation flow (pending publish tracking, timeout) passes unchanged
@@ -322,6 +334,7 @@ The existing SigilError codes MUST be preserved for backward compatibility. The 
 ### Existing Code to Preserve
 
 These items in `client.ts` are NOT changed by this story:
+
 - `handleActionConfirmation()` method (lines 640-669) -- matches confirmation events to pending publishes
 - `pendingPublishes` Map and `PendingPublish` interface -- tracks in-flight publishes
 - `ensureConfirmationSubscription()` method -- creates kind 30078 relay subscription
@@ -377,6 +390,7 @@ Key patterns and decisions from Story 2.4 that affect this story:
 ### Current client.ts Publish Flow (lines to modify)
 
 The `publishAction()` method at line 771 currently does:
+
 1. Validate client state (keypair, crosstownConnector, actionCostRegistry) -- lines 773-795
 2. Look up action cost -- line 798
 3. Check wallet balance -- lines 801-809
@@ -387,12 +401,8 @@ The `publishAction()` method at line 771 currently does:
 8. **REPLACE:** Submit to connector -- line 849 (`this.crosstownConnector.publishEvent(signedEvent)`)
 9. Wait for confirmation -- line 857
 
-After refactor:
-4. Construct content-only template -- `constructILPPacket(options, cost)` (no pubkey)
-5. (removed -- no signEvent call)
-6-7. Same as before
-8. Submit to adapter -- `this.crosstownAdapter.publishEvent(eventTemplate)`
-9. Same as before
+After refactor: 4. Construct content-only template -- `constructILPPacket(options, cost)` (no pubkey) 5. (removed -- no signEvent call)
+6-7. Same as before 8. Submit to adapter -- `this.crosstownAdapter.publishEvent(eventTemplate)` 9. Same as before
 
 ### References
 
@@ -463,35 +473,41 @@ After refactor:
 ## Security Considerations (OWASP Top 10)
 
 **A01: Broken Access Control**
+
 - Mitigation: `@crosstown/client` signs events with secretKey -- only key holder can publish
 
 **A02: Cryptographic Failures**
+
 - Mitigation: Signing delegated to `@crosstown/client` which uses `nostr-tools` (secp256k1 Schnorr) -- same library we used directly
 
 **A03: Injection**
+
 - Mitigation: Reducer name validation preserved in `ilp-packet.ts` (alphanumeric + underscore only, 1-64 chars)
 
 **A05: Security Misconfiguration**
+
 - Mitigation: SSRF protection ported from `crosstown-connector.ts` to `CrosstownAdapter` -- URL validation, internal IP blocking in production, embedded credential rejection
 
 **A07: Identification and Authentication**
+
 - Mitigation: Event signing via `@crosstown/client` ensures Nostr key attribution on every action
 
 **A09: Security Logging**
+
 - Mitigation: Adapter MUST NOT log secretKey. Error messages sanitized to exclude key material.
 
 ## FR/NFR Traceability
 
-| Requirement | Coverage | Notes |
-|-------------|----------|-------|
-| FR4 (Identity attribution) | AC6 | Signing via @crosstown/client preserves pubkey attribution |
-| FR5 (E2E verification) | AC6 | Signed events verifiable by BLS per Story 2.4 contract |
-| FR17 (client.publish()) | AC2 | Publish pipeline refactored to use adapter |
-| FR18 (ILP construction) | AC2, AC4 | Content construction in Sigil, signing/routing via @crosstown/client |
-| FR21 (Wallet balance) | AC5 | Balance query preserved or upgraded |
-| NFR8 (Signed packets) | AC2, AC6 | @crosstown/client signs all events |
-| NFR9 (Private key safety) | AC3 | secretKey passed at init, never logged |
-| NFR24 (Clear error codes) | AC4 | Error codes preserved in adapter mapping |
+| Requirement                | Coverage | Notes                                                                |
+| -------------------------- | -------- | -------------------------------------------------------------------- |
+| FR4 (Identity attribution) | AC6      | Signing via @crosstown/client preserves pubkey attribution           |
+| FR5 (E2E verification)     | AC6      | Signed events verifiable by BLS per Story 2.4 contract               |
+| FR17 (client.publish())    | AC2      | Publish pipeline refactored to use adapter                           |
+| FR18 (ILP construction)    | AC2, AC4 | Content construction in Sigil, signing/routing via @crosstown/client |
+| FR21 (Wallet balance)      | AC5      | Balance query preserved or upgraded                                  |
+| NFR8 (Signed packets)      | AC2, AC6 | @crosstown/client signs all events                                   |
+| NFR9 (Private key safety)  | AC3      | secretKey passed at init, never logged                               |
+| NFR24 (Clear error codes)  | AC4      | Error codes preserved in adapter mapping                             |
 
 ## Definition of Done
 
@@ -537,6 +553,7 @@ Claude Opus 4.6 (claude-opus-4-6)
 ### File List
 
 **Created:**
+
 - `packages/crosstown-client/package.json`
 - `packages/crosstown-client/src/index.ts`
 - `packages/crosstown-client/tsconfig.json`
@@ -548,6 +565,7 @@ Claude Opus 4.6 (claude-opus-4-6)
 - `packages/client/src/publish/story-2-5-acceptance-criteria.test.ts`
 
 **Modified:**
+
 - `packages/client/package.json` (added workspace deps)
 - `packages/client/src/client.ts` (rewired to CrosstownAdapter)
 - `packages/client/src/index.ts` (updated exports)
@@ -563,6 +581,7 @@ Claude Opus 4.6 (claude-opus-4-6)
 - `_bmad-output/implementation-artifacts/2-5-crosstown-client-integration.md` (this file)
 
 **Deleted:**
+
 - `packages/client/src/publish/event-signing.ts`
 - `packages/client/src/publish/event-signing.test.ts`
 - `packages/client/src/crosstown/crosstown-connector.ts`
@@ -571,13 +590,13 @@ Claude Opus 4.6 (claude-opus-4-6)
 
 ### Change Log
 
-| Date | Change | Details |
-|------|--------|---------|
-| 2026-03-13 | Story 2.5 implementation | Integrated @crosstown/client as official publish pipeline. Created CrosstownAdapter, simplified ilp-packet.ts, rewired SigilClient, removed scaffolding. 618 tests passing, build succeeds. |
-| 2026-03-13 | Test review & cleanup | Deleted duplicate ilp-packet-simplified.test.ts (21 tests consolidated into ilp-packet.test.ts). Consolidated story-2-5-acceptance-criteria.test.ts (removed 24 duplicate tests). Added 13 direct CrosstownError mapError tests to crosstown-adapter.test.ts. Fixed fuzzy INVALID_RESPONSE assertions. Replaced early-return guards with explicit assertions. 633 tests passing. |
-| 2026-03-13 | Code review fixes | Fixed RATE_LIMITED error metadata (retryAfter -> statusCode). Added TODO for getEvmAddress() placeholder. Removed it.skip() double-skip in integration tests. Fixed stale signEvent comment in BLS integration test. Fixed File List duplicate (ilp-packet-simplified.test.ts in both Modified and Deleted). |
-| 2026-03-13 | Code review #2 fixes | Fixed `any` types in BLS integration test (args: any[] -> unknown[], Promise<any> -> Promise<unknown>). Created missing tsconfig.json for workspace packages. Fixed integration test missing connect() call before publish(). |
-| 2026-03-13 | Code review #3 fixes | Fixed SSRF bypass via `0.0.0.0` in production mode (OWASP A05). Added `0.0.0.0` to blocked loopback addresses in `validateConnectorUrl()`. Added test case for `0.0.0.0` SSRF bypass. Fixed File List missing `story-2-5-acceptance-criteria.test.ts`. |
+| Date       | Change                   | Details                                                                                                                                                                                                                                                                                                                                                                          |
+| ---------- | ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-03-13 | Story 2.5 implementation | Integrated @crosstown/client as official publish pipeline. Created CrosstownAdapter, simplified ilp-packet.ts, rewired SigilClient, removed scaffolding. 618 tests passing, build succeeds.                                                                                                                                                                                      |
+| 2026-03-13 | Test review & cleanup    | Deleted duplicate ilp-packet-simplified.test.ts (21 tests consolidated into ilp-packet.test.ts). Consolidated story-2-5-acceptance-criteria.test.ts (removed 24 duplicate tests). Added 13 direct CrosstownError mapError tests to crosstown-adapter.test.ts. Fixed fuzzy INVALID_RESPONSE assertions. Replaced early-return guards with explicit assertions. 633 tests passing. |
+| 2026-03-13 | Code review fixes        | Fixed RATE_LIMITED error metadata (retryAfter -> statusCode). Added TODO for getEvmAddress() placeholder. Removed it.skip() double-skip in integration tests. Fixed stale signEvent comment in BLS integration test. Fixed File List duplicate (ilp-packet-simplified.test.ts in both Modified and Deleted).                                                                     |
+| 2026-03-13 | Code review #2 fixes     | Fixed `any` types in BLS integration test (args: any[] -> unknown[], Promise<any> -> Promise<unknown>). Created missing tsconfig.json for workspace packages. Fixed integration test missing connect() call before publish().                                                                                                                                                    |
+| 2026-03-13 | Code review #3 fixes     | Fixed SSRF bypass via `0.0.0.0` in production mode (OWASP A05). Added `0.0.0.0` to blocked loopback addresses in `validateConnectorUrl()`. Added test case for `0.0.0.0` SSRF bypass. Fixed File List missing `story-2-5-acceptance-criteria.test.ts`.                                                                                                                           |
 
 ---
 

@@ -122,7 +122,7 @@ Note: This assessment summarizes existing evidence; it does not run tests or CI 
 - **Threshold:** OWASP A05 (Security Misconfiguration) -- SSRF protection must be maintained when replacing crosstown-connector.ts
 - **Actual:** Full SSRF validation ported from `crosstown-connector.ts` to `CrosstownAdapter.validateConnectorUrl()`. 10 dedicated test cases cover URL validation, credential rejection, protocol enforcement, production-mode internal IP blocking, and development-mode Docker IP allowance.
 - **Evidence:** `crosstown-adapter.ts` lines 136-210 (validateConnectorUrl); `crosstown-adapter.test.ts` lines 121-228 ("SSRF Protection" describe block, 10 tests)
-- **Findings:** PASS. Comprehensive SSRF protection ported without regression. Production mode enforces HTTPS and blocks internal IPs (10.*, 172.16-31.*, 192.168.*, 169.254.*, localhost, 127.0.0.1, ::1). Development mode allows Docker network IPs and HTTP.
+- **Findings:** PASS. Comprehensive SSRF protection ported without regression. Production mode enforces HTTPS and blocks internal IPs (10._, 172.16-31._, 192.168._, 169.254._, localhost, 127.0.0.1, ::1). Development mode allows Docker network IPs and HTTP.
 
 ### Vulnerability Management
 
@@ -130,7 +130,7 @@ Note: This assessment summarizes existing evidence; it does not run tests or CI 
 - **Threshold:** 0 critical, 0 high vulnerabilities in added dependencies
 - **Actual:** `@crosstown/client@^0.4.2` and `@crosstown/relay@^0.4.2` are workspace packages (local implementations, not third-party npm packages). No new external transitive dependencies beyond what `nostr-tools` and `@noble/hashes` already provide.
 - **Evidence:** `packages/client/package.json` lines 36-37 (workspace:^0.4.2 dependencies); `packages/crosstown-client/package.json` and `packages/crosstown-relay/package.json` (local workspace packages)
-- **Findings:** PASS. Dependencies are workspace-local implementations. No new supply chain risk introduced. The nostr-tools and @noble/* dependencies were already present from Epic 1.
+- **Findings:** PASS. Dependencies are workspace-local implementations. No new supply chain risk introduced. The nostr-tools and @noble/\* dependencies were already present from Epic 1.
 
 ### Compliance (if applicable)
 
@@ -238,7 +238,7 @@ Note: This assessment summarizes existing evidence; it does not run tests or CI 
 
 - **Status:** PASS
 - **Threshold:** Tests should be deterministic, isolated, explicit, focused, and fast
-- **Actual:** Tests are co-located (*.test.ts), use vitest with proper mocking (`vi.fn()`, `vi.spyOn()`), have explicit assertions in test bodies (not hidden in helpers), use `beforeEach`/`afterEach` for proper cleanup, and cover error paths with try/catch blocks that verify specific error codes and boundaries. No hard waits or conditional logic.
+- **Actual:** Tests are co-located (\*.test.ts), use vitest with proper mocking (`vi.fn()`, `vi.spyOn()`), have explicit assertions in test bodies (not hidden in helpers), use `beforeEach`/`afterEach` for proper cleanup, and cover error paths with try/catch blocks that verify specific error codes and boundaries. No hard waits or conditional logic.
 - **Evidence:** `crosstown-adapter.test.ts` review: deterministic (no random data), isolated (global.fetch mocked/restored), explicit assertions, focused (each test validates one behavior), <300 lines per test.
 - **Findings:** PASS. Test quality is high. Follows all patterns from test-quality.md knowledge fragment.
 
@@ -403,17 +403,17 @@ Note: This assessment summarizes existing evidence; it does not run tests or CI 
 
 **Based on ADR Quality Readiness Checklist (8 categories, 29 criteria)**
 
-| Category                                         | Criteria Met | PASS | CONCERNS | FAIL | Overall Status     |
-| ------------------------------------------------ | ------------ | ---- | -------- | ---- | ------------------ |
-| 1. Testability & Automation                      | 3/4          | 3    | 1        | 0    | PASS               |
-| 2. Test Data Strategy                            | 3/3          | 3    | 0        | 0    | PASS               |
-| 3. Scalability & Availability                    | 1/4          | 1    | 3        | 0    | CONCERNS           |
-| 4. Disaster Recovery                             | N/A          | N/A  | N/A      | N/A  | N/A (client lib)   |
-| 5. Security                                      | 4/4          | 4    | 0        | 0    | PASS               |
-| 6. Monitorability, Debuggability & Manageability | 2/4          | 2    | 2        | 0    | CONCERNS           |
-| 7. QoS & QoE                                     | 1/4          | 1    | 3        | 0    | CONCERNS           |
-| 8. Deployability                                 | 3/3          | 3    | 0        | 0    | PASS               |
-| **Total**                                        | **17/26**    | **17** | **9**  | **0** | **CONCERNS**       |
+| Category                                         | Criteria Met | PASS   | CONCERNS | FAIL  | Overall Status   |
+| ------------------------------------------------ | ------------ | ------ | -------- | ----- | ---------------- |
+| 1. Testability & Automation                      | 3/4          | 3      | 1        | 0     | PASS             |
+| 2. Test Data Strategy                            | 3/3          | 3      | 0        | 0     | PASS             |
+| 3. Scalability & Availability                    | 1/4          | 1      | 3        | 0     | CONCERNS         |
+| 4. Disaster Recovery                             | N/A          | N/A    | N/A      | N/A   | N/A (client lib) |
+| 5. Security                                      | 4/4          | 4      | 0        | 0     | PASS             |
+| 6. Monitorability, Debuggability & Manageability | 2/4          | 2      | 2        | 0     | CONCERNS         |
+| 7. QoS & QoE                                     | 1/4          | 1      | 3        | 0     | CONCERNS         |
+| 8. Deployability                                 | 3/3          | 3      | 0        | 0     | PASS             |
+| **Total**                                        | **17/26**    | **17** | **9**    | **0** | **CONCERNS**     |
 
 **Criteria Met Scoring:**
 

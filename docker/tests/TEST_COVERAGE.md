@@ -173,12 +173,12 @@ docker compose down -v
 
 ### Acceptance Criteria Coverage
 
-| AC | Description | Integration Tests | Smoke Tests | Status |
-|----|-------------|-------------------|-------------|--------|
-| AC1 | Docker compose starts BitCraft server and Crosstown node | 12 tests | 3 tests | ✅ Complete |
-| AC2 | SpacetimeDB client can connect and subscribe | 6 tests | 3 tests | ✅ Complete |
-| AC3 | Cross-platform compatibility | 4 tests | 1 test | ✅ Complete |
-| AC4 | Development overrides with compose override file | 6 tests | 1 test | ✅ Complete |
+| AC  | Description                                              | Integration Tests | Smoke Tests | Status      |
+| --- | -------------------------------------------------------- | ----------------- | ----------- | ----------- |
+| AC1 | Docker compose starts BitCraft server and Crosstown node | 12 tests          | 3 tests     | ✅ Complete |
+| AC2 | SpacetimeDB client can connect and subscribe             | 6 tests           | 3 tests     | ✅ Complete |
+| AC3 | Cross-platform compatibility                             | 4 tests           | 1 test      | ✅ Complete |
+| AC4 | Development overrides with compose override file         | 6 tests           | 1 test      | ✅ Complete |
 
 ### Additional Coverage
 

@@ -279,12 +279,12 @@ try {
 
 **Error codes:**
 
-| Error Code | Description | Retryable |
-|------------|-------------|-----------|
-| `INVALID_SIGNATURE` | Signature verification failed | No |
-| `UNKNOWN_REDUCER` | Reducer not found in SpacetimeDB | No |
-| `REDUCER_FAILED` | Reducer execution failed | Yes |
-| `INVALID_CONTENT` | Event content parsing failed | No |
+| Error Code          | Description                      | Retryable |
+| ------------------- | -------------------------------- | --------- |
+| `INVALID_SIGNATURE` | Signature verification failed    | No        |
+| `UNKNOWN_REDUCER`   | Reducer not found in SpacetimeDB | No        |
+| `REDUCER_FAILED`    | Reducer execution failed         | Yes       |
+| `INVALID_CONTENT`   | Event content parsing failed     | No        |
 
 **BLS Handler Contract:**
 

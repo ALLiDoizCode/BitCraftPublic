@@ -1,7 +1,8 @@
 # Story 1.6 Report
 
 ## Overview
-- **Story file**: /Users/jonathangreen/Documents/BitCraftPublic/_bmad-output/implementation-artifacts/1-6-auto-reconnection-and-state-recovery.md
+
+- **Story file**: /Users/jonathangreen/Documents/BitCraftPublic/\_bmad-output/implementation-artifacts/1-6-auto-reconnection-and-state-recovery.md
 - **Git start**: `5bce4d2d98b9db2d5a6c55e33527d41901d60213`
 - **Duration**: Approximately 2 hours 45 minutes (wall-clock time from pipeline start to completion)
 - **Pipeline result**: Success
@@ -24,16 +25,19 @@ Story 1.6 implements auto-reconnection and state recovery for the Sigil client l
 ### Created Files
 
 **Core Implementation:**
+
 - `packages/client/src/spacetimedb/reconnection-types.ts` — TypeScript interfaces for reconnection events and configuration (129 lines)
 - `packages/client/src/spacetimedb/reconnection-manager.ts` — Core reconnection logic with exponential backoff (490 lines)
 - `packages/client/examples/auto-reconnection.ts` — Example usage demonstrating auto-reconnection
 
 **Test Files:**
+
 - `packages/client/src/spacetimedb/__tests__/reconnection-manager.test.ts` — Unit tests for ReconnectionManager (32 tests, 962 lines)
 - `packages/client/src/spacetimedb/__tests__/reconnection.integration.test.ts` — Integration tests with live BitCraft server (13 tests, ~600 lines)
 - `packages/client/src/spacetimedb/__tests__/reconnection-test-coverage-report.md` — Test coverage report
 
 **Artifacts:**
+
 - `_bmad-output/test-artifacts/atdd-checklist-1-6.md` — ATDD checklist (30 tests, 6 implementation groups)
 - `_bmad-output/nfr-test-reports/1-6-auto-reconnection-nfr-test-report.md` — NFR testing report
 - `_bmad-output/implementation-artifacts/1-6-test-review-report.md` — Test review report
@@ -52,6 +56,7 @@ Story 1.6 implements auto-reconnection and state recovery for the Sigil client l
 ## Pipeline Steps
 
 ### Step 1: Story 1.6 Create
+
 - **Status**: Success
 - **Duration**: ~3 minutes
 - **What changed**: Created story file (31KB, 599 lines)
@@ -60,6 +65,7 @@ Story 1.6 implements auto-reconnection and state recovery for the Sigil client l
 - **Remaining concerns**: None
 
 ### Step 2: Story 1.6 Validate
+
 - **Status**: Success
 - **Duration**: ~15 minutes
 - **What changed**: Expanded story file from 599 to 1066 lines (+467 lines)
@@ -68,6 +74,7 @@ Story 1.6 implements auto-reconnection and state recovery for the Sigil client l
 - **Remaining concerns**: None
 
 ### Step 3: Story 1.6 ATDD
+
 - **Status**: Success
 - **Duration**: ~15 minutes
 - **What changed**: Created 3 files (ATDD checklist, unit tests, integration tests)
@@ -76,6 +83,7 @@ Story 1.6 implements auto-reconnection and state recovery for the Sigil client l
 - **Remaining concerns**: Integration tests require Docker stack
 
 ### Step 4: Story 1.6 Develop
+
 - **Status**: Success (partial implementation)
 - **Duration**: ~45 minutes
 - **What changed**: Created reconnection-types.ts, reconnection-manager.ts, auto-reconnection.ts; modified client.ts, index.ts, test mocks
@@ -84,6 +92,7 @@ Story 1.6 implements auto-reconnection and state recovery for the Sigil client l
 - **Remaining concerns**: Subscription recovery incomplete (SubscriptionManager API not accessible), test coverage at 56%, integration tests missing, documentation incomplete, NFR23 not verified
 
 ### Step 5: Story 1.6 Post-Dev Artifact Verify
+
 - **Status**: Success
 - **Duration**: ~3 minutes
 - **What changed**: Updated story Status to "review", sprint-status.yaml to "review", marked completed tasks
@@ -92,9 +101,11 @@ Story 1.6 implements auto-reconnection and state recovery for the Sigil client l
 - **Remaining concerns**: None
 
 ### Step 6: Story 1.6 Frontend Polish
+
 - **Status**: Skipped (No frontend polish needed — backend-only story)
 
 ### Step 7: Story 1.6 Post-Dev Lint & Typecheck
+
 - **Status**: Success
 - **Duration**: ~3 minutes
 - **What changed**: Modified 3 TypeScript files to fix linting and type-checking issues
@@ -103,6 +114,7 @@ Story 1.6 implements auto-reconnection and state recovery for the Sigil client l
 - **Remaining concerns**: 8 intentional RED phase TDD test failures for unimplemented features
 
 ### Step 8: Story 1.6 Post-Dev Test Verification
+
 - **Status**: Success
 - **Duration**: ~35 minutes
 - **What changed**: Modified reconnection-manager.ts (fixed success handling, subscription capture/recovery), modified test file (skipped 4 RED phase tests, updated expectations)
@@ -111,6 +123,7 @@ Story 1.6 implements auto-reconnection and state recovery for the Sigil client l
 - **Remaining concerns**: 4 tests remain skipped for incomplete features
 
 ### Step 9: Story 1.6 NFR
+
 - **Status**: Success
 - **Duration**: ~15 minutes
 - **What changed**: Created NFR test report
@@ -119,6 +132,7 @@ Story 1.6 implements auto-reconnection and state recovery for the Sigil client l
 - **Remaining concerns**: Subscription recovery incomplete, integration tests skipped, test coverage 56%, AC coverage 60%
 
 ### Step 10: Story 1.6 Test Automate
+
 - **Status**: Success
 - **Duration**: ~15 minutes
 - **What changed**: Modified test file (added 11 tests, unskipped 2, fixed 3 edge cases), created coverage report, updated story file
@@ -127,6 +141,7 @@ Story 1.6 implements auto-reconnection and state recovery for the Sigil client l
 - **Remaining concerns**: None for unit tests
 
 ### Step 11: Story 1.6 Test Review
+
 - **Status**: Success
 - **Duration**: ~15 minutes
 - **What changed**: Added 4 new tests (28→32), updated coverage report, marked Task 9 complete, created review report
@@ -135,6 +150,7 @@ Story 1.6 implements auto-reconnection and state recovery for the Sigil client l
 - **Remaining concerns**: None
 
 ### Step 12: Story 1.6 Code Review #1
+
 - **Status**: Success
 - **Duration**: ~15 minutes
 - **What changed**: Modified reconnection-manager.ts (12 fixes), added 4 event type interfaces, updated tests, created fixes report
@@ -143,6 +159,7 @@ Story 1.6 implements auto-reconnection and state recovery for the Sigil client l
 - **Remaining concerns**: None
 
 ### Step 13: Story 1.6 Review #1 Artifact Verify
+
 - **Status**: Success
 - **Duration**: ~2 minutes
 - **What changed**: Added Code Review Record section to story file with review #1 entry
@@ -151,6 +168,7 @@ Story 1.6 implements auto-reconnection and state recovery for the Sigil client l
 - **Remaining concerns**: None
 
 ### Step 14: Story 1.6 Code Review #2
+
 - **Status**: Success
 - **Duration**: ~3 minutes
 - **What changed**: No files modified (implementation already in excellent condition)
@@ -159,6 +177,7 @@ Story 1.6 implements auto-reconnection and state recovery for the Sigil client l
 - **Remaining concerns**: None for current implementation
 
 ### Step 15: Story 1.6 Review #2 Artifact Verify
+
 - **Status**: Success
 - **Duration**: ~2 minutes
 - **What changed**: Added Review #2 entry to Code Review Record section
@@ -167,6 +186,7 @@ Story 1.6 implements auto-reconnection and state recovery for the Sigil client l
 - **Remaining concerns**: None
 
 ### Step 16: Story 1.6 Code Review #3
+
 - **Status**: Success
 - **Duration**: ~3 minutes
 - **What changed**: Fixed unused variable in reconnection-manager.ts, created final review report, updated story file
@@ -175,6 +195,7 @@ Story 1.6 implements auto-reconnection and state recovery for the Sigil client l
 - **Remaining concerns**: None (production-ready)
 
 ### Step 17: Story 1.6 Review #3 Artifact Verify
+
 - **Status**: Success
 - **Duration**: ~2 minutes
 - **What changed**: Updated story Status to "done", sprint-status.yaml to "done", enhanced Review #3 entry
@@ -183,9 +204,11 @@ Story 1.6 implements auto-reconnection and state recovery for the Sigil client l
 - **Remaining concerns**: None
 
 ### Step 18: Story 1.6 Security Scan
+
 - **Status**: Skipped (semgrep not installed — skipping security scan)
 
 ### Step 19: Story 1.6 Regression Lint & Typecheck
+
 - **Status**: Success
 - **Duration**: ~5 minutes
 - **What changed**: Modified 9 files (Prettier formatting), added TypeScript comment in vitest.config.ts
@@ -194,6 +217,7 @@ Story 1.6 implements auto-reconnection and state recovery for the Sigil client l
 - **Remaining concerns**: None
 
 ### Step 20: Story 1.6 Regression Test
+
 - **Status**: Success
 - **Duration**: ~2 minutes
 - **What changed**: No files changed
@@ -202,9 +226,11 @@ Story 1.6 implements auto-reconnection and state recovery for the Sigil client l
 - **Remaining concerns**: None
 
 ### Step 21: Story 1.6 E2E
+
 - **Status**: Skipped (No E2E tests needed — backend-only story)
 
 ### Step 22: Story 1.6 Trace
+
 - **Status**: Success
 - **Duration**: ~8 minutes
 - **What changed**: Created traceability analysis report (650 lines), modified story file (added Review #4)
@@ -217,12 +243,15 @@ Story 1.6 implements auto-reconnection and state recovery for the Sigil client l
 ### Tests Generated
 
 **ATDD Tests:**
+
 - `_bmad-output/test-artifacts/atdd-checklist-1-6.md` — 30 tests across 6 implementation groups
 
 **Unit Tests:**
+
 - `packages/client/src/spacetimedb/__tests__/reconnection-manager.test.ts` — 32 tests (100% pass rate)
 
 **Integration Tests:**
+
 - `packages/client/src/spacetimedb/__tests__/reconnection.integration.test.ts` — 13 tests (requires Docker)
 
 ### Coverage Summary
@@ -245,7 +274,7 @@ All 5 acceptance criteria have comprehensive test coverage:
 ## Code Review Findings
 
 | Pass | Critical | High | Medium | Low | Total Found | Fixed | Remaining |
-|------|----------|------|--------|-----|-------------|-------|-----------|
+| ---- | -------- | ---- | ------ | --- | ----------- | ----- | --------- |
 | #1   | 0        | 3    | 4      | 5   | 12          | 12    | 0         |
 | #2   | 0        | 0    | 0      | 0   | 0           | 0     | 0         |
 | #3   | 0        | 0    | 1      | 0   | 1           | 1     | 0         |
@@ -253,6 +282,7 @@ All 5 acceptance criteria have comprehensive test coverage:
 **Total Issues**: 13 found, 13 fixed, 0 remaining
 
 **Key Fixes:**
+
 - High: Missing error handling in reconnection loop, race condition in handleReconnectSuccess, memory leak in subscription metadata
 - Medium: Console.error/warn in production, missing timeout in subscription recovery, incorrect state tracking, unused variable
 - Low: Duplicate method, missing JSDoc, type assertion, magic number, inconsistent naming
@@ -285,6 +315,7 @@ This story has no UI impact (backend library code), so no manual UI verification
 For developers integrating the reconnection manager:
 
 1. **Verify automatic reconnection**:
+
    ```typescript
    const client = new SigilClient({ reconnection: { enabled: true } });
    await client.connect('ws://localhost:3000');
@@ -298,6 +329,7 @@ For developers integrating the reconnection manager:
    ```
 
 2. **Verify exponential backoff**:
+
    ```typescript
    // Monitor reconnection attempts
    client.on('reconnectionAttempt', (event) => {
@@ -306,6 +338,7 @@ For developers integrating the reconnection manager:
    ```
 
 3. **Verify manual control**:
+
    ```typescript
    // Cancel ongoing reconnection
    client.cancelReconnection();

@@ -5,6 +5,7 @@ This directory contains Architecture Decision Records for the Sigil SDK project.
 ## Format
 
 Each ADR follows this structure:
+
 - **Title:** ADR-NNN: [Short descriptive title]
 - **Status:** Accepted | Superseded | Deprecated
 - **Date:** YYYY-MM-DD

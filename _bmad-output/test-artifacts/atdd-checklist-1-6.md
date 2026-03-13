@@ -1,5 +1,12 @@
 ---
-stepsCompleted: ['step-01-preflight-and-context', 'step-02-generation-mode', 'step-03-test-strategy', 'step-04-generate-tests', 'step-05-validate-and-complete']
+stepsCompleted:
+  [
+    'step-01-preflight-and-context',
+    'step-02-generation-mode',
+    'step-03-test-strategy',
+    'step-04-generate-tests',
+    'step-05-validate-and-complete',
+  ]
 lastStep: 'step-05-validate-and-complete'
 lastSaved: '2026-02-27'
 workflowType: 'testarch-atdd'
@@ -219,13 +226,13 @@ As a user of the Sigil client library, I want the system to automatically reconn
 const scenario = createReconnectionScenario({
   maxReconnectAttempts: 3,
   initialDelay: 500,
-  hasActiveSubscriptions: true
+  hasActiveSubscriptions: true,
 });
 
 const config = createConnectionConfig({
   host: 'localhost',
   port: 3000,
-  reconnection: { autoReconnect: true, maxReconnectAttempts: 10 }
+  reconnection: { autoReconnect: true, maxReconnectAttempts: 10 },
 });
 ```
 
@@ -254,7 +261,10 @@ const config = createConnectionConfig({
 ```typescript
 import { test } from './fixtures/reconnection-manager.fixture';
 
-test('should reconnect and restore subscriptions', async ({ mockConnection, mockSubscriptionManager }) => {
+test('should reconnect and restore subscriptions', async ({
+  mockConnection,
+  mockSubscriptionManager,
+}) => {
   const manager = new ReconnectionManager(mockConnection);
 
   // Simulate disconnect
@@ -311,10 +321,8 @@ export default defineConfig({
     hookTimeout: 10000,
     teardownTimeout: 5000,
     // Only run integration tests when env var set
-    include: process.env.RUN_INTEGRATION_TESTS
-      ? ['**/*.integration.test.ts']
-      : [],
-  }
+    include: process.env.RUN_INTEGRATION_TESTS ? ['**/*.integration.test.ts'] : [],
+  },
 });
 ```
 

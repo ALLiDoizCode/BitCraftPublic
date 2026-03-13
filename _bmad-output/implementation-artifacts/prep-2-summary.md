@@ -27,6 +27,7 @@ Validate Linux compatibility for the Sigil SDK and establish CI coverage on both
 - Comprehensive validation checklist created
 
 **Key Findings:**
+
 - No platform-specific bugs detected
 - All platform checks correctly implemented
 - Docker volume permissions on Linux documented with workaround
@@ -39,34 +40,36 @@ Validate Linux compatibility for the Sigil SDK and establish CI coverage on both
 
 ### 1. Documentation Created
 
-| Document | Path | Purpose |
-|----------|------|---------|
+| Document                   | Path                                                                         | Purpose                                            |
+| -------------------------- | ---------------------------------------------------------------------------- | -------------------------------------------------- |
 | Linux Validation Checklist | `_bmad-output/implementation-artifacts/prep-2-linux-validation-checklist.md` | Step-by-step Linux setup and validation procedures |
-| Platform Analysis | `_bmad-output/implementation-artifacts/prep-2-platform-analysis.md` | Complete audit of platform-specific code |
-| Summary Report | `_bmad-output/implementation-artifacts/prep-2-summary.md` | This document |
+| Platform Analysis          | `_bmad-output/implementation-artifacts/prep-2-platform-analysis.md`          | Complete audit of platform-specific code           |
+| Summary Report             | `_bmad-output/implementation-artifacts/prep-2-summary.md`                    | This document                                      |
 
 ### 2. CI Workflows Updated
 
-| File | Changes | Impact |
-|------|---------|--------|
+| File                                  | Changes                                         | Impact                                                             |
+| ------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------ |
 | `.github/workflows/ci-typescript.yml` | Added macOS matrix, separated integration tests | Unit tests run on Ubuntu + macOS, integration tests on Ubuntu only |
-| `.github/workflows/ci-rust.yml` | Added macOS matrix | Rust tests run on Ubuntu + macOS (currently 0 tests) |
+| `.github/workflows/ci-rust.yml`       | Added macOS matrix                              | Rust tests run on Ubuntu + macOS (currently 0 tests)               |
 
 **Before PREP-2:**
+
 - CI: Ubuntu only
 - Tests: Unit tests only (no integration tests in CI)
 
 **After PREP-2:**
+
 - CI: Ubuntu + macOS matrix (unit tests)
 - Tests: Unit tests + integration tests (Docker on Ubuntu)
 
 ### 3. Documentation Updated
 
-| File | Changes |
-|------|---------|
-| `README.md` | Added Platform Requirements section, Linux-specific notes, CI status badges |
-| `CLAUDE.md` | Updated Epic 2 prep status (PREP-2 ✅ complete) |
-| `docker/README.md` | Enhanced Linux permission troubleshooting section |
+| File               | Changes                                                                     |
+| ------------------ | --------------------------------------------------------------------------- |
+| `README.md`        | Added Platform Requirements section, Linux-specific notes, CI status badges |
+| `CLAUDE.md`        | Updated Epic 2 prep status (PREP-2 ✅ complete)                             |
+| `docker/README.md` | Enhanced Linux permission troubleshooting section                           |
 
 ---
 
@@ -74,21 +77,21 @@ Validate Linux compatibility for the Sigil SDK and establish CI coverage on both
 
 ### Identified Platform Checks
 
-| Location | Check | Purpose | Status |
-|----------|-------|---------|--------|
-| `storage.ts:169` | `process.platform !== 'win32'` | Set directory permissions `0o700` | ✅ OK |
-| `storage.ts:211` | `process.platform !== 'win32'` | Set file permissions `0o600` | ✅ OK |
-| `storage.test.ts:52` | `process.platform === 'win32'` | Skip permission test on Windows | ✅ OK |
-| `storage.test.ts:73` | `process.platform === 'win32'` | Skip permission test on Windows | ✅ OK |
+| Location             | Check                          | Purpose                           | Status |
+| -------------------- | ------------------------------ | --------------------------------- | ------ |
+| `storage.ts:169`     | `process.platform !== 'win32'` | Set directory permissions `0o700` | ✅ OK  |
+| `storage.ts:211`     | `process.platform !== 'win32'` | Set file permissions `0o600`      | ✅ OK  |
+| `storage.test.ts:52` | `process.platform === 'win32'` | Skip permission test on Windows   | ✅ OK  |
+| `storage.test.ts:73` | `process.platform === 'win32'` | Skip permission test on Windows   | ✅ OK  |
 
 ### Cross-Platform APIs Used
 
-| API | Usage | Platform-Safe | Notes |
-|-----|-------|---------------|-------|
-| `path.join()` | Widespread | ✅ Yes | Handles path separators correctly |
-| `os.homedir()` | 2 locations | ✅ Yes | Works on all platforms |
-| `os.tmpdir()` | 1 location | ✅ Yes | Works on all platforms |
-| `fs.chmodSync()` | 3 locations | ⚠️ Unix-only | Correctly guarded with platform checks |
+| API              | Usage       | Platform-Safe | Notes                                  |
+| ---------------- | ----------- | ------------- | -------------------------------------- |
+| `path.join()`    | Widespread  | ✅ Yes        | Handles path separators correctly      |
+| `os.homedir()`   | 2 locations | ✅ Yes        | Works on all platforms                 |
+| `os.tmpdir()`    | 1 location  | ✅ Yes        | Works on all platforms                 |
+| `fs.chmodSync()` | 3 locations | ⚠️ Unix-only  | Correctly guarded with platform checks |
 
 **Verdict:** All platform-specific code is correctly implemented with appropriate guards.
 
@@ -98,21 +101,21 @@ Validate Linux compatibility for the Sigil SDK and establish CI coverage on both
 
 ### Unit Tests (810 tests)
 
-| Platform | Status | Duration | CI Coverage | Notes |
-|----------|--------|----------|-------------|-------|
-| Ubuntu 24.04 | ✅ Pass | ~30s | ✅ CI | Validated in PREP-2 |
-| macOS (local) | ✅ Pass | ~30s | N/A | Validated in Epic 1 |
-| macOS (CI) | ✅ Pass | ~30s | ✅ CI | Added in PREP-2 |
-| Windows | ⚠️ Unknown | N/A | ❌ No CI | Out of scope for Epic 2 |
+| Platform      | Status     | Duration | CI Coverage | Notes                   |
+| ------------- | ---------- | -------- | ----------- | ----------------------- |
+| Ubuntu 24.04  | ✅ Pass    | ~30s     | ✅ CI       | Validated in PREP-2     |
+| macOS (local) | ✅ Pass    | ~30s     | N/A         | Validated in Epic 1     |
+| macOS (CI)    | ✅ Pass    | ~30s     | ✅ CI       | Added in PREP-2         |
+| Windows       | ⚠️ Unknown | N/A      | ❌ No CI    | Out of scope for Epic 2 |
 
 ### Integration Tests (127 tests)
 
-| Platform | Status | Duration | CI Coverage | Notes |
-|----------|--------|----------|-------------|-------|
-| Ubuntu 24.04 | ✅ Pass | ~2-3min | ✅ CI | Docker required |
-| macOS (local) | ✅ Pass | ~2-3min | N/A | Docker Desktop works locally |
-| macOS (CI) | ⏭️ Skip | N/A | ❌ No | GitHub macOS runners don't support Docker |
-| Windows | ⚠️ Unknown | N/A | ❌ No CI | Out of scope for Epic 2 |
+| Platform      | Status     | Duration | CI Coverage | Notes                                     |
+| ------------- | ---------- | -------- | ----------- | ----------------------------------------- |
+| Ubuntu 24.04  | ✅ Pass    | ~2-3min  | ✅ CI       | Docker required                           |
+| macOS (local) | ✅ Pass    | ~2-3min  | N/A         | Docker Desktop works locally              |
+| macOS (CI)    | ⏭️ Skip    | N/A      | ❌ No       | GitHub macOS runners don't support Docker |
+| Windows       | ⚠️ Unknown | N/A      | ❌ No CI    | Out of scope for Epic 2                   |
 
 **Note:** Integration tests run on Ubuntu in CI. macOS users can run integration tests locally with Docker Desktop, but GitHub Actions macOS runners don't support Docker.
 
@@ -123,6 +126,7 @@ Validate Linux compatibility for the Sigil SDK and establish CI coverage on both
 ### TypeScript CI (Updated)
 
 **Job 1: Unit Tests (Matrix)**
+
 - Platforms: Ubuntu + macOS
 - Duration: ~30 seconds per platform
 - Tests: 810 unit tests
@@ -130,6 +134,7 @@ Validate Linux compatibility for the Sigil SDK and establish CI coverage on both
 - Caching: pnpm store cached by platform
 
 **Job 2: Integration Tests (Ubuntu Only)**
+
 - Platform: Ubuntu 24.04
 - Duration: ~2-3 minutes (includes Docker startup)
 - Tests: 127 integration tests
@@ -142,6 +147,7 @@ Validate Linux compatibility for the Sigil SDK and establish CI coverage on both
 ### Rust CI (Updated)
 
 **Job: Rust Tests (Matrix)**
+
 - Platforms: Ubuntu + macOS
 - Duration: ~10 seconds (no active Rust code yet)
 - Tests: 0 tests (TUI placeholder only)
@@ -158,6 +164,7 @@ Validate Linux compatibility for the Sigil SDK and establish CI coverage on both
 **Impact:** Volume mount permission errors on some Linux systems.
 
 **Workaround:**
+
 ```bash
 sudo chown -R 1000:1000 docker/volumes/
 docker compose restart
@@ -172,6 +179,7 @@ docker compose restart
 **Impact:** Integration tests cannot run on macOS in CI.
 
 **Mitigation:**
+
 - Integration tests run on Ubuntu in CI (sufficient coverage)
 - macOS users can run integration tests locally with Docker Desktop
 - Unit tests run on macOS in CI (validates most code paths)
@@ -185,6 +193,7 @@ docker compose restart
 **Impact:** Unknown Windows compatibility.
 
 **Mitigation:**
+
 - File permission code gracefully skips on Windows
 - Path handling uses cross-platform APIs
 - Docker Desktop for Windows uses WSL2 (likely compatible)
@@ -241,6 +250,7 @@ docker compose restart
 ### 3. Rust Code Platform Validation (PREP-5)
 
 When Epic 2 Story 2.4 (BLS handler) adds Rust code:
+
 - Validate Rust dependencies work on Linux + macOS
 - Check for platform-specific syscalls or crates
 - Test process management (if applicable)
@@ -258,11 +268,13 @@ When Epic 2 Story 2.4 (BLS handler) adds Rust code:
 ## Files Changed
 
 ### Created
+
 - `_bmad-output/implementation-artifacts/prep-2-linux-validation-checklist.md`
 - `_bmad-output/implementation-artifacts/prep-2-platform-analysis.md`
 - `_bmad-output/implementation-artifacts/prep-2-summary.md`
 
 ### Modified
+
 - `.github/workflows/ci-typescript.yml` (added macOS matrix, integration tests)
 - `.github/workflows/ci-rust.yml` (added macOS matrix)
 - `README.md` (added Platform Requirements section, CI badges)

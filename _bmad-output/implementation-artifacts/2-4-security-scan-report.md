@@ -78,6 +78,7 @@
 **CWE:** CWE-134 (Use of Externally-Controlled Format String)
 
 **Finding:**
+
 ```typescript
 // BEFORE (line 203):
 console.error(`\n${colors.red}FATAL ERROR:${colors.reset}`, error);
@@ -86,6 +87,7 @@ console.error(`\n${colors.red}FATAL ERROR:${colors.reset}`, error);
 **Issue:** Detected string concatenation with a non-literal variable in a console.error function. If an attacker injects a format specifier in the error string, it could forge the log message.
 
 **Risk Assessment:**
+
 - **Likelihood:** MEDIUM
 - **Impact:** LOW
 - **Confidence:** LOW
@@ -96,6 +98,7 @@ console.error(`\n${colors.red}FATAL ERROR:${colors.reset}`, error);
 #### Fix #1: Safe Error Logging Pattern (Line 203)
 
 **Changed:**
+
 ```typescript
 // BEFORE:
 main().catch((error) => {
@@ -105,6 +108,7 @@ main().catch((error) => {
 ```
 
 **To:**
+
 ```typescript
 // AFTER:
 main().catch((error) => {
@@ -122,6 +126,7 @@ main().catch((error) => {
 #### Fix #2: Safe Error Message Logging (Line 169)
 
 **Changed:**
+
 ```typescript
 // BEFORE:
 } catch (error) {
@@ -130,6 +135,7 @@ main().catch((error) => {
 ```
 
 **To:**
+
 ```typescript
 // AFTER:
 } catch (error) {
@@ -150,6 +156,7 @@ main().catch((error) => {
 ### Final Scan (After Fixes)
 
 **Results:**
+
 ```
 ✅ Scan completed successfully.
  • Findings: 0 (0 blocking)
@@ -159,6 +166,7 @@ main().catch((error) => {
 ```
 
 **Rulesets Used:**
+
 - ✅ `auto` - Semgrep's auto-detection of language-specific rules
 - ✅ `p/owasp-top-ten` - OWASP Top 10 security patterns (1147 rules)
 - ✅ `p/security-audit` - General security audit rules
@@ -176,12 +184,14 @@ main().catch((error) => {
 **Coverage:** All authentication and authorization mechanisms reviewed.
 
 **Findings:**
+
 - ✅ No hardcoded credentials found
 - ✅ No authentication bypass vulnerabilities
 - ✅ Placeholder tokens in documentation clearly marked as examples
 - ✅ Security warnings present for admin token usage in MVP
 
 **Relevant Code:**
+
 - BLS error types enforce retryable/non-retryable semantics
 - Identity propagation via Nostr pubkey (cryptographically signed)
 
@@ -192,12 +202,14 @@ main().catch((error) => {
 **Coverage:** All cryptographic operations and secret handling reviewed.
 
 **Findings:**
+
 - ✅ No hardcoded secrets or API keys
 - ✅ No weak cryptographic algorithms used
 - ✅ Documentation references industry-standard secp256k1 (Schnorr signatures)
 - ✅ Placeholder tokens in docs have security warnings
 
 **Relevant Code:**
+
 - Contract validation tests ensure signature structure integrity
 - Event ID computation per NIP-01 standard (SHA256)
 
@@ -208,6 +220,7 @@ main().catch((error) => {
 **Coverage:** All input validation and dynamic code execution reviewed.
 
 **Findings:**
+
 - ✅ No SQL injection vectors (no database queries in scanned code)
 - ✅ No command injection vectors (no shell command execution)
 - ✅ No template injection vectors (fixed format string issues)
@@ -215,6 +228,7 @@ main().catch((error) => {
 - ✅ Reducer name format validation tests present
 
 **Relevant Code:**
+
 - Contract validation: `contract-validation.test.ts` tests malformed JSON, invalid reducer names, injection patterns
 - Safe logging patterns applied throughout
 
@@ -225,12 +239,14 @@ main().catch((error) => {
 **Coverage:** Architecture and design patterns reviewed.
 
 **Findings:**
+
 - ✅ Zero silent failures enforced (AC6 requirement)
 - ✅ Explicit error codes for all failure modes
 - ✅ Retryable/non-retryable semantics clearly defined
 - ✅ Type safety enforced via TypeScript strict mode
 
 **Relevant Code:**
+
 - BLSErrorResponse interface with retryable field
 - Type guards prevent runtime type confusion
 - Integration tests validate error propagation
@@ -242,12 +258,14 @@ main().catch((error) => {
 **Coverage:** Configuration and environment variables reviewed.
 
 **Findings:**
+
 - ✅ Environment variables documented with security warnings
 - ✅ Admin token risk documented with mitigation plan
 - ✅ No default credentials in code
 - ✅ Placeholder values clearly marked in documentation
 
 **Relevant Code:**
+
 - `docs/bls-handler-contract.md` - Security Note on line 476
 - `docker/README.md` - Security warnings for admin token
 
@@ -258,12 +276,14 @@ main().catch((error) => {
 **Coverage:** Dependencies and third-party code reviewed.
 
 **Findings:**
+
 - ✅ No vulnerable dependencies detected (would require separate `pnpm audit`)
 - ✅ TypeScript strict mode enabled
 - ✅ Modern ES2022 target
 - ✅ Well-maintained libraries referenced in docs (@noble/secp256k1)
 
 **Recommended Actions:**
+
 - Run `pnpm audit` regularly (separate from Semgrep scan)
 - Monitor secp256k1 library updates (Crosstown responsibility)
 
@@ -274,11 +294,13 @@ main().catch((error) => {
 **Coverage:** Authentication and session management reviewed.
 
 **Findings:**
+
 - ✅ No password-based authentication (Nostr signature-based only)
 - ✅ No session management vulnerabilities (stateless)
 - ✅ Signature validation enforced in contract
 
 **Relevant Code:**
+
 - Contract validation tests: signature validation, event ID tampering detection
 - Integration tests: `should reject event with invalid signature` (line ~176)
 
@@ -289,11 +311,13 @@ main().catch((error) => {
 **Coverage:** Code integrity and data validation reviewed.
 
 **Findings:**
+
 - ✅ Event ID computation validated (deterministic, tamper-evident)
 - ✅ Content validation enforced (JSON schema)
 - ✅ Signature validation enforced (Schnorr via secp256k1)
 
 **Relevant Code:**
+
 - `contract-validation.test.ts`: Event ID tampering detection tests
 - `contract-validation.test.ts`: Content tampering detection tests
 
@@ -304,12 +328,14 @@ main().catch((error) => {
 **Coverage:** Logging and error handling reviewed.
 
 **Findings:**
+
 - ✅ All errors logged with context (event ID, pubkey, reducer, error reason)
 - ✅ Safe logging patterns applied (no format string injection)
 - ✅ Zero silent failures enforced (AC6)
 - ✅ No sensitive data in logs (pubkeys are public, no private keys logged)
 
 **Relevant Code:**
+
 - Smoke test script: Safe error logging patterns (lines 169, 203)
 - Integration tests: `should log all errors with event context` (AC6 test)
 
@@ -320,11 +346,13 @@ main().catch((error) => {
 **Coverage:** External request handling reviewed.
 
 **Findings:**
+
 - ✅ No dynamic URL construction from user input
 - ✅ SpacetimeDB URL is configured (environment variable, not user-controlled)
 - ✅ Crosstown relay URL is configured (environment variable, not user-controlled)
 
 **Relevant Code:**
+
 - Smoke test script: CROSSTOWN_RELAY_URL from environment (line ~30)
 - Documentation: SPACETIMEDB_URL configuration in docs/bls-handler-contract.md
 
@@ -365,6 +393,7 @@ pnpm --filter @sigil/client build
 ```
 
 **Result:**
+
 ```
 ✅ ESM Build success in 25ms
 ✅ CJS Build success in 26ms
@@ -372,6 +401,7 @@ pnpm --filter @sigil/client build
 ```
 
 **Outputs:**
+
 - dist/index.js (112.99 KB)
 - dist/index.cjs (115.68 KB)
 - dist/index.d.ts (61.25 KB)
@@ -383,6 +413,7 @@ pnpm --filter @sigil/client test --run
 ```
 
 **Result:**
+
 ```
 ✅ Test Files: 28 passed | 6 skipped (34)
 ✅ Tests: 591 passed | 97 skipped (688)

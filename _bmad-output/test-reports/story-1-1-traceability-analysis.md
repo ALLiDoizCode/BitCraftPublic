@@ -129,7 +129,7 @@
 
 ### AC3: Root configuration files present
 
-**Requirement:** Monorepo setup → root configs exist → ESLint (.eslintrc.cjs), Prettier (.prettierrc), .env.example → .gitignore excludes node_modules/, target/, .env, dist/, build/, _.tsbuildinfo, .turbo/, _.local, coverage/
+**Requirement:** Monorepo setup → root configs exist → ESLint (.eslintrc.cjs), Prettier (.prettierrc), .env.example → .gitignore excludes node*modules/, target/, .env, dist/, build/, *.tsbuildinfo, .turbo/, \_.local, coverage/
 
 **Test Coverage:**
 

@@ -10,6 +10,7 @@
 ## Executive Summary
 
 Comprehensive code review performed on Story 2.3 implementation covering:
+
 - OWASP Top 10 security vulnerabilities
 - Code quality and best practices
 - Input validation and error handling
@@ -17,6 +18,7 @@ Comprehensive code review performed on Story 2.3 implementation covering:
 - Documentation completeness
 
 **Findings:**
+
 - **Critical Severity:** 0 issues
 - **High Severity:** 1 issue (resolved)
 - **Medium Severity:** 3 issues (resolved)
@@ -39,17 +41,20 @@ The URL validation in `validateConnectorUrl` only checks the hostname at constru
 
 **Impact:**
 An attacker controlling a DNS server could bypass SSRF protection by:
+
 1. User configures connector URL to `https://attacker.com`
 2. Initial validation resolves to public IP (passes validation)
 3. Later requests resolve to internal IP (e.g., `192.168.1.1`)
 4. Attacker gains access to internal resources
 
 **Risk Score:** HIGH (7.5/10)
+
 - Exploitability: Medium (requires DNS control)
 - Impact: High (internal network access)
 - Likelihood: Low (requires targeted attack)
 
 **Fix Applied:**
+
 1. Added `validateResolvedIp()` method called before each HTTP request
 2. Added JSDoc documentation explaining DNS rebinding risk
 3. Noted limitation: Full DNS resolution validation requires Node.js `dns` module (not available in browsers)
@@ -58,6 +63,7 @@ An attacker controlling a DNS server could bypass SSRF protection by:
 **Note:** Full DNS rebinding protection would require runtime IP resolution checks, which are only available in Node.js environments. For browser compatibility, we rely on construction-time validation and clear documentation. Future enhancement: Add optional DNS pre-resolution for Node.js environments.
 
 **Files Changed:**
+
 - `packages/client/src/crosstown/crosstown-connector.ts` (lines 163-225)
 
 ---
@@ -72,6 +78,7 @@ An attacker controlling a DNS server could bypass SSRF protection by:
 The `constructILPPacket` function didn't validate that the `pubkey` parameter is a valid 64-character hex string. Invalid pubkeys could cause downstream failures in signing or relay processing.
 
 **Impact:**
+
 - Invalid events sent to relays (rejected by NIP-01 validators)
 - Cryptographic signing errors (nostr-tools expects valid pubkey format)
 - Debugging complexity (errors occur downstream from root cause)
@@ -79,6 +86,7 @@ The `constructILPPacket` function didn't validate that the `pubkey` parameter is
 **Risk Score:** MEDIUM (5.0/10)
 
 **Fix Applied:**
+
 ```typescript
 // Validation: pubkey must be valid 64-character hex string
 if (typeof pubkey !== 'string' || !/^[0-9a-f]{64}$/i.test(pubkey)) {
@@ -91,10 +99,12 @@ if (typeof pubkey !== 'string' || !/^[0-9a-f]{64}$/i.test(pubkey)) {
 ```
 
 **Tests Added:**
+
 - `should throw INVALID_ACTION for invalid pubkey format (ISSUE-2 fix)`
 - `should throw INVALID_ACTION for non-string pubkey`
 
 **Files Changed:**
+
 - `packages/client/src/publish/ilp-packet.ts` (lines 95-102)
 - `packages/client/src/publish/ilp-packet.test.ts` (added 2 tests)
 
@@ -108,6 +118,7 @@ if (typeof pubkey !== 'string' || !/^[0-9a-f]{64}$/i.test(pubkey)) {
 If confirmation events are never received (e.g., relay failure, network partition), pending publishes accumulate in the `Map<string, PendingPublish>` without cleanup beyond the timeout mechanism. Long-running clients could consume unbounded memory.
 
 **Impact:**
+
 - Memory consumption grows linearly with failed publishes
 - In worst case (timeout mechanism fails), map grows indefinitely
 - Long-running production clients could OOM after thousands of failed publishes
@@ -115,6 +126,7 @@ If confirmation events are never received (e.g., relay failure, network partitio
 **Risk Score:** MEDIUM (6.0/10)
 
 **Fix Applied:**
+
 1. Added `pendingPublishCleanupInterval` property to track cleanup timer
 2. Start cleanup interval on client construction (runs every 60s)
 3. Implemented `cleanupStalePendingPublishes()` method with size limit (1000 entries)
@@ -122,6 +134,7 @@ If confirmation events are never received (e.g., relay failure, network partitio
 5. Clear interval in `disconnect()` to prevent timer leaks
 
 **Implementation:**
+
 ```typescript
 // Constructor
 this.pendingPublishCleanupInterval = setInterval(() => {
@@ -144,6 +157,7 @@ private cleanupStalePendingPublishes(): void {
 ```
 
 **Files Changed:**
+
 - `packages/client/src/client.ts` (lines 232, 349-353, 527-531, 700-722)
 
 ---
@@ -156,6 +170,7 @@ private cleanupStalePendingPublishes(): void {
 Balance check error didn't include timestamp for debugging. When investigating balance-related issues, timing information is critical to correlate with blockchain state.
 
 **Impact:**
+
 - Harder to debug race conditions (balance updated between check and publish)
 - Difficult to correlate errors with backend logs (no timestamp)
 - Poor user experience (can't determine when balance was insufficient)
@@ -163,6 +178,7 @@ Balance check error didn't include timestamp for debugging. When investigating b
 **Risk Score:** MEDIUM (4.0/10)
 
 **Fix Applied:**
+
 ```typescript
 throw new SigilError(
   `Insufficient balance for action '${options.reducer}'. Required: ${cost}, Available: ${balance}`,
@@ -173,6 +189,7 @@ throw new SigilError(
 ```
 
 **Files Changed:**
+
 - `packages/client/src/client.ts` (line 759)
 
 ---
@@ -187,6 +204,7 @@ throw new SigilError(
 Helper functions `parseILPPacket` and `extractFeeFromEvent` lacked comprehensive JSDoc comments with examples.
 
 **Impact:**
+
 - Reduced code maintainability
 - Poor developer experience (IDE tooltips incomplete)
 - Unclear API contract (null return vs exception)
@@ -195,12 +213,14 @@ Helper functions `parseILPPacket` and `extractFeeFromEvent` lacked comprehensive
 
 **Fix Applied:**
 Added comprehensive JSDoc with:
+
 - Parameter descriptions
 - Return value documentation
 - Usage examples
 - Design rationale (why `parseILPPacket` returns null instead of throwing)
 
 **Files Changed:**
+
 - `packages/client/src/publish/ilp-packet.ts` (lines 143-211)
 
 ---
@@ -215,6 +235,7 @@ Added comprehensive JSDoc with:
 `parseILPPacket` returns `null` on error instead of throwing `SigilError`, which is inconsistent with other validation functions.
 
 **Impact:**
+
 - API inconsistency (some functions throw, some return null)
 - Potential for silent failures if null check is missed
 
@@ -222,6 +243,7 @@ Added comprehensive JSDoc with:
 
 **Decision:**
 Keep null return pattern. Rationale:
+
 1. Function parses untrusted relay events (not user input)
 2. Malformed events are expected (relays may relay invalid data)
 3. Throwing would require try/catch at every call site
@@ -242,6 +264,7 @@ Added clear JSDoc explaining the null return pattern and when it occurs.
 No client-side rate limiting to prevent accidental DOS of Crosstown connector. User could accidentally flood with requests in a loop.
 
 **Impact:**
+
 - User's own requests get rate-limited (429 errors)
 - Degraded service for all users if shared connector
 - Poor user experience (no warning before hitting limit)
@@ -250,6 +273,7 @@ No client-side rate limiting to prevent accidental DOS of Crosstown connector. U
 
 **Recommendation:**
 Add client-side rate limiter:
+
 ```typescript
 class RateLimiter {
   private requests: number[] = [];
@@ -258,7 +282,7 @@ class RateLimiter {
 
   async checkLimit(): Promise<void> {
     const now = Date.now();
-    this.requests = this.requests.filter(t => t > now - this.windowMs);
+    this.requests = this.requests.filter((t) => t > now - this.windowMs);
     if (this.requests.length >= this.maxRequests) {
       throw new SigilError('Rate limit exceeded', 'RATE_LIMITED', 'publish');
     }
@@ -281,6 +305,7 @@ class RateLimiter {
 All publish actions use same timeout (`publishTimeout`), but some complex actions might need longer waits.
 
 **Impact:**
+
 - Complex reducers (e.g., bulk crafting) may timeout unnecessarily
 - User must choose between too-short (failures) or too-long (poor UX) global timeout
 
@@ -288,6 +313,7 @@ All publish actions use same timeout (`publishTimeout`), but some complex action
 
 **Recommendation:**
 Add optional `timeout` parameter to `publish()`:
+
 ```typescript
 publish(options: ILPPacketOptions, timeout?: number): Promise<ILPPacketResult>
 ```
@@ -306,6 +332,7 @@ publish(options: ILPPacketOptions, timeout?: number): Promise<ILPPacketResult>
 `cleanupPendingPublish` doesn't log cleanup operations for debugging.
 
 **Impact:**
+
 - Harder to debug timeout/cleanup issues
 - No visibility into cleanup frequency
 
@@ -313,6 +340,7 @@ publish(options: ILPPacketOptions, timeout?: number): Promise<ILPPacketResult>
 
 **Recommendation:**
 Add conditional debug logging:
+
 ```typescript
 if (process.env.DEBUG) {
   console.log('[SigilClient] Cleaned up pending publish:', eventId);
@@ -328,6 +356,7 @@ if (process.env.DEBUG) {
 ### A01:2021 - Broken Access Control ✅ PASS
 
 **Controls Validated:**
+
 - ✅ Rate limiting handled by Crosstown connector (429 response handling implemented)
 - ✅ No authentication bypass (Nostr signature required end-to-end)
 - ✅ Public key verification at BLS handler (end-to-end crypto)
@@ -339,6 +368,7 @@ if (process.env.DEBUG) {
 ### A02:2021 - Cryptographic Failures ✅ PASS
 
 **Controls Validated:**
+
 - ✅ Private key never transmitted over network (AC6 validated with tests)
 - ✅ Private key never logged or in error messages (redaction implemented)
 - ✅ Signature generation uses secure libraries (`nostr-tools/pure`)
@@ -353,6 +383,7 @@ if (process.env.DEBUG) {
 ### A03:2021 - Injection ✅ PASS
 
 **Controls Validated:**
+
 - ✅ URL validation (SSRF protection in CrosstownConnector)
 - ✅ JSON serialization safe (no `eval`, no code execution)
 - ✅ Reducer name validation (alphanumeric + underscore only, prevents injection)
@@ -366,6 +397,7 @@ if (process.env.DEBUG) {
 ### A04:2021 - Insecure Design ✅ PASS
 
 **Controls Validated:**
+
 - ✅ Secure defaults (timeout: 2000ms, no auto-retry)
 - ✅ Error handling fails securely (no partial state updates)
 - ✅ Balance check before packet construction (fail fast)
@@ -379,6 +411,7 @@ if (process.env.DEBUG) {
 ### A05:2021 - Security Misconfiguration ✅ PASS
 
 **Controls Validated:**
+
 - ✅ Production vs development mode (URL allowlisting based on `NODE_ENV`)
 - ✅ Timeout configuration (default 2s, user configurable)
 - ✅ Environment-specific validation (strict in production, permissive in dev)
@@ -391,12 +424,14 @@ if (process.env.DEBUG) {
 ### A06:2021 - Vulnerable and Outdated Components ✅ PASS
 
 **Audit Results:**
+
 ```bash
 $ pnpm audit
 No known vulnerabilities found
 ```
 
 **Dependencies Reviewed:**
+
 - `nostr-tools` - Latest stable version, widely used, audited
 - `@noble/hashes` - Cryptographic library, well-maintained
 - `ws` - WebSocket library, stable version
@@ -408,6 +443,7 @@ No known vulnerabilities found
 ### A07:2021 - Identification and Authentication Failures ✅ PASS
 
 **Controls Validated:**
+
 - ✅ Nostr signature verification (end-to-end at BLS)
 - ✅ No weak authentication (Nostr-only identity, no passwords)
 - ✅ Event ID verification (SHA256 hash matches content)
@@ -420,6 +456,7 @@ No known vulnerabilities found
 ### A08:2021 - Software and Data Integrity Failures ✅ PASS
 
 **Controls Validated:**
+
 - ✅ ILP packet signature verification at BLS (end-to-end integrity)
 - ✅ Event ID verification (SHA256 hash computed correctly)
 - ✅ Content JSON serialization deterministic (standard `JSON.stringify`)
@@ -432,6 +469,7 @@ No known vulnerabilities found
 ### A09:2021 - Security Logging Failures ✅ PASS
 
 **Controls Validated:**
+
 - ✅ Private key redacted in all logs (via `redactPrivateKey()` utility)
 - ✅ Error messages do not leak sensitive data (sanitized before throw)
 - ✅ Error context includes debugging info (action, cost, balance, timestamp)
@@ -446,6 +484,7 @@ No known vulnerabilities found
 ### A10:2021 - Server-Side Request Forgery (SSRF) ✅ PASS (with caveat)
 
 **Controls Validated:**
+
 - ✅ Crosstown URL validation (construction-time checks)
 - ✅ Internal network protection (block `10.*`, `172.16-31.*`, `192.168.*`, `169.254.*` in production)
 - ✅ No credentials in URLs (username/password rejected)
@@ -468,16 +507,19 @@ DNS rebinding attacks are partially mitigated (see ISSUE-1). Full protection wou
 **Coverage:** Not measured (deferred to performance validation)
 
 **New Tests Added:**
+
 1. `should throw INVALID_ACTION for invalid pubkey format (ISSUE-2 fix)` - ilp-packet.test.ts
 2. `should throw INVALID_ACTION for non-string pubkey` - ilp-packet.test.ts
 
 **Test Files:**
+
 - `ilp-packet.test.ts`: 26 tests (24→26 after review)
 - `event-signing.test.ts`: 16 tests
 - `crosstown-connector.test.ts`: 21 tests
 - `client-publish.test.ts`: 14 tests
 
 **Traceability:**
+
 - AC1: Fully covered (ilp-packet + event-signing tests)
 - AC2: Fully covered (crosstown-connector tests)
 - AC3: Partially covered (unit tests pass, integration deferred)
@@ -525,6 +567,7 @@ DNS rebinding attacks are partially mitigated (see ISSUE-1). Full protection wou
 **Not yet measured** - deferred to Task 11 (Performance validation).
 
 Expected performance targets (NFR3):
+
 - Packet construction: <10ms ⏳ NOT MEASURED
 - Signing: <5ms ⏳ NOT MEASURED
 - Round-trip (sign → route → BLS → confirm): <2s ⏳ NOT MEASURED
@@ -538,12 +581,14 @@ Expected performance targets (NFR3):
 ### Public API Documentation ✅ IMPROVED
 
 **Before Review:**
+
 - `constructILPPacket`: Good JSDoc
 - `signEvent`: Good JSDoc
 - `parseILPPacket`: Missing examples ❌
 - `extractFeeFromEvent`: Missing examples ❌
 
 **After Review:**
+
 - All functions have comprehensive JSDoc ✅
 - Examples added for helper functions ✅
 - Design rationale documented ✅
@@ -554,6 +599,7 @@ Expected performance targets (NFR3):
 **Location:** `packages/client/src/errors/error-codes.md` (planned)
 
 **Required Content:**
+
 - All error codes with boundaries
 - Cause, user action, recovery strategy for each
 - Examples of when each error occurs
@@ -607,6 +653,7 @@ Expected performance targets (NFR3):
 **Recommendation:** APPROVE for integration testing. All critical, high, and medium severity issues resolved. Low severity issues documented and deferred to appropriate future work.
 
 **Next Steps:**
+
 1. Complete Task 11 (Performance validation)
 2. Complete Task 7 (Integration tests with Docker)
 3. Complete Task 8 (Error code documentation)

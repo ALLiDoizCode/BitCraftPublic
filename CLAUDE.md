@@ -167,7 +167,7 @@ docker compose -f docker/docker-compose.yml down -v && rm -rf docker/volumes/* &
 - **Don't duplicate project-context.md** -- It's auto-loaded, no need to repeat its content
 - **Don't skip TDD** -- Write tests BEFORE implementation for features with >3 acceptance criteria (AGREEMENT-1)
 - **Don't commit without security review** -- OWASP Top 10 check required on every story (AGREEMENT-2)
-- **Don't modify BitCraft server** -- Runs unmodified (design principle)
+- **BitCraft reducer modifications are scoped** -- Reducers will be modified to accept `nostr_pubkey: String` as first parameter for identity propagation (decided in Story 2.4, BLOCKER-1). All other BitCraft server code runs unmodified.
 - **Pair on unfamiliar tech** -- Nostr, ILP, BLS require pair programming or pair review (AGREEMENT-3)
 - **Track technical debt** -- Deferred work must be captured and linked in story docs (AGREEMENT-4)
 
@@ -193,6 +193,7 @@ docker compose -f docker/docker-compose.yml down -v && rm -rf docker/volumes/* &
 - 3.4: Identity Propagation & End-to-End Verification
 
 **Key Context:**
+
 - Integration contract is fully spec'd in Story 2.4 (`docs/bls-handler-contract.md`, `docs/crosstown-bls-implementation-spec.md`)
 - This is the first server-side component (high risk -- new infrastructure)
 - Requires modifying BitCraft reducers to accept `identity: String` as first parameter

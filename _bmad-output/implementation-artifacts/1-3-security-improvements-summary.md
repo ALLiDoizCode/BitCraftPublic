@@ -1,4 +1,5 @@
 # Security Improvements Summary - Story 1.3
+
 **Docker Local Development Environment - Code Review Pass #3**
 
 ## Overview
@@ -21,11 +22,13 @@ This document summarizes the security improvements applied during the YOLO mode 
 **Issues Fixed**: 1 High severity
 
 **Changes**:
+
 - Added path traversal validation in `init.sh` to ensure module paths stay within `/opt/bitcraft/`
 - Added PID validation to prevent command injection via process IDs
 - Added log sanitization to prevent log injection attacks
 
 **Files Modified**:
+
 - `/docker/bitcraft/init.sh`
 - `/docker/crosstown/crosstown-src/src/main.rs`
 
@@ -38,11 +41,13 @@ This document summarizes the security improvements applied during the YOLO mode 
 **Issues Fixed**: 2 High + 1 Low severity
 
 **Changes**:
+
 - Implemented rate limiting on Nostr relay WebSocket connections (100 events/60s per connection)
 - Added CPU resource limits (2.0 CPUs for BitCraft, 1.0 for Crosstown)
 - Memory limits already configured (1GB BitCraft, 512MB Crosstown)
 
 **Files Modified**:
+
 - `/docker/crosstown/crosstown-src/src/main.rs` (rate limiter implementation)
 - `/docker/docker-compose.yml` (CPU limits)
 
@@ -55,6 +60,7 @@ This document summarizes the security improvements applied during the YOLO mode 
 **Issues Fixed**: 4 Medium severity
 
 **Changes**:
+
 - Added CORS configuration for HTTP endpoints (allow localhost:3000 only)
 - Added security headers to all HTTP responses:
   - `X-Content-Type-Options: nosniff` (prevents MIME-sniffing)
@@ -64,6 +70,7 @@ This document summarizes the security improvements applied during the YOLO mode 
 - Documented security risks of dev mode in README
 
 **Files Modified**:
+
 - `/docker/crosstown/crosstown-src/src/main.rs` (CORS + headers)
 - `/docker/README.md` (security warnings)
 
@@ -76,11 +83,13 @@ This document summarizes the security improvements applied during the YOLO mode 
 **Issues Fixed**: 1 High + 1 Low severity
 
 **Changes**:
+
 - Replaced `.expect()` with `.unwrap_or_else()` for graceful error handling on environment variables
 - Added port range validation (ports must be >= 1024 for unprivileged users)
 - Added CPU resource limits
 
 **Files Modified**:
+
 - `/docker/crosstown/crosstown-src/src/main.rs`
 - `/docker/docker-compose.yml`
 
@@ -93,11 +102,13 @@ This document summarizes the security improvements applied during the YOLO mode 
 **Issues Fixed**: 1 Low severity
 
 **Changes**:
+
 - Set explicit file permissions in Dockerfiles:
   - `0644` for data files (read-only for group/others)
   - `0755` for executables (executable but not writable)
 
 **Files Modified**:
+
 - `/docker/bitcraft/Dockerfile`
 - `/docker/crosstown/Dockerfile`
 
@@ -110,11 +121,13 @@ This document summarizes the security improvements applied during the YOLO mode 
 **Issues Fixed**: 1 Medium severity
 
 **Changes**:
+
 - Sanitized pubkey in logs (truncate to first 8 chars)
 - Sanitized reducer names (alphanumeric + underscore only)
 - Removed full event IDs from error logs
 
 **Files Modified**:
+
 - `/docker/crosstown/crosstown-src/src/main.rs`
 
 **Impact**: Prevents sensitive data exposure and log injection attacks
@@ -126,11 +139,13 @@ This document summarizes the security improvements applied during the YOLO mode 
 **Issues Fixed**: 1 Low severity (documentation)
 
 **Changes**:
+
 - Added security warning for dev mode admin ports
 - Documented risks of unauthenticated endpoints (ports 3001, 4042)
 - Clarified localhost-only binding
 
 **Files Modified**:
+
 - `/docker/README.md`
 
 **Impact**: Educates developers about security risks of dev mode
@@ -139,15 +154,15 @@ This document summarizes the security improvements applied during the YOLO mode 
 
 ## OWASP Top 10 Coverage
 
-| OWASP Category | Issues | Status |
-|----------------|--------|--------|
-| A01:2021 – Broken Access Control | 1 | ✅ Fixed |
-| A03:2021 – Injection | 1 | ✅ Fixed |
-| A04:2021 – Insecure Design | 2 | ✅ Fixed |
-| A05:2021 – Security Misconfiguration | 4 | ✅ Fixed |
-| A06:2021 – Vulnerable Components | 1 | ✅ Documented |
-| A07:2021 – Auth Failures | 1 | ✅ Fixed |
-| A09:2021 – Logging Failures | 1 | ✅ Fixed |
+| OWASP Category                       | Issues | Status        |
+| ------------------------------------ | ------ | ------------- |
+| A01:2021 – Broken Access Control     | 1      | ✅ Fixed      |
+| A03:2021 – Injection                 | 1      | ✅ Fixed      |
+| A04:2021 – Insecure Design           | 2      | ✅ Fixed      |
+| A05:2021 – Security Misconfiguration | 4      | ✅ Fixed      |
+| A06:2021 – Vulnerable Components     | 1      | ✅ Documented |
+| A07:2021 – Auth Failures             | 1      | ✅ Fixed      |
+| A09:2021 – Logging Failures          | 1      | ✅ Fixed      |
 
 **Total**: 7/10 OWASP categories addressed
 
@@ -190,6 +205,7 @@ This document summarizes the security improvements applied during the YOLO mode 
 ## Security Testing Results
 
 ### Pre-Fix Security Posture
+
 - ❌ No input validation on module paths
 - ❌ No rate limiting on WebSocket connections
 - ❌ No CORS or security headers
@@ -199,6 +215,7 @@ This document summarizes the security improvements applied during the YOLO mode 
 - ❌ Default file permissions (potentially too permissive)
 
 ### Post-Fix Security Posture
+
 - ✅ Path traversal validation
 - ✅ Rate limiting (100 events/60s)
 - ✅ CORS configured for localhost:3000
@@ -209,6 +226,7 @@ This document summarizes the security improvements applied during the YOLO mode 
 - ✅ Explicit file permissions (0644/0755)
 
 ### Validation Tests
+
 - ✅ Docker Compose configuration valid
 - ✅ Rust code compiles without errors
 - ✅ All changes staged for commit
@@ -235,17 +253,20 @@ This document summarizes the security improvements applied during the YOLO mode 
 ## Impact Assessment
 
 ### Security Impact: HIGH
+
 - Prevents multiple attack vectors (injection, DoS, XSS, clickjacking)
 - Implements defense-in-depth strategy
 - Follows container security best practices
 - Complies with OWASP Top 10 guidelines
 
 ### Performance Impact: MINIMAL
+
 - Rate limiting adds negligible overhead (~1-2ms per event)
 - CPU limits prevent resource exhaustion (improves stability)
 - Security headers add <1KB per HTTP response
 
 ### Developer Experience Impact: POSITIVE
+
 - Clear security warnings in documentation
 - Graceful error handling (no more panics)
 - Better logging with sanitized output

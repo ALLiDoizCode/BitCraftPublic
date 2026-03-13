@@ -1,5 +1,11 @@
 ---
-stepsCompleted: ['step-01-preflight-and-context', 'step-02-generation-mode', 'step-03-test-generation', 'step-04-checklist-creation']
+stepsCompleted:
+  [
+    'step-01-preflight-and-context',
+    'step-02-generation-mode',
+    'step-03-test-generation',
+    'step-04-checklist-creation',
+  ]
 lastStep: 'step-04-checklist-creation'
 lastSaved: '2026-02-27'
 workflowType: 'testarch-atdd'
@@ -32,6 +38,7 @@ As a user, I want to execute game actions by calling `client.publish()` which co
 ## Acceptance Criteria
 
 ### AC1: Construct and sign ILP packet for game action (NFR8)
+
 - Construct ILP packet containing game action
 - Sign packet with Nostr private key (NFR8)
 - Format as kind 30078 Nostr event
@@ -41,12 +48,14 @@ As a user, I want to execute game actions by calling `client.publish()` which co
 - Signature is valid 64-byte Schnorr signature
 
 ### AC2: Route packet through Crosstown connector (NFR3)
+
 - Packet routed through Crosstown node to BLS handler
 - Round-trip completes within 2 seconds under normal load (NFR3)
 - Submission made via Crosstown client library or HTTP POST
 - Crosstown connector URL is configurable via `SigilClientConfig.crosstownConnectorUrl`
 
 ### AC3: Handle successful action confirmation (NFR17)
+
 - Confirmation event received via Nostr relay subscription
 - Confirmation event is kind 30078 matching original action
 - Wallet balance decremented by action cost
@@ -54,6 +63,7 @@ As a user, I want to execute game actions by calling `client.publish()` which co
 - Confirmation includes: `eventId`, `reducer`, `args`, `fee`, `pubkey`, `timestamp`
 
 ### AC4: Reject actions with insufficient wallet balance (NFR24)
+
 - `SigilError` thrown with code `INSUFFICIENT_BALANCE` and boundary `crosstown` (NFR24)
 - Error message includes action name, required cost, and current balance
 - No ILP packet sent to Crosstown
@@ -61,6 +71,7 @@ As a user, I want to execute game actions by calling `client.publish()` which co
 - Balance check performed BEFORE packet construction (fail fast)
 
 ### AC5: Handle network timeout and connection errors (NFR24)
+
 - `SigilError` thrown with code `NETWORK_TIMEOUT` and boundary `crosstown`
 - Error includes timeout duration and Crosstown URL
 - System does not leave inconsistent state (NFR24)
@@ -68,6 +79,7 @@ As a user, I want to execute game actions by calling `client.publish()` which co
 - Retries are NOT performed automatically (user controls retry logic)
 
 ### AC6: Protect private key from network transmission (NFR9, Security: A02:2021)
+
 - Nostr private key never transmitted over network (NFR9)
 - Only public key (`pubkey`) and signature (`sig`) leave local system
 - Private key never logged, never in error messages
@@ -81,6 +93,7 @@ As a user, I want to execute game actions by calling `client.publish()` which co
 ### Unit Tests (54 tests total)
 
 #### ILP Packet Construction Tests (20 tests)
+
 **File:** `packages/client/src/publish/ilp-packet.test.ts`
 
 - ✅ **Test:** `constructILPPacket() creates valid kind 30078 event`
@@ -164,6 +177,7 @@ As a user, I want to execute game actions by calling `client.publish()` which co
   - **Verifies:** AC1 - Error messaging
 
 #### Event Signing Tests (15 tests)
+
 **File:** `packages/client/src/publish/event-signing.test.ts`
 
 - ✅ **Test:** `signEvent() computes correct event ID (SHA256 hash)`
@@ -227,6 +241,7 @@ As a user, I want to execute game actions by calling `client.publish()` which co
   - **Verifies:** AC1 - Event integrity
 
 #### Crosstown Connector Tests (5 tests)
+
 **File:** `packages/client/src/crosstown/crosstown-connector.test.ts`
 
 - ✅ **Test:** `CrosstownConnector.publishEvent() sends HTTP POST to connector URL`
@@ -250,6 +265,7 @@ As a user, I want to execute game actions by calling `client.publish()` which co
   - **Verifies:** AC2 - Rate limiting
 
 #### Client Publish API Tests (10 tests)
+
 **File:** `packages/client/src/publish/client-publish.test.ts`
 
 - ✅ **Test:** `client.publish() constructs and signs ILP packet`
@@ -293,6 +309,7 @@ As a user, I want to execute game actions by calling `client.publish()` which co
   - **Verifies:** AC3 - Return value
 
 #### Cleanup and Lifecycle Tests (4 tests)
+
 **File:** `packages/client/src/publish/cleanup.test.ts`
 
 - ✅ **Test:** `client.disconnect() rejects all pending publishes`
@@ -316,6 +333,7 @@ As a user, I want to execute game actions by calling `client.publish()` which co
 ### Integration Tests (25 tests total)
 
 #### ILP Publish Integration Tests (20 tests)
+
 **File:** `packages/client/src/__tests__/integration/ilp-publish-integration.test.ts`
 
 - ✅ **Test:** `end-to-end publish flow (sign → route → BLS → confirm)`
@@ -399,6 +417,7 @@ As a user, I want to execute game actions by calling `client.publish()` which co
   - **Verifies:** Security (A10:2021)
 
 #### ILP Performance Tests (5 tests)
+
 **File:** `packages/client/src/__tests__/integration/ilp-performance.test.ts`
 
 - ✅ **Test:** `baseline latency (single action, no load)`
@@ -426,15 +445,18 @@ As a user, I want to execute game actions by calling `client.publish()` which co
 ## Data Factories Created
 
 ### Nostr Event Factory
+
 **File:** `packages/client/src/publish/test-utils/event.factory.ts`
 
 **Exports:**
+
 - `createNostrEvent(overrides?)` - Create single Nostr event with optional overrides
 - `createNostrEvents(count)` - Create array of events
 - `createUnsignedEvent(overrides?)` - Create event without id/sig for signing tests
 - `createSignedEvent(overrides?)` - Create event with valid test signature
 
 **Example Usage:**
+
 ```typescript
 const event = createNostrEvent({ kind: 30078, content: '{"reducer":"move","args":[1,2]}' });
 const events = createNostrEvents(5); // Generate 5 random events
@@ -442,29 +464,35 @@ const unsigned = createUnsignedEvent({ pubkey: testPubkey });
 ```
 
 ### ILP Packet Factory
+
 **File:** `packages/client/src/publish/test-utils/ilp-packet.factory.ts`
 
 **Exports:**
+
 - `createILPPacket(overrides?)` - Create ILP packet with optional overrides
 - `createILPPackets(count)` - Create array of ILP packets
 - `createInvalidILPPacket(invalidField)` - Create intentionally invalid packet for error testing
 
 **Example Usage:**
+
 ```typescript
 const packet = createILPPacket({ reducer: 'player_move', args: [10, 20] });
 const invalidPacket = createInvalidILPPacket('reducer'); // Invalid reducer for testing
 ```
 
 ### Crosstown Response Factory
+
 **File:** `packages/client/src/publish/test-utils/crosstown-response.factory.ts`
 
 **Exports:**
+
 - `createSuccessResponse(overrides?)` - Create successful Crosstown response
 - `createErrorResponse(statusCode, message)` - Create error response
 - `createTimeoutResponse()` - Simulate timeout
 - `createRateLimitResponse(retryAfter?)` - Create 429 rate limit response
 
 **Example Usage:**
+
 ```typescript
 const success = createSuccessResponse({ eventId: 'test-event-123' });
 const error = createErrorResponse(500, 'Internal Server Error');
@@ -476,15 +504,18 @@ const rateLimited = createRateLimitResponse(60); // Retry after 60 seconds
 ## Fixtures Created
 
 ### Crosstown Connector Fixture
+
 **File:** `packages/client/src/publish/test-utils/crosstown-connector.fixture.ts`
 
 **Fixtures:**
+
 - `mockCrosstownConnector` - Mock connector with configurable responses
   - **Setup:** Creates mock HTTP server or mocked fetch
   - **Provides:** Connector instance with spy methods
   - **Cleanup:** Restores fetch mock, clears call history
 
 **Example Usage:**
+
 ```typescript
 import { test } from 'vitest';
 import { mockCrosstownConnector } from './test-utils/crosstown-connector.fixture';
@@ -497,15 +528,18 @@ test('should handle connector timeout', async () => {
 ```
 
 ### Confirmation Subscription Fixture
+
 **File:** `packages/client/src/publish/test-utils/confirmation-subscription.fixture.ts`
 
 **Fixtures:**
+
 - `mockConfirmationSubscription` - Mock Nostr subscription for confirmations
   - **Setup:** Creates mock subscription with event emitter
   - **Provides:** Methods to emit confirmation events
   - **Cleanup:** Unsubscribes and clears event handlers
 
 **Example Usage:**
+
 ```typescript
 test('should receive confirmation event', async () => {
   const { subscription, emitConfirmation } = mockConfirmationSubscription();
@@ -525,6 +559,7 @@ test('should receive confirmation event', async () => {
 **Endpoint:** `POST /publish`
 
 **Request Body:**
+
 ```json
 {
   "event": {
@@ -540,6 +575,7 @@ test('should receive confirmation event', async () => {
 ```
 
 **Success Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -549,6 +585,7 @@ test('should receive confirmation event', async () => {
 ```
 
 **Failure Response (400 Bad Request):**
+
 ```json
 {
   "success": false,
@@ -558,10 +595,12 @@ test('should receive confirmation event', async () => {
 ```
 
 **Timeout Response:**
+
 - No response within configured timeout (default 2000ms)
 - AbortController triggers abort signal
 
 **Rate Limit Response (429 Too Many Requests):**
+
 ```json
 {
   "success": false,
@@ -572,6 +611,7 @@ test('should receive confirmation event', async () => {
 ```
 
 **Notes:**
+
 - Mock should support configurable delays for timeout testing
 - Mock should track request count for rate limiting simulation
 - Mock should validate event structure before responding
@@ -581,6 +621,7 @@ test('should receive confirmation event', async () => {
 **Event Type:** Kind 30078 (Nostr Application-Specific Data)
 
 **Example Confirmation Event:**
+
 ```json
 {
   "id": "abc123...",
@@ -594,6 +635,7 @@ test('should receive confirmation event', async () => {
 ```
 
 **Notes:**
+
 - Confirmation event should match original published event
 - Mock should emit event via Nostr relay subscription
 - Delay between publish and confirmation should be configurable (default 500ms)
@@ -613,6 +655,7 @@ N/A - This story implements backend library functionality with no UI components.
 **File:** `packages/client/src/publish/ilp-packet.test.ts`
 
 **Tasks to make tests pass:**
+
 - [ ] Create `packages/client/src/publish/ilp-packet.ts`
 - [ ] Define `ILPPacketOptions` interface: `{ reducer: string, args: unknown }`
 - [ ] Define `ILPPacketResult` interface with all confirmation fields
@@ -637,6 +680,7 @@ N/A - This story implements backend library functionality with no UI components.
 **File:** `packages/client/src/publish/event-signing.test.ts`
 
 **Tasks to make tests pass:**
+
 - [ ] Create `packages/client/src/publish/event-signing.ts`
 - [ ] Implement `signEvent(event: NostrEvent, privateKey: Uint8Array): NostrEvent`
 - [ ] Use `nostr-tools` `finalizeEvent` to compute id and sig
@@ -657,6 +701,7 @@ N/A - This story implements backend library functionality with no UI components.
 **File:** `packages/client/src/crosstown/crosstown-connector.test.ts`
 
 **Tasks to make tests pass:**
+
 - [ ] Create `packages/client/src/crosstown/crosstown-connector.ts`
 - [ ] Define `CrosstownConnectorOptions`: `{ connectorUrl: string, timeout?: number }`
 - [ ] Implement `CrosstownConnector` class with `publishEvent(event): Promise<ILPPacketResult>`
@@ -679,6 +724,7 @@ N/A - This story implements backend library functionality with no UI components.
 **File:** `packages/client/src/publish/client-publish.test.ts`
 
 **Tasks to make tests pass:**
+
 - [ ] Update `PublishAPI` interface in `packages/client/src/client.ts`
 - [ ] Add `publish(options: ILPPacketOptions): Promise<ILPPacketResult>` method signature
 - [ ] Validate client state: identity loaded, Crosstown configured, cost registry loaded
@@ -708,6 +754,7 @@ N/A - This story implements backend library functionality with no UI components.
 **File:** `packages/client/src/client.ts` (configuration updates)
 
 **Tasks to make tests pass:**
+
 - [ ] Update `SigilClientConfig` to add `crosstownConnectorUrl?: string`
 - [ ] Update `SigilClientConfig` to add `publishTimeout?: number` (default 2000ms)
 - [ ] Validate `crosstownConnectorUrl` is valid HTTP/HTTPS URL if provided
@@ -728,6 +775,7 @@ N/A - This story implements backend library functionality with no UI components.
 **File:** `packages/client/src/publish/cleanup.test.ts`
 
 **Tasks to make tests pass:**
+
 - [ ] Implement `private cleanupPendingPublish(eventId: string): void`
 - [ ] Clear timeout timer for pending publish
 - [ ] Remove entry from `pendingPublishes` map
@@ -749,6 +797,7 @@ N/A - This story implements backend library functionality with no UI components.
 **File:** `packages/client/src/__tests__/integration/ilp-publish-integration.test.ts`
 
 **Tasks to make tests pass:**
+
 - [ ] Start Docker stack (BitCraft + Crosstown + BLS)
 - [ ] Verify Crosstown connector HTTP endpoint is accessible
 - [ ] Verify Nostr relay is running and accepting subscriptions
@@ -785,6 +834,7 @@ N/A - This story implements backend library functionality with no UI components.
 **File:** `packages/client/src/__tests__/integration/ilp-performance.test.ts`
 
 **Tasks to make tests pass:**
+
 - [ ] Implement baseline latency test (single action, no load)
 - [ ] Implement percentile calculation (p50, p95, p99)
 - [ ] Implement throughput measurement (actions per second)
@@ -808,6 +858,7 @@ N/A - This story implements backend library functionality with no UI components.
 **File:** Multiple files
 
 **Tasks to make tests pass:**
+
 - [ ] Export `ILPPacketOptions` from `packages/client/src/index.ts`
 - [ ] Export `ILPPacketResult` from `packages/client/src/index.ts`
 - [ ] Export `CrosstownConnectorOptions` from `packages/client/src/index.ts`
@@ -831,6 +882,7 @@ N/A - This story implements backend library functionality with no UI components.
 **File:** Security checklist review
 
 **Tasks to complete:**
+
 - [ ] **A01:2021 - Broken Access Control**: Verify rate limiting handled by Crosstown (429 response)
 - [ ] **A02:2021 - Cryptographic Failures**: Verify private key never transmitted, never logged
 - [ ] **A02:2021**: Verify TLS/SSL (production Crosstown URLs must use https://)
@@ -854,6 +906,7 @@ N/A - This story implements backend library functionality with no UI components.
 **File:** `packages/client/src/publish/observability.ts`
 
 **Tasks (optional, can defer):**
+
 - [ ] Add debug logging throughout publish flow
 - [ ] Add metrics collection (counters, histograms, gauges)
 - [ ] Emit events for observability (publishAttempt, publishSuccess, publishFailure)
@@ -902,6 +955,7 @@ node --inspect-brk ./node_modules/.bin/vitest ilp-packet.test.ts
 ### RED Phase (Complete) ✅
 
 **TEA Agent Responsibilities:**
+
 - ✅ All 79 tests written and failing (54 unit + 25 integration)
 - ✅ Fixtures and factories created for test data
 - ✅ Mock requirements documented (Crosstown connector, Nostr relay)
@@ -909,6 +963,7 @@ node --inspect-brk ./node_modules/.bin/vitest ilp-packet.test.ts
 - ✅ Security review checklist (OWASP Top 10) prepared
 
 **Verification:**
+
 - Run all tests and verify they fail as expected
 - Failure messages are clear and actionable
 - Tests fail due to missing implementation, not test bugs
@@ -919,6 +974,7 @@ node --inspect-brk ./node_modules/.bin/vitest ilp-packet.test.ts
 ### GREEN Phase (DEV Team - Next Steps)
 
 **DEV Agent Responsibilities:**
+
 1. **Start with Test Group 1** (ILP Packet Construction) - foundational
 2. **Read the 20 tests** in `ilp-packet.test.ts`
 3. **Implement `constructILPPacket()`** to make tests pass
@@ -927,17 +983,20 @@ node --inspect-brk ./node_modules/.bin/vitest ilp-packet.test.ts
 6. **Continue through Test Group 11** in order
 
 **Key Principles:**
+
 - One test group at a time (don't jump ahead)
 - Minimal implementation (simplest code that makes tests pass)
 - Run tests frequently (immediate feedback)
 - Use implementation checklist as roadmap (check off tasks)
 
 **Progress Tracking:**
+
 - Mark test groups as complete when all tests pass
 - Update sprint-status.yaml after each group
 - Share progress in daily standup
 
 **Recommended Order:**
+
 1. Test Group 1 (ILP Packet Construction) - Core functionality
 2. Test Group 2 (Event Signing) - Cryptographic foundation
 3. Test Group 5 (Configuration) - Setup for integration
@@ -955,6 +1014,7 @@ node --inspect-brk ./node_modules/.bin/vitest ilp-packet.test.ts
 ### REFACTOR Phase (DEV Team - After All Tests Pass)
 
 **DEV Agent Responsibilities:**
+
 1. **Verify all 79 tests pass** (green phase complete)
 2. **Review code for quality** (readability, maintainability, performance)
 3. **Extract duplications** (DRY principle)
@@ -963,12 +1023,14 @@ node --inspect-brk ./node_modules/.bin/vitest ilp-packet.test.ts
 6. **Update documentation** (if API contracts change)
 
 **Key Principles:**
+
 - Tests provide safety net (refactor with confidence)
 - Make small refactors (easier to debug if tests fail)
 - Run tests after each change
 - Don't change test behavior (only implementation)
 
 **Completion:**
+
 - All 79 tests pass
 - Code quality meets team standards (AGREEMENT-2 security review)
 - No duplications or code smells
@@ -1010,6 +1072,7 @@ This ATDD workflow consulted the following knowledge fragments:
 **Command:** `pnpm --filter @sigil/client test`
 
 **Expected Results:**
+
 ```
 FAIL  src/publish/ilp-packet.test.ts
   ● constructILPPacket() creates valid kind 30078 event
@@ -1041,12 +1104,14 @@ FAIL  src/__tests__/integration/ilp-performance.test.ts
 ```
 
 **Summary:**
+
 - Total tests: 79 (54 unit + 25 integration)
 - Passing: 0 (expected)
 - Failing: 79 (expected)
 - Status: ✅ RED phase verified
 
 **Expected Failure Messages:**
+
 - Module not found errors for unimplemented files
 - Function not defined errors for missing implementations
 - Interface/type not found errors for missing type definitions
@@ -1057,28 +1122,33 @@ FAIL  src/__tests__/integration/ilp-performance.test.ts
 ## Notes
 
 ### Integration Test Dependencies
+
 - Docker stack (BitCraft + Crosstown + BLS) must be running
 - Set `RUN_INTEGRATION_TESTS=1` environment variable
 - Integration tests will auto-skip if Docker not available
 - See `docker/README.md` for setup instructions
 
 ### Performance Test Considerations
+
 - Performance tests (Test Group 8) require low-load environment
 - Run on dedicated CI runner or local machine with minimal background processes
 - Baseline measurements will vary by hardware (document environment)
 - NFR3 validation (<2s p95 latency) is the critical metric
 
 ### Security Test Notes
+
 - SSRF protection tests (Test Group 7) require malicious URL attempts
 - Network capture tests may require elevated permissions or debugging tools
 - Private key protection is critical - all tests must validate no key transmission
 
 ### Deferred Work
+
 - Observability implementation (Test Group 11) is optional for MVP
 - Can defer to Epic 6 (Infrastructure & Observability) if time-constrained
 - Core functionality (Test Groups 1-8) is required for story completion
 
 ### Known Limitations
+
 - Crosstown connector uses HTTP POST (not `@crosstown/client` library initially)
 - No automatic retries on network failure (user controls retry logic)
 - Confirmation subscription is global (one per client, reused for all publishes)
@@ -1089,6 +1159,7 @@ FAIL  src/__tests__/integration/ilp-performance.test.ts
 ## Contact
 
 **Questions or Issues?**
+
 - Ask in team standup
 - Tag @Jonathan in Slack/Discord
 - Refer to `_bmad-output/implementation-artifacts/2-3-ilp-packet-construction-and-signing.md` for detailed story documentation

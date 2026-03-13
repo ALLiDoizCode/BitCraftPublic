@@ -12,6 +12,7 @@
 **Result:** No test gaps found. All 8 acceptance criteria are covered by comprehensive automated tests.
 
 **Test Statistics:**
+
 - **Total Tests:** 75 tests (69 unit + 6 integration)
 - **Test Files:** 4 files
 - **All Tests Passing:** ✅ 457 passed, 71 skipped (integration tests requiring Docker)
@@ -26,6 +27,7 @@
 **Status:** ✅ FULLY COVERED
 
 **Test Coverage:**
+
 - `action-cost-registry.test.ts`:
   - `loads valid registry file with absolute path (AC1)` - Line 261
   - `loads valid registry file with relative path (AC1)` - Line 277
@@ -40,6 +42,7 @@
   - `sets registry to null if path not provided (AC1)` - Line 51
 
 **Validation:**
+
 - ✅ Registry loads at client instantiation
 - ✅ All actions mapped with cost, category, frequency
 - ✅ defaultCost value validated
@@ -53,6 +56,7 @@
 **Status:** ✅ FULLY COVERED
 
 **Test Coverage:**
+
 - `client-publish.test.ts`:
   - `getCost returns correct cost for known action (AC2)` - Line 57
   - `getCost completes in <10ms (AC2)` - Line 103
@@ -63,6 +67,7 @@
   - `measures cached load performance (instant) (AC2)` - Line 483
 
 **Validation:**
+
 - ✅ Cost lookup returns correct value for known actions
 - ✅ Performance requirement validated (<10ms for in-memory lookup)
 - ✅ Fee schedule auditable (JSON file in version control, tested in line 424)
@@ -74,11 +79,13 @@
 **Status:** ✅ FULLY COVERED
 
 **Test Coverage:**
+
 - `client-publish.test.ts`:
   - `getCost returns defaultCost for unknown action with warning (AC3)` - Line 76
   - `throws REGISTRY_NOT_LOADED if registry not configured (AC3)` - Line 125
 
 **Validation:**
+
 - ✅ Returns defaultCost for unmapped actions
 - ✅ Warning logged with action name and defaultCost value
 - ✅ Error thrown if registry not loaded
@@ -90,6 +97,7 @@
 **Status:** ✅ FULLY COVERED
 
 **Test Coverage:**
+
 - `wallet-client.test.ts`:
   - `returns balance from HTTP API (AC4)` - Line 98
   - `returns balance in reasonable time <500ms (AC4)` - Line 120
@@ -108,6 +116,7 @@
   - `uses default Crosstown URL if not provided (AC4)` - Line 176
 
 **Validation:**
+
 - ✅ HTTP GET to `/wallet/balance/{pubkey}` endpoint
 - ✅ Performance requirement validated (<500ms)
 - ✅ Stub mode implementation tested (returns 10000, logs warning)
@@ -121,6 +130,7 @@
 **Status:** ✅ FULLY COVERED
 
 **Test Coverage:**
+
 - `wallet-client.test.ts`:
   - `throws NETWORK_ERROR on timeout (AC5)` - Line 191
   - `throws NETWORK_ERROR on HTTP error (AC5)` - Line 218
@@ -135,6 +145,7 @@
   - `verifies balance accuracy (AC5)` - Line 160
 
 **Validation:**
+
 - ✅ Balance validation (non-negative, finite, consistent)
 - ✅ Error handling for Crosstown unreachable
 - ✅ Timeout enforcement (500ms)
@@ -147,6 +158,7 @@
 **Status:** ✅ FULLY COVERED
 
 **Test Coverage:**
+
 - `client-publish.test.ts`:
   - `returns true if balance >= cost (AC6)` - Line 218
   - `returns false if balance < cost (AC6)` - Line 256
@@ -157,6 +169,7 @@
   - `integrates with canAfford API (AC6)` - Line 190
 
 **Validation:**
+
 - ✅ Boolean return (true if affordable, false otherwise)
 - ✅ Error propagation from getCost()
 - ✅ Error propagation from getBalance()
@@ -169,6 +182,7 @@
 **Status:** ✅ FULLY COVERED
 
 **Test Coverage:**
+
 - `action-cost-registry.test.ts`:
   - `throws INVALID_CONFIG if data is not an object (AC7)` - Line 31
   - `throws INVALID_CONFIG if defaultCost field is missing (AC7)` - Line 97
@@ -187,6 +201,7 @@
   - `includes full path in error messages in development (AC7)` - Line 356
 
 **Validation:**
+
 - ✅ Invalid JSON detection
 - ✅ Missing required fields validation
 - ✅ Negative cost rejection
@@ -200,6 +215,7 @@
 **Status:** ✅ FULLY COVERED
 
 **Test Coverage:**
+
 - `action-cost-registry.test.ts`:
   - `throws INVALID_CONFIG if version field is missing (AC8)` - Line 37
   - `throws INVALID_CONFIG if version is not a number (AC8)` - Line 46
@@ -216,6 +232,7 @@
   - `validates a valid registry (AC1, AC8)` - Line 17
 
 **Validation:**
+
 - ✅ Version field validation (present, integer, >= 1)
 - ✅ Unsupported version detection
 - ✅ Category enum validation (8 valid values tested)
@@ -229,6 +246,7 @@
 **Status:** ✅ COMPLIANT
 
 **Coverage:**
+
 - `wallet-client.test.ts`:
   - `allows localhost in development (SSRF protection)` - Line 35
   - `rejects localhost in production (SSRF protection)` - Line 49
@@ -250,6 +268,7 @@
 **Status:** ✅ COMPLIANT
 
 **Coverage:**
+
 - **AC2 (getCost < 10ms):**
   - `client-publish.test.ts` line 103: ✅ Measured
   - `action-cost-registry.test.ts` line 458: ✅ Measured
@@ -267,6 +286,7 @@
 **File:** `wallet-balance.test.ts` (6 tests)
 
 **Coverage:**
+
 - ✅ Real Crosstown connector balance query
 - ✅ Stub mode activation (404 response)
 - ✅ Performance validation (<500ms)
@@ -281,84 +301,84 @@
 
 ## Test File Summary
 
-| File | Tests | Purpose | ACs Covered |
-|------|-------|---------|-------------|
-| `action-cost-registry.test.ts` | 34 | Registry validation, loading, caching | AC1, AC7, AC8 |
-| `wallet-client.test.ts` | 21 | Wallet HTTP client, stub mode, SSRF | AC4, AC5 |
-| `client-publish.test.ts` | 14 | Client integration, getCost, canAfford | AC1, AC2, AC3, AC6 |
-| `wallet-balance.test.ts` | 6 | Integration tests with real Crosstown | AC4, AC5, AC6 |
-| **TOTAL** | **75** | **All test types** | **All 8 ACs** |
+| File                           | Tests  | Purpose                                | ACs Covered        |
+| ------------------------------ | ------ | -------------------------------------- | ------------------ |
+| `action-cost-registry.test.ts` | 34     | Registry validation, loading, caching  | AC1, AC7, AC8      |
+| `wallet-client.test.ts`        | 21     | Wallet HTTP client, stub mode, SSRF    | AC4, AC5           |
+| `client-publish.test.ts`       | 14     | Client integration, getCost, canAfford | AC1, AC2, AC3, AC6 |
+| `wallet-balance.test.ts`       | 6      | Integration tests with real Crosstown  | AC4, AC5, AC6      |
+| **TOTAL**                      | **75** | **All test types**                     | **All 8 ACs**      |
 
 ---
 
 ## Test Traceability Matrix
 
-| AC | Test File | Test Name | Line | Status |
-|----|-----------|-----------|------|--------|
-| AC1 | action-cost-registry.test.ts | loads valid registry file with absolute path | 261 | ✅ |
-| AC1 | action-cost-registry.test.ts | loads valid registry file with relative path | 277 | ✅ |
-| AC1 | action-cost-registry.test.ts | caches loaded registry | 304 | ✅ |
-| AC1 | action-cost-registry.test.ts | loads default action costs file | 424 | ✅ |
-| AC1 | client-publish.test.ts | loads cost registry at instantiation | 26 | ✅ |
-| AC1 | client-publish.test.ts | throws error from constructor if registry loading fails | 43 | ✅ |
-| AC1 | client-publish.test.ts | sets registry to null if path not provided | 51 | ✅ |
-| AC2 | client-publish.test.ts | getCost returns correct cost for known action | 57 | ✅ |
-| AC2 | client-publish.test.ts | getCost completes in <10ms | 103 | ✅ |
-| AC2 | action-cost-registry.test.ts | measures load performance for getCost target <10ms | 458 | ✅ |
-| AC2 | action-cost-registry.test.ts | measures cached load performance (instant) | 483 | ✅ |
-| AC3 | client-publish.test.ts | getCost returns defaultCost for unknown action with warning | 76 | ✅ |
-| AC3 | client-publish.test.ts | throws REGISTRY_NOT_LOADED if registry not configured | 125 | ✅ |
-| AC4 | wallet-client.test.ts | returns balance from HTTP API | 98 | ✅ |
-| AC4 | wallet-client.test.ts | returns balance in reasonable time <500ms | 120 | ✅ |
-| AC4 | wallet-client.test.ts | activates stub mode on 404 response | 141 | ✅ |
-| AC4 | wallet-client.test.ts | activates stub mode on 501 response | 163 | ✅ |
-| AC4 | wallet-client.test.ts | returns stub balance if stub mode active | 182 | ✅ |
-| AC4 | wallet-balance.test.ts | queries wallet balance from real Crosstown connector | 60 | ✅ |
-| AC4 | wallet-balance.test.ts | activates stub mode on 404 response | 100 | ✅ |
-| AC4 | wallet-balance.test.ts | completes balance query within 500ms | 133 | ✅ |
-| AC4 | client-publish.test.ts | initializes wallet client lazily with identity | 152 | ✅ |
-| AC4 | client-publish.test.ts | uses default Crosstown URL if not provided | 176 | ✅ |
-| AC5 | wallet-client.test.ts | throws NETWORK_ERROR on timeout | 191 | ✅ |
-| AC5 | wallet-client.test.ts | throws NETWORK_ERROR on HTTP error | 218 | ✅ |
-| AC5 | wallet-client.test.ts | throws INVALID_RESPONSE if response is not JSON | 232 | ✅ |
-| AC5 | wallet-client.test.ts | throws INVALID_RESPONSE if balance field is missing | 248 | ✅ |
-| AC5 | wallet-client.test.ts | throws INVALID_RESPONSE if balance is negative | 262 | ✅ |
-| AC5 | wallet-client.test.ts | throws INVALID_RESPONSE if balance is not finite | 276 | ✅ |
-| AC5 | wallet-client.test.ts | throws NETWORK_ERROR on fetch failure | 290 | ✅ |
-| AC5 | wallet-client.test.ts | validates balance accuracy | 300 | ✅ |
-| AC5 | wallet-balance.test.ts | verifies balance accuracy | 160 | ✅ |
-| AC6 | client-publish.test.ts | returns true if balance >= cost | 218 | ✅ |
-| AC6 | client-publish.test.ts | returns false if balance < cost | 256 | ✅ |
-| AC6 | client-publish.test.ts | propagates error if getCost throws | 294 | ✅ |
-| AC6 | client-publish.test.ts | propagates error if getBalance throws | 302 | ✅ |
-| AC6 | wallet-balance.test.ts | integrates with canAfford API | 190 | ✅ |
-| AC7 | action-cost-registry.test.ts | throws INVALID_CONFIG if data is not an object | 31 | ✅ |
-| AC7 | action-cost-registry.test.ts | throws INVALID_CONFIG if defaultCost field is missing | 97 | ✅ |
-| AC7 | action-cost-registry.test.ts | throws INVALID_CONFIG if defaultCost is not a number | 106 | ✅ |
-| AC7 | action-cost-registry.test.ts | throws INVALID_CONFIG if defaultCost is negative | 116 | ✅ |
-| AC7 | action-cost-registry.test.ts | throws INVALID_CONFIG if defaultCost is not finite | 126 | ✅ |
-| AC7 | action-cost-registry.test.ts | throws INVALID_CONFIG if actions field is missing | 136 | ✅ |
-| AC7 | action-cost-registry.test.ts | throws INVALID_CONFIG if actions is not an object | 145 | ✅ |
-| AC7 | action-cost-registry.test.ts | throws INVALID_CONFIG if action entry is missing cost field | 155 | ✅ |
-| AC7 | action-cost-registry.test.ts | throws INVALID_CONFIG if action cost is negative | 167 | ✅ |
-| AC7 | action-cost-registry.test.ts | throws INVALID_CONFIG if action cost is not finite | 179 | ✅ |
-| AC7 | action-cost-registry.test.ts | throws INVALID_CONFIG for path traversal | 323 | ✅ |
-| AC7 | action-cost-registry.test.ts | throws FILE_NOT_FOUND if file does not exist | 329 | ✅ |
-| AC7 | action-cost-registry.test.ts | throws INVALID_JSON if JSON is malformed | 335 | ✅ |
-| AC7 | action-cost-registry.test.ts | sanitizes file paths in error messages in production | 342 | ✅ |
-| AC7 | action-cost-registry.test.ts | includes full path in error messages in development | 356 | ✅ |
-| AC8 | action-cost-registry.test.ts | throws INVALID_CONFIG if version field is missing | 37 | ✅ |
-| AC8 | action-cost-registry.test.ts | throws INVALID_CONFIG if version is not a number | 46 | ✅ |
-| AC8 | action-cost-registry.test.ts | throws INVALID_CONFIG if version is not an integer | 56 | ✅ |
-| AC8 | action-cost-registry.test.ts | throws INVALID_CONFIG if version is zero | 66 | ✅ |
-| AC8 | action-cost-registry.test.ts | throws INVALID_CONFIG if version is negative | 76 | ✅ |
-| AC8 | action-cost-registry.test.ts | throws UNSUPPORTED_VERSION if version is not 1 | 86 | ✅ |
-| AC8 | action-cost-registry.test.ts | throws INVALID_CONFIG if action entry is missing category field | 193 | ✅ |
-| AC8 | action-cost-registry.test.ts | throws INVALID_CONFIG if category is invalid | 207 | ✅ |
-| AC8 | action-cost-registry.test.ts | throws INVALID_CONFIG if action entry is missing frequency field | 219 | ✅ |
-| AC8 | action-cost-registry.test.ts | throws INVALID_CONFIG if frequency is invalid | 233 | ✅ |
-| AC8 | action-cost-registry.test.ts | validates all category enums | 369 | ✅ |
-| AC8 | action-cost-registry.test.ts | validates all frequency enums | 401 | ✅ |
+| AC  | Test File                    | Test Name                                                        | Line | Status |
+| --- | ---------------------------- | ---------------------------------------------------------------- | ---- | ------ |
+| AC1 | action-cost-registry.test.ts | loads valid registry file with absolute path                     | 261  | ✅     |
+| AC1 | action-cost-registry.test.ts | loads valid registry file with relative path                     | 277  | ✅     |
+| AC1 | action-cost-registry.test.ts | caches loaded registry                                           | 304  | ✅     |
+| AC1 | action-cost-registry.test.ts | loads default action costs file                                  | 424  | ✅     |
+| AC1 | client-publish.test.ts       | loads cost registry at instantiation                             | 26   | ✅     |
+| AC1 | client-publish.test.ts       | throws error from constructor if registry loading fails          | 43   | ✅     |
+| AC1 | client-publish.test.ts       | sets registry to null if path not provided                       | 51   | ✅     |
+| AC2 | client-publish.test.ts       | getCost returns correct cost for known action                    | 57   | ✅     |
+| AC2 | client-publish.test.ts       | getCost completes in <10ms                                       | 103  | ✅     |
+| AC2 | action-cost-registry.test.ts | measures load performance for getCost target <10ms               | 458  | ✅     |
+| AC2 | action-cost-registry.test.ts | measures cached load performance (instant)                       | 483  | ✅     |
+| AC3 | client-publish.test.ts       | getCost returns defaultCost for unknown action with warning      | 76   | ✅     |
+| AC3 | client-publish.test.ts       | throws REGISTRY_NOT_LOADED if registry not configured            | 125  | ✅     |
+| AC4 | wallet-client.test.ts        | returns balance from HTTP API                                    | 98   | ✅     |
+| AC4 | wallet-client.test.ts        | returns balance in reasonable time <500ms                        | 120  | ✅     |
+| AC4 | wallet-client.test.ts        | activates stub mode on 404 response                              | 141  | ✅     |
+| AC4 | wallet-client.test.ts        | activates stub mode on 501 response                              | 163  | ✅     |
+| AC4 | wallet-client.test.ts        | returns stub balance if stub mode active                         | 182  | ✅     |
+| AC4 | wallet-balance.test.ts       | queries wallet balance from real Crosstown connector             | 60   | ✅     |
+| AC4 | wallet-balance.test.ts       | activates stub mode on 404 response                              | 100  | ✅     |
+| AC4 | wallet-balance.test.ts       | completes balance query within 500ms                             | 133  | ✅     |
+| AC4 | client-publish.test.ts       | initializes wallet client lazily with identity                   | 152  | ✅     |
+| AC4 | client-publish.test.ts       | uses default Crosstown URL if not provided                       | 176  | ✅     |
+| AC5 | wallet-client.test.ts        | throws NETWORK_ERROR on timeout                                  | 191  | ✅     |
+| AC5 | wallet-client.test.ts        | throws NETWORK_ERROR on HTTP error                               | 218  | ✅     |
+| AC5 | wallet-client.test.ts        | throws INVALID_RESPONSE if response is not JSON                  | 232  | ✅     |
+| AC5 | wallet-client.test.ts        | throws INVALID_RESPONSE if balance field is missing              | 248  | ✅     |
+| AC5 | wallet-client.test.ts        | throws INVALID_RESPONSE if balance is negative                   | 262  | ✅     |
+| AC5 | wallet-client.test.ts        | throws INVALID_RESPONSE if balance is not finite                 | 276  | ✅     |
+| AC5 | wallet-client.test.ts        | throws NETWORK_ERROR on fetch failure                            | 290  | ✅     |
+| AC5 | wallet-client.test.ts        | validates balance accuracy                                       | 300  | ✅     |
+| AC5 | wallet-balance.test.ts       | verifies balance accuracy                                        | 160  | ✅     |
+| AC6 | client-publish.test.ts       | returns true if balance >= cost                                  | 218  | ✅     |
+| AC6 | client-publish.test.ts       | returns false if balance < cost                                  | 256  | ✅     |
+| AC6 | client-publish.test.ts       | propagates error if getCost throws                               | 294  | ✅     |
+| AC6 | client-publish.test.ts       | propagates error if getBalance throws                            | 302  | ✅     |
+| AC6 | wallet-balance.test.ts       | integrates with canAfford API                                    | 190  | ✅     |
+| AC7 | action-cost-registry.test.ts | throws INVALID_CONFIG if data is not an object                   | 31   | ✅     |
+| AC7 | action-cost-registry.test.ts | throws INVALID_CONFIG if defaultCost field is missing            | 97   | ✅     |
+| AC7 | action-cost-registry.test.ts | throws INVALID_CONFIG if defaultCost is not a number             | 106  | ✅     |
+| AC7 | action-cost-registry.test.ts | throws INVALID_CONFIG if defaultCost is negative                 | 116  | ✅     |
+| AC7 | action-cost-registry.test.ts | throws INVALID_CONFIG if defaultCost is not finite               | 126  | ✅     |
+| AC7 | action-cost-registry.test.ts | throws INVALID_CONFIG if actions field is missing                | 136  | ✅     |
+| AC7 | action-cost-registry.test.ts | throws INVALID_CONFIG if actions is not an object                | 145  | ✅     |
+| AC7 | action-cost-registry.test.ts | throws INVALID_CONFIG if action entry is missing cost field      | 155  | ✅     |
+| AC7 | action-cost-registry.test.ts | throws INVALID_CONFIG if action cost is negative                 | 167  | ✅     |
+| AC7 | action-cost-registry.test.ts | throws INVALID_CONFIG if action cost is not finite               | 179  | ✅     |
+| AC7 | action-cost-registry.test.ts | throws INVALID_CONFIG for path traversal                         | 323  | ✅     |
+| AC7 | action-cost-registry.test.ts | throws FILE_NOT_FOUND if file does not exist                     | 329  | ✅     |
+| AC7 | action-cost-registry.test.ts | throws INVALID_JSON if JSON is malformed                         | 335  | ✅     |
+| AC7 | action-cost-registry.test.ts | sanitizes file paths in error messages in production             | 342  | ✅     |
+| AC7 | action-cost-registry.test.ts | includes full path in error messages in development              | 356  | ✅     |
+| AC8 | action-cost-registry.test.ts | throws INVALID_CONFIG if version field is missing                | 37   | ✅     |
+| AC8 | action-cost-registry.test.ts | throws INVALID_CONFIG if version is not a number                 | 46   | ✅     |
+| AC8 | action-cost-registry.test.ts | throws INVALID_CONFIG if version is not an integer               | 56   | ✅     |
+| AC8 | action-cost-registry.test.ts | throws INVALID_CONFIG if version is zero                         | 66   | ✅     |
+| AC8 | action-cost-registry.test.ts | throws INVALID_CONFIG if version is negative                     | 76   | ✅     |
+| AC8 | action-cost-registry.test.ts | throws UNSUPPORTED_VERSION if version is not 1                   | 86   | ✅     |
+| AC8 | action-cost-registry.test.ts | throws INVALID_CONFIG if action entry is missing category field  | 193  | ✅     |
+| AC8 | action-cost-registry.test.ts | throws INVALID_CONFIG if category is invalid                     | 207  | ✅     |
+| AC8 | action-cost-registry.test.ts | throws INVALID_CONFIG if action entry is missing frequency field | 219  | ✅     |
+| AC8 | action-cost-registry.test.ts | throws INVALID_CONFIG if frequency is invalid                    | 233  | ✅     |
+| AC8 | action-cost-registry.test.ts | validates all category enums                                     | 369  | ✅     |
+| AC8 | action-cost-registry.test.ts | validates all frequency enums                                    | 401  | ✅     |
 
 ---
 

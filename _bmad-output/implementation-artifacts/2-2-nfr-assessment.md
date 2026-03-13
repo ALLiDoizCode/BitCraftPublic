@@ -222,7 +222,7 @@ Note: This assessment summarizes existing evidence from test execution, coverage
   - DEBT-2.2.1: Crosstown balance API endpoint confirmation (deferred to Story 2.5)
   - DEBT-2.2.2: Hot-reload for cost registry (deferred to Epic 9, may be YAGNI)
   - DEBT-2.2.3: Cost registry versioning (version 2+ support if needed)
-  All limitations have mitigation plans and Epic/Story references.
+    All limitations have mitigation plans and Epic/Story references.
 
 ### Documentation Completeness
 
@@ -234,7 +234,7 @@ Note: This assessment summarizes existing evidence from test execution, coverage
   - `client.publish.getCost(actionName: string): number`
   - `client.publish.canAfford(actionName: string): Promise<boolean>`
   - `client.wallet.getBalance(): Promise<number>`
-  Story document is comprehensive (826 lines) with AC traceability matrix, task breakdown, security checklist, known limitations, handoff guide.
+    Story document is comprehensive (826 lines) with AC traceability matrix, task breakdown, security checklist, known limitations, handoff guide.
 
 ### Test Quality (from test-review, if available)
 
@@ -392,17 +392,17 @@ None - All acceptance criteria met, all tests passing, zero blockers.
 
 **Based on ADR Quality Readiness Checklist (8 categories, 29 criteria)**
 
-| Category                                         | Criteria Met       | PASS             | CONCERNS             | FAIL             | Overall Status                      |
-| ------------------------------------------------ | ------------------ | ---------------- | -------------------- | ---------------- | ----------------------------------- |
-| 1. Testability & Automation                      | 4/4          | 4         | 0         | 0         | PASS ✅                 |
-| 2. Test Data Strategy                            | 3/3         | 3        | 0        | 0        | PASS ✅               |
-| 3. Scalability & Availability                    | 4/4         | 4        | 0        | 0        | PASS ✅               |
-| 4. Disaster Recovery                             | 3/3         | 3        | 0        | 0        | PASS ✅               |
-| 5. Security                                      | 4/4        | 4       | 0       | 0       | PASS ✅             |
-| 6. Monitorability, Debuggability & Manageability | 4/4        | 4       | 0       | 0       | PASS ✅             |
-| 7. QoS & QoE                                     | 4/4        | 4       | 0       | 0       | PASS ✅             |
-| 8. Deployability                                 | 3/3        | 3       | 0       | 0       | PASS ✅             |
-| **Total**                                        | **29/29** | **29** | **0** | **0** | **PASS ✅** |
+| Category                                         | Criteria Met | PASS   | CONCERNS | FAIL  | Overall Status |
+| ------------------------------------------------ | ------------ | ------ | -------- | ----- | -------------- |
+| 1. Testability & Automation                      | 4/4          | 4      | 0        | 0     | PASS ✅        |
+| 2. Test Data Strategy                            | 3/3          | 3      | 0        | 0     | PASS ✅        |
+| 3. Scalability & Availability                    | 4/4          | 4      | 0        | 0     | PASS ✅        |
+| 4. Disaster Recovery                             | 3/3          | 3      | 0        | 0     | PASS ✅        |
+| 5. Security                                      | 4/4          | 4      | 0        | 0     | PASS ✅        |
+| 6. Monitorability, Debuggability & Manageability | 4/4          | 4      | 0        | 0     | PASS ✅        |
+| 7. QoS & QoE                                     | 4/4          | 4      | 0        | 0     | PASS ✅        |
+| 8. Deployability                                 | 3/3          | 3      | 0        | 0     | PASS ✅        |
+| **Total**                                        | **29/29**    | **29** | **0**    | **0** | **PASS ✅**    |
 
 **Criteria Met Scoring:**
 
@@ -411,46 +411,54 @@ None - All acceptance criteria met, all tests passing, zero blockers.
 **Detailed Findings:**
 
 **Category 1: Testability & Automation**
+
 - ✅ Automated unit tests (457 passing, 87 skipped)
 - ✅ Integration tests with Docker health checks
 - ✅ Test coverage >80% (94-95% for Story 2.2 code)
 - ✅ CI-ready tests (pnpm test:unit, pnpm test:integration)
 
 **Category 2: Test Data Strategy**
+
 - ✅ Default cost registry JSON (10 actions, version-controlled)
 - ✅ Test fixtures for valid/invalid registries
 - ✅ Mocked HTTP responses for balance queries
 
 **Category 3: Scalability & Availability**
+
 - ✅ O(1) cost lookups (HashMap, no performance degradation with scale)
 - ✅ Graceful degradation (stub mode when Crosstown unavailable)
 - ✅ 500ms timeout (no hanging queries)
 - ✅ No retry loops (fail-fast design)
 
 **Category 4: Disaster Recovery**
+
 - ✅ Registry in version control (git is backup)
 - ✅ No persistent client state (stateless design)
 - ✅ Fail-fast on errors (no silent failures)
 
 **Category 5: Security**
+
 - ✅ OWASP Top 10 compliant (all 10 categories validated)
 - ✅ Zero vulnerabilities (pnpm audit clean)
 - ✅ SSRF protection (localhost blocked in production)
 - ✅ Path traversal protection (.. segments rejected)
 
 **Category 6: Monitorability, Debuggability & Manageability**
+
 - ✅ Structured error handling (SigilError with codes/boundaries)
 - ✅ Logging at appropriate levels (DEBUG/WARN/ERROR)
 - ✅ Error messages sanitized (no path leaks in production)
 - ✅ JSDoc documentation (100% coverage on public APIs)
 
 **Category 7: QoS & QoE (Quality of Service & Experience)**
+
 - ✅ Performance targets met (getCost <10ms, getBalance <500ms)
 - ✅ Timeout protection (no hanging queries)
 - ✅ Error messages user-friendly (no stack traces)
 - ✅ Graceful degradation (stub mode with warning)
 
 **Category 8: Deployability**
+
 - ✅ No new dependencies (reused existing packages)
 - ✅ Build passes (pnpm build successful)
 - ✅ Zero breaking changes (backward compatible)
@@ -514,10 +522,12 @@ nfr_assessment:
 **High Priority:** None - All acceptance criteria met, all tests passing
 
 **Medium Priority:**
+
 - Complete Crosstown Balance API Integration (Story 2.5) - Replace stub mode with real API
 - Evaluate Hot-Reload for Cost Registry (Epic 9) - Research if live tuning is needed
 
 **Next Steps:**
+
 1. Proceed to Story 2.3 (ILP Packet Construction & Signing)
 2. Monitor balance query latency in production after Story 2.5
 3. Document stub mode deprecation timeline (deferred to Story 2.5)

@@ -228,11 +228,11 @@ The BLS handler validates Nostr event signatures and forwards authenticated game
 
 The BLS handler requires the following environment variables:
 
-| Variable | Description | Default | Required |
-|----------|-------------|---------|----------|
-| `SPACETIMEDB_URL` | SpacetimeDB HTTP endpoint | `http://localhost:3000` | Yes |
-| `SPACETIMEDB_DATABASE` | Database name | `bitcraft` | Yes |
-| `SPACETIMEDB_TOKEN` | Authentication token (admin token for MVP) | (none) | Yes |
+| Variable               | Description                                | Default                 | Required |
+| ---------------------- | ------------------------------------------ | ----------------------- | -------- |
+| `SPACETIMEDB_URL`      | SpacetimeDB HTTP endpoint                  | `http://localhost:3000` | Yes      |
+| `SPACETIMEDB_DATABASE` | Database name                              | `bitcraft`              | Yes      |
+| `SPACETIMEDB_TOKEN`    | Authentication token (admin token for MVP) | (none)                  | Yes      |
 
 **Example `docker-compose.yml` configuration:**
 
@@ -414,6 +414,7 @@ On Linux, volume mounts may have permission issues. The containers run as non-ro
 - Crosstown: UID 1000 (user: `crosstown`)
 
 **Why this happens:**
+
 - Docker on Linux mounts volumes with the host filesystem directly
 - If your host user has a different UID (e.g., 1001), the container cannot write to the volume
 - macOS Docker Desktop handles this automatically with osxfs, so macOS users don't see this issue

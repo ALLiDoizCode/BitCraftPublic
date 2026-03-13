@@ -241,18 +241,18 @@ sigil/
 
 ## Requirements to Structure Mapping
 
-| FR Domain                       | Package/Crate                                   | Key Files                                                                       |
-| ------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------- |
-| **FR1-FR5: Identity**           | `packages/client/src/identity/`                 | `keypair.ts`, `signer.ts`                                                       |
-| **FR6-FR10: Perception**        | `packages/client/src/perception/`               | `spacetimedb-client.ts`, `static-data.ts`, `reconnect.ts`                       |
-| **FR11-FR16: Agent Config**     | `packages/client/src/agent/`                    | `agent-config.ts`, `skill-loader.ts`, `budget-tracker.ts`                       |
-| **FR17-FR22: Actions/Payments** | `packages/client/src/actions/`, `src/payments/` | `action-executor.ts`, `crosstown-client.ts`, `bls-proxy.ts`, `cost-registry.ts` |
-| **FR4,FR5,FR19,FR20,FR45,FR47: BLS** | `packages/bitcraft-bls/` | `handler.ts`, `spacetimedb-client.ts`, `config.ts` |
-| **FR23-FR27: Cognition**        | External agent SDKs via `@sigil/mcp-server`     | MCP tools + `@sigil/client` direct import                                       |
-| **FR28-FR38: TUI**              | `crates/tui/`, `packages/tui-backend/`          | `src/ui/panels/*.rs`, `src/methods/*.ts`                                        |
-| **FR39-FR43: Experiments**      | External tooling consuming `@sigil/client`      | Phase 2 — JSONL logging built into client                                       |
-| **FR44-FR47: Infrastructure**   | `docker/`                                       | `docker-compose.yml`, Dockerfiles                                               |
-| **FR48-FR50: Extensibility**    | `skills/`                                       | Skill files per world, `README.md` authoring guide                              |
+| FR Domain                            | Package/Crate                                   | Key Files                                                                       |
+| ------------------------------------ | ----------------------------------------------- | ------------------------------------------------------------------------------- |
+| **FR1-FR5: Identity**                | `packages/client/src/identity/`                 | `keypair.ts`, `signer.ts`                                                       |
+| **FR6-FR10: Perception**             | `packages/client/src/perception/`               | `spacetimedb-client.ts`, `static-data.ts`, `reconnect.ts`                       |
+| **FR11-FR16: Agent Config**          | `packages/client/src/agent/`                    | `agent-config.ts`, `skill-loader.ts`, `budget-tracker.ts`                       |
+| **FR17-FR22: Actions/Payments**      | `packages/client/src/actions/`, `src/payments/` | `action-executor.ts`, `crosstown-client.ts`, `bls-proxy.ts`, `cost-registry.ts` |
+| **FR4,FR5,FR19,FR20,FR45,FR47: BLS** | `packages/bitcraft-bls/`                        | `handler.ts`, `spacetimedb-client.ts`, `config.ts`                              |
+| **FR23-FR27: Cognition**             | External agent SDKs via `@sigil/mcp-server`     | MCP tools + `@sigil/client` direct import                                       |
+| **FR28-FR38: TUI**                   | `crates/tui/`, `packages/tui-backend/`          | `src/ui/panels/*.rs`, `src/methods/*.ts`                                        |
+| **FR39-FR43: Experiments**           | External tooling consuming `@sigil/client`      | Phase 2 — JSONL logging built into client                                       |
+| **FR44-FR47: Infrastructure**        | `docker/`                                       | `docker-compose.yml`, Dockerfiles                                               |
+| **FR48-FR50: Extensibility**         | `skills/`                                       | Skill files per world, `README.md` authoring guide                              |
 
 ## Cross-Cutting Concerns Mapping
 

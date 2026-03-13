@@ -1,5 +1,12 @@
 ---
-stepsCompleted: ['step-01-preflight-and-context', 'step-02-generation-mode', 'step-03-test-strategy', 'step-04-test-generation', 'step-05-implementation-checklist']
+stepsCompleted:
+  [
+    'step-01-preflight-and-context',
+    'step-02-generation-mode',
+    'step-03-test-strategy',
+    'step-04-test-generation',
+    'step-05-implementation-checklist',
+  ]
 lastStep: 'step-05-implementation-checklist'
 lastSaved: '2026-02-28'
 workflowType: 'testarch-atdd'
@@ -123,7 +130,7 @@ Integration tests validate the BLS handler contract. Tests are marked `@skip` un
 // Valid event with signature
 const event = createKind30078Event({
   pubkey: testIdentity.publicKey,
-  content: JSON.stringify({ reducer: 'player_move', args: [origin, dest, false] })
+  content: JSON.stringify({ reducer: 'player_move', args: [origin, dest, false] }),
 });
 
 // Invalid signature event for AC3b
@@ -144,7 +151,7 @@ const invalidSigEvent = createInvalidEvent('bad-sig');
 ```typescript
 const error = createBLSErrorResponse({
   errorCode: BLSErrorCode.INVALID_SIGNATURE,
-  message: 'Signature verification failed'
+  message: 'Signature verification failed',
 });
 ```
 
@@ -178,7 +185,7 @@ test('should handle valid action', async ({ publishAction, expectBLSResponse }) 
 
   await expectBLSResponse({
     success: true,
-    eventId: expect.any(String)
+    eventId: expect.any(String),
   });
 });
 ```
@@ -261,6 +268,7 @@ For contract validation without external dependency, mock the expected BLS respo
 ```
 
 **Notes:**
+
 - All error responses include `retryable` boolean to guide client retry logic
 - Errors propagated from BLS to Crosstown relay to sender via Nostr OK message
 - Event ID matches the original Nostr event.id for correlation
@@ -678,16 +686,16 @@ Tests use `@skip` marker controlled by `BLS_HANDLER_DEPLOYED` environment variab
 
 ### Test Coverage Mapping
 
-| AC | Test Count | Coverage |
-|----|-----------|----------|
-| AC1 | 1 | BLS event reception via ILP routing |
-| AC2 | 2 | Event content parsing (success + failure) |
-| AC3 | 2 | Signature validation (valid + invalid) |
-| AC4 | 1 | SpacetimeDB reducer invocation with identity propagation |
-| AC5 | 1 | Unknown reducer error handling |
-| AC6 | 1 | Zero silent failures (logging verification) |
-| AC7 | 1 | Error response propagation to sender |
-| **Total** | **7** | **100% AC coverage** |
+| AC        | Test Count | Coverage                                                 |
+| --------- | ---------- | -------------------------------------------------------- |
+| AC1       | 1          | BLS event reception via ILP routing                      |
+| AC2       | 2          | Event content parsing (success + failure)                |
+| AC3       | 2          | Signature validation (valid + invalid)                   |
+| AC4       | 1          | SpacetimeDB reducer invocation with identity propagation |
+| AC5       | 1          | Unknown reducer error handling                           |
+| AC6       | 1          | Zero silent failures (logging verification)              |
+| AC7       | 1          | Error response propagation to sender                     |
+| **Total** | **7**      | **100% AC coverage**                                     |
 
 ---
 

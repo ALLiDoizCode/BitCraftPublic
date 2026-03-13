@@ -16,12 +16,14 @@ Crosstown is a **stub implementation** of an ILP-enabled Nostr relay specificall
 3. **ILP integration** - Payment validation and routing (to be fully implemented in Epic 2)
 
 **Current Status (Epic 1 Complete):**
+
 - Crosstown runs in **stub mode** (logs ILP packets, does NOT forward to SpacetimeDB)
 - Built from local Rust source at `docker/crosstown/crosstown-src/`
 - Docker container: `sigil-crosstown-node`
 - Ports: 4040 (Nostr WebSocket), 4041 (HTTP API)
 
 **Future Epic 2 Implementation:**
+
 - Full BLS identity propagation to SpacetimeDB
 - ILP payment validation and wallet management
 - Reducer dispatch with Nostr public key attribution
@@ -118,6 +120,7 @@ Nostr Relay: ws://localhost:4040
 **No authentication required** in development mode.
 
 **Production considerations:**
+
 - Authentication via NIP-42 (AUTH message) - NOT implemented in stub
 - TLS/WSS for encrypted transport - NOT implemented in stub
 - Rate limiting per connection (100 events/60s)
@@ -175,15 +178,18 @@ Publish a signed Nostr event to the relay.
 **Example:**
 
 ```json
-["EVENT", {
-  "id": "4376c65d2f232afbe9b882a35baa4f6fe8667c4e684749af565f981833ed6a65",
-  "pubkey": "6e468422dfb74a5738702a8823b9b28168abab8655faacb6853cd0ee15deee93",
-  "created_at": 1673347337,
-  "kind": 1,
-  "tags": [],
-  "content": "Walled gardens became prisons, and nostr is the first step towards tearing down the prison walls.",
-  "sig": "908a15e46fb4d8675bab026fc230a0e3542bfade63da02d542fb78b2a8513fcd0092619a2c8c1221e581946e0191f2af505dfdf8657a414dbca329186f009262"
-}]
+[
+  "EVENT",
+  {
+    "id": "4376c65d2f232afbe9b882a35baa4f6fe8667c4e684749af565f981833ed6a65",
+    "pubkey": "6e468422dfb74a5738702a8823b9b28168abab8655faacb6853cd0ee15deee93",
+    "created_at": 1673347337,
+    "kind": 1,
+    "tags": [],
+    "content": "Walled gardens became prisons, and nostr is the first step towards tearing down the prison walls.",
+    "sig": "908a15e46fb4d8675bab026fc230a0e3542bfade63da02d542fb78b2a8513fcd0092619a2c8c1221e581946e0191f2af505dfdf8657a414dbca329186f009262"
+  }
+]
 ```
 
 **Relay Response:**
@@ -224,7 +230,7 @@ Subscribe to events matching filters.
 **Example:**
 
 ```json
-["REQ", "sub-1", {"kinds": [1], "authors": ["pubkey_hex"], "limit": 10}]
+["REQ", "sub-1", { "kinds": [1], "authors": ["pubkey_hex"], "limit": 10 }]
 ```
 
 **Relay Responses:**
@@ -260,6 +266,7 @@ Deliver an event matching a subscription.
 ```
 
 Sent for:
+
 - Stored events matching REQ filters (before EOSE)
 - New events matching active subscriptions (after EOSE)
 
@@ -319,13 +326,13 @@ All Nostr events follow this structure:
 
 ```typescript
 interface NostrEvent {
-  id: string;          // 32-byte lowercase hex (SHA256 of serialized event)
-  pubkey: string;      // 32-byte lowercase hex (author's public key)
-  created_at: number;  // Unix timestamp in seconds
-  kind: number;        // Event type (0-65535)
-  tags: string[][];    // Array of string arrays
-  content: string;     // Arbitrary string payload
-  sig: string;         // 64-byte signature (Schnorr secp256k1)
+  id: string; // 32-byte lowercase hex (SHA256 of serialized event)
+  pubkey: string; // 32-byte lowercase hex (author's public key)
+  created_at: number; // Unix timestamp in seconds
+  kind: number; // Event type (0-65535)
+  tags: string[][]; // Array of string arrays
+  content: string; // Arbitrary string payload
+  sig: string; // 64-byte signature (Schnorr secp256k1)
 }
 ```
 
@@ -334,12 +341,12 @@ interface NostrEvent {
 ```javascript
 // Canonical JSON serialization (no whitespace, UTF-8)
 const serialized = JSON.stringify([
-  0,               // Reserved for future use
+  0, // Reserved for future use
   pubkey,
   created_at,
   kind,
   tags,
-  content
+  content,
 ]);
 
 const id = sha256(utf8_encode(serialized));
@@ -357,15 +364,15 @@ Filters use AND logic within a single filter, OR logic across multiple filters.
 
 ```typescript
 interface Filter {
-  ids?: string[];       // Exact event IDs (64-char hex)
-  authors?: string[];   // Exact pubkeys (64-char hex)
-  kinds?: number[];     // Event kinds
-  since?: number;       // Unix timestamp (inclusive)
-  until?: number;       // Unix timestamp (inclusive)
-  limit?: number;       // Max results (default: implementation-defined)
-  '#e'?: string[];      // Events tagged with these event IDs
-  '#p'?: string[];      // Events tagged with these pubkeys
-  '#d'?: string[];      // Events with 'd' tag (for addressable events)
+  ids?: string[]; // Exact event IDs (64-char hex)
+  authors?: string[]; // Exact pubkeys (64-char hex)
+  kinds?: number[]; // Event kinds
+  since?: number; // Unix timestamp (inclusive)
+  until?: number; // Unix timestamp (inclusive)
+  limit?: number; // Max results (default: implementation-defined)
+  '#e'?: string[]; // Events tagged with these event IDs
+  '#p'?: string[]; // Events tagged with these pubkeys
+  '#d'?: string[]; // Events with 'd' tag (for addressable events)
   // ... any #[letter] tag filter
 }
 ```
@@ -414,15 +421,15 @@ Crosstown extends NIP-01 with **minimal deviations** to support ILP game actions
 
 ### Deviations from NIP-01
 
-| Feature | NIP-01 Standard | Crosstown Stub | Notes |
-|---------|-----------------|----------------|-------|
-| Filter queries | Full filter support | EOSE only (no stored event queries) | Story 2.1 MAY defer full queries |
-| Event storage | Persistent | In-memory (HashMap) | Lost on restart |
-| Subscription persistence | Connection-scoped | Connection-scoped | Standard behavior |
-| Rate limiting | Optional | 100 events/60s per connection | Required for security |
-| Authentication | Optional (NIP-42) | None | Development mode only |
-| Event kind filtering | Relay-defined | Accept all | `accepted_event_kinds = "all"` |
-| Subscription limits | Relay-defined | No limit | Future: max 10 subscriptions/connection |
+| Feature                  | NIP-01 Standard     | Crosstown Stub                      | Notes                                   |
+| ------------------------ | ------------------- | ----------------------------------- | --------------------------------------- |
+| Filter queries           | Full filter support | EOSE only (no stored event queries) | Story 2.1 MAY defer full queries        |
+| Event storage            | Persistent          | In-memory (HashMap)                 | Lost on restart                         |
+| Subscription persistence | Connection-scoped   | Connection-scoped                   | Standard behavior                       |
+| Rate limiting            | Optional            | 100 events/60s per connection       | Required for security                   |
+| Authentication           | Optional (NIP-42)   | None                                | Development mode only                   |
+| Event kind filtering     | Relay-defined       | Accept all                          | `accepted_event_kinds = "all"`          |
+| Subscription limits      | Relay-defined       | No limit                            | Future: max 10 subscriptions/connection |
 
 ### Custom Features
 
@@ -577,24 +584,20 @@ fn handle_bls_stub(event: &NostrEvent) {
 
 ```typescript
 // Client sends REQ
-ws.send(JSON.stringify([
-  "REQ",
-  "game-actions",
-  { kinds: [30078] }
-]));
+ws.send(JSON.stringify(['REQ', 'game-actions', { kinds: [30078] }]));
 
 // Relay responds (stub mode)
 ws.onmessage = (msg) => {
   const data = JSON.parse(msg.data);
 
-  if (data[0] === "EOSE") {
-    console.log("End of stored events");
+  if (data[0] === 'EOSE') {
+    console.log('End of stored events');
     // No stored events returned in stub mode
   }
 
-  if (data[0] === "EVENT") {
+  if (data[0] === 'EVENT') {
     const [_, subId, event] = data;
-    console.log("Received event:", event);
+    console.log('Received event:', event);
     // Real-time events start arriving here
   }
 };
@@ -603,11 +606,7 @@ ws.onmessage = (msg) => {
 **Example: Subscribe to specific reducer**
 
 ```typescript
-ws.send(JSON.stringify([
-  "REQ",
-  "player-moves",
-  { kinds: [30078], "#reducer": ["player_move"] }
-]));
+ws.send(JSON.stringify(['REQ', 'player-moves', { kinds: [30078], '#reducer': ['player_move'] }]));
 ```
 
 **Note:** Tag filtering (`#reducer`) is NOT implemented in Crosstown stub. This will return EOSE immediately with no events. Full implementation in Epic 3-4.
@@ -634,19 +633,25 @@ Client                         Relay
 Clients can maintain multiple subscriptions per connection:
 
 ```typescript
-ws.send(JSON.stringify(["REQ", "sub-1", { kinds: [1] }]));
-ws.send(JSON.stringify(["REQ", "sub-2", { kinds: [30078] }]));
-ws.send(JSON.stringify(["REQ", "sub-3", { authors: ["pubkey"] }]));
+ws.send(JSON.stringify(['REQ', 'sub-1', { kinds: [1] }]));
+ws.send(JSON.stringify(['REQ', 'sub-2', { kinds: [30078] }]));
+ws.send(JSON.stringify(['REQ', 'sub-3', { authors: ['pubkey'] }]));
 
 // Relay sends events tagged with subscription_id
 ws.onmessage = (msg) => {
   const [type, subId, event] = JSON.parse(msg.data);
 
-  if (type === "EVENT") {
+  if (type === 'EVENT') {
     switch (subId) {
-      case "sub-1": handleTextNote(event); break;
-      case "sub-2": handleGameAction(event); break;
-      case "sub-3": handleUserEvent(event); break;
+      case 'sub-1':
+        handleTextNote(event);
+        break;
+      case 'sub-2':
+        handleGameAction(event);
+        break;
+      case 'sub-3':
+        handleUserEvent(event);
+        break;
     }
   }
 };
@@ -663,10 +668,10 @@ Sending a new `REQ` with the same `subscription_id` replaces the old subscriptio
 
 ```typescript
 // Initial subscription
-ws.send(JSON.stringify(["REQ", "main", { kinds: [1] }]));
+ws.send(JSON.stringify(['REQ', 'main', { kinds: [1] }]));
 
 // Replace with new filters (no need to CLOSE first)
-ws.send(JSON.stringify(["REQ", "main", { kinds: [30078] }]));
+ws.send(JSON.stringify(['REQ', 'main', { kinds: [30078] }]));
 ```
 
 Old subscription is implicitly closed.
@@ -968,11 +973,14 @@ Standard Nostr relays can require authentication via NIP-42. Crosstown stub does
 ws.onmessage = (msg) => {
   const [type, challenge] = JSON.parse(msg.data);
 
-  if (type === "AUTH") {
+  if (type === 'AUTH') {
     const authEvent = {
       kind: 22242,
-      content: "",
-      tags: [["challenge", challenge], ["relay", "ws://localhost:4040"]],
+      content: '',
+      tags: [
+        ['challenge', challenge],
+        ['relay', 'ws://localhost:4040'],
+      ],
       created_at: Math.floor(Date.now() / 1000),
       pubkey: myPubkey,
     };
@@ -980,7 +988,7 @@ ws.onmessage = (msg) => {
     authEvent.id = computeId(authEvent);
     authEvent.sig = sign(authEvent.id, myPrivateKey);
 
-    ws.send(JSON.stringify(["AUTH", authEvent]));
+    ws.send(JSON.stringify(['AUTH', authEvent]));
   }
 };
 ```
@@ -1014,7 +1022,7 @@ class SigilClient {
 
   async connect(): Promise<void> {
     await this.spacetimedb.connect(); // Story 1.4
-    await this.nostr.connect();       // Story 2.1
+    await this.nostr.connect(); // Story 2.1
   }
 }
 
@@ -1044,13 +1052,10 @@ const client = new SigilClient({
 await client.connect();
 
 // Subscribe to action confirmations
-const sub = client.nostr.subscribe(
-  [{ kinds: [30078] }],
-  (event) => {
-    const packet = JSON.parse(event.content);
-    console.log('Action confirmed:', packet.reducer);
-  }
-);
+const sub = client.nostr.subscribe([{ kinds: [30078] }], (event) => {
+  const packet = JSON.parse(event.content);
+  console.log('Action confirmed:', packet.reducer);
+});
 
 // Emit high-level event
 client.on('actionConfirmed', (details) => {
@@ -1068,10 +1073,7 @@ class NostrClient {
   private maxReconnectDelay = 30000; // 30 seconds
 
   private async reconnect(): Promise<void> {
-    const delay = Math.min(
-      1000 * Math.pow(2, this.reconnectAttempts),
-      this.maxReconnectDelay
-    );
+    const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), this.maxReconnectDelay);
 
     this.reconnectAttempts++;
 
@@ -1099,12 +1101,15 @@ class NostrClient {
 
 ```typescript
 ws.onerror = (err) => {
-  this.emit('error', new SigilError({
-    code: 'WEBSOCKET_ERROR',
-    message: 'Nostr relay WebSocket error',
-    boundary: 'nostr-relay',
-    cause: err,
-  }));
+  this.emit(
+    'error',
+    new SigilError({
+      code: 'WEBSOCKET_ERROR',
+      message: 'Nostr relay WebSocket error',
+      boundary: 'nostr-relay',
+      cause: err,
+    })
+  );
 };
 
 ws.onclose = (event) => {
@@ -1121,12 +1126,15 @@ ws.onmessage = (msg) => {
     const data = JSON.parse(msg.data);
     this.handleMessage(data);
   } catch (err) {
-    this.emit('error', new SigilError({
-      code: 'INVALID_MESSAGE',
-      message: 'Invalid JSON from Nostr relay',
-      boundary: 'nostr-relay',
-      cause: err,
-    }));
+    this.emit(
+      'error',
+      new SigilError({
+        code: 'INVALID_MESSAGE',
+        message: 'Invalid JSON from Nostr relay',
+        boundary: 'nostr-relay',
+        cause: err,
+      })
+    );
   }
 };
 ```
@@ -1273,10 +1281,7 @@ describe('Story 2.1: Crosstown Relay Connection', () => {
     await client.connect();
 
     const events: NostrEvent[] = [];
-    const sub = client.nostr.subscribe(
-      [{ kinds: [30078] }],
-      (event) => events.push(event)
-    );
+    const sub = client.nostr.subscribe([{ kinds: [30078] }], (event) => events.push(event));
 
     expect(sub.id).toBeTruthy();
 
@@ -1335,12 +1340,14 @@ describe('Story 2.1: Crosstown Relay Connection', () => {
 it('should enforce rate limiting', async () => {
   await client.connect();
 
-  const events = Array(101).fill(null).map((_, i) => ({
-    kind: 1,
-    content: `Test event ${i}`,
-    tags: [],
-    created_at: Math.floor(Date.now() / 1000),
-  }));
+  const events = Array(101)
+    .fill(null)
+    .map((_, i) => ({
+      kind: 1,
+      content: `Test event ${i}`,
+      tags: [],
+      created_at: Math.floor(Date.now() / 1000),
+    }));
 
   let rejectedCount = 0;
 
@@ -1387,9 +1394,11 @@ it('should enforce rate limiting', async () => {
 ### Nostr Libraries
 
 **TypeScript:**
+
 - [`nostr-tools`](https://github.com/nbd-wtf/nostr-tools) - Event signing, validation, utilities
 
 **Rust:**
+
 - [`nostr-rust`](https://github.com/rust-nostr/nostr) - Comprehensive Nostr implementation
 
 ### Tools

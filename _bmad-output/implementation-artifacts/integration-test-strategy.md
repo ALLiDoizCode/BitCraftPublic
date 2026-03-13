@@ -12,6 +12,7 @@
 This document establishes clear guidelines for when to write integration tests vs. unit tests, how to handle Docker dependencies in CI/CD, and fallback strategies when Docker isn't available. It addresses the complexity flagged in the Epic 1 retrospective where 127 integration tests require the full Docker stack (BitCraft server + Crosstown node), making local development and CI/CD more complex.
 
 **Key Principles:**
+
 1. **Prefer unit tests** - They're faster, more reliable, and easier to maintain
 2. **Integration tests for network behavior** - Only when you must verify real WebSocket connections or Docker services
 3. **Graceful degradation** - Auto-skip integration tests when Docker unavailable
@@ -32,12 +33,14 @@ This document establishes clear guidelines for when to write integration tests v
 - **Mocked dependencies** - When you can mock external services (WebSocket, database, file system)
 
 **Example scenarios:**
+
 - `calculateBackoffDelay()` - Pure function, deterministic output
 - `Keypair.generate()` - No external dependencies, fast execution
 - `StaticDataLoader.parseTable()` - Data transformation logic
 - `ReconnectionManager` state transitions - Mock the connection object
 
 **Benefits:**
+
 - Fast execution (< 1ms per test)
 - No Docker required
 - Run in watch mode during development
@@ -46,6 +49,7 @@ This document establishes clear guidelines for when to write integration tests v
 - Can run in CI without Docker setup
 
 **Example:**
+
 ```typescript
 // Good: Unit test with mocked connection
 describe('ReconnectionManager', () => {
@@ -77,6 +81,7 @@ describe('ReconnectionManager', () => {
 - **Subscription recovery** - Validating snapshot merging after reconnection
 
 **Example scenarios:**
+
 - `SigilClient.connect()` to real SpacetimeDB server
 - Subscription to `player_state` table and receiving real updates
 - Reconnection after server restart
@@ -84,6 +89,7 @@ describe('ReconnectionManager', () => {
 - Crosstown relay event subscriptions (Epic 2)
 
 **Trade-offs:**
+
 - Slow execution (seconds per test due to Docker startup)
 - Docker required (adds setup complexity)
 - Flaky (network issues, timing problems)
@@ -92,13 +98,14 @@ describe('ReconnectionManager', () => {
 - CI requires Docker setup
 
 **Example:**
+
 ```typescript
 // Good: Integration test with real Docker stack
 describe('SpacetimeDB Connection - Integration', () => {
   it('should connect to real BitCraft server and subscribe to player_state', async () => {
     // Requires Docker: docker compose -f docker/docker-compose.yml up -d
     const client = new SigilClient({
-      spacetimedb: { url: 'ws://localhost:3000', databaseName: 'bitcraft' }
+      spacetimedb: { url: 'ws://localhost:3000', databaseName: 'bitcraft' },
     });
     await client.connect();
     const players = client.spacetimedb.tables.players.getAll();
@@ -170,6 +177,7 @@ jobs:
 ```
 
 **Key Patterns:**
+
 1. **Separate jobs** - Unit tests run first (fast feedback), integration tests run if unit tests pass
 2. **Health checks** - Wait for services to be ready before running tests (prevents flaky tests)
 3. **Cleanup** - Always stop Docker services, even if tests fail (`if: always()`)
@@ -206,12 +214,14 @@ describe.skipIf(!DOCKER_AVAILABLE)('SpacetimeDB Connection - Integration', () =>
 ```
 
 **Benefits:**
+
 - Tests automatically skip if Docker not running
 - Clear skip message in test output
 - No false negatives (skipped tests don't fail the build)
 - Developers can run unit tests without Docker
 
 **Test Output:**
+
 ```
 ✓ src/spacetimedb/__tests__/connection.test.ts (27 tests) 109ms
 ↓ src/spacetimedb/__tests__/integration.test.ts (16 tests | 16 skipped)
@@ -226,21 +236,25 @@ describe.skipIf(!DOCKER_AVAILABLE)('SpacetimeDB Connection - Integration', () =>
 ### Strategy 1: Auto-Skip Integration Tests (Recommended)
 
 **Implementation:**
+
 - Use `describe.skipIf(!DOCKER_AVAILABLE)` pattern (see above)
 - Clear skip message in test output
 - No false negatives
 
 **Pros:**
+
 - Simple to implement
 - No code duplication
 - Developers can run unit tests without Docker
 - CI can run on machines without Docker
 
 **Cons:**
+
 - Integration test coverage not verified locally without Docker
 - Developers may forget to run integration tests before pushing
 
 **Best For:**
+
 - Local development (developers iterate on unit tests)
 - CI environments without Docker support
 
@@ -249,25 +263,30 @@ describe.skipIf(!DOCKER_AVAILABLE)('SpacetimeDB Connection - Integration', () =>
 ### Strategy 2: Lightweight Mocks for Local Development (Optional)
 
 **Implementation:**
+
 - Provide in-memory mock implementations of Docker services
 - Example: Mock SpacetimeDB server that simulates table subscriptions
 - Developers can run "integration-like" tests without Docker
 
 **Pros:**
+
 - Faster than real Docker stack
 - No Docker setup required for local development
 - Still validates integration points (mocked behavior)
 
 **Cons:**
+
 - Mocks may diverge from real behavior
 - Additional maintenance burden (mock implementations)
 - Not true integration tests (doesn't catch real network issues)
 
 **Best For:**
+
 - Rapid local development
 - Testing integration logic without full stack
 
 **Example:**
+
 ```typescript
 // packages/client/src/spacetimedb/test-utils/mock-server.ts
 export class MockSpacetimeDBServer {
@@ -292,21 +311,25 @@ export class MockSpacetimeDBServer {
 ### Strategy 3: Docker Setup Documentation (Current Approach)
 
 **Implementation:**
+
 - Provide clear Docker setup instructions in `docker/README.md`
 - One-command setup: `docker compose -f docker/docker-compose.yml up -d`
 - Health check scripts: `docker/scripts/health-check.sh`
 
 **Pros:**
+
 - Full integration test coverage
 - Tests validate real behavior
 - Reusable for local development
 
 **Cons:**
+
 - Requires Docker Desktop or Docker Engine
 - Setup complexity for new contributors
 - Slow test execution (minutes for full stack startup)
 
 **Best For:**
+
 - CI/CD (GitHub Actions, GitLab CI)
 - Pre-commit hooks (run integration tests before push)
 - Release validation (full end-to-end testing)
@@ -375,10 +398,12 @@ packages/client/src/
 ```
 
 **Pattern:**
+
 - `*.test.ts` - Unit tests (fast, no Docker)
 - `*.integration.test.ts` - Integration tests (slow, requires Docker)
 
 **Benefits:**
+
 - Clear distinction between test types
 - Easy to filter in Vitest configuration
 - Developers know which tests require Docker
@@ -392,13 +417,10 @@ packages/client/src/
 export default defineConfig({
   test: {
     include: [
-      'src/**/*.test.ts',           // Unit tests (always run)
-      'src/**/*.integration.test.ts' // Integration tests (conditional)
+      'src/**/*.test.ts', // Unit tests (always run)
+      'src/**/*.integration.test.ts', // Integration tests (conditional)
     ],
-    exclude: [
-      'node_modules/**',
-      'dist/**'
-    ],
+    exclude: ['node_modules/**', 'dist/**'],
   },
 });
 ```
@@ -419,7 +441,7 @@ services:
   bitcraft-server:
     image: clockworklabs/spacetimedb:latest
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/database/bitcraft/info"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:3000/database/bitcraft/info']
       interval: 5s
       timeout: 3s
       retries: 10
@@ -428,7 +450,7 @@ services:
   crosstown-node:
     image: crosstown:latest
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4041/health"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:4041/health']
       interval: 5s
       timeout: 3s
       retries: 10
@@ -466,7 +488,7 @@ beforeAll(async () => {
       await fetch('http://localhost:4041/health');
       return; // Both services healthy
     } catch {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     }
   }
   throw new Error('Services did not become healthy in time');
@@ -489,6 +511,7 @@ Epic 2 Story 2.4 introduces the BLS (Billing and Lifecycle Services) handler, wh
    - SpacetimeDB reducer invocation
 
 **Recommendation:**
+
 - Write unit tests for BLS handler logic (packet parsing, signature verification)
 - Write integration tests for end-to-end flow (Nostr relay → BLS → SpacetimeDB)
 - Use `describe.skipIf(!DOCKER_AVAILABLE)` pattern for integration tests
@@ -507,6 +530,7 @@ Story 2.1 introduces Crosstown relay event subscriptions. Integration tests will
    - Error handling
 
 **Recommendation:**
+
 - Write unit tests for event parsing and filtering logic
 - Write integration tests for real Crosstown relay connections
 - Use health check pattern to wait for Crosstown node
@@ -541,6 +565,7 @@ For features with >3 acceptance criteria, write tests before implementation. App
 
 **AGREEMENT-5: Integration Test Documentation**
 Integration tests requiring Docker must have:
+
 - Clear setup instructions in test file header
 - Graceful failure messages when Docker unavailable
 - Health check patterns to prevent flaky tests

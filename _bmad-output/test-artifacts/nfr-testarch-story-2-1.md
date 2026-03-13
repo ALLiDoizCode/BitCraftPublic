@@ -137,31 +137,37 @@ Story 2.1 implements the Nostr relay connection layer for the Sigil SDK, establi
 ### 1.3 Critical NFRs for Story 2.1
 
 **NFR19 - NIP-01 Standard Relay Compatibility:**
+
 - **Requirement:** `@sigil/client` connects to any standard Nostr relay implementing NIP-01; Crosstown's built-in relay is the default
 - **Story Relevance:** CRITICAL - Core functionality, AC6 directly tests this
 - **Test Strategy:** Unit tests with mock relay, integration tests with Crosstown, manual validation with public relay (deferred to Epic 6)
 
 **NFR23 - Auto-Reconnection:**
+
 - **Requirement:** SpacetimeDB subscription automatically reconnects within 10 seconds after connection loss, with full state recovery
 - **Story Relevance:** HIGH - Story 2.1 extends Story 1.6 reconnection to Nostr relay
 - **Test Strategy:** Reuse Story 1.6 exponential backoff pattern, integration tests with forced disconnect
 
 **NFR24 - Failed ILP Packets:**
+
 - **Requirement:** Failed ILP packets (network timeout, insufficient balance) return clear error codes and do not leave the system in an inconsistent state
 - **Story Relevance:** MEDIUM - Story 2.1 implements error boundary infrastructure for Nostr relay
 - **Test Strategy:** Unit tests for error code validation, integration tests for state consistency
 
 **NFR27 - Zero Silent Failures:**
+
 - **Requirement:** BLS identity propagation has zero silent failures: every reducer call either succeeds with verified identity or fails with an explicit error
 - **Story Relevance:** HIGH - Story 2.1 establishes error emission patterns for all Epic 2 stories
 - **Test Strategy:** Comprehensive error handling tests, verify all errors are explicit and logged
 
 **NFR3 - ILP Round-Trip Latency (Partial):**
+
 - **Requirement:** ILP packet round-trip completes within 2 seconds under normal load
 - **Story Relevance:** LOW - Story 2.1 establishes relay connection (read path only), full validation in Story 2.3
 - **Test Strategy:** Baseline latency measurement for relay subscriptions (informational)
 
 **NFR5 - Real-Time Updates (Inherited from Epic 1):**
+
 - **Requirement:** SpacetimeDB table subscription updates reflected in agent state and TUI display within 500ms of database commit
 - **Story Relevance:** LOW - Nostr relay events should have similar latency characteristics
 - **Test Strategy:** Measure event delivery latency (informational, no hard requirement)
@@ -224,6 +230,7 @@ Story 2.1 implements the Nostr relay connection layer for the Sigil SDK, establi
 #### Performance Thresholds
 
 **NFR3 - ILP Round-Trip Latency (Baseline Only)**
+
 - **Threshold:** Informational measurement (no hard requirement in Story 2.1)
 - **Target:** <500ms for relay subscription delivery (Story 2.1 scope)
 - **Full Requirement:** <2s for full ILP packet execution (validated in Story 2.3)
@@ -235,6 +242,7 @@ Story 2.1 implements the Nostr relay connection layer for the Sigil SDK, establi
 - **Success Criteria:** Baseline established, documented in test results
 
 **NFR5 - Real-Time Event Delivery (Informational)**
+
 - **Threshold:** <500ms from relay publish to client event handler
 - **Rationale:** Consistency with SpacetimeDB subscription latency (inherited from Epic 1)
 - **Test Strategy:**
@@ -244,6 +252,7 @@ Story 2.1 implements the Nostr relay connection layer for the Sigil SDK, establi
 - **Success Criteria:** Average latency <500ms, p95 <1000ms (soft target)
 
 **NFR23 - Reconnection Latency**
+
 - **Threshold:** Total reconnection time <10 seconds (inherited from Story 1.6)
 - **Exponential Backoff:** 1s, 2s, 4s, 8s (max 30s per attempt)
 - **Test Strategy:**
@@ -256,6 +265,7 @@ Story 2.1 implements the Nostr relay connection layer for the Sigil SDK, establi
 #### Security Thresholds
 
 **NFR24 - Error Boundary Validation**
+
 - **Threshold:** All errors include boundary attribute (`nostr-relay`, `crosstown`, `bls`, `spacetimedb`)
 - **Error Codes Required:** `INVALID_MESSAGE`, `NETWORK_TIMEOUT`, `CONNECTION_FAILED`
 - **Test Strategy:**
@@ -266,6 +276,7 @@ Story 2.1 implements the Nostr relay connection layer for the Sigil SDK, establi
 - **Success Criteria:** 100% of errors have explicit boundary, zero errors without boundary
 
 **NFR27 - Zero Silent Failures**
+
 - **Threshold:** Every error path emits explicit error event or throws `SigilError`
 - **Test Strategy:**
   - Invalid JSON message → `INVALID_MESSAGE` error
@@ -275,48 +286,56 @@ Story 2.1 implements the Nostr relay connection layer for the Sigil SDK, establi
 - **Success Criteria:** No error path without explicit reporting, all tests verify error emission
 
 **OWASP A01:2021 - Broken Access Control**
+
 - **Threshold:** Subscription IDs use `crypto.randomUUID()` (cryptographically secure)
 - **Test Strategy:** Unit tests verify UUID format, collision resistance
 - **Validation Method:** Static code review + unit tests
 - **Success Criteria:** All subscription IDs generated with `crypto.randomUUID()`
 
 **OWASP A03:2021 - Injection**
+
 - **Threshold:** Relay URL validated with regex `^wss?://[a-zA-Z0-9.-]+(:[0-9]+)?$`
 - **Test Strategy:** Unit tests with invalid URLs (SQL injection, command injection attempts)
 - **Validation Method:** Input validation test suite
 - **Success Criteria:** All invalid URLs rejected, no code execution possible
 
 **OWASP A04:2021 - Insecure Design**
+
 - **Threshold:** Exponential backoff enforced (prevents tight reconnection loops)
 - **Test Strategy:** Unit tests verify backoff delays (1s, 2s, 4s, 8s, cap 30s)
 - **Validation Method:** Reconnection test suite
 - **Success Criteria:** Backoff algorithm matches Story 1.6 pattern
 
 **OWASP A05:2021 - Security Misconfiguration**
+
 - **Threshold:** WebSocket errors sanitized (no stack traces in production logs)
 - **Test Strategy:** Unit tests verify error message format
 - **Validation Method:** Error logging tests
 - **Success Criteria:** No stack traces, no sensitive data in error messages
 
 **OWASP A06:2021 - Vulnerable Components**
+
 - **Threshold:** `ws@^8.18.0` has zero known vulnerabilities
 - **Test Strategy:** Run `pnpm audit` before implementation
 - **Validation Method:** Dependency audit
 - **Success Criteria:** Zero high/critical vulnerabilities in `ws` package
 
 **OWASP A08:2021 - Data Integrity Failures**
+
 - **Threshold:** All JSON messages validated before processing
 - **Test Strategy:** Unit tests with malformed JSON, missing fields
 - **Validation Method:** Message parsing test suite
 - **Success Criteria:** Invalid messages rejected, no parsing crashes
 
 **OWASP A09:2021 - Logging Failures**
+
 - **Threshold:** Connection state changes logged (debug level), no secrets in logs
 - **Test Strategy:** Unit tests verify logging calls (no actual log inspection)
 - **Validation Method:** Logging test suite
 - **Success Criteria:** All state changes logged, no `nsec` patterns in logs
 
 **OWASP A10:2021 - SSRF**
+
 - **Threshold:** Relay URL validation prevents internal network access (production), localhost allowed (dev)
 - **Test Strategy:** Unit tests with internal IPs (`192.168.x.x`, `10.x.x.x`, `127.0.0.1`)
 - **Validation Method:** URL validation test suite
@@ -325,6 +344,7 @@ Story 2.1 implements the Nostr relay connection layer for the Sigil SDK, establi
 #### Reliability Thresholds
 
 **NFR23 - State Recovery After Reconnection**
+
 - **Threshold:** All active subscriptions re-established after reconnection
 - **Test Strategy:**
   - Create 5 subscriptions
@@ -334,6 +354,7 @@ Story 2.1 implements the Nostr relay connection layer for the Sigil SDK, establi
 - **Success Criteria:** 100% of subscriptions re-established, no state loss
 
 **NFR24 - Consistent State After Network Timeout**
+
 - **Threshold:** No partial state updates, system remains consistent
 - **Test Strategy:**
   - Simulate network timeout during subscription
@@ -344,6 +365,7 @@ Story 2.1 implements the Nostr relay connection layer for the Sigil SDK, establi
 #### Integration Thresholds
 
 **NFR19 - NIP-01 Compatibility**
+
 - **Threshold:** Client works with any standard Nostr relay implementing NIP-01
 - **Test Strategy:**
   - Unit tests verify NIP-01 message format (REQ, CLOSE, EVENT, EOSE, NOTICE, OK)
@@ -354,18 +376,18 @@ Story 2.1 implements the Nostr relay connection layer for the Sigil SDK, establi
 
 ### 2.3 Threshold Summary Matrix
 
-| NFR Category   | NFR ID  | Threshold Defined | Validation Method           | Priority | Tests |
-| -------------- | ------- | ----------------- | --------------------------- | -------- | ----- |
-| Performance    | NFR3    | Baseline only     | Performance integration     | P2       | 2     |
-| Performance    | NFR5    | <500ms            | Event delivery timing       | P2       | 2     |
-| Performance    | NFR23   | <10s reconnect    | Reconnection tests          | P0       | 8     |
-| Security       | NFR24   | 100% boundary     | Error handling tests        | P0       | 10    |
-| Security       | NFR27   | Zero silent       | Comprehensive error tests   | P0       | 15    |
-| Security       | OWASP   | A01-A10           | OWASP compliance tests      | P0       | 20    |
-| Reliability    | NFR23   | 100% restore      | Subscription recovery tests | P0       | 5     |
-| Reliability    | NFR24   | Consistent state  | Network failure tests       | P1       | 5     |
-| Integration    | NFR19   | NIP-01 compliant  | Protocol compliance tests   | P0       | 15    |
-| **TOTAL**      | **5+8** | **All defined**   | **9 test suites**           | -        | **82**|
+| NFR Category | NFR ID  | Threshold Defined | Validation Method           | Priority | Tests  |
+| ------------ | ------- | ----------------- | --------------------------- | -------- | ------ |
+| Performance  | NFR3    | Baseline only     | Performance integration     | P2       | 2      |
+| Performance  | NFR5    | <500ms            | Event delivery timing       | P2       | 2      |
+| Performance  | NFR23   | <10s reconnect    | Reconnection tests          | P0       | 8      |
+| Security     | NFR24   | 100% boundary     | Error handling tests        | P0       | 10     |
+| Security     | NFR27   | Zero silent       | Comprehensive error tests   | P0       | 15     |
+| Security     | OWASP   | A01-A10           | OWASP compliance tests      | P0       | 20     |
+| Reliability  | NFR23   | 100% restore      | Subscription recovery tests | P0       | 5      |
+| Reliability  | NFR24   | Consistent state  | Network failure tests       | P1       | 5      |
+| Integration  | NFR19   | NIP-01 compliant  | Protocol compliance tests   | P0       | 15     |
+| **TOTAL**    | **5+8** | **All defined**   | **9 test suites**           | -        | **82** |
 
 **Note:** 82 total NFR validation tests across all categories (exceeds initial 70-test target due to comprehensive security coverage).
 
@@ -400,69 +422,69 @@ NFR-Specific: 82 tests (includes overlap with functional tests)
 
 **NFRs Validated:** NFR19 (NIP-01 compliance), NFR24 (error boundaries), OWASP A03/A05/A10
 
-| Test ID | Test Name | NFR Coverage | AC Mapping |
-|---------|-----------|--------------|------------|
-| UC1.1 | `connect() establishes WebSocket connection` | NFR19 | AC1 |
-| UC1.2 | `disconnect() closes WebSocket cleanly` | NFR24 | AC1 |
-| UC1.3 | `connection state tracked (disconnected/connecting/connected)` | NFR23 | AC1 |
-| UC1.4 | `connectionChange events emitted on state transitions` | NFR27 | AC1 |
-| UC1.5 | `isConnected() returns boolean status` | - | AC1 |
-| UC1.6 | `relay URL validation rejects invalid protocols` | OWASP A03 | AC7 |
-| UC1.7 | `relay URL validation rejects SSRF attempts` | OWASP A10 | AC7 |
-| UC1.8 | `relay URL allows ws:// and wss://` | NFR19 | AC6 |
-| UC1.9 | `default relay URL is ws://localhost:4040` | NFR19 | AC6 |
-| UC1.10 | `configurable relay URL via options` | NFR19 | AC6 |
-| UC1.11 | `WebSocket errors emit SigilError with boundary=nostr-relay` | NFR24 | AC7 |
-| UC1.12 | `connection timeout emits error after 30s` | NFR24 | AC7 |
+| Test ID | Test Name                                                      | NFR Coverage | AC Mapping |
+| ------- | -------------------------------------------------------------- | ------------ | ---------- |
+| UC1.1   | `connect() establishes WebSocket connection`                   | NFR19        | AC1        |
+| UC1.2   | `disconnect() closes WebSocket cleanly`                        | NFR24        | AC1        |
+| UC1.3   | `connection state tracked (disconnected/connecting/connected)` | NFR23        | AC1        |
+| UC1.4   | `connectionChange events emitted on state transitions`         | NFR27        | AC1        |
+| UC1.5   | `isConnected() returns boolean status`                         | -            | AC1        |
+| UC1.6   | `relay URL validation rejects invalid protocols`               | OWASP A03    | AC7        |
+| UC1.7   | `relay URL validation rejects SSRF attempts`                   | OWASP A10    | AC7        |
+| UC1.8   | `relay URL allows ws:// and wss://`                            | NFR19        | AC6        |
+| UC1.9   | `default relay URL is ws://localhost:4040`                     | NFR19        | AC6        |
+| UC1.10  | `configurable relay URL via options`                           | NFR19        | AC6        |
+| UC1.11  | `WebSocket errors emit SigilError with boundary=nostr-relay`   | NFR24        | AC7        |
+| UC1.12  | `connection timeout emits error after 30s`                     | NFR24        | AC7        |
 
 **Suite 2: nostr-subscriptions.test.ts (15 tests)**
 
 **NFRs Validated:** NFR19 (NIP-01 protocol), NFR27 (explicit errors), OWASP A01/A08
 
-| Test ID | Test Name | NFR Coverage | AC Mapping |
-|---------|-----------|--------------|------------|
-| US2.1 | `subscribe() sends REQ message with NIP-01 format` | NFR19 | AC2 |
-| US2.2 | `subscription ID uses crypto.randomUUID()` | OWASP A01 | AC2 |
-| US2.3 | `subscription ID collision resistance` | OWASP A01 | AC2 |
-| US2.4 | `subscribe() returns Subscription object` | - | AC2 |
-| US2.5 | `Subscription.unsubscribe() sends CLOSE message` | NFR19 | AC2 |
-| US2.6 | `subscription handler receives EVENT messages` | NFR19 | AC2 |
-| US2.7 | `multiple filters supported in single REQ` | NFR19 | AC2 |
-| US2.8 | `filter validation (kinds, authors, ids, tags)` | OWASP A08 | AC2 |
-| US2.9 | `invalid filter format rejected` | NFR27 | AC7 |
-| US2.10 | `EOSE message emits eose event` | NFR19 | AC3 |
-| US2.11 | `real-time events continue after EOSE` | NFR19 | AC3 |
-| US2.12 | `subscription handler errors isolated` | NFR27 | AC7 |
-| US2.13 | `subscription handler error does not crash client` | NFR27 | AC7 |
-| US2.14 | `subscription tracking in Map<string, Subscription>` | - | AC2 |
-| US2.15 | `active subscriptions queryable` | - | AC2 |
+| Test ID | Test Name                                            | NFR Coverage | AC Mapping |
+| ------- | ---------------------------------------------------- | ------------ | ---------- |
+| US2.1   | `subscribe() sends REQ message with NIP-01 format`   | NFR19        | AC2        |
+| US2.2   | `subscription ID uses crypto.randomUUID()`           | OWASP A01    | AC2        |
+| US2.3   | `subscription ID collision resistance`               | OWASP A01    | AC2        |
+| US2.4   | `subscribe() returns Subscription object`            | -            | AC2        |
+| US2.5   | `Subscription.unsubscribe() sends CLOSE message`     | NFR19        | AC2        |
+| US2.6   | `subscription handler receives EVENT messages`       | NFR19        | AC2        |
+| US2.7   | `multiple filters supported in single REQ`           | NFR19        | AC2        |
+| US2.8   | `filter validation (kinds, authors, ids, tags)`      | OWASP A08    | AC2        |
+| US2.9   | `invalid filter format rejected`                     | NFR27        | AC7        |
+| US2.10  | `EOSE message emits eose event`                      | NFR19        | AC3        |
+| US2.11  | `real-time events continue after EOSE`               | NFR19        | AC3        |
+| US2.12  | `subscription handler errors isolated`               | NFR27        | AC7        |
+| US2.13  | `subscription handler error does not crash client`   | NFR27        | AC7        |
+| US2.14  | `subscription tracking in Map<string, Subscription>` | -            | AC2        |
+| US2.15  | `active subscriptions queryable`                     | -            | AC2        |
 
 **Suite 3: action-confirmation-events.test.ts (8 tests)**
 
 **NFRs Validated:** NFR5 (event latency), NFR27 (error handling), OWASP A08
 
-| Test ID | Test Name | NFR Coverage | AC Mapping |
-|---------|-----------|--------------|------------|
-| AC3.1 | `actionConfirmed event fires on kind 30078` | NFR5 | AC4 |
-| AC3.2 | `ILP packet parsing extracts reducer/args` | OWASP A08 | AC4 |
-| AC3.3 | `actionConfirmed includes eventId, reducer, args, fee, pubkey` | - | AC4 |
-| AC3.4 | `malformed ILP packet logs warning, no crash` | NFR27 | AC7 |
-| AC3.5 | `kind 30078 with invalid JSON content handled gracefully` | NFR27 | AC7 |
-| AC3.6 | `missing reducer field in ILP packet logged` | NFR27 | AC4 |
-| AC3.7 | `missing args field in ILP packet logged` | NFR27 | AC4 |
-| AC3.8 | `non-kind-30078 events ignored` | - | AC4 |
+| Test ID | Test Name                                                      | NFR Coverage | AC Mapping |
+| ------- | -------------------------------------------------------------- | ------------ | ---------- |
+| AC3.1   | `actionConfirmed event fires on kind 30078`                    | NFR5         | AC4        |
+| AC3.2   | `ILP packet parsing extracts reducer/args`                     | OWASP A08    | AC4        |
+| AC3.3   | `actionConfirmed includes eventId, reducer, args, fee, pubkey` | -            | AC4        |
+| AC3.4   | `malformed ILP packet logs warning, no crash`                  | NFR27        | AC7        |
+| AC3.5   | `kind 30078 with invalid JSON content handled gracefully`      | NFR27        | AC7        |
+| AC3.6   | `missing reducer field in ILP packet logged`                   | NFR27        | AC4        |
+| AC3.7   | `missing args field in ILP packet logged`                      | NFR27        | AC4        |
+| AC3.8   | `non-kind-30078 events ignored`                                | -            | AC4        |
 
 **Suite 4: nostr-reconnection.test.ts (5 tests)**
 
 **NFRs Validated:** NFR23 (reconnection <10s), NFR24 (state consistency)
 
-| Test ID | Test Name | NFR Coverage | AC Mapping |
-|---------|-----------|--------------|------------|
-| RC4.1 | `exponential backoff delays (1s, 2s, 4s, 8s)` | NFR23 | AC5 |
-| RC4.2 | `max backoff delay capped at 30s` | NFR23 | AC5 |
-| RC4.3 | `backoff reset to 0 on successful connection` | NFR23 | AC5 |
-| RC4.4 | `subscriptions re-established after reconnect` | NFR23 | AC5 |
-| RC4.5 | `connectionChange events during reconnection` | NFR27 | AC5 |
+| Test ID | Test Name                                      | NFR Coverage | AC Mapping |
+| ------- | ---------------------------------------------- | ------------ | ---------- |
+| RC4.1   | `exponential backoff delays (1s, 2s, 4s, 8s)`  | NFR23        | AC5        |
+| RC4.2   | `max backoff delay capped at 30s`              | NFR23        | AC5        |
+| RC4.3   | `backoff reset to 0 on successful connection`  | NFR23        | AC5        |
+| RC4.4   | `subscriptions re-established after reconnect` | NFR23        | AC5        |
+| RC4.5   | `connectionChange events during reconnection`  | NFR27        | AC5        |
 
 ### 3.3 Integration Test Suites
 
@@ -470,60 +492,61 @@ NFR-Specific: 82 tests (includes overlap with functional tests)
 
 **NFRs Validated:** NFR19 (NIP-01 compatibility), NFR23 (reconnection), NFR5 (latency)
 
-| Test ID | Test Name | NFR Coverage | AC Mapping |
-|---------|-----------|--------------|------------|
-| IT5.1 | `connect to real Crosstown at ws://localhost:4040` | NFR19 | AC1 |
-| IT5.2 | `subscribe with kinds:[30078] filter` | NFR19 | AC2 |
-| IT5.3 | `EOSE received within 1 second` | NFR5 | AC3 |
-| IT5.4 | `publish kind 30078 via manual WebSocket, verify received` | NFR5 | AC4 |
-| IT5.5 | `actionConfirmed event fires with correct data` | - | AC4 |
-| IT5.6 | `BLS stub log verification in Docker` | - | AC4 |
-| IT5.7 | `unsubscribe removes subscription` | NFR19 | AC2 |
-| IT5.8 | `multiple concurrent subscriptions supported` | - | AC2 |
-| IT5.9 | `NOTICE message emits warning event` | NFR27 | AC8 |
-| IT5.10 | `rate limit NOTICE handling (101 events/60s)` | NFR24 | AC8 |
+| Test ID | Test Name                                                  | NFR Coverage | AC Mapping |
+| ------- | ---------------------------------------------------------- | ------------ | ---------- |
+| IT5.1   | `connect to real Crosstown at ws://localhost:4040`         | NFR19        | AC1        |
+| IT5.2   | `subscribe with kinds:[30078] filter`                      | NFR19        | AC2        |
+| IT5.3   | `EOSE received within 1 second`                            | NFR5         | AC3        |
+| IT5.4   | `publish kind 30078 via manual WebSocket, verify received` | NFR5         | AC4        |
+| IT5.5   | `actionConfirmed event fires with correct data`            | -            | AC4        |
+| IT5.6   | `BLS stub log verification in Docker`                      | -            | AC4        |
+| IT5.7   | `unsubscribe removes subscription`                         | NFR19        | AC2        |
+| IT5.8   | `multiple concurrent subscriptions supported`              | -            | AC2        |
+| IT5.9   | `NOTICE message emits warning event`                       | NFR27        | AC8        |
+| IT5.10  | `rate limit NOTICE handling (101 events/60s)`              | NFR24        | AC8        |
 
 **Suite 6: subscription-recovery-integration.test.ts (5 tests)**
 
 **NFRs Validated:** NFR23 (reconnection with state recovery)
 
-| Test ID | Test Name | NFR Coverage | AC Mapping |
-|---------|-----------|--------------|------------|
-| SR6.1 | `force disconnect, verify reconnection within 2s` | NFR23 | AC5 |
-| SR6.2 | `subscription re-establishment after reconnect` | NFR23 | AC5 |
-| SR6.3 | `send event after reconnect, verify received` | NFR23 | AC5 |
-| SR6.4 | `no missed events during reconnection window` | NFR23 | AC5 |
-| SR6.5 | `connectionChange events: disconnected→connecting→connected` | NFR27 | AC5 |
+| Test ID | Test Name                                                    | NFR Coverage | AC Mapping |
+| ------- | ------------------------------------------------------------ | ------------ | ---------- |
+| SR6.1   | `force disconnect, verify reconnection within 2s`            | NFR23        | AC5        |
+| SR6.2   | `subscription re-establishment after reconnect`              | NFR23        | AC5        |
+| SR6.3   | `send event after reconnect, verify received`                | NFR23        | AC5        |
+| SR6.4   | `no missed events during reconnection window`                | NFR23        | AC5        |
+| SR6.5   | `connectionChange events: disconnected→connecting→connected` | NFR27        | AC5        |
 
 ### 3.4 Test Coverage Matrix
 
 **AC → NFR → Test Mapping:**
 
-| AC | AC Description | NFR Coverage | Unit Tests | Integration Tests | Total |
-|----|----------------|--------------|------------|-------------------|-------|
-| AC1 | WebSocket connection | NFR19, NFR24 | 12 | 1 | 13 |
-| AC2 | NIP-01 subscription | NFR19, NFR27 | 15 | 4 | 19 |
-| AC3 | EOSE handling | NFR19, NFR5 | 2 | 1 | 3 |
-| AC4 | Action confirmation | NFR5, NFR27 | 8 | 3 | 11 |
-| AC5 | Reconnection | NFR23, NFR24 | 5 | 5 | 10 |
-| AC6 | NIP-01 compatibility | NFR19 | 4 | 0 | 4 |
-| AC7 | Error handling | NFR24, NFR27 | 7 | 0 | 7 |
-| AC8 | Rate limiting | NFR24, NFR27 | 0 | 2 | 2 |
-| **TOTAL** | **8 ACs** | **5 NFRs** | **53** | **16** | **69** |
+| AC        | AC Description       | NFR Coverage | Unit Tests | Integration Tests | Total  |
+| --------- | -------------------- | ------------ | ---------- | ----------------- | ------ |
+| AC1       | WebSocket connection | NFR19, NFR24 | 12         | 1                 | 13     |
+| AC2       | NIP-01 subscription  | NFR19, NFR27 | 15         | 4                 | 19     |
+| AC3       | EOSE handling        | NFR19, NFR5  | 2          | 1                 | 3      |
+| AC4       | Action confirmation  | NFR5, NFR27  | 8          | 3                 | 11     |
+| AC5       | Reconnection         | NFR23, NFR24 | 5          | 5                 | 10     |
+| AC6       | NIP-01 compatibility | NFR19        | 4          | 0                 | 4      |
+| AC7       | Error handling       | NFR24, NFR27 | 7          | 0                 | 7      |
+| AC8       | Rate limiting        | NFR24, NFR27 | 0          | 2                 | 2      |
+| **TOTAL** | **8 ACs**            | **5 NFRs**   | **53**     | **16**            | **69** |
 
 **NFR → Test Mapping:**
 
-| NFR ID | NFR Description | P0/P1 | Unit Tests | Integration Tests | Total | Coverage |
-|--------|-----------------|-------|------------|-------------------|-------|----------|
-| NFR19 | NIP-01 compatibility | P0 | 15 | 10 | 25 | 100% ✅ |
-| NFR23 | Reconnection <10s | P0 | 5 | 5 | 10 | 100% ✅ |
-| NFR24 | Error boundaries | P0 | 10 | 2 | 12 | 100% ✅ |
-| NFR27 | Zero silent failures | P0 | 15 | 2 | 17 | 100% ✅ |
-| NFR5 | Event latency <500ms | P2 | 2 | 2 | 4 | 100% ✅ |
-| NFR3 | ILP latency (baseline) | P2 | 0 | 2 | 2 | Informational |
-| OWASP | A01-A10 security | P0 | 20 | 0 | 20 | 100% ✅ |
+| NFR ID | NFR Description        | P0/P1 | Unit Tests | Integration Tests | Total | Coverage      |
+| ------ | ---------------------- | ----- | ---------- | ----------------- | ----- | ------------- |
+| NFR19  | NIP-01 compatibility   | P0    | 15         | 10                | 25    | 100% ✅       |
+| NFR23  | Reconnection <10s      | P0    | 5          | 5                 | 10    | 100% ✅       |
+| NFR24  | Error boundaries       | P0    | 10         | 2                 | 12    | 100% ✅       |
+| NFR27  | Zero silent failures   | P0    | 15         | 2                 | 17    | 100% ✅       |
+| NFR5   | Event latency <500ms   | P2    | 2          | 2                 | 4     | 100% ✅       |
+| NFR3   | ILP latency (baseline) | P2    | 0          | 2                 | 2     | Informational |
+| OWASP  | A01-A10 security       | P0    | 20         | 0                 | 20    | 100% ✅       |
 
 **Summary:**
+
 - **Total Tests:** 69 (53 unit + 16 integration)
 - **P0 NFR Coverage:** 100% (all critical NFRs validated)
 - **P1/P2 NFR Coverage:** 100% (all secondary NFRs validated)
@@ -540,6 +563,7 @@ NFR-Specific: 82 tests (includes overlap with functional tests)
 **Scope:** Story 2.1 establishes relay connection (READ path only). Full ILP round-trip validated in Story 2.3.
 
 **Measurement Points:**
+
 1. Subscription creation to EOSE (baseline for subscription setup)
 2. Event publish (manual) to client receipt (baseline for event delivery)
 
@@ -579,6 +603,7 @@ describe('PERF: Nostr Relay Latency', () => {
 ```
 
 **Success Criteria:**
+
 - Baseline metrics documented in test output
 - Subscription EOSE latency <1s (informational)
 - Event delivery latency <500ms (NFR5 soft target)
@@ -615,6 +640,7 @@ describe('NFR23: Reconnection Latency', () => {
 ```
 
 **Success Criteria:**
+
 - Reconnection completes in <10s (NFR23 hard requirement)
 - All subscriptions re-established (verified in separate test)
 
@@ -636,7 +662,9 @@ describe('OWASP A01: Subscription ID Security', () => {
     const subscription2 = client.nostr.subscribe([{ kinds: [1] }], handler);
 
     // UUID format validation
-    expect(subscription1.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+    expect(subscription1.id).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
+    );
 
     // Collision resistance
     expect(subscription1.id).not.toBe(subscription2.id);
@@ -671,7 +699,7 @@ describe('OWASP A03: URL Injection Prevention', () => {
     'http://localhost:3000; rm -rf /',
     'ws://localhost:4040 && curl http://evil.com',
     'ws://192.168.1.1', // SSRF to internal network (blocked in prod)
-    'ws://10.0.0.1',    // SSRF to private network (blocked in prod)
+    'ws://10.0.0.1', // SSRF to private network (blocked in prod)
   ];
 
   invalidURLs.forEach((url) => {
@@ -682,11 +710,7 @@ describe('OWASP A03: URL Injection Prevention', () => {
     });
   });
 
-  const validURLs = [
-    'ws://localhost:4040',
-    'wss://relay.damus.io',
-    'ws://127.0.0.1:4040',
-  ];
+  const validURLs = ['ws://localhost:4040', 'wss://relay.damus.io', 'ws://127.0.0.1:4040'];
 
   validURLs.forEach((url) => {
     it(`should accept valid URL: ${url}`, () => {
@@ -726,13 +750,13 @@ describe('OWASP A04: Reconnection DoS Prevention', () => {
     await client.connect(); // Will fail and trigger reconnection
 
     // Wait for multiple reconnection attempts
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     // Verify exponential backoff pattern
-    expect(delays[0]).toBe(1000);  // 1s
-    expect(delays[1]).toBe(2000);  // 2s
-    expect(delays[2]).toBe(4000);  // 4s
-    expect(delays[3]).toBe(8000);  // 8s
+    expect(delays[0]).toBe(1000); // 1s
+    expect(delays[1]).toBe(2000); // 2s
+    expect(delays[2]).toBe(4000); // 4s
+    expect(delays[3]).toBe(8000); // 8s
     expect(delays[4]).toBe(16000); // 16s
     expect(delays[5]).toBe(30000); // capped at 30s
     expect(delays[6]).toBe(30000); // remains capped
@@ -800,9 +824,9 @@ describe('NFR27: Zero Silent Failures', () => {
     // Test all known error paths
     const errorPaths = [
       () => client.nostr.subscribe([{ kinds: 'invalid' }], handler), // Invalid filter
-      () => mockRelay.send('malformed json'),                        // Invalid message
-      () => mockRelay.send('["UNKNOWN_TYPE"]'),                      // Unknown message type
-      () => mockRelay.close(1006),                                   // Abnormal close
+      () => mockRelay.send('malformed json'), // Invalid message
+      () => mockRelay.send('["UNKNOWN_TYPE"]'), // Unknown message type
+      () => mockRelay.close(1006), // Abnormal close
     ];
 
     for (const errorPath of errorPaths) {
@@ -820,7 +844,9 @@ describe('NFR27: Zero Silent Failures', () => {
   });
 
   it('should not crash on subscription handler errors', async () => {
-    const faultyHandler = () => { throw new Error('Handler error'); };
+    const faultyHandler = () => {
+      throw new Error('Handler error');
+    };
 
     client.nostr.subscribe([{ kinds: [30078] }], faultyHandler);
 
@@ -881,7 +907,7 @@ describe('NFR23: Subscription State Recovery', () => {
 
     // Verify subscription IDs match original subscriptions
     const resubscribedIds = reqMessages.map(([msg]) => JSON.parse(msg)[1]);
-    const originalIds = subscriptions.map(sub => sub.id);
+    const originalIds = subscriptions.map((sub) => sub.id);
 
     expect(resubscribedIds.sort()).toEqual(originalIds.sort());
   });
@@ -914,15 +940,19 @@ describe('NFR19: NIP-01 Protocol Compliance', () => {
     const subscription = client.nostr.subscribe([{ kinds: [1] }], eventHandler);
 
     // Send NIP-01 EVENT message
-    mockRelay.send(['EVENT', subscription.id, {
-      id: 'event-id',
-      pubkey: 'pubkey-hex',
-      created_at: 1234567890,
-      kind: 1,
-      tags: [],
-      content: 'test',
-      sig: 'signature-hex',
-    }]);
+    mockRelay.send([
+      'EVENT',
+      subscription.id,
+      {
+        id: 'event-id',
+        pubkey: 'pubkey-hex',
+        created_at: 1234567890,
+        kind: 1,
+        tags: [],
+        content: 'test',
+        sig: 'signature-hex',
+      },
+    ]);
 
     await waitForCall(eventHandler);
 
@@ -968,29 +998,34 @@ describe('NFR19: NIP-01 Protocol Compliance', () => {
 ### 5.1 Test Quality Criteria
 
 **Deterministic (5/5 ✅)**
+
 - All unit tests use mocks (no network dependencies)
 - Integration tests use health checks (wait for ready state)
 - No hard-coded delays (use polling with timeouts)
 - Test fixtures are stable and versioned
 
 **Isolated (5/5 ✅)**
+
 - Each test creates fresh `SigilClient` instance
 - Mock WebSocket reset between tests
 - No shared state between test suites
 - Integration tests reset Docker state (documented in PREP-2)
 
 **Explicit (5/5 ✅)**
+
 - All assertions use `expect()` with clear messages
 - No silent failures (all error paths verified)
 - Test names follow pattern: "should <expected behavior>"
 - AC references documented in test comments
 
 **Focused (4/5 ⚠️)**
+
 - Most tests validate single behavior
 - Some integration tests validate multiple concerns (e.g., reconnection + subscription recovery)
 - **Action:** Split complex integration tests into smaller scenarios
 
 **Fast (4/5 ⚠️)**
+
 - Unit tests: <50ms per test (mocked WebSocket)
 - Integration tests: 1-5s per test (real Crosstown relay)
 - **Concern:** 15 integration tests × 3s average = 45s total (acceptable for CI)
@@ -1000,21 +1035,25 @@ describe('NFR19: NIP-01 Protocol Compliance', () => {
 ### 5.2 Test Maintenance Considerations
 
 **Mock Strategy:**
+
 - Reuse `MockNostrRelay` from Epic 1 test infrastructure
 - EventEmitter-based mocks (consistent with SpacetimeDB tests)
 - Mock factories in `packages/client/src/__tests__/test-factories.ts`
 
 **Test Data Management:**
+
 - Kind 30078 test events in `packages/client/src/nostr/test-utils/test-events.ts`
 - NIP-01 filter examples in `packages/client/src/nostr/test-utils/test-filters.ts`
 - Nostr keypairs reused from Story 1.2 test utilities
 
 **Docker Stack Dependencies:**
+
 - Integration tests require Crosstown relay (ws://localhost:4040)
 - Health check before test execution: `curl -f http://localhost:4041/health`
 - Graceful skip if Docker unavailable (conditional test execution)
 
 **CI/CD Integration:**
+
 - Unit tests run on every PR (no Docker required)
 - Integration tests run on every PR with Docker runner (Linux + macOS per PREP-2)
 - Performance tests run nightly (baseline tracking)
@@ -1115,13 +1154,13 @@ describe('NFR19: NIP-01 Protocol Compliance', () => {
 
 ### 6.3 Risk Mitigation Summary
 
-| Risk ID | Risk Category | Residual Risk | Test Mitigation Status | Additional Actions Required |
-|---------|---------------|---------------|------------------------|----------------------------|
-| R1 | Integration | LOW ✅ | PREP-4 complete | None |
-| R2 | Reliability | MEDIUM ⚠️ | Tests defined | Runtime validation required |
-| R3 | Reliability | LOW ✅ | Comprehensive tests | None |
-| R4 | Security | LOW ✅ | Input validation tests | None |
-| R5 | Performance | MEDIUM ⚠️ | Baseline only | Full load testing in Story 2.3 |
+| Risk ID | Risk Category | Residual Risk | Test Mitigation Status | Additional Actions Required    |
+| ------- | ------------- | ------------- | ---------------------- | ------------------------------ |
+| R1      | Integration   | LOW ✅        | PREP-4 complete        | None                           |
+| R2      | Reliability   | MEDIUM ⚠️     | Tests defined          | Runtime validation required    |
+| R3      | Reliability   | LOW ✅        | Comprehensive tests    | None                           |
+| R4      | Security      | LOW ✅        | Input validation tests | None                           |
+| R5      | Performance   | MEDIUM ⚠️     | Baseline only          | Full load testing in Story 2.3 |
 
 **Overall Risk Assessment:** MEDIUM ⚠️ (acceptable with mitigations)
 
@@ -1196,31 +1235,31 @@ describe('NFR19: NIP-01 Protocol Compliance', () => {
 
 **Comprehensive NFR → Story → Test Mapping:**
 
-| NFR ID | NFR Description | Story 2.1 Coverage | Test Suites | Test Count | Status |
-|--------|-----------------|--------------------| ------------|------------|--------|
-| NFR3 | ILP round-trip <2s | Baseline only | Performance integration | 2 | ✅ Planned |
-| NFR5 | Real-time updates <500ms | Event delivery | Performance integration, action confirmation unit | 4 | ✅ Planned |
-| NFR19 | NIP-01 compatibility | Full coverage | Connection, subscriptions, integration | 25 | ✅ Planned |
-| NFR23 | Reconnection <10s | Full coverage | Reconnection unit, subscription recovery integration | 10 | ✅ Planned |
-| NFR24 | Error boundaries | Full coverage | Error handling unit, integration | 12 | ✅ Planned |
-| NFR27 | Zero silent failures | Full coverage | All error paths, comprehensive tests | 17 | ✅ Planned |
+| NFR ID | NFR Description          | Story 2.1 Coverage | Test Suites                                          | Test Count | Status     |
+| ------ | ------------------------ | ------------------ | ---------------------------------------------------- | ---------- | ---------- |
+| NFR3   | ILP round-trip <2s       | Baseline only      | Performance integration                              | 2          | ✅ Planned |
+| NFR5   | Real-time updates <500ms | Event delivery     | Performance integration, action confirmation unit    | 4          | ✅ Planned |
+| NFR19  | NIP-01 compatibility     | Full coverage      | Connection, subscriptions, integration               | 25         | ✅ Planned |
+| NFR23  | Reconnection <10s        | Full coverage      | Reconnection unit, subscription recovery integration | 10         | ✅ Planned |
+| NFR24  | Error boundaries         | Full coverage      | Error handling unit, integration                     | 12         | ✅ Planned |
+| NFR27  | Zero silent failures     | Full coverage      | All error paths, comprehensive tests                 | 17         | ✅ Planned |
 
 ### Appendix B: OWASP Top 10 Coverage
 
 **OWASP 2021 → Test Mapping:**
 
-| OWASP ID | Category | Relevance | Test Coverage | Test Count | Status |
-|----------|----------|-----------|---------------|------------|--------|
-| A01:2021 | Broken Access Control | HIGH | Subscription ID security | 3 | ✅ Planned |
-| A02:2021 | Cryptographic Failures | N/A | Signatures in Story 2.3 | 0 | N/A |
-| A03:2021 | Injection | HIGH | URL validation, JSON parsing | 5 | ✅ Planned |
-| A04:2021 | Insecure Design | MEDIUM | Reconnection DoS prevention | 3 | ✅ Planned |
-| A05:2021 | Security Misconfiguration | MEDIUM | Error sanitization | 2 | ✅ Planned |
-| A06:2021 | Vulnerable Components | HIGH | Dependency audit | 1 | ✅ Planned |
-| A07:2021 | Auth Failures | N/A | Authentication in Story 2.3 | 0 | N/A |
-| A08:2021 | Data Integrity | MEDIUM | Message validation | 4 | ✅ Planned |
-| A09:2021 | Logging Failures | LOW | Logging tests | 1 | ✅ Planned |
-| A10:2021 | SSRF | MEDIUM | URL validation | 3 | ✅ Planned |
+| OWASP ID | Category                  | Relevance | Test Coverage                | Test Count | Status     |
+| -------- | ------------------------- | --------- | ---------------------------- | ---------- | ---------- |
+| A01:2021 | Broken Access Control     | HIGH      | Subscription ID security     | 3          | ✅ Planned |
+| A02:2021 | Cryptographic Failures    | N/A       | Signatures in Story 2.3      | 0          | N/A        |
+| A03:2021 | Injection                 | HIGH      | URL validation, JSON parsing | 5          | ✅ Planned |
+| A04:2021 | Insecure Design           | MEDIUM    | Reconnection DoS prevention  | 3          | ✅ Planned |
+| A05:2021 | Security Misconfiguration | MEDIUM    | Error sanitization           | 2          | ✅ Planned |
+| A06:2021 | Vulnerable Components     | HIGH      | Dependency audit             | 1          | ✅ Planned |
+| A07:2021 | Auth Failures             | N/A       | Authentication in Story 2.3  | 0          | N/A        |
+| A08:2021 | Data Integrity            | MEDIUM    | Message validation           | 4          | ✅ Planned |
+| A09:2021 | Logging Failures          | LOW       | Logging tests                | 1          | ✅ Planned |
+| A10:2021 | SSRF                      | MEDIUM    | URL validation               | 3          | ✅ Planned |
 
 **Total OWASP Coverage:** 8/10 applicable (A02, A07 N/A for Story 2.1)
 
@@ -1348,20 +1387,25 @@ pnpm lint --filter @sigil/client
 ### Appendix F: References
 
 **Story Documents:**
+
 - Story 2.1: `_bmad-output/implementation-artifacts/2-1-crosstown-relay-connection-and-event-subscriptions.md`
 - PREP-4: `_bmad-output/implementation-artifacts/prep-4-crosstown-relay-protocol.md` (pending)
 
 **Test Design:**
+
 - Epic 2 Test Design: `_bmad-output/planning-artifacts/test-design-epic-2.md`
 
 **NFR Requirements:**
+
 - NFR Document: `_bmad-output/planning-artifacts/prd/non-functional-requirements.md`
 
 **External Standards:**
+
 - NIP-01: https://github.com/nostr-protocol/nips/blob/master/01.md
 - OWASP Top 10 2021: https://owasp.org/Top10/
 
 **Epic 1 Test Patterns:**
+
 - Story 1.6 Reconnection: `_bmad-output/implementation-artifacts/1-6-auto-reconnection-and-state-recovery.md`
 
 ---
@@ -1373,6 +1417,7 @@ pnpm lint --filter @sigil/client
 **Duration:** ~60 minutes (wall-clock time from start to completion)
 
 **What changed:**
+
 - **Created:** `/Users/jonathangreen/Documents/BitCraftPublic/_bmad-output/test-artifacts/nfr-testarch-story-2-1.md` (comprehensive NFR test architecture document, 2000+ lines)
 
 **Key decisions:**
@@ -1441,6 +1486,7 @@ pnpm lint --filter @sigil/client
 **Recommendation:** Story 2.1 has comprehensive NFR test coverage. All critical NFRs validated through combination of unit and integration tests. Security review complete per AGREEMENT-2. Complete PREP-2 (Linux validation) before Story 2.1 implementation kickoff.
 
 **Next Steps:**
+
 1. Complete PREP-2 (Linux Docker stack validation)
 2. Complete PREP-4 (Crosstown protocol research)
 3. Begin Story 2.1 implementation with TDD approach

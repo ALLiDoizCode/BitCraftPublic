@@ -9,6 +9,7 @@
 ## Context
 
 The Sigil SDK consists of multiple interconnected components written in different languages:
+
 - **TypeScript**: Client library, MCP server, TUI backend (Node.js runtime)
 - **Rust**: Terminal user interface (ratatui), BLS handler (future)
 
@@ -19,6 +20,7 @@ The question was: Should these components live in separate repositories (multi-r
 ## Problem Statement
 
 We need a repository structure that:
+
 1. **Supports multiple languages** (TypeScript + Rust)
 2. **Shares code between packages** (e.g., types, utilities)
 3. **Has atomic versioning** (all packages versioned together)
@@ -33,6 +35,7 @@ We need a repository structure that:
 ### Option 1: Multi-Repo (Separate Repositories)
 
 **Structure:**
+
 ```
 sigil-client/         (TypeScript repo)
 sigil-mcp-server/     (TypeScript repo)
@@ -41,11 +44,13 @@ sigil-bls-handler/    (Rust repo)
 ```
 
 **Pros:**
+
 - Clear separation of concerns
 - Independent versioning (client v1.0.0, TUI v2.0.0)
 - Language-specific tooling (no polyglot complexity)
 
 **Cons:**
+
 - Dependency management nightmare (npm link, cargo path dependencies)
 - No atomic versioning (client and MCP server can drift)
 - Duplicate CI/CD configuration (4 separate pipelines)
@@ -57,6 +62,7 @@ sigil-bls-handler/    (Rust repo)
 ### Option 2: Polyglot Monorepo (Single Repo, Multiple Workspaces)
 
 **Structure:**
+
 ```
 BitCraftPublic/
 ├── packages/            # TypeScript workspace (pnpm)
@@ -71,6 +77,7 @@ BitCraftPublic/
 ```
 
 **Pros:**
+
 - **Atomic versioning**: All packages versioned together (0.1.0 across the board)
 - **Shared code**: Types, utilities, constants shared between packages
 - **Single CI/CD pipeline**: One GitHub Actions workflow
@@ -78,6 +85,7 @@ BitCraftPublic/
 - **Single source of truth**: All code in one place
 
 **Cons:**
+
 - **Polyglot complexity**: Requires both Node.js and Rust toolchains
 - **IDE configuration**: VS Code needs both TypeScript and Rust extensions
 - **Build time**: Longer than single-language monorepo (must build both TS and Rust)
@@ -87,6 +95,7 @@ BitCraftPublic/
 ### Option 3: TypeScript Monorepo + Rust Monorepo (Separate by Language)
 
 **Structure:**
+
 ```
 sigil-ts/            # TypeScript monorepo
 ├── packages/
@@ -101,10 +110,12 @@ sigil-rust/          # Rust monorepo
 ```
 
 **Pros:**
+
 - Language-specific tooling (no polyglot complexity)
 - Separate CI/CD for TS and Rust (faster builds)
 
 **Cons:**
+
 - No shared types between TS and Rust (IPC protocol duplication)
 - Versioning coordination required (must manually keep versions in sync)
 - Two repositories to manage (PRs, issues, documentation)
@@ -156,6 +167,7 @@ Repository name: `BitCraftPublic` (inherited from upstream BitCraft fork)
 ## Consequences
 
 ### Positive
+
 - ✅ **Atomic versioning**: All packages at 0.1.0, no drift
 - ✅ **Shared code**: Types, utilities, build scripts
 - ✅ **Single source of truth**: All code in one repository
@@ -163,12 +175,14 @@ Repository name: `BitCraftPublic` (inherited from upstream BitCraft fork)
 - ✅ **Better refactoring**: Cross-package changes are trivial
 
 ### Negative
+
 - ⚠️ **Polyglot complexity**: Requires Node.js + Rust + pnpm + cargo
 - ⚠️ **IDE setup**: VS Code needs TypeScript + Rust extensions
 - ⚠️ **Build time**: Longer than single-language monorepo
 - ⚠️ **Onboarding**: New contributors must install both toolchains
 
 ### Mitigation Strategies
+
 1. **Clear setup documentation**: `CLAUDE.md` has detailed setup instructions
 2. **VS Code config**: `.vscode/extensions.json` recommends extensions
 3. **Docker development**: Docker stack handles Rust builds (optional)
@@ -188,9 +202,7 @@ Repository name: `BitCraftPublic` (inherited from upstream BitCraft fork)
   "name": "sigil-monorepo",
   "version": "0.1.0",
   "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
+  "workspaces": ["packages/*"],
   "scripts": {
     "build": "pnpm --recursive build",
     "test": "pnpm --recursive test"
@@ -199,11 +211,13 @@ Repository name: `BitCraftPublic` (inherited from upstream BitCraft fork)
 ```
 
 **Packages:**
+
 - `packages/client` - Core SDK (`@sigil/client`)
 - `packages/mcp-server` - MCP protocol wrapper (`@sigil/mcp-server`)
 - `packages/tui-backend` - JSON-RPC IPC backend (`@sigil/tui-backend`)
 
 **Cross-Package References:**
+
 ```json
 // packages/mcp-server/package.json
 {
@@ -225,10 +239,12 @@ resolver = "2"
 ```
 
 **Crates:**
+
 - `crates/tui` - Terminal UI (`sigil-tui`)
 - `crates/bls-handler` - BLS game action handler (future, Epic 2 Story 2.4)
 
 **Cross-Crate References:**
+
 ```toml
 # crates/bls-handler/Cargo.toml (future)
 [dependencies]
@@ -240,6 +256,7 @@ sigil-tui = { path = "../tui" }
 ### Build Scripts
 
 **TypeScript Build:**
+
 ```bash
 pnpm build        # Build all TypeScript packages
 pnpm test         # Run all tests
@@ -247,6 +264,7 @@ pnpm lint         # Lint all packages
 ```
 
 **Rust Build:**
+
 ```bash
 cargo build       # Build all Rust crates
 cargo test        # Run all Rust tests
@@ -254,6 +272,7 @@ cargo clippy      # Lint all crates
 ```
 
 **All-in-One:**
+
 ```bash
 pnpm build && cargo build  # Build everything
 ```
@@ -263,6 +282,7 @@ pnpm build && cargo build  # Build everything
 ### CI/CD Pipeline
 
 **.github/workflows/test.yml:**
+
 ```yaml
 name: Test
 
@@ -334,15 +354,18 @@ BitCraftPublic/
 ## Naming Conventions
 
 ### npm Packages (TypeScript)
+
 - **Scope**: `@sigil/*` (organization scope)
 - **Names**: `@sigil/client`, `@sigil/mcp-server`, `@sigil/tui-backend`
 - **Version**: Synchronized (all at 0.1.0)
 
 ### Rust Crates
+
 - **Names**: `sigil-tui`, `sigil-bls-handler`
 - **Version**: Synchronized with npm packages (0.1.0)
 
 ### Cross-Language Conventions
+
 - **JSON fields (IPC)**: `camelCase`
 - **Rust serde**: `#[serde(rename_all = "camelCase")]`
 - **MCP tool names**: `snake_case`

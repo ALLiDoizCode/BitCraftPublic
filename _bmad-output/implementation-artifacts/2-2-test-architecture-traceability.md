@@ -22,6 +22,7 @@
 **Uncovered ACs:** NONE - All acceptance criteria have complete test coverage planned.
 
 **Test Quality Metrics (Planned):**
+
 - **AC Coverage:** 100% (8/8 ACs fully covered)
 - **Unit Test Distribution:** AC1-AC8 mapped to 58 unit tests
 - **Integration Test Distribution:** AC4-AC5 mapped to 9 integration tests
@@ -35,6 +36,7 @@
 ### Story Overview
 
 Story 2.2 implements the action cost registry and wallet balance query system, enabling agents to:
+
 1. Query ILP costs for game actions via an in-memory registry loaded from JSON
 2. Query their current wallet balance via Crosstown HTTP API
 3. Perform pre-flight affordability checks before executing actions
@@ -117,17 +119,17 @@ Story 2.2 implements the action cost registry and wallet balance query system, e
 
 **Test Coverage (Planned):**
 
-| Test ID | Test Name | What It Validates | Location | Priority |
-|---------|-----------|-------------------|----------|----------|
-| AC1-U-1 | should load valid cost registry from JSON file | Valid JSON parsing, all fields present | `action-cost-registry.test.ts` | P0 |
-| AC1-U-2 | should load registry with absolute path | Absolute path resolution | `action-cost-registry.test.ts` | P0 |
-| AC1-U-3 | should load registry with relative path from process.cwd() | Relative path resolution | `action-cost-registry.test.ts` | P0 |
-| AC1-U-4 | should validate version field is present and positive integer | Version validation | `action-cost-registry.test.ts` | P0 |
-| AC1-U-5 | should validate defaultCost is non-negative number | defaultCost validation | `action-cost-registry.test.ts` | P0 |
-| AC1-U-6 | should validate all action entries have required fields | Action entry schema validation | `action-cost-registry.test.ts` | P0 |
-| AC1-U-7 | should load all 10 default actions from architecture spec | Default registry completeness | `action-cost-registry.test.ts` | P1 |
-| AC1-C-1 | should load registry during SigilClient instantiation | Client constructor integration | `client.test.ts` | P0 |
-| AC1-C-2 | should expose loaded registry via client.publish namespace | Client API surface | `client.test.ts` | P0 |
+| Test ID | Test Name                                                     | What It Validates                      | Location                       | Priority |
+| ------- | ------------------------------------------------------------- | -------------------------------------- | ------------------------------ | -------- |
+| AC1-U-1 | should load valid cost registry from JSON file                | Valid JSON parsing, all fields present | `action-cost-registry.test.ts` | P0       |
+| AC1-U-2 | should load registry with absolute path                       | Absolute path resolution               | `action-cost-registry.test.ts` | P0       |
+| AC1-U-3 | should load registry with relative path from process.cwd()    | Relative path resolution               | `action-cost-registry.test.ts` | P0       |
+| AC1-U-4 | should validate version field is present and positive integer | Version validation                     | `action-cost-registry.test.ts` | P0       |
+| AC1-U-5 | should validate defaultCost is non-negative number            | defaultCost validation                 | `action-cost-registry.test.ts` | P0       |
+| AC1-U-6 | should validate all action entries have required fields       | Action entry schema validation         | `action-cost-registry.test.ts` | P0       |
+| AC1-U-7 | should load all 10 default actions from architecture spec     | Default registry completeness          | `action-cost-registry.test.ts` | P1       |
+| AC1-C-1 | should load registry during SigilClient instantiation         | Client constructor integration         | `client.test.ts`               | P0       |
+| AC1-C-2 | should expose loaded registry via client.publish namespace    | Client API surface                     | `client.test.ts`               | P0       |
 
 **Test Count:** 9 tests (7 unit + 2 client integration)
 **Coverage:** Registry loading, validation, client integration
@@ -149,13 +151,13 @@ Story 2.2 implements the action cost registry and wallet balance query system, e
 
 **Test Coverage (Planned):**
 
-| Test ID | Test Name | What It Validates | Location | Priority |
-|---------|-----------|-------------------|----------|----------|
-| AC2-U-1 | should return correct cost for known action "player_move" | Cost lookup returns 1 | `action-cost-registry.test.ts` | P0 |
-| AC2-U-2 | should return correct cost for all 10 default actions | All default actions mapped | `action-cost-registry.test.ts` | P0 |
-| AC2-U-3 | should complete getCost() in <10ms (performance test) | Synchronous performance | `action-cost-registry.test.ts` | P1 |
-| AC2-U-4 | should return cost as number type (not string) | Type validation | `action-cost-registry.test.ts` | P1 |
-| AC2-C-1 | should call client.publish.getCost("player_move") successfully | Client API integration | `client.test.ts` | P0 |
+| Test ID | Test Name                                                      | What It Validates          | Location                       | Priority |
+| ------- | -------------------------------------------------------------- | -------------------------- | ------------------------------ | -------- |
+| AC2-U-1 | should return correct cost for known action "player_move"      | Cost lookup returns 1      | `action-cost-registry.test.ts` | P0       |
+| AC2-U-2 | should return correct cost for all 10 default actions          | All default actions mapped | `action-cost-registry.test.ts` | P0       |
+| AC2-U-3 | should complete getCost() in <10ms (performance test)          | Synchronous performance    | `action-cost-registry.test.ts` | P1       |
+| AC2-U-4 | should return cost as number type (not string)                 | Type validation            | `action-cost-registry.test.ts` | P1       |
+| AC2-C-1 | should call client.publish.getCost("player_move") successfully | Client API integration     | `client.test.ts`               | P0       |
 
 **Test Count:** 5 tests (4 unit + 1 client integration)
 **Coverage:** Cost queries, performance, type safety
@@ -179,13 +181,13 @@ Story 2.2 implements the action cost registry and wallet balance query system, e
 
 **Test Coverage (Planned):**
 
-| Test ID | Test Name | What It Validates | Location | Priority |
-|---------|-----------|-------------------|----------|----------|
-| AC3-U-1 | should return defaultCost for unknown action | Fallback behavior | `action-cost-registry.test.ts` | P0 |
-| AC3-U-2 | should log warning with action name for unknown action | Warning log content | `action-cost-registry.test.ts` | P0 |
-| AC3-U-3 | should log warning with defaultCost value | Warning includes cost | `action-cost-registry.test.ts` | P1 |
-| AC3-U-4 | should NOT throw error for unknown action (graceful fallback) | No exception thrown | `action-cost-registry.test.ts` | P0 |
-| AC3-C-1 | should return defaultCost via client.publish.getCost() for unknown action | Client API fallback | `client.test.ts` | P0 |
+| Test ID | Test Name                                                                 | What It Validates     | Location                       | Priority |
+| ------- | ------------------------------------------------------------------------- | --------------------- | ------------------------------ | -------- |
+| AC3-U-1 | should return defaultCost for unknown action                              | Fallback behavior     | `action-cost-registry.test.ts` | P0       |
+| AC3-U-2 | should log warning with action name for unknown action                    | Warning log content   | `action-cost-registry.test.ts` | P0       |
+| AC3-U-3 | should log warning with defaultCost value                                 | Warning includes cost | `action-cost-registry.test.ts` | P1       |
+| AC3-U-4 | should NOT throw error for unknown action (graceful fallback)             | No exception thrown   | `action-cost-registry.test.ts` | P0       |
+| AC3-C-1 | should return defaultCost via client.publish.getCost() for unknown action | Client API fallback   | `client.test.ts`               | P0       |
 
 **Test Count:** 5 tests (4 unit + 1 client integration)
 **Coverage:** Default cost fallback, warning logs, graceful handling
@@ -208,20 +210,20 @@ Story 2.2 implements the action cost registry and wallet balance query system, e
 
 **Test Coverage (Planned):**
 
-| Test ID | Test Name | What It Validates | Location | Priority |
-|---------|-----------|-------------------|----------|----------|
-| AC4-U-1 | should query balance via HTTP GET to correct endpoint | HTTP method and URL | `wallet-client.test.ts` | P0 |
-| AC4-U-2 | should parse JSON response with balance field | Response parsing | `wallet-client.test.ts` | P0 |
-| AC4-U-3 | should return balance as non-negative integer | Balance type validation | `wallet-client.test.ts` | P0 |
-| AC4-U-4 | should complete within 500ms (mocked with 50ms delay) | Performance test | `wallet-client.test.ts` | P1 |
-| AC4-U-5 | should activate stub mode on 404 response | Stub mode fallback | `wallet-client.test.ts` | P0 |
-| AC4-U-6 | should activate stub mode on 501 response | Stub mode fallback (not implemented) | `wallet-client.test.ts` | P0 |
-| AC4-U-7 | should log warning in stub mode | Stub warning log | `wallet-client.test.ts` | P1 |
-| AC4-U-8 | should return fixed balance (10000) in stub mode | Stub balance value | `wallet-client.test.ts` | P0 |
-| AC4-U-9 | should respect SIGIL_WALLET_STUB=true env var | Feature flag stub activation | `wallet-client.test.ts` | P1 |
-| AC4-I-1 | should query balance from real Crosstown connector (if API exists) | Real HTTP integration | `wallet-balance.test.ts` | P0 |
-| AC4-I-2 | should activate stub mode with real Crosstown (if 404) | Real stub mode | `wallet-balance.test.ts` | P0 |
-| AC4-I-3 | should complete within 500ms with real network | Real performance | `wallet-balance.test.ts` | P1 |
+| Test ID | Test Name                                                          | What It Validates                    | Location                 | Priority |
+| ------- | ------------------------------------------------------------------ | ------------------------------------ | ------------------------ | -------- |
+| AC4-U-1 | should query balance via HTTP GET to correct endpoint              | HTTP method and URL                  | `wallet-client.test.ts`  | P0       |
+| AC4-U-2 | should parse JSON response with balance field                      | Response parsing                     | `wallet-client.test.ts`  | P0       |
+| AC4-U-3 | should return balance as non-negative integer                      | Balance type validation              | `wallet-client.test.ts`  | P0       |
+| AC4-U-4 | should complete within 500ms (mocked with 50ms delay)              | Performance test                     | `wallet-client.test.ts`  | P1       |
+| AC4-U-5 | should activate stub mode on 404 response                          | Stub mode fallback                   | `wallet-client.test.ts`  | P0       |
+| AC4-U-6 | should activate stub mode on 501 response                          | Stub mode fallback (not implemented) | `wallet-client.test.ts`  | P0       |
+| AC4-U-7 | should log warning in stub mode                                    | Stub warning log                     | `wallet-client.test.ts`  | P1       |
+| AC4-U-8 | should return fixed balance (10000) in stub mode                   | Stub balance value                   | `wallet-client.test.ts`  | P0       |
+| AC4-U-9 | should respect SIGIL_WALLET_STUB=true env var                      | Feature flag stub activation         | `wallet-client.test.ts`  | P1       |
+| AC4-I-1 | should query balance from real Crosstown connector (if API exists) | Real HTTP integration                | `wallet-balance.test.ts` | P0       |
+| AC4-I-2 | should activate stub mode with real Crosstown (if 404)             | Real stub mode                       | `wallet-balance.test.ts` | P0       |
+| AC4-I-3 | should complete within 500ms with real network                     | Real performance                     | `wallet-balance.test.ts` | P1       |
 
 **Test Count:** 12 tests (9 unit + 3 integration)
 **Coverage:** HTTP queries, stub mode, performance, integration
@@ -245,16 +247,16 @@ Story 2.2 implements the action cost registry and wallet balance query system, e
 
 **Test Coverage (Planned):**
 
-| Test ID | Test Name | What It Validates | Location | Priority |
-|---------|-----------|-------------------|----------|----------|
-| AC5-U-1 | should reject negative balance in response | Balance validation (>= 0) | `wallet-client.test.ts` | P0 |
-| AC5-U-2 | should throw NETWORK_ERROR on timeout (500ms) | Timeout enforcement | `wallet-client.test.ts` | P0 |
-| AC5-U-3 | should throw NETWORK_ERROR on fetch failure | Network error handling | `wallet-client.test.ts` | P0 |
-| AC5-U-4 | should throw INVALID_RESPONSE on missing balance field | Response validation | `wallet-client.test.ts` | P0 |
-| AC5-U-5 | should throw INVALID_RESPONSE on non-JSON response | JSON parsing error | `wallet-client.test.ts` | P0 |
-| AC5-U-6 | should use AbortController for timeout enforcement | Abort signal validation | `wallet-client.test.ts` | P1 |
-| AC5-I-1 | should verify balance accuracy with real Crosstown (if API exists) | Balance consistency | `wallet-balance.test.ts` | P1 |
-| AC5-I-2 | should handle timeout with real slow network (if possible) | Real timeout handling | `wallet-balance.test.ts` | P2 |
+| Test ID | Test Name                                                          | What It Validates         | Location                 | Priority |
+| ------- | ------------------------------------------------------------------ | ------------------------- | ------------------------ | -------- |
+| AC5-U-1 | should reject negative balance in response                         | Balance validation (>= 0) | `wallet-client.test.ts`  | P0       |
+| AC5-U-2 | should throw NETWORK_ERROR on timeout (500ms)                      | Timeout enforcement       | `wallet-client.test.ts`  | P0       |
+| AC5-U-3 | should throw NETWORK_ERROR on fetch failure                        | Network error handling    | `wallet-client.test.ts`  | P0       |
+| AC5-U-4 | should throw INVALID_RESPONSE on missing balance field             | Response validation       | `wallet-client.test.ts`  | P0       |
+| AC5-U-5 | should throw INVALID_RESPONSE on non-JSON response                 | JSON parsing error        | `wallet-client.test.ts`  | P0       |
+| AC5-U-6 | should use AbortController for timeout enforcement                 | Abort signal validation   | `wallet-client.test.ts`  | P1       |
+| AC5-I-1 | should verify balance accuracy with real Crosstown (if API exists) | Balance consistency       | `wallet-balance.test.ts` | P1       |
+| AC5-I-2 | should handle timeout with real slow network (if possible)         | Real timeout handling     | `wallet-balance.test.ts` | P2       |
 
 **Test Count:** 8 tests (6 unit + 2 integration)
 **Coverage:** Validation, error handling, timeout, consistency
@@ -279,15 +281,15 @@ Story 2.2 implements the action cost registry and wallet balance query system, e
 
 **Test Coverage (Planned):**
 
-| Test ID | Test Name | What It Validates | Location | Priority |
-|---------|-----------|-------------------|----------|----------|
-| AC6-U-1 | should return true if balance >= action cost | Affordability check (sufficient) | `client.test.ts` | P0 |
-| AC6-U-2 | should return false if balance < action cost | Affordability check (insufficient) | `client.test.ts` | P0 |
-| AC6-U-3 | should return true if balance == action cost (edge case) | Exact balance match | `client.test.ts` | P1 |
-| AC6-U-4 | should propagate error if getCost() throws (registry not loaded) | Error propagation | `client.test.ts` | P0 |
-| AC6-U-5 | should propagate error if getBalance() throws (network error) | Error propagation | `client.test.ts` | P0 |
-| AC6-U-6 | should call getCost() and getBalance() internally | Implementation verification | `client.test.ts` | P1 |
-| AC6-I-1 | should perform end-to-end affordability check with real registry and balance | Full integration | `wallet-balance.test.ts` | P0 |
+| Test ID | Test Name                                                                    | What It Validates                  | Location                 | Priority |
+| ------- | ---------------------------------------------------------------------------- | ---------------------------------- | ------------------------ | -------- |
+| AC6-U-1 | should return true if balance >= action cost                                 | Affordability check (sufficient)   | `client.test.ts`         | P0       |
+| AC6-U-2 | should return false if balance < action cost                                 | Affordability check (insufficient) | `client.test.ts`         | P0       |
+| AC6-U-3 | should return true if balance == action cost (edge case)                     | Exact balance match                | `client.test.ts`         | P1       |
+| AC6-U-4 | should propagate error if getCost() throws (registry not loaded)             | Error propagation                  | `client.test.ts`         | P0       |
+| AC6-U-5 | should propagate error if getBalance() throws (network error)                | Error propagation                  | `client.test.ts`         | P0       |
+| AC6-U-6 | should call getCost() and getBalance() internally                            | Implementation verification        | `client.test.ts`         | P1       |
+| AC6-I-1 | should perform end-to-end affordability check with real registry and balance | Full integration                   | `wallet-balance.test.ts` | P0       |
 
 **Test Count:** 7 tests (6 unit + 1 integration)
 **Coverage:** Boolean logic, error propagation, integration
@@ -309,21 +311,21 @@ Story 2.2 implements the action cost registry and wallet balance query system, e
 
 **Test Coverage (Planned):**
 
-| Test ID | Test Name | What It Validates | Location | Priority |
-|---------|-----------|-------------------|----------|----------|
-| AC7-U-1 | should throw INVALID_JSON on malformed JSON | JSON parsing error | `action-cost-registry.test.ts` | P0 |
-| AC7-U-2 | should throw INVALID_CONFIG on missing version field | Required field validation | `action-cost-registry.test.ts` | P0 |
-| AC7-U-3 | should throw INVALID_CONFIG on missing defaultCost field | Required field validation | `action-cost-registry.test.ts` | P0 |
-| AC7-U-4 | should throw INVALID_CONFIG on missing actions field | Required field validation | `action-cost-registry.test.ts` | P0 |
-| AC7-U-5 | should throw INVALID_CONFIG on negative cost | Cost validation | `action-cost-registry.test.ts` | P0 |
-| AC7-U-6 | should throw INVALID_CONFIG on negative defaultCost | defaultCost validation | `action-cost-registry.test.ts` | P0 |
-| AC7-U-7 | should throw FILE_NOT_FOUND on non-existent path | File error handling | `action-cost-registry.test.ts` | P0 |
-| AC7-U-8 | should throw INVALID_CONFIG on path traversal attempt (..) | Path security | `action-cost-registry.test.ts` | P0 |
-| AC7-U-9 | should sanitize file paths in error messages (production) | Error message security | `action-cost-registry.test.ts` | P1 |
-| AC7-U-10 | should include full path in error messages (development) | Error message detail | `action-cost-registry.test.ts` | P1 |
-| AC7-U-11 | should reject absolute paths outside project dir (production) | Path security | `action-cost-registry.test.ts` | P1 |
-| AC7-C-1 | should throw from client constructor on invalid registry | Constructor fail-fast | `client.test.ts` | P0 |
-| AC7-C-2 | should NOT create partial client on registry error | No partial object | `client.test.ts` | P0 |
+| Test ID  | Test Name                                                     | What It Validates         | Location                       | Priority |
+| -------- | ------------------------------------------------------------- | ------------------------- | ------------------------------ | -------- |
+| AC7-U-1  | should throw INVALID_JSON on malformed JSON                   | JSON parsing error        | `action-cost-registry.test.ts` | P0       |
+| AC7-U-2  | should throw INVALID_CONFIG on missing version field          | Required field validation | `action-cost-registry.test.ts` | P0       |
+| AC7-U-3  | should throw INVALID_CONFIG on missing defaultCost field      | Required field validation | `action-cost-registry.test.ts` | P0       |
+| AC7-U-4  | should throw INVALID_CONFIG on missing actions field          | Required field validation | `action-cost-registry.test.ts` | P0       |
+| AC7-U-5  | should throw INVALID_CONFIG on negative cost                  | Cost validation           | `action-cost-registry.test.ts` | P0       |
+| AC7-U-6  | should throw INVALID_CONFIG on negative defaultCost           | defaultCost validation    | `action-cost-registry.test.ts` | P0       |
+| AC7-U-7  | should throw FILE_NOT_FOUND on non-existent path              | File error handling       | `action-cost-registry.test.ts` | P0       |
+| AC7-U-8  | should throw INVALID_CONFIG on path traversal attempt (..)    | Path security             | `action-cost-registry.test.ts` | P0       |
+| AC7-U-9  | should sanitize file paths in error messages (production)     | Error message security    | `action-cost-registry.test.ts` | P1       |
+| AC7-U-10 | should include full path in error messages (development)      | Error message detail      | `action-cost-registry.test.ts` | P1       |
+| AC7-U-11 | should reject absolute paths outside project dir (production) | Path security             | `action-cost-registry.test.ts` | P1       |
+| AC7-C-1  | should throw from client constructor on invalid registry      | Constructor fail-fast     | `client.test.ts`               | P0       |
+| AC7-C-2  | should NOT create partial client on registry error            | No partial object         | `client.test.ts`               | P0       |
 
 **Test Count:** 13 tests (11 unit + 2 client integration)
 **Coverage:** Validation errors, path security, fail-fast behavior
@@ -351,21 +353,21 @@ Story 2.2 implements the action cost registry and wallet balance query system, e
 
 **Test Coverage (Planned):**
 
-| Test ID | Test Name | What It Validates | Location | Priority |
-|---------|-----------|-------------------|----------|----------|
-| AC8-U-1 | should validate version 1 is supported | Supported version acceptance | `action-cost-registry.test.ts` | P0 |
-| AC8-U-2 | should throw UNSUPPORTED_VERSION on version 2 | Future version rejection | `action-cost-registry.test.ts` | P0 |
-| AC8-U-3 | should throw INVALID_CONFIG on missing version | Missing version field | `action-cost-registry.test.ts` | P0 |
-| AC8-U-4 | should throw INVALID_CONFIG on version = 0 | Zero version invalid | `action-cost-registry.test.ts` | P0 |
-| AC8-U-5 | should throw INVALID_CONFIG on negative version | Negative version invalid | `action-cost-registry.test.ts` | P0 |
-| AC8-U-6 | should throw INVALID_CONFIG on non-integer version (e.g., 1.5) | Float version invalid | `action-cost-registry.test.ts` | P0 |
-| AC8-U-7 | should throw INVALID_CONFIG on invalid category | Enum validation | `action-cost-registry.test.ts` | P0 |
-| AC8-U-8 | should throw INVALID_CONFIG on invalid frequency | Enum validation | `action-cost-registry.test.ts` | P0 |
-| AC8-U-9 | should accept all 8 valid categories | Category enum acceptance | `action-cost-registry.test.ts` | P1 |
-| AC8-U-10 | should accept all 5 valid frequencies | Frequency enum acceptance | `action-cost-registry.test.ts` | P1 |
-| AC8-U-11 | should throw INVALID_CONFIG on missing cost field | Action entry validation | `action-cost-registry.test.ts` | P0 |
-| AC8-U-12 | should throw INVALID_CONFIG on missing category field | Action entry validation | `action-cost-registry.test.ts` | P0 |
-| AC8-U-13 | should throw INVALID_CONFIG on missing frequency field | Action entry validation | `action-cost-registry.test.ts` | P0 |
+| Test ID  | Test Name                                                      | What It Validates            | Location                       | Priority |
+| -------- | -------------------------------------------------------------- | ---------------------------- | ------------------------------ | -------- |
+| AC8-U-1  | should validate version 1 is supported                         | Supported version acceptance | `action-cost-registry.test.ts` | P0       |
+| AC8-U-2  | should throw UNSUPPORTED_VERSION on version 2                  | Future version rejection     | `action-cost-registry.test.ts` | P0       |
+| AC8-U-3  | should throw INVALID_CONFIG on missing version                 | Missing version field        | `action-cost-registry.test.ts` | P0       |
+| AC8-U-4  | should throw INVALID_CONFIG on version = 0                     | Zero version invalid         | `action-cost-registry.test.ts` | P0       |
+| AC8-U-5  | should throw INVALID_CONFIG on negative version                | Negative version invalid     | `action-cost-registry.test.ts` | P0       |
+| AC8-U-6  | should throw INVALID_CONFIG on non-integer version (e.g., 1.5) | Float version invalid        | `action-cost-registry.test.ts` | P0       |
+| AC8-U-7  | should throw INVALID_CONFIG on invalid category                | Enum validation              | `action-cost-registry.test.ts` | P0       |
+| AC8-U-8  | should throw INVALID_CONFIG on invalid frequency               | Enum validation              | `action-cost-registry.test.ts` | P0       |
+| AC8-U-9  | should accept all 8 valid categories                           | Category enum acceptance     | `action-cost-registry.test.ts` | P1       |
+| AC8-U-10 | should accept all 5 valid frequencies                          | Frequency enum acceptance    | `action-cost-registry.test.ts` | P1       |
+| AC8-U-11 | should throw INVALID_CONFIG on missing cost field              | Action entry validation      | `action-cost-registry.test.ts` | P0       |
+| AC8-U-12 | should throw INVALID_CONFIG on missing category field          | Action entry validation      | `action-cost-registry.test.ts` | P0       |
+| AC8-U-13 | should throw INVALID_CONFIG on missing frequency field         | Action entry validation      | `action-cost-registry.test.ts` | P0       |
 
 **Test Count:** 13 tests (13 unit)
 **Coverage:** Version validation, enum validation, schema validation
@@ -381,15 +383,15 @@ Story 2.2 implements the action cost registry and wallet balance query system, e
 
 ### Edge Cases and Robustness Testing (Planned)
 
-| Test ID | Test Name | What It Validates | Location | Priority |
-|---------|-----------|-------------------|----------|----------|
-| EDGE-1 | should handle registry with empty actions object | Empty registry edge case | `action-cost-registry.test.ts` | P2 |
-| EDGE-2 | should handle balance query when identity not loaded | Pre-identity error | `wallet-client.test.ts` | P1 |
-| EDGE-3 | should handle getCost() when registry is null (not provided) | Registry not loaded error | `client.test.ts` | P0 |
-| EDGE-4 | should handle canAfford() when wallet client not initialized | Pre-wallet error | `client.test.ts` | P1 |
-| EDGE-5 | should handle balance = 0 (edge case) | Zero balance valid | `wallet-client.test.ts` | P1 |
-| EDGE-6 | should handle cost = 0 (free action) | Free action valid | `action-cost-registry.test.ts` | P1 |
-| EDGE-7 | should handle very large balance values | Large number handling | `wallet-client.test.ts` | P2 |
+| Test ID | Test Name                                                    | What It Validates         | Location                       | Priority |
+| ------- | ------------------------------------------------------------ | ------------------------- | ------------------------------ | -------- |
+| EDGE-1  | should handle registry with empty actions object             | Empty registry edge case  | `action-cost-registry.test.ts` | P2       |
+| EDGE-2  | should handle balance query when identity not loaded         | Pre-identity error        | `wallet-client.test.ts`        | P1       |
+| EDGE-3  | should handle getCost() when registry is null (not provided) | Registry not loaded error | `client.test.ts`               | P0       |
+| EDGE-4  | should handle canAfford() when wallet client not initialized | Pre-wallet error          | `client.test.ts`               | P1       |
+| EDGE-5  | should handle balance = 0 (edge case)                        | Zero balance valid        | `wallet-client.test.ts`        | P1       |
+| EDGE-6  | should handle cost = 0 (free action)                         | Free action valid         | `action-cost-registry.test.ts` | P1       |
+| EDGE-7  | should handle very large balance values                      | Large number handling     | `wallet-client.test.ts`        | P2       |
 
 **Total Additional Tests:** 7 tests
 **Priority Distribution:** 1 P0, 4 P1, 2 P2
@@ -404,11 +406,11 @@ Story 2.2 implements the action cost registry and wallet balance query system, e
 
 **Test Coverage:**
 
-| Test Aspect | Tests | Status |
-|-------------|-------|--------|
-| Registry in version control | AC1-U-7 (default registry exists) | 📝 Planned |
-| Registry is readable JSON | AC1-U-1 (valid JSON parsing) | 📝 Planned |
-| Registry schema documented | AC8-U-1 to AC8-U-13 (schema validation) | 📝 Planned |
+| Test Aspect                 | Tests                                   | Status     |
+| --------------------------- | --------------------------------------- | ---------- |
+| Registry in version control | AC1-U-7 (default registry exists)       | 📝 Planned |
+| Registry is readable JSON   | AC1-U-1 (valid JSON parsing)            | 📝 Planned |
+| Registry schema documented  | AC8-U-1 to AC8-U-13 (schema validation) | 📝 Planned |
 
 **Total Tests:** 15 (all AC1 + AC8 tests)
 **Status:** 📝 Planned
@@ -422,12 +424,12 @@ Story 2.2 implements the action cost registry and wallet balance query system, e
 
 **Test Coverage:**
 
-| Test Aspect | Tests | Status |
-|-------------|-------|--------|
-| Non-negative balance validation | AC5-U-1 | 📝 Planned |
-| Balance consistency with Crosstown | AC5-I-1 | 📝 Planned (integration) |
-| No phantom funds | AC5-U-1 to AC5-U-5 (validation) | 📝 Planned |
-| Error handling on unreachable | AC5-U-2, AC5-U-3 (NETWORK_ERROR) | 📝 Planned |
+| Test Aspect                        | Tests                            | Status                   |
+| ---------------------------------- | -------------------------------- | ------------------------ |
+| Non-negative balance validation    | AC5-U-1                          | 📝 Planned               |
+| Balance consistency with Crosstown | AC5-I-1                          | 📝 Planned (integration) |
+| No phantom funds                   | AC5-U-1 to AC5-U-5 (validation)  | 📝 Planned               |
+| Error handling on unreachable      | AC5-U-2, AC5-U-3 (NETWORK_ERROR) | 📝 Planned               |
 
 **Total Tests:** 8 (all AC5 tests)
 **Status:** 📝 Planned
@@ -441,17 +443,18 @@ Story 2.2 implements the action cost registry and wallet balance query system, e
 
 **Test Coverage:**
 
-| DoS Vector | Tests | Status |
-|------------|-------|--------|
-| Timeout enforcement (500ms) | AC4-U-4, AC5-U-2, AC5-U-6 | 📝 Planned |
-| No retry loops on failure | AC5-U-2, AC5-U-3 (fail-fast) | 📝 Planned |
-| AbortController for cancellation | AC5-U-6 | 📝 Planned |
-| In-memory cost lookup (<10ms) | AC2-U-3 | 📝 Planned |
+| DoS Vector                       | Tests                        | Status     |
+| -------------------------------- | ---------------------------- | ---------- |
+| Timeout enforcement (500ms)      | AC4-U-4, AC5-U-2, AC5-U-6    | 📝 Planned |
+| No retry loops on failure        | AC5-U-2, AC5-U-3 (fail-fast) | 📝 Planned |
+| AbortController for cancellation | AC5-U-6                      | 📝 Planned |
+| In-memory cost lookup (<10ms)    | AC2-U-3                      | 📝 Planned |
 
 **Total Tests:** 6
 **Status:** 📝 Planned
 
 **DoS Prevention Mechanisms (Planned):**
+
 - HTTP timeout: 500ms (AbortController) ✅
 - No automatic retries on balance query failure ✅
 - Synchronous cost lookup (no blocking I/O) ✅
@@ -465,10 +468,10 @@ Story 2.2 implements the action cost registry and wallet balance query system, e
 
 **Test Coverage:**
 
-| Security Aspect | Test Location | Status |
-|-----------------|---------------|--------|
+| Security Aspect                   | Test Location                          | Status     |
+| --------------------------------- | -------------------------------------- | ---------- |
 | Wallet balance scoped to identity | AC4-U-1 (uses identityPublicKey param) | 📝 Planned |
-| No cross-identity balance queries | Design validation (no test needed) | 📝 N/A |
+| No cross-identity balance queries | Design validation (no test needed)     | 📝 N/A     |
 
 **Tests:** 1 (design validation)
 **Status:** 📝 Planned
@@ -479,12 +482,12 @@ Story 2.2 implements the action cost registry and wallet balance query system, e
 
 **Test Coverage:**
 
-| Security Aspect | Test Location | Status |
-|-----------------|---------------|--------|
-| Path traversal protection (..) | AC7-U-8 | 📝 Planned |
-| Absolute path validation (production) | AC7-U-11 | 📝 Planned |
-| JSON parsing error handling | AC7-U-1 | 📝 Planned |
-| URL validation (SSRF protection) | Documented in wallet-client | 📝 Planned |
+| Security Aspect                       | Test Location               | Status     |
+| ------------------------------------- | --------------------------- | ---------- |
+| Path traversal protection (..)        | AC7-U-8                     | 📝 Planned |
+| Absolute path validation (production) | AC7-U-11                    | 📝 Planned |
+| JSON parsing error handling           | AC7-U-1                     | 📝 Planned |
+| URL validation (SSRF protection)      | Documented in wallet-client | 📝 Planned |
 
 **Tests:** 4
 **Status:** 📝 Planned
@@ -495,11 +498,11 @@ Story 2.2 implements the action cost registry and wallet balance query system, e
 
 **Test Coverage:**
 
-| Security Aspect | Test Location | Status |
-|-----------------|---------------|--------|
-| Non-negative cost validation | AC7-U-5, AC7-U-6 | 📝 Planned |
-| Default cost fallback | AC3-U-1 to AC3-U-4 | 📝 Planned |
-| Timeout enforced | AC4-U-4, AC5-U-2 | 📝 Planned |
+| Security Aspect              | Test Location      | Status     |
+| ---------------------------- | ------------------ | ---------- |
+| Non-negative cost validation | AC7-U-5, AC7-U-6   | 📝 Planned |
+| Default cost fallback        | AC3-U-1 to AC3-U-4 | 📝 Planned |
+| Timeout enforced             | AC4-U-4, AC5-U-2   | 📝 Planned |
 
 **Tests:** 8
 **Status:** 📝 Planned
@@ -510,11 +513,11 @@ Story 2.2 implements the action cost registry and wallet balance query system, e
 
 **Test Coverage:**
 
-| Security Aspect | Test Location | Status |
-|-----------------|---------------|--------|
-| Default registry in version control | AC1-U-7 | 📝 Planned |
-| Crosstown URL configurable | Design (client options) | 📝 Planned |
-| Error message sanitization | AC7-U-9, AC7-U-10 | 📝 Planned |
+| Security Aspect                     | Test Location           | Status     |
+| ----------------------------------- | ----------------------- | ---------- |
+| Default registry in version control | AC1-U-7                 | 📝 Planned |
+| Crosstown URL configurable          | Design (client options) | 📝 Planned |
+| Error message sanitization          | AC7-U-9, AC7-U-10       | 📝 Planned |
 
 **Tests:** 3
 **Status:** 📝 Planned
@@ -526,6 +529,7 @@ Story 2.2 implements the action cost registry and wallet balance query system, e
 **Validation Method:** `pnpm audit` + dependency version checks
 
 **Dependencies to Validate:**
+
 - Native `fetch` API (Node.js 20+, no polyfill) - 0 vulnerabilities expected ✅
 - `fs.readFileSync` (Node.js built-in) - 0 vulnerabilities ✅
 - No new npm dependencies added ✅
@@ -538,12 +542,12 @@ Story 2.2 implements the action cost registry and wallet balance query system, e
 
 **Test Coverage:**
 
-| Security Aspect | Test Location | Status |
-|-----------------|---------------|--------|
-| JSON schema validation | AC8-U-1 to AC8-U-13 | 📝 Planned |
-| NaN/Infinity rejection | AC7-U-5, AC7-U-6 | 📝 Planned |
-| Version validation | AC8-U-1 to AC8-U-6 | 📝 Planned |
-| Balance response validation | AC5-U-4, AC5-U-5 | 📝 Planned |
+| Security Aspect             | Test Location       | Status     |
+| --------------------------- | ------------------- | ---------- |
+| JSON schema validation      | AC8-U-1 to AC8-U-13 | 📝 Planned |
+| NaN/Infinity rejection      | AC7-U-5, AC7-U-6    | 📝 Planned |
+| Version validation          | AC8-U-1 to AC8-U-6  | 📝 Planned |
+| Balance response validation | AC5-U-4, AC5-U-5    | 📝 Planned |
 
 **Tests:** 19
 **Status:** 📝 Planned
@@ -555,6 +559,7 @@ Story 2.2 implements the action cost registry and wallet balance query system, e
 **Validation Method:** Code review + error handling tests
 
 **Logging Mechanisms to Verify:**
+
 - Registry load success (DEBUG level) ✅
 - Unknown action warnings (WARN level) - AC3-U-2, AC3-U-3 ✅
 - Balance query errors (ERROR level) - AC5-U-2 to AC5-U-5 ✅
@@ -569,17 +574,18 @@ Story 2.2 implements the action cost registry and wallet balance query system, e
 
 **Test Coverage:**
 
-| Security Aspect | Test Location | Status |
-|-----------------|---------------|--------|
+| Security Aspect                                           | Test Location                           | Status     |
+| --------------------------------------------------------- | --------------------------------------- | ---------- |
 | URL validation (ws/wss for Nostr, http/https for balance) | Documented in wallet-client constructor | 📝 Planned |
-| Localhost allowed in dev only | Documented in wallet-client constructor | 📝 Planned |
-| Internal network IPs rejected in production | Documented in wallet-client constructor | 📝 Planned |
+| Localhost allowed in dev only                             | Documented in wallet-client constructor | 📝 Planned |
+| Internal network IPs rejected in production               | Documented in wallet-client constructor | 📝 Planned |
 
 **Tests:** Documented in implementation, validated via code review
 **Status:** 📝 Planned
 
 **SSRF Protection Rules (Documented):**
-- Development (NODE_ENV !== 'production'): Allow localhost, 127.0.0.1, ::1, 0.0.0.0, 172.* (Docker)
+
+- Development (NODE_ENV !== 'production'): Allow localhost, 127.0.0.1, ::1, 0.0.0.0, 172.\* (Docker)
 - Production: Only allow configured URLs, reject internal networks
 - URL validation in WalletClient constructor throws INVALID_CONFIG on violation
 
@@ -587,18 +593,18 @@ Story 2.2 implements the action cost registry and wallet balance query system, e
 
 ### OWASP Top 10 Summary
 
-| Category | Tests | Status | Notes |
-|----------|-------|--------|-------|
-| A01: Broken Access Control | 1 | 📝 Planned | Identity-scoped balance queries |
-| A02: Cryptographic Failures | N/A | N/A | No crypto operations in this story |
-| A03: Injection | 4 | 📝 Planned | Path traversal, JSON parsing, SSRF |
-| A04: Insecure Design | 8 | 📝 Planned | Non-negative costs, timeout, fallback |
-| A05: Security Misconfiguration | 3 | 📝 Planned | Config in version control, error sanitization |
-| A06: Vulnerable Components | Manual | 📝 Planned | pnpm audit (no new dependencies) |
-| A07: Auth Failures | N/A | N/A | Authentication via identity (Story 1.2) |
-| A08: Data Integrity | 19 | 📝 Planned | Schema validation, version validation |
-| A09: Logging Failures | 8 | 📝 Planned | Error logging with appropriate levels |
-| A10: SSRF | Code Review | 📝 Planned | URL validation documented in constructor |
+| Category                       | Tests       | Status     | Notes                                         |
+| ------------------------------ | ----------- | ---------- | --------------------------------------------- |
+| A01: Broken Access Control     | 1           | 📝 Planned | Identity-scoped balance queries               |
+| A02: Cryptographic Failures    | N/A         | N/A        | No crypto operations in this story            |
+| A03: Injection                 | 4           | 📝 Planned | Path traversal, JSON parsing, SSRF            |
+| A04: Insecure Design           | 8           | 📝 Planned | Non-negative costs, timeout, fallback         |
+| A05: Security Misconfiguration | 3           | 📝 Planned | Config in version control, error sanitization |
+| A06: Vulnerable Components     | Manual      | 📝 Planned | pnpm audit (no new dependencies)              |
+| A07: Auth Failures             | N/A         | N/A        | Authentication via identity (Story 1.2)       |
+| A08: Data Integrity            | 19          | 📝 Planned | Schema validation, version validation         |
+| A09: Logging Failures          | 8           | 📝 Planned | Error logging with appropriate levels         |
+| A10: SSRF                      | Code Review | 📝 Planned | URL validation documented in constructor      |
 
 **Total Security Tests:** 43 (automated) + 1 (manual audit)
 **Security Coverage:** 7/10 OWASP categories (3 N/A for this story)
@@ -611,11 +617,13 @@ Story 2.2 implements the action cost registry and wallet balance query system, e
 ### Test Execution Performance (Estimated)
 
 **Unit Tests:**
+
 - Estimated Duration: ~500ms for 58 unit tests
 - Average: ~9ms per test
 - **Assessment:** ✅ Fast feedback loop for TDD
 
 **Integration Tests:**
+
 - Estimated Duration: ~5-8s (with Docker running)
 - Tests Planned: 9 integration tests
 - **Assessment:** ✅ Reasonable for HTTP validation
@@ -624,6 +632,7 @@ Story 2.2 implements the action cost registry and wallet balance query system, e
 ### Code Coverage (Target)
 
 **Coverage Targets:**
+
 - Line Coverage: >80% for action cost and wallet code
 - Branch Coverage: 100% for error paths
 - Critical Paths: 100% coverage (registry loading, balance queries, affordability checks)
@@ -633,6 +642,7 @@ Story 2.2 implements the action cost registry and wallet balance query system, e
 **Maintainability Score Target:** 90+/100
 
 **Strengths (Planned):**
+
 - Clear test names (self-documenting)
 - Consistent test structure across ACs (Given/When/Then where applicable)
 - Minimal code duplication (shared fixtures and mocks)
@@ -644,16 +654,16 @@ Story 2.2 implements the action cost registry and wallet balance query system, e
 
 ### BMAD Standards Checklist
 
-| Standard | Compliance | Evidence |
-|----------|------------|----------|
-| **AGREEMENT-1: Test-First for Complex Features** | ✅ Met | Story has 8 ACs, TDD approach planned |
-| **AGREEMENT-2: Security Review on Every Story** | ✅ Met | OWASP Top 10 checklist 100% planned |
-| **AC Traceability** | ✅ Met | Clear mapping documented in traceability matrix |
-| **Given/When/Then Format** | ✅ Met | ACs written in BDD format |
-| **Error Boundaries** | ✅ Met | All error paths tested with SigilError boundaries |
-| **AGREEMENT-5: Integration Test Documentation** | ✅ Met | Prerequisites documented, graceful skip planned |
-| **Mock Quality** | ✅ Met | Native fetch mocking planned |
-| **Test Independence** | ✅ Met | Tests designed to run in any order |
+| Standard                                         | Compliance | Evidence                                          |
+| ------------------------------------------------ | ---------- | ------------------------------------------------- |
+| **AGREEMENT-1: Test-First for Complex Features** | ✅ Met     | Story has 8 ACs, TDD approach planned             |
+| **AGREEMENT-2: Security Review on Every Story**  | ✅ Met     | OWASP Top 10 checklist 100% planned               |
+| **AC Traceability**                              | ✅ Met     | Clear mapping documented in traceability matrix   |
+| **Given/When/Then Format**                       | ✅ Met     | ACs written in BDD format                         |
+| **Error Boundaries**                             | ✅ Met     | All error paths tested with SigilError boundaries |
+| **AGREEMENT-5: Integration Test Documentation**  | ✅ Met     | Prerequisites documented, graceful skip planned   |
+| **Mock Quality**                                 | ✅ Met     | Native fetch mocking planned                      |
+| **Test Independence**                            | ✅ Met     | Tests designed to run in any order                |
 
 **BMAD Compliance Score:** 100% ✅
 
@@ -664,30 +674,35 @@ Story 2.2 implements the action cost registry and wallet balance query system, e
 ### Test Implementation Order
 
 **Phase 1: Core Registry (AC1, AC7, AC8) - 29 tests**
+
 1. Implement `action-cost-registry.test.ts` with schema validation tests
 2. Create test fixtures (valid/invalid registry JSON files)
 3. Implement registry loader and validator
 4. Verify all 29 tests pass
 
 **Phase 2: Cost Queries (AC2, AC3) - 10 tests**
+
 1. Implement cost lookup tests in `action-cost-registry.test.ts`
 2. Add client integration tests in `client.test.ts`
 3. Implement `getCost()` method
 4. Verify all 10 tests pass
 
 **Phase 3: Wallet Balance (AC4, AC5) - 20 tests**
+
 1. Implement `wallet-client.test.ts` with mocked fetch
 2. Add integration tests in `wallet-balance.test.ts`
 3. Implement WalletClient with stub mode
 4. Verify all 20 tests pass
 
 **Phase 4: Affordability (AC6) - 7 tests**
+
 1. Implement `canAfford()` tests in `client.test.ts`
 2. Add end-to-end integration test
 3. Implement `canAfford()` method
 4. Verify all 7 tests pass
 
 **Phase 5: Edge Cases - 7 tests**
+
 1. Implement additional edge case tests
 2. Fix any edge case bugs discovered
 3. Verify all 7 tests pass
@@ -699,6 +714,7 @@ Story 2.2 implements the action cost registry and wallet balance query system, e
 ### Test Fixtures (Planned)
 
 **Valid Registry Fixture (`__tests__/fixtures/valid-registry.json`):**
+
 ```json
 {
   "version": 1,
@@ -719,6 +735,7 @@ Story 2.2 implements the action cost registry and wallet balance query system, e
 ```
 
 **Invalid Registry Fixtures:**
+
 - `invalid-json.json` - Malformed JSON (syntax error)
 - `missing-version.json` - Missing version field
 - `negative-cost.json` - Action with cost: -5
@@ -731,6 +748,7 @@ Story 2.2 implements the action cost registry and wallet balance query system, e
 ### Mock Implementation Patterns (Planned)
 
 **Fetch Mocking (wallet-client.test.ts):**
+
 ```typescript
 import { vi, beforeEach, afterEach } from 'vitest';
 
@@ -751,6 +769,7 @@ afterEach(() => {
 ```
 
 **AbortController Timeout Simulation:**
+
 ```typescript
 test('should timeout after 500ms', async () => {
   vi.spyOn(global, 'fetch').mockImplementation(async (url, options) => {
@@ -769,6 +788,7 @@ test('should timeout after 500ms', async () => {
 **Uncovered ACs:** NONE ✅
 
 All 8 acceptance criteria have complete test coverage planned:
+
 - AC1: 9 tests (7 unit + 2 client integration)
 - AC2: 5 tests (4 unit + 1 client integration)
 - AC3: 5 tests (4 unit + 1 client integration)
@@ -791,21 +811,25 @@ All 8 acceptance criteria have complete test coverage planned:
 ### Known Limitations (Documented in Story 2.2)
 
 **LIMITATION-2.2.1: Crosstown HTTP API for Balance Queries Not Yet Documented**
+
 - **Test Impact:** Integration tests use stub mode validation if real API not available
 - **Mitigation:** AC4-U-5, AC4-U-6, AC4-U-8, AC4-I-2 test stub mode behavior
 - **Test Coverage:** ✅ Stub mode fully tested
 
 **LIMITATION-2.2.2: No Hot-Reload for Cost Registry**
+
 - **Test Impact:** No tests for hot-reload (not in scope)
 - **Mitigation:** Deferred to Epic 9 (if needed)
 - **Test Coverage:** ✅ N/A (not implemented)
 
 **LIMITATION-2.2.3: No Cost History or Versioning**
+
 - **Test Impact:** No tests for cost history (not in scope)
 - **Mitigation:** Use git for version control
 - **Test Coverage:** ✅ N/A (not implemented)
 
 **LIMITATION-2.2.4: Balance Query Does NOT Support Multiple Identities**
+
 - **Test Impact:** No tests for multi-identity queries (intentional design)
 - **Mitigation:** Feature, not bug (privacy by design)
 - **Test Coverage:** ✅ N/A (not implemented)
@@ -834,56 +858,56 @@ All 8 acceptance criteria have complete test coverage planned:
 
 ### Code Quality & Testing (Planned)
 
-| Requirement | Status | Planned Evidence |
-|-------------|--------|------------------|
-| All unit tests pass | 📝 Planned | 58 unit tests implemented |
-| All integration tests pass | 📝 Planned | 9 integration tests (Docker-gated) |
-| Test traceability complete | ✅ Complete | This document provides traceability |
-| Code coverage >80% | 📝 Planned | Coverage target documented |
-| No `any` types in TypeScript exports | 📝 Planned | Type safety design |
-| ESLint passes with no warnings | 📝 Planned | Lint validation |
+| Requirement                          | Status      | Planned Evidence                    |
+| ------------------------------------ | ----------- | ----------------------------------- |
+| All unit tests pass                  | 📝 Planned  | 58 unit tests implemented           |
+| All integration tests pass           | 📝 Planned  | 9 integration tests (Docker-gated)  |
+| Test traceability complete           | ✅ Complete | This document provides traceability |
+| Code coverage >80%                   | 📝 Planned  | Coverage target documented          |
+| No `any` types in TypeScript exports | 📝 Planned  | Type safety design                  |
+| ESLint passes with no warnings       | 📝 Planned  | Lint validation                     |
 
 ### Security Review (AGREEMENT-2) (Planned)
 
-| Requirement | Status | Planned Evidence |
-|-------------|--------|------------------|
-| OWASP Top 10 checklist complete | ✅ Complete | This document section |
-| Security audit passed | 📝 Planned | `pnpm audit` validation |
-| Path traversal protection | 📝 Planned | AC7-U-8 test |
-| JSON parsing safety | 📝 Planned | AC7-U-1 test |
-| SSRF protection documented | ✅ Complete | Documented in wallet client |
+| Requirement                     | Status      | Planned Evidence            |
+| ------------------------------- | ----------- | --------------------------- |
+| OWASP Top 10 checklist complete | ✅ Complete | This document section       |
+| Security audit passed           | 📝 Planned  | `pnpm audit` validation     |
+| Path traversal protection       | 📝 Planned  | AC7-U-8 test                |
+| JSON parsing safety             | 📝 Planned  | AC7-U-1 test                |
+| SSRF protection documented      | ✅ Complete | Documented in wallet client |
 
 ### Functional Validation (Planned)
 
-| Requirement | Status | Planned Evidence |
-|-------------|--------|------------------|
-| AC1: Registry loads from JSON | 📝 Planned | 9 tests |
-| AC2: getCost() returns correct cost | 📝 Planned | 5 tests |
-| AC3: Unknown action returns defaultCost | 📝 Planned | 5 tests |
-| AC4: getBalance() queries Crosstown | 📝 Planned | 12 tests |
-| AC5: Balance validation | 📝 Planned | 8 tests |
-| AC6: canAfford() logic | 📝 Planned | 7 tests |
-| AC7: Invalid registry fails fast | 📝 Planned | 13 tests |
-| AC8: Version validation | 📝 Planned | 13 tests |
+| Requirement                             | Status     | Planned Evidence |
+| --------------------------------------- | ---------- | ---------------- |
+| AC1: Registry loads from JSON           | 📝 Planned | 9 tests          |
+| AC2: getCost() returns correct cost     | 📝 Planned | 5 tests          |
+| AC3: Unknown action returns defaultCost | 📝 Planned | 5 tests          |
+| AC4: getBalance() queries Crosstown     | 📝 Planned | 12 tests         |
+| AC5: Balance validation                 | 📝 Planned | 8 tests          |
+| AC6: canAfford() logic                  | 📝 Planned | 7 tests          |
+| AC7: Invalid registry fails fast        | 📝 Planned | 13 tests         |
+| AC8: Version validation                 | 📝 Planned | 13 tests         |
 
 ### Documentation (Planned)
 
-| Requirement | Status | Planned Evidence |
-|-------------|--------|------------------|
+| Requirement                          | Status     | Planned Evidence    |
+| ------------------------------------ | ---------- | ------------------- |
 | JSDoc comments on all public methods | 📝 Planned | Task 9 in story doc |
-| Code examples in JSDoc | 📝 Planned | Task 9 in story doc |
-| actionCostRegistryPath documented | 📝 Planned | Task 9 in story doc |
-| crosstownConnectorUrl documented | 📝 Planned | Task 9 in story doc |
+| Code examples in JSDoc               | 📝 Planned | Task 9 in story doc |
+| actionCostRegistryPath documented    | 📝 Planned | Task 9 in story doc |
+| crosstownConnectorUrl documented     | 📝 Planned | Task 9 in story doc |
 
 ### Integration (Planned)
 
-| Requirement | Status | Planned Evidence |
-|-------------|--------|------------------|
-| Exports updated | 📝 Planned | Task 9 in story doc |
-| client.publish.getCost() available | 📝 Planned | AC2-C-1 test |
-| client.wallet.getBalance() available | 📝 Planned | AC4-I-1 test |
-| client.publish.canAfford() available | 📝 Planned | AC6-I-1 test |
-| Build passes | 📝 Planned | `pnpm build` validation |
+| Requirement                          | Status     | Planned Evidence        |
+| ------------------------------------ | ---------- | ----------------------- |
+| Exports updated                      | 📝 Planned | Task 9 in story doc     |
+| client.publish.getCost() available   | 📝 Planned | AC2-C-1 test            |
+| client.wallet.getBalance() available | 📝 Planned | AC4-I-1 test            |
+| client.publish.canAfford() available | 📝 Planned | AC6-I-1 test            |
+| Build passes                         | 📝 Planned | `pnpm build` validation |
 
 **Definition of Done Readiness:** ✅ 100% PLANNED
 
@@ -896,6 +920,7 @@ All 8 acceptance criteria have complete test coverage planned:
 Story 2.2 (Action Cost Registry & Wallet Balance) has **comprehensive ATDD test architecture** designed for all 8 acceptance criteria.
 
 **Key Achievements:**
+
 - ✅ All 8 acceptance criteria fully mapped to 67 tests
 - ✅ TDD methodology planned (AGREEMENT-1)
 - ✅ OWASP Top 10 security validation planned (AGREEMENT-2)
@@ -922,14 +947,17 @@ Story 2.2 (Action Cost Registry & Wallet Balance) has **comprehensive ATDD test 
 ## Appendix: Test File Locations (Planned)
 
 ### Unit Tests (Planned)
+
 1. `/Users/jonathangreen/Documents/BitCraftPublic/packages/client/src/publish/action-cost-registry.test.ts` (35 tests)
 2. `/Users/jonathangreen/Documents/BitCraftPublic/packages/client/src/wallet/wallet-client.test.ts` (15 tests)
 3. `/Users/jonathangreen/Documents/BitCraftPublic/packages/client/src/client.test.ts` (additions: 8 tests)
 
 ### Integration Tests (Planned)
+
 1. `/Users/jonathangreen/Documents/BitCraftPublic/packages/client/src/__tests__/integration/wallet-balance.test.ts` (9 tests)
 
 ### Test Fixtures (Planned)
+
 1. `/Users/jonathangreen/Documents/BitCraftPublic/packages/client/src/__tests__/fixtures/valid-registry.json`
 2. `/Users/jonathangreen/Documents/BitCraftPublic/packages/client/src/__tests__/fixtures/invalid-json.json`
 3. `/Users/jonathangreen/Documents/BitCraftPublic/packages/client/src/__tests__/fixtures/missing-version.json`
@@ -939,6 +967,7 @@ Story 2.2 (Action Cost Registry & Wallet Balance) has **comprehensive ATDD test 
 7. `/Users/jonathangreen/Documents/BitCraftPublic/packages/client/src/__tests__/fixtures/zero-version.json`
 
 ### Related Documentation
+
 1. Story Document: `/Users/jonathangreen/Documents/BitCraftPublic/_bmad-output/implementation-artifacts/2-2-action-cost-registry-and-wallet-balance.md`
 2. This ATDD Report: `/Users/jonathangreen/Documents/BitCraftPublic/_bmad-output/implementation-artifacts/2-2-test-architecture-traceability.md`
 3. Default Cost Registry: `/Users/jonathangreen/Documents/BitCraftPublic/packages/client/config/default-action-costs.json` (to be created)

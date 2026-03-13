@@ -25,6 +25,7 @@ This document tracks the preparation tasks identified in the Epic 1 retrospectiv
 Task 5 in Story 1.6 (subscription recovery after reconnection) is partially complete. The reconnection logic works, but subscription re-subscribe flow and snapshot merging logic is stubbed out. The `ReconnectionManager.recoverSubscriptions()` method emits events but does not actually call back into the `SubscriptionManager` to re-establish subscriptions.
 
 **Current State:**
+
 - ✅ Subscription metadata capture before disconnect (working)
 - ✅ Reconnection with exponential backoff (working)
 - ✅ Event emission for subscription recovery (working)
@@ -33,6 +34,7 @@ Task 5 in Story 1.6 (subscription recovery after reconnection) is partially comp
 - ❌ Integration tests for full recovery flow (mocked)
 
 **Acceptance Criteria:**
+
 - [ ] Wire `ReconnectionManager` to `SubscriptionManager` for actual re-subscription
 - [ ] Implement subscription re-subscribe logic: iterate over stored subscriptions and call `subscribe(tableName, query)` for each
 - [ ] Implement snapshot merging logic:
@@ -52,6 +54,7 @@ Epic 2 Story 2.1 (Crosstown Relay Connection & Event Subscriptions) depends on r
 The `ReconnectionManager` currently stores subscription metadata in `subscriptionSnapshots` array but does not have a reference to the `SubscriptionManager`. Architectural refactoring required to pass `SubscriptionManager` into `ReconnectionManager` constructor or provide callback interface.
 
 **Dependencies:**
+
 - SpacetimeDB SDK subscription API (already implemented in `SubscriptionManager`)
 - Table caching mechanism (already implemented in `TableAccessor`)
 
@@ -68,6 +71,7 @@ The `ReconnectionManager` currently stores subscription metadata in `subscriptio
 All Epic 1 stories were tested on macOS only. Linux compatibility is assumed but not verified (NFR22 requires both Linux and macOS support). Epic 2 introduces BLS handler (Rust code) which must work on Linux.
 
 **Acceptance Criteria:**
+
 - [ ] Run full test suite on Linux (Ubuntu 24.04 or equivalent)
   - [ ] 810 unit tests pass
   - [ ] 127 integration tests pass (requires Docker)
@@ -87,11 +91,13 @@ All Epic 1 stories were tested on macOS only. Linux compatibility is assumed but
 NFR22 (cross-platform support) will not be met. Epic 2 BLS handler (Rust code) may have Linux-specific issues that are not caught until later. This could delay Epic 2 stories 2.4-2.6.
 
 **Technical Notes:**
+
 - Spin up Ubuntu 24.04 VM or use GitHub Actions Linux runner
 - Docker Compose V2 syntax is already used (compatible with Linux)
 - Pay attention to file system case sensitivity (Linux vs. macOS)
 
 **Dependencies:**
+
 - Docker Desktop for Linux or native Docker Engine
 - GitHub Actions Linux runner (ubuntu-latest)
 
@@ -108,6 +114,7 @@ NFR22 (cross-platform support) will not be met. Epic 2 BLS handler (Rust code) m
 Story 2.1 (Crosstown Relay Connection & Event Subscriptions) requires understanding Crosstown's built-in Nostr relay. Charlie flagged documentation gaps in Epic 1. The Crosstown relay implementation may deviate from standard NIP-01 Nostr relay protocol.
 
 **Acceptance Criteria:**
+
 - [ ] Read Crosstown source code for relay implementation
   - [ ] Identify relay event types (kind numbers)
   - [ ] Document subscription filter syntax
@@ -124,17 +131,20 @@ Story 2.1 (Crosstown Relay Connection & Event Subscriptions) requires understand
   - [ ] Rate limiting behavior
 
 **Deliverables:**
+
 - `_bmad-output/implementation-artifacts/crosstown-relay-protocol-reference.md`
 
 **Impact if NOT Completed:**
 Story 2.1 implementation will be delayed as Charlie reverse-engineers the protocol during implementation. This is on the critical path for Epic 2.
 
 **Technical Notes:**
+
 - Crosstown source code location: TBD (check Docker image or GitHub repo)
 - NIP-01 reference: https://github.com/nostr-protocol/nips/blob/master/01.md
 - Focus on event types used for ILP packet delivery and action confirmations
 
 **Dependencies:**
+
 - Crosstown source code access or running Crosstown node for live testing
 
 ---
@@ -150,6 +160,7 @@ Story 2.1 implementation will be delayed as Charlie reverse-engineers the protoc
 Story 2.4 (BLS Game Action Handler) is the most complex story in Epic 2. Architecture is defined, but implementation details are unclear. This spike validates feasibility and identifies blockers before committing to Story 2.4.
 
 **Acceptance Criteria:**
+
 - [ ] Review architecture doc section on BLS identity propagation
   - [ ] Re-read `_bmad-output/planning-artifacts/architecture/7-crosstown-integration.md`
   - [ ] Identify gaps or ambiguities in architecture spec
@@ -169,6 +180,7 @@ Story 2.4 (BLS Game Action Handler) is the most complex story in Epic 2. Archite
   - [ ] Create task list for Story 2.4 implementation
 
 **Deliverables:**
+
 - `_bmad-output/implementation-artifacts/bls-handler-spike-report.md`
 - Proof-of-concept code (throwaway, not production)
 
@@ -176,11 +188,13 @@ Story 2.4 (BLS Game Action Handler) is the most complex story in Epic 2. Archite
 Story 2.4 implementation may hit unexpected blockers mid-sprint. The BLS handler is the most risky component in Epic 2 (flagged in retrospective). This spike de-risks the implementation.
 
 **Technical Notes:**
+
 - Pair programming recommended (Charlie + Elena) - AGREEMENT-3
 - Spike is timeboxed to 6 hours - stop and document findings even if not complete
 - Focus on validating architecture assumptions, NOT production implementation
 
 **Dependencies:**
+
 - Crosstown relay running locally (from Story 1.3 Docker stack)
 - SpacetimeDB SDK reducer calling API
 - ILP packet format specification
@@ -198,6 +212,7 @@ Story 2.4 implementation may hit unexpected blockers mid-sprint. The BLS handler
 127 integration tests require the full Docker stack (BitCraft server + Crosstown node + BLS handler), which adds complexity to CI/CD and local development. New contributors struggle with Docker setup (flagged in retrospective). We need clear guidelines on when to write integration tests vs. unit tests, and how to handle Docker dependencies.
 
 **Acceptance Criteria:**
+
 - [ ] Document when to write integration tests vs. unit tests
   - [ ] Integration tests: Full stack interactions, end-to-end flows, real WebSocket connections
   - [ ] Unit tests: Business logic, state management, pure functions, mocked dependencies
@@ -212,6 +227,7 @@ Story 2.4 implementation may hit unexpected blockers mid-sprint. The BLS handler
   - [ ] Document Docker setup instructions for new contributors
 
 **Deliverables:**
+
 - Update `CLAUDE.md` with integration test strategy section
 - Create `TESTING.md` guide for contributors
 
@@ -219,6 +235,7 @@ Story 2.4 implementation may hit unexpected blockers mid-sprint. The BLS handler
 Epic 2 stories will continue the ad-hoc approach to integration testing. New contributors will struggle with setup (reduces team velocity).
 
 **Technical Notes:**
+
 - Review Vitest configuration for conditional test execution
 - Document Docker Compose health check patterns
 - Align with AGREEMENT-5 from retrospective
@@ -238,6 +255,7 @@ Epic 2 stories will continue the ad-hoc approach to integration testing. New con
 Story 1.5 loaded only 40 of 148 static data tables. Remaining 108 tables must be tracked as technical debt. If Epic 2 stories need those tables, we'll hit blockers.
 
 **Acceptance Criteria:**
+
 - [ ] Create GitHub issue: "Load remaining 108 static data tables"
   - [ ] List all 148 tables from BitCraft schema
   - [ ] Identify which 40 are already loaded
@@ -251,6 +269,7 @@ Story 1.5 loaded only 40 of 148 static data tables. Remaining 108 tables must be
   - [ ] Low priority: Nice-to-have tables
 
 **Deliverables:**
+
 - GitHub issue with detailed table list and priority
 - Update `_bmad-output/implementation-artifacts/technical-debt-register.md`
 
@@ -258,6 +277,7 @@ Story 1.5 loaded only 40 of 148 static data tables. Remaining 108 tables must be
 Epic 2-6 stories may discover missing tables mid-implementation, causing delays.
 
 **Technical Notes:**
+
 - Reference `packages/client/src/spacetimedb/static-data-tables.ts` (currently 34 tables listed)
 - BitCraft schema introspection: `docker exec bitcraft-server spacetime schema list`
 
@@ -274,6 +294,7 @@ Epic 2-6 stories may discover missing tables mid-implementation, causing delays.
 Story 2.2 (Action Cost Registry & Wallet Balance) requires ILP wallet balance queries. Wallet infrastructure must exist before Story 2.2 starts.
 
 **Acceptance Criteria:**
+
 - [ ] Determine ILP wallet provider (mock vs. real)
   - [ ] Option 1: Mock wallet for development (fast, no external dependencies)
   - [ ] Option 2: Real wallet provider (e.g., Rafiki, Interledger.js)
@@ -292,6 +313,7 @@ Story 2.2 (Action Cost Registry & Wallet Balance) requires ILP wallet balance qu
   - [ ] Add to team Slack channel
 
 **Deliverables:**
+
 - ILP wallet setup documentation
 - `.env.example` updated with wallet credentials
 
@@ -299,6 +321,7 @@ Story 2.2 (Action Cost Registry & Wallet Balance) requires ILP wallet balance qu
 Story 2.2 will be blocked waiting for wallet infrastructure. Can be completed in parallel with Story 2.1.
 
 **Technical Notes:**
+
 - Lean toward mock wallet for MVP (Epic 1-6)
 - Real wallet integration can be deferred to Phase 2 (Epic 7-10)
 
@@ -315,6 +338,7 @@ Story 2.2 will be blocked waiting for wallet infrastructure. Can be completed in
 Epic 1 code reviews were thorough but ad-hoc. A checklist will improve consistency and reduce review time. Extract common review issues from Epic 1 and create reusable checklist.
 
 **Acceptance Criteria:**
+
 - [ ] Extract common review issues from Epic 1
   - [ ] H-001 (path traversal in Docker volumes)
   - [ ] H-002 (unvalidated port ranges in Docker config)
@@ -333,6 +357,7 @@ Epic 1 code reviews were thorough but ad-hoc. A checklist will improve consisten
   - [ ] Review Epic 1 retrospective security findings
 
 **Deliverables:**
+
 - `_bmad-output/implementation-artifacts/code-review-checklist.md`
 - Dana trained on checklist usage
 
@@ -340,6 +365,7 @@ Epic 1 code reviews were thorough but ad-hoc. A checklist will improve consisten
 Epic 2 code reviews will continue ad-hoc approach. Review quality may vary, and security issues may slip through.
 
 **Technical Notes:**
+
 - Align with AGREEMENT-2 (security review on every story)
 - Reference OWASP Top 10 2021: https://owasp.org/Top10/
 
@@ -358,6 +384,7 @@ Epic 2 code reviews will continue ad-hoc approach. Review quality may vary, and 
 Formalize security review as a mandatory step in every story. Epic 1 caught 3 high-severity issues in code review (H-001, H-002, H-003). This must continue in Epic 2.
 
 **Acceptance Criteria:**
+
 - [ ] Create OWASP Top 10 checklist (covered in PREP-7)
 - [ ] Add security review step to every story
   - [ ] Before marking story "done", run security review
@@ -371,6 +398,7 @@ Formalize security review as a mandatory step in every story. Epic 1 caught 3 hi
   - [ ] Secrets in code
 
 **Deliverables:**
+
 - Security review step added to story workflow
 - Team training session (1 hour)
 
@@ -378,6 +406,7 @@ Formalize security review as a mandatory step in every story. Epic 1 caught 3 hi
 Security vulnerabilities may slip into production. Epic 1 proved that security review catches critical issues.
 
 **Technical Notes:**
+
 - Aligns with AGREEMENT-2 from retrospective
 - Reference AGREEMENT-3 (pair review on unfamiliar tech)
 
@@ -397,6 +426,7 @@ Security vulnerabilities may slip into production. Epic 1 proved that security r
 Document key architecture decisions from Epic 1 for future reference. This prevents "why did we do it this way?" questions 6 months from now.
 
 **Acceptance Criteria:**
+
 - [ ] Document key decisions:
   - [ ] SpacetimeDB 2.0 SDK on 1.6.x servers (backwards compatibility decision)
   - [ ] Nostr-only identity (no OAuth, no passwords)
@@ -415,6 +445,7 @@ Document key architecture decisions from Epic 1 for future reference. This preve
   - [ ] Deciders: [List of people involved]
 
 **Deliverables:**
+
 - `_bmad-output/implementation-artifacts/adr/adr-001-spacetimedb-sdk-version.md`
 - `_bmad-output/implementation-artifacts/adr/adr-002-nostr-only-identity.md`
 - `_bmad-output/implementation-artifacts/adr/adr-003-polyglot-monorepo.md`
@@ -424,6 +455,7 @@ Document key architecture decisions from Epic 1 for future reference. This preve
 Future team members will not understand why decisions were made. Architectural drift may occur as new decisions contradict old ones.
 
 **Technical Notes:**
+
 - ADR format: https://adr.github.io/
 - Reference Epic 1 retrospective and story reports for decision context
 
@@ -529,18 +561,18 @@ Total: 24 hours (3 days at 8 hours/day)
 
 Last Updated: 2026-02-27
 
-| Task | Owner | Effort | Status | Blocker? |
-|------|-------|--------|--------|----------|
-| PREP-1 | Charlie | 8h | NOT STARTED | ✅ YES |
-| PREP-2 | Elena | 4h | NOT STARTED | ✅ YES |
-| PREP-3 | Alice | 1h | IN PROGRESS | ❌ NO |
-| PREP-4 | Charlie | 4h | NOT STARTED | ✅ YES |
-| PREP-5 | Charlie + Elena | 6h | NOT STARTED | ✅ YES |
-| PREP-6 | Alice + Jonathan | 3h | NOT STARTED | ❌ NO |
-| PREP-7 | Charlie | 2h | NOT STARTED | ❌ NO |
-| ACTION-1 | Charlie | 2h | NOT STARTED | ⚠️  RECOMMENDED |
-| ACTION-2 | Charlie + Dana | Ongoing | NOT STARTED | ❌ NO |
-| DOC-1 | Charlie | 2h | NOT STARTED | ❌ NO |
+| Task     | Owner            | Effort  | Status      | Blocker?       |
+| -------- | ---------------- | ------- | ----------- | -------------- |
+| PREP-1   | Charlie          | 8h      | NOT STARTED | ✅ YES         |
+| PREP-2   | Elena            | 4h      | NOT STARTED | ✅ YES         |
+| PREP-3   | Alice            | 1h      | IN PROGRESS | ❌ NO          |
+| PREP-4   | Charlie          | 4h      | NOT STARTED | ✅ YES         |
+| PREP-5   | Charlie + Elena  | 6h      | NOT STARTED | ✅ YES         |
+| PREP-6   | Alice + Jonathan | 3h      | NOT STARTED | ❌ NO          |
+| PREP-7   | Charlie          | 2h      | NOT STARTED | ❌ NO          |
+| ACTION-1 | Charlie          | 2h      | NOT STARTED | ⚠️ RECOMMENDED |
+| ACTION-2 | Charlie + Dana   | Ongoing | NOT STARTED | ❌ NO          |
+| DOC-1    | Charlie          | 2h      | NOT STARTED | ❌ NO          |
 
 **Total Effort (Critical Path):** 24 hours (3 days)
 **Total Effort (All Tasks):** 33 hours (4 days)

@@ -116,6 +116,7 @@ Story 2.4 defines the BLS (Backend Logic Service) handler integration contract a
 **CRITICAL SCOPE CLARIFICATION:**
 
 This story does NOT implement the BLS handler. It:
+
 1. Documents the integration contract (event format, HTTP API, error responses)
 2. Adds integration tests in Sigil SDK (marked @skip until BLS deployed)
 3. Provides comprehensive implementation specification for Crosstown team
@@ -149,31 +150,37 @@ This story does NOT implement the BLS handler. It:
 ### 1.3 Critical NFRs for Story 2.4
 
 **NFR8 - Cryptographic Verification (Nostr Signatures):**
+
 - **Requirement:** All ILP packets signed with the user's Nostr private key; unsigned or incorrectly signed packets rejected by BLS before reducer execution
 - **Story Relevance:** CRITICAL - Core security requirement, AC3 directly tests this
 - **Test Strategy:** Integration tests verify signature validation (marked @skip), contract documentation specifies secp256k1 validation requirements
 
 **NFR13 - No Action Without Valid Signature:**
+
 - **Requirement:** No game action attributed to a Nostr public key without a valid cryptographic signature from the corresponding private key
 - **Story Relevance:** CRITICAL - Identity propagation security, AC3 and AC6 validate this
 - **Test Strategy:** Contract specifies signature validation before reducer execution, integration tests verify rejection of invalid signatures
 
 **NFR27 - Zero Silent Failures:**
+
 - **Requirement:** BLS identity propagation has zero silent failures: every reducer call either succeeds with verified identity or fails with an explicit error
 - **Story Relevance:** CRITICAL - Error handling requirement, AC6 and AC7 validate this
 - **Test Strategy:** Comprehensive error code coverage (INVALID_SIGNATURE, UNKNOWN_REDUCER, REDUCER_FAILED, INVALID_CONTENT), all errors logged and returned
 
 **NFR3 - ILP Round-Trip Latency:**
+
 - **Requirement:** ILP packet round-trip completes within 2 seconds under normal load
 - **Story Relevance:** HIGH - Performance requirement, validated end-to-end in Story 2.4
 - **Test Strategy:** Performance integration test measures client.publish() → confirmation event latency (marked @skip until BLS deployed)
 
 **NFR24 - Failed ILP Packet Error Handling:**
+
 - **Requirement:** Failed ILP packets (network timeout, insufficient balance) return clear error codes and do not leave the system in an inconsistent state
 - **Story Relevance:** HIGH - Error propagation requirement, AC7 validates this
 - **Test Strategy:** Error response format documented, BLSErrorResponse interface with retryable field, integration tests verify error propagation
 
 **NFR19 - NIP-01 Compliance (Inherited from Story 2.1):**
+
 - **Requirement:** `@sigil/client` connects to any standard Nostr relay implementing NIP-01
 - **Story Relevance:** MEDIUM - Kind 30078 events must comply with NIP-01 format
 - **Test Strategy:** Contract documentation specifies NIP-01 event structure, integration tests verify event format compliance
@@ -241,6 +248,7 @@ This story does NOT implement the BLS handler. It:
 #### Performance Thresholds
 
 **NFR3 - ILP Round-Trip Latency (Full Validation)**
+
 - **Threshold:** <2 seconds from client.publish() to confirmation event received
 - **Measurement Points:**
   1. client.publish() call initiated
@@ -258,6 +266,7 @@ This story does NOT implement the BLS handler. It:
 - **Success Criteria:** Average latency <2s, p95 <3s, no timeouts
 
 **BLS Processing Time Component:**
+
 - **Threshold:** <500ms for BLS handler processing (subset of NFR3)
 - **Includes:** Signature validation, content parsing, SpacetimeDB HTTP call
 - **Test Strategy:** BLS handler unit tests (Crosstown team responsibility)
@@ -267,6 +276,7 @@ This story does NOT implement the BLS handler. It:
 #### Security Thresholds
 
 **NFR8 - Signature Validation (secp256k1)**
+
 - **Threshold:** 100% of ILP packets validated for signature correctness
 - **Algorithm:** secp256k1 Schnorr signatures (NIP-01 compliant)
 - **Validation Steps:**
@@ -281,6 +291,7 @@ This story does NOT implement the BLS handler. It:
 - **Success Criteria:** 100% signature validation, zero unsigned events processed
 
 **NFR13 - No Action Without Signature**
+
 - **Threshold:** Zero reducer calls executed without verified Nostr public key
 - **Enforcement:** BLS handler validates signature BEFORE SpacetimeDB HTTP call
 - **Test Strategy:**
@@ -291,6 +302,7 @@ This story does NOT implement the BLS handler. It:
 - **Success Criteria:** Zero false positives, 100% signature enforcement
 
 **NFR27 - Zero Silent Failures**
+
 - **Threshold:** 100% of error paths emit explicit error with error code
 - **Error Codes Required:**
   - `INVALID_SIGNATURE`: Signature validation failed
@@ -305,6 +317,7 @@ This story does NOT implement the BLS handler. It:
 - **Success Criteria:** No error path without explicit error, all errors logged
 
 **OWASP A01:2021 - Broken Access Control**
+
 - **Threshold:** Identity propagation prevents unauthorized actions
 - **Mitigation:** Nostr public key validated and propagated to SpacetimeDB reducer
 - **Test Strategy:** Integration test verifies pubkey in reducer args (first parameter)
@@ -312,6 +325,7 @@ This story does NOT implement the BLS handler. It:
 - **Success Criteria:** 100% of reducer calls include verified Nostr pubkey
 
 **OWASP A02:2021 - Cryptographic Failures**
+
 - **Threshold:** Signature validation uses industry-standard secp256k1 library
 - **Mitigation:** Recommended library (@noble/secp256k1 for Node.js)
 - **Test Strategy:** Documented in Crosstown implementation spec
@@ -319,6 +333,7 @@ This story does NOT implement the BLS handler. It:
 - **Success Criteria:** No custom crypto implementation, well-tested library used
 
 **OWASP A03:2021 - Injection**
+
 - **Threshold:** Reducer name validation prevents path traversal and injection
 - **Mitigation:** Alphanumeric-only validation for reducer names
 - **Test Strategy:** Integration test with malicious reducer names (../../../etc/passwd, etc.)
@@ -326,6 +341,7 @@ This story does NOT implement the BLS handler. It:
 - **Success Criteria:** All non-alphanumeric reducer names rejected
 
 **OWASP A04:2021 - Insecure Design**
+
 - **Threshold:** Zero silent failures (same as NFR27)
 - **Mitigation:** Explicit error codes for all failure modes
 - **Test Strategy:** Comprehensive error handling test suite
@@ -333,6 +349,7 @@ This story does NOT implement the BLS handler. It:
 - **Success Criteria:** No silent failures, all errors logged and returned
 
 **OWASP A05:2021 - Security Misconfiguration**
+
 - **Threshold:** SpacetimeDB admin token risk documented
 - **Mitigation:** Admin token used for MVP, service account migration planned for Epic 6
 - **Test Strategy:** Security review documentation (story document A05 section)
@@ -340,6 +357,7 @@ This story does NOT implement the BLS handler. It:
 - **Success Criteria:** Risk documented, mitigation plan established
 
 **OWASP A06:2021 - Vulnerable and Outdated Components**
+
 - **Threshold:** Zero high/critical vulnerabilities in dependencies
 - **Mitigation:** Latest secp256k1 library, dependency audit in CI
 - **Test Strategy:** `pnpm audit` in CI pipeline
@@ -347,6 +365,7 @@ This story does NOT implement the BLS handler. It:
 - **Success Criteria:** Zero high/critical vulnerabilities
 
 **OWASP A07:2021 - Identification and Authentication Failures**
+
 - **Threshold:** Nostr signature = authentication (stateless)
 - **Mitigation:** No password or session-based auth
 - **Test Strategy:** Contract documentation specifies signature-only auth
@@ -354,6 +373,7 @@ This story does NOT implement the BLS handler. It:
 - **Success Criteria:** No alternative auth mechanisms
 
 **OWASP A08:2021 - Software and Data Integrity Failures**
+
 - **Threshold:** Event.id validated against computed hash (prevents tampering)
 - **Mitigation:** SHA256 hash verification per NIP-01
 - **Test Strategy:** Integration test with modified event.id
@@ -361,6 +381,7 @@ This story does NOT implement the BLS handler. It:
 - **Success Criteria:** 100% event.id validation, tampered events rejected
 
 **OWASP A09:2021 - Security Logging and Monitoring Failures**
+
 - **Threshold:** All BLS events logged with event ID, pubkey, reducer, success/failure
 - **Mitigation:** Comprehensive logging requirements in contract
 - **Test Strategy:** Contract documentation specifies logging format
@@ -370,6 +391,7 @@ This story does NOT implement the BLS handler. It:
 #### Reliability Thresholds
 
 **NFR24 - Error Response Clarity**
+
 - **Threshold:** All errors include error code, human-readable message, retryable flag
 - **Error Response Format:**
   ```typescript
@@ -377,7 +399,7 @@ This story does NOT implement the BLS handler. It:
     eventId: string;
     errorCode: BLSErrorCode;
     message: string;
-    retryable: boolean;  // true for REDUCER_FAILED, false for INVALID_SIGNATURE/UNKNOWN_REDUCER/INVALID_CONTENT
+    retryable: boolean; // true for REDUCER_FAILED, false for INVALID_SIGNATURE/UNKNOWN_REDUCER/INVALID_CONTENT
   }
   ```
 - **Test Strategy:**
@@ -388,6 +410,7 @@ This story does NOT implement the BLS handler. It:
 - **Success Criteria:** 100% of errors match BLSErrorResponse interface
 
 **NFR24 - Consistent State After Failure**
+
 - **Threshold:** No partial state updates, system remains consistent
 - **Mitigation:** Atomic reducer execution (SpacetimeDB guarantees)
 - **Test Strategy:** Integration test with reducer failure, verify no side effects
@@ -397,6 +420,7 @@ This story does NOT implement the BLS handler. It:
 #### Integration Thresholds
 
 **NFR19 - NIP-01 Event Format Compliance**
+
 - **Threshold:** Kind 30078 events comply with NIP-01 canonical serialization
 - **Event Structure:**
   ```json
@@ -418,17 +442,17 @@ This story does NOT implement the BLS handler. It:
 
 ### 2.3 Threshold Summary Matrix
 
-| NFR Category   | NFR ID  | Threshold Defined | Validation Method           | Priority | Tests | Status |
-| -------------- | ------- | ----------------- | --------------------------- | -------- | ----- | ------ |
-| Performance    | NFR3    | <2s round-trip    | Performance integration     | P0       | 1     | ✅ Planned @skip |
-| Security       | NFR8    | 100% validation   | Signature integration tests | P0       | 3     | ✅ Planned @skip |
-| Security       | NFR13   | Zero unsigned     | Signature enforcement tests | P0       | 2     | ✅ Planned @skip |
-| Security       | NFR27   | Zero silent       | Comprehensive error tests   | P0       | 4     | ✅ Planned @skip |
-| Security       | OWASP   | A01-A09           | OWASP compliance tests      | P0       | 9     | ✅ Planned @skip |
-| Reliability    | NFR24   | 100% error format | Error response tests        | P0       | 3     | ✅ Planned @skip |
-| Reliability    | NFR27   | Explicit errors   | Error handling tests        | P0       | 4     | ✅ Planned @skip |
-| Integration    | NFR19   | NIP-01 compliant  | Event format tests          | P1       | 2     | ✅ Planned @skip |
-| **TOTAL**      | **6+9** | **All defined**   | **10 test suites**          | -        | **28**| **All @skip** |
+| NFR Category | NFR ID  | Threshold Defined | Validation Method           | Priority | Tests  | Status           |
+| ------------ | ------- | ----------------- | --------------------------- | -------- | ------ | ---------------- |
+| Performance  | NFR3    | <2s round-trip    | Performance integration     | P0       | 1      | ✅ Planned @skip |
+| Security     | NFR8    | 100% validation   | Signature integration tests | P0       | 3      | ✅ Planned @skip |
+| Security     | NFR13   | Zero unsigned     | Signature enforcement tests | P0       | 2      | ✅ Planned @skip |
+| Security     | NFR27   | Zero silent       | Comprehensive error tests   | P0       | 4      | ✅ Planned @skip |
+| Security     | OWASP   | A01-A09           | OWASP compliance tests      | P0       | 9      | ✅ Planned @skip |
+| Reliability  | NFR24   | 100% error format | Error response tests        | P0       | 3      | ✅ Planned @skip |
+| Reliability  | NFR27   | Explicit errors   | Error handling tests        | P0       | 4      | ✅ Planned @skip |
+| Integration  | NFR19   | NIP-01 compliant  | Event format tests          | P1       | 2      | ✅ Planned @skip |
+| **TOTAL**    | **6+9** | **All defined**   | **10 test suites**          | -        | **28** | **All @skip**    |
 
 **Note:** 28 total NFR validation tests, ALL marked @skip until Crosstown BLS handler deployed. Tests validate integration contract, not BLS implementation.
 
@@ -492,107 +516,107 @@ Story 2.4 is unique: it defines an integration contract and validation tests, bu
 
 **NFRs Validated:** NFR3, NFR8, NFR13, NFR19, NFR24, NFR27, OWASP A01-A09
 
-| Test ID | Test Name | NFR Coverage | AC Mapping | Skip Status |
-|---------|-----------|--------------|------------|-------------|
-| **AC1: BLS Receives Kind 30078 Events** |
-| IT1.1 | `BLS receives kind 30078 event via ILP routing` | NFR19 | AC1 | @skip |
-| IT1.2 | `BLS validates ILP payment (existing BLS logic)` | - | AC1 | @skip |
-| IT1.3 | `BLS forwards event to game action handler` | NFR27 | AC1 | @skip |
-| **AC2: Event Content Parsing** |
-| IT2.1 | `BLS parses event.content JSON (reducer, args, fee)` | NFR24 | AC2 | @skip |
-| IT2.2 | `BLS validates required fields (reducer: string, args: any)` | NFR27 | AC2 | @skip |
-| IT2.3 | `BLS returns INVALID_CONTENT for malformed JSON` | NFR27 | AC2 | @skip |
-| IT2.4 | `BLS returns INVALID_CONTENT for missing reducer field` | NFR27 | AC2 | @skip |
-| IT2.5 | `BLS returns INVALID_CONTENT for missing args field` | NFR27 | AC2 | @skip |
-| **AC3: Signature Validation (NFR8, NFR13 - CRITICAL)** |
-| IT3.1 | `BLS validates event.id is SHA256 of canonical serialization` | NFR8, A08 | AC3 | @skip |
-| IT3.2 | `BLS verifies event.sig via secp256k1 using event.pubkey` | NFR8, A02 | AC3 | @skip |
-| IT3.3 | `BLS accepts valid signature (signed via client.identity.sign())` | NFR8 | AC3 | @skip |
-| IT3.4 | `BLS rejects invalid signature with INVALID_SIGNATURE error` | NFR13 | AC3 | @skip |
-| IT3.5 | `BLS rejects missing signature field with INVALID_SIGNATURE error` | NFR13 | AC3 | @skip |
-| IT3.6 | `BLS rejects tampered event.id with INVALID_SIGNATURE error` | NFR8, A08 | AC3 | @skip |
-| IT3.7 | `BLS signature validation occurs BEFORE reducer execution` | NFR13 | AC3 | @skip |
-| IT3.8 | `BLS returns explicit error identifying signature failure` | NFR27 | AC3 | @skip |
+| Test ID                                                            | Test Name                                                               | NFR Coverage | AC Mapping | Skip Status |
+| ------------------------------------------------------------------ | ----------------------------------------------------------------------- | ------------ | ---------- | ----------- |
+| **AC1: BLS Receives Kind 30078 Events**                            |
+| IT1.1                                                              | `BLS receives kind 30078 event via ILP routing`                         | NFR19        | AC1        | @skip       |
+| IT1.2                                                              | `BLS validates ILP payment (existing BLS logic)`                        | -            | AC1        | @skip       |
+| IT1.3                                                              | `BLS forwards event to game action handler`                             | NFR27        | AC1        | @skip       |
+| **AC2: Event Content Parsing**                                     |
+| IT2.1                                                              | `BLS parses event.content JSON (reducer, args, fee)`                    | NFR24        | AC2        | @skip       |
+| IT2.2                                                              | `BLS validates required fields (reducer: string, args: any)`            | NFR27        | AC2        | @skip       |
+| IT2.3                                                              | `BLS returns INVALID_CONTENT for malformed JSON`                        | NFR27        | AC2        | @skip       |
+| IT2.4                                                              | `BLS returns INVALID_CONTENT for missing reducer field`                 | NFR27        | AC2        | @skip       |
+| IT2.5                                                              | `BLS returns INVALID_CONTENT for missing args field`                    | NFR27        | AC2        | @skip       |
+| **AC3: Signature Validation (NFR8, NFR13 - CRITICAL)**             |
+| IT3.1                                                              | `BLS validates event.id is SHA256 of canonical serialization`           | NFR8, A08    | AC3        | @skip       |
+| IT3.2                                                              | `BLS verifies event.sig via secp256k1 using event.pubkey`               | NFR8, A02    | AC3        | @skip       |
+| IT3.3                                                              | `BLS accepts valid signature (signed via client.identity.sign())`       | NFR8         | AC3        | @skip       |
+| IT3.4                                                              | `BLS rejects invalid signature with INVALID_SIGNATURE error`            | NFR13        | AC3        | @skip       |
+| IT3.5                                                              | `BLS rejects missing signature field with INVALID_SIGNATURE error`      | NFR13        | AC3        | @skip       |
+| IT3.6                                                              | `BLS rejects tampered event.id with INVALID_SIGNATURE error`            | NFR8, A08    | AC3        | @skip       |
+| IT3.7                                                              | `BLS signature validation occurs BEFORE reducer execution`              | NFR13        | AC3        | @skip       |
+| IT3.8                                                              | `BLS returns explicit error identifying signature failure`              | NFR27        | AC3        | @skip       |
 | **AC4: SpacetimeDB Reducer Invocation with Identity (NFR13, A01)** |
-| IT4.1 | `BLS extracts Nostr pubkey from event.pubkey (hex string)` | NFR13 | AC4 | @skip |
-| IT4.2 | `BLS calls SpacetimeDB HTTP POST /database/bitcraft/call/{reducer}` | - | AC4 | @skip |
-| IT4.3 | `BLS prepends pubkey to reducer args: [nostr_pubkey, ...args]` | NFR13, A01 | AC4 | @skip |
-| IT4.4 | `BLS passes modified args array as JSON request body` | - | AC4 | @skip |
-| IT4.5 | `BLS receives 200 OK from SpacetimeDB on success` | - | AC4 | @skip |
-| IT4.6 | `SpacetimeDB reducer receives identity as first parameter` | NFR13 | AC4 | @skip |
-| IT4.7 | `End-to-end: client.publish() → BLS → reducer execution` | NFR3 | AC4 | @skip |
-| **AC5: Unknown Reducer Handling** |
-| IT5.1 | `BLS returns UNKNOWN_REDUCER for non-existent reducer` | NFR27 | AC5 | @skip |
-| IT5.2 | `BLS identifies reducer name in UNKNOWN_REDUCER error` | NFR24 | AC5 | @skip |
-| IT5.3 | `BLS does not call SpacetimeDB for unknown reducer` | NFR27 | AC5 | @skip |
-| IT5.4 | `BLS error response propagates to sender` | NFR24 | AC5 | @skip |
-| **AC6: Zero Silent Failures (NFR27 - CRITICAL)** |
-| IT6.1 | `Signature failure → explicit INVALID_SIGNATURE error` | NFR27 | AC6 | @skip |
-| IT6.2 | `Content parse failure → explicit INVALID_CONTENT error` | NFR27 | AC6 | @skip |
-| IT6.3 | `Unknown reducer → explicit UNKNOWN_REDUCER error` | NFR27 | AC6 | @skip |
-| IT6.4 | `Reducer execution failure → explicit REDUCER_FAILED error` | NFR27 | AC6 | @skip |
-| IT6.5 | `All errors logged with event ID, pubkey, reducer, reason` | NFR27, A09 | AC6 | @skip |
-| IT6.6 | `All errors include error code in response` | NFR24 | AC6 | @skip |
-| IT6.7 | `All errors include human-readable message` | NFR24 | AC6 | @skip |
-| IT6.8 | `No error path results in silent failure` | NFR27 | AC6 | @skip |
-| **AC7: Error Response Propagation (NFR24)** |
-| IT7.1 | `BLS error response includes event ID` | NFR24 | AC7 | @skip |
-| IT7.2 | `BLS error response includes error code` | NFR24 | AC7 | @skip |
-| IT7.3 | `BLS error response includes human-readable message` | NFR24 | AC7 | @skip |
-| IT7.4 | `BLS error response includes retryable flag` | NFR24 | AC7 | @skip |
-| IT7.5 | `Crosstown relay forwards error to sender via OK message` | NFR24 | AC7 | @skip |
-| IT7.6 | `OK message format: ["OK", event_id, false, error_message]` | NFR19 | AC7 | @skip |
-| IT7.7 | `INVALID_SIGNATURE errors are non-retryable` | NFR24 | AC7 | @skip |
-| IT7.8 | `UNKNOWN_REDUCER errors are non-retryable` | NFR24 | AC7 | @skip |
-| IT7.9 | `REDUCER_FAILED errors are retryable` | NFR24 | AC7 | @skip |
-| IT7.10 | `INVALID_CONTENT errors are non-retryable` | NFR24 | AC7 | @skip |
-| **Performance: NFR3 Round-Trip Latency** |
-| PERF1 | `Full ILP round-trip completes within 2 seconds` | NFR3 | - | @skip |
-| PERF2 | `Log warning if round-trip exceeds 1 second` | NFR3 | - | @skip |
-| PERF3 | `Measure BLS processing time (informational)` | NFR3 | - | @skip |
-| **Security: OWASP Compliance** |
-| SEC1 | `A01: Identity propagation prevents unauthorized actions` | A01 | AC4 | @skip |
-| SEC2 | `A02: secp256k1 library used (no custom crypto)` | A02 | AC3 | @skip |
-| SEC3 | `A03: Reducer name validation (alphanumeric only)` | A03 | AC5 | @skip |
-| SEC4 | `A03: Injection prevention (no path traversal)` | A03 | AC5 | @skip |
-| SEC5 | `A04: Zero silent failures (explicit errors)` | A04 | AC6 | @skip |
-| SEC6 | `A05: Admin token risk documented` | A05 | - | @skip |
-| SEC7 | `A06: No vulnerabilities in dependencies` | A06 | - | @skip |
-| SEC8 | `A07: Signature-only auth (stateless)` | A07 | AC3 | @skip |
-| SEC9 | `A08: Event.id tamper detection` | A08 | AC3 | @skip |
-| SEC10 | `A09: All events logged (no sensitive data)` | A09 | AC6 | @skip |
-| **Error Handling Comprehensive Coverage** |
-| ERR1 | `Invalid signature → INVALID_SIGNATURE` | NFR27 | AC3 | @skip |
-| ERR2 | `Malformed JSON → INVALID_CONTENT` | NFR27 | AC2 | @skip |
-| ERR3 | `Missing reducer field → INVALID_CONTENT` | NFR27 | AC2 | @skip |
-| ERR4 | `Missing args field → INVALID_CONTENT` | NFR27 | AC2 | @skip |
-| ERR5 | `Unknown reducer → UNKNOWN_REDUCER` | NFR27 | AC5 | @skip |
-| ERR6 | `SpacetimeDB 404 → UNKNOWN_REDUCER` | NFR27 | AC5 | @skip |
-| ERR7 | `SpacetimeDB 400 → REDUCER_FAILED` | NFR27 | AC6 | @skip |
-| ERR8 | `SpacetimeDB 500 → REDUCER_FAILED` | NFR27 | AC6 | @skip |
-| ERR9 | `SpacetimeDB timeout → REDUCER_FAILED` | NFR27 | AC6 | @skip |
-| ERR10 | `Error response structure validation` | NFR24 | AC7 | @skip |
-| **Identity Propagation Validation** |
-| ID1 | `Pubkey prepended to args array` | NFR13 | AC4 | @skip |
-| ID2 | `Pubkey format validation (hex string)` | NFR13 | AC4 | @skip |
-| ID3 | `Reducer receives identity as first parameter` | NFR13 | AC4 | @skip |
-| ID4 | `No reducer execution without verified pubkey` | NFR13 | AC3 | @skip |
-| **Contract Compliance** |
-| CON1 | `BLS processes NIP-01 compliant kind 30078 events` | NFR19 | AC1 | @skip |
-| CON2 | `BLS validates all required event fields` | NFR19 | AC1 | @skip |
-| CON3 | `BLS HTTP API contract compliance (POST /database/{db}/call/{reducer})` | - | AC4 | @skip |
-| CON4 | `BLS HTTP headers: Authorization, Content-Type` | - | AC4 | @skip |
-| CON5 | `BLS HTTP body: JSON array of reducer args` | - | AC4 | @skip |
-| CON6 | `BLS error response format compliance` | NFR24 | AC7 | @skip |
-| CON7 | `BLS success response format compliance` | - | AC4 | @skip |
-| **State Consistency** |
-| STATE1 | `No zombie subscriptions after error` | NFR24 | AC6 | @skip |
-| STATE2 | `No partial state updates after reducer failure` | NFR24 | AC6 | @skip |
-| STATE3 | `Clean error recovery (system remains operational)` | NFR24 | AC7 | @skip |
-| **Integration with Previous Stories** |
-| INT1 | `Story 2.3 ILP packet → Story 2.4 BLS handler` | NFR3 | AC1 | @skip |
-| INT2 | `Story 2.1 relay → Story 2.4 BLS handler` | NFR19 | AC1 | @skip |
-| INT3 | `Story 1.2 identity → Story 2.4 signature validation` | NFR8 | AC3 | @skip |
+| IT4.1                                                              | `BLS extracts Nostr pubkey from event.pubkey (hex string)`              | NFR13        | AC4        | @skip       |
+| IT4.2                                                              | `BLS calls SpacetimeDB HTTP POST /database/bitcraft/call/{reducer}`     | -            | AC4        | @skip       |
+| IT4.3                                                              | `BLS prepends pubkey to reducer args: [nostr_pubkey, ...args]`          | NFR13, A01   | AC4        | @skip       |
+| IT4.4                                                              | `BLS passes modified args array as JSON request body`                   | -            | AC4        | @skip       |
+| IT4.5                                                              | `BLS receives 200 OK from SpacetimeDB on success`                       | -            | AC4        | @skip       |
+| IT4.6                                                              | `SpacetimeDB reducer receives identity as first parameter`              | NFR13        | AC4        | @skip       |
+| IT4.7                                                              | `End-to-end: client.publish() → BLS → reducer execution`                | NFR3         | AC4        | @skip       |
+| **AC5: Unknown Reducer Handling**                                  |
+| IT5.1                                                              | `BLS returns UNKNOWN_REDUCER for non-existent reducer`                  | NFR27        | AC5        | @skip       |
+| IT5.2                                                              | `BLS identifies reducer name in UNKNOWN_REDUCER error`                  | NFR24        | AC5        | @skip       |
+| IT5.3                                                              | `BLS does not call SpacetimeDB for unknown reducer`                     | NFR27        | AC5        | @skip       |
+| IT5.4                                                              | `BLS error response propagates to sender`                               | NFR24        | AC5        | @skip       |
+| **AC6: Zero Silent Failures (NFR27 - CRITICAL)**                   |
+| IT6.1                                                              | `Signature failure → explicit INVALID_SIGNATURE error`                  | NFR27        | AC6        | @skip       |
+| IT6.2                                                              | `Content parse failure → explicit INVALID_CONTENT error`                | NFR27        | AC6        | @skip       |
+| IT6.3                                                              | `Unknown reducer → explicit UNKNOWN_REDUCER error`                      | NFR27        | AC6        | @skip       |
+| IT6.4                                                              | `Reducer execution failure → explicit REDUCER_FAILED error`             | NFR27        | AC6        | @skip       |
+| IT6.5                                                              | `All errors logged with event ID, pubkey, reducer, reason`              | NFR27, A09   | AC6        | @skip       |
+| IT6.6                                                              | `All errors include error code in response`                             | NFR24        | AC6        | @skip       |
+| IT6.7                                                              | `All errors include human-readable message`                             | NFR24        | AC6        | @skip       |
+| IT6.8                                                              | `No error path results in silent failure`                               | NFR27        | AC6        | @skip       |
+| **AC7: Error Response Propagation (NFR24)**                        |
+| IT7.1                                                              | `BLS error response includes event ID`                                  | NFR24        | AC7        | @skip       |
+| IT7.2                                                              | `BLS error response includes error code`                                | NFR24        | AC7        | @skip       |
+| IT7.3                                                              | `BLS error response includes human-readable message`                    | NFR24        | AC7        | @skip       |
+| IT7.4                                                              | `BLS error response includes retryable flag`                            | NFR24        | AC7        | @skip       |
+| IT7.5                                                              | `Crosstown relay forwards error to sender via OK message`               | NFR24        | AC7        | @skip       |
+| IT7.6                                                              | `OK message format: ["OK", event_id, false, error_message]`             | NFR19        | AC7        | @skip       |
+| IT7.7                                                              | `INVALID_SIGNATURE errors are non-retryable`                            | NFR24        | AC7        | @skip       |
+| IT7.8                                                              | `UNKNOWN_REDUCER errors are non-retryable`                              | NFR24        | AC7        | @skip       |
+| IT7.9                                                              | `REDUCER_FAILED errors are retryable`                                   | NFR24        | AC7        | @skip       |
+| IT7.10                                                             | `INVALID_CONTENT errors are non-retryable`                              | NFR24        | AC7        | @skip       |
+| **Performance: NFR3 Round-Trip Latency**                           |
+| PERF1                                                              | `Full ILP round-trip completes within 2 seconds`                        | NFR3         | -          | @skip       |
+| PERF2                                                              | `Log warning if round-trip exceeds 1 second`                            | NFR3         | -          | @skip       |
+| PERF3                                                              | `Measure BLS processing time (informational)`                           | NFR3         | -          | @skip       |
+| **Security: OWASP Compliance**                                     |
+| SEC1                                                               | `A01: Identity propagation prevents unauthorized actions`               | A01          | AC4        | @skip       |
+| SEC2                                                               | `A02: secp256k1 library used (no custom crypto)`                        | A02          | AC3        | @skip       |
+| SEC3                                                               | `A03: Reducer name validation (alphanumeric only)`                      | A03          | AC5        | @skip       |
+| SEC4                                                               | `A03: Injection prevention (no path traversal)`                         | A03          | AC5        | @skip       |
+| SEC5                                                               | `A04: Zero silent failures (explicit errors)`                           | A04          | AC6        | @skip       |
+| SEC6                                                               | `A05: Admin token risk documented`                                      | A05          | -          | @skip       |
+| SEC7                                                               | `A06: No vulnerabilities in dependencies`                               | A06          | -          | @skip       |
+| SEC8                                                               | `A07: Signature-only auth (stateless)`                                  | A07          | AC3        | @skip       |
+| SEC9                                                               | `A08: Event.id tamper detection`                                        | A08          | AC3        | @skip       |
+| SEC10                                                              | `A09: All events logged (no sensitive data)`                            | A09          | AC6        | @skip       |
+| **Error Handling Comprehensive Coverage**                          |
+| ERR1                                                               | `Invalid signature → INVALID_SIGNATURE`                                 | NFR27        | AC3        | @skip       |
+| ERR2                                                               | `Malformed JSON → INVALID_CONTENT`                                      | NFR27        | AC2        | @skip       |
+| ERR3                                                               | `Missing reducer field → INVALID_CONTENT`                               | NFR27        | AC2        | @skip       |
+| ERR4                                                               | `Missing args field → INVALID_CONTENT`                                  | NFR27        | AC2        | @skip       |
+| ERR5                                                               | `Unknown reducer → UNKNOWN_REDUCER`                                     | NFR27        | AC5        | @skip       |
+| ERR6                                                               | `SpacetimeDB 404 → UNKNOWN_REDUCER`                                     | NFR27        | AC5        | @skip       |
+| ERR7                                                               | `SpacetimeDB 400 → REDUCER_FAILED`                                      | NFR27        | AC6        | @skip       |
+| ERR8                                                               | `SpacetimeDB 500 → REDUCER_FAILED`                                      | NFR27        | AC6        | @skip       |
+| ERR9                                                               | `SpacetimeDB timeout → REDUCER_FAILED`                                  | NFR27        | AC6        | @skip       |
+| ERR10                                                              | `Error response structure validation`                                   | NFR24        | AC7        | @skip       |
+| **Identity Propagation Validation**                                |
+| ID1                                                                | `Pubkey prepended to args array`                                        | NFR13        | AC4        | @skip       |
+| ID2                                                                | `Pubkey format validation (hex string)`                                 | NFR13        | AC4        | @skip       |
+| ID3                                                                | `Reducer receives identity as first parameter`                          | NFR13        | AC4        | @skip       |
+| ID4                                                                | `No reducer execution without verified pubkey`                          | NFR13        | AC3        | @skip       |
+| **Contract Compliance**                                            |
+| CON1                                                               | `BLS processes NIP-01 compliant kind 30078 events`                      | NFR19        | AC1        | @skip       |
+| CON2                                                               | `BLS validates all required event fields`                               | NFR19        | AC1        | @skip       |
+| CON3                                                               | `BLS HTTP API contract compliance (POST /database/{db}/call/{reducer})` | -            | AC4        | @skip       |
+| CON4                                                               | `BLS HTTP headers: Authorization, Content-Type`                         | -            | AC4        | @skip       |
+| CON5                                                               | `BLS HTTP body: JSON array of reducer args`                             | -            | AC4        | @skip       |
+| CON6                                                               | `BLS error response format compliance`                                  | NFR24        | AC7        | @skip       |
+| CON7                                                               | `BLS success response format compliance`                                | -            | AC4        | @skip       |
+| **State Consistency**                                              |
+| STATE1                                                             | `No zombie subscriptions after error`                                   | NFR24        | AC6        | @skip       |
+| STATE2                                                             | `No partial state updates after reducer failure`                        | NFR24        | AC6        | @skip       |
+| STATE3                                                             | `Clean error recovery (system remains operational)`                     | NFR24        | AC7        | @skip       |
+| **Integration with Previous Stories**                              |
+| INT1                                                               | `Story 2.3 ILP packet → Story 2.4 BLS handler`                          | NFR3         | AC1        | @skip       |
+| INT2                                                               | `Story 2.1 relay → Story 2.4 BLS handler`                               | NFR19        | AC1        | @skip       |
+| INT3                                                               | `Story 1.2 identity → Story 2.4 signature validation`                   | NFR8         | AC3        | @skip       |
 
 **Total Integration Tests:** 97 tests (ALL marked @skip until BLS handler deployed)
 
@@ -602,9 +626,9 @@ Story 2.4 is unique: it defines an integration contract and validation tests, bu
 
 **Purpose:** Quick BLS handler readiness validation for CI/CD pipelines
 
-| Test ID | Test Name | NFR Coverage | Validation |
-|---------|-----------|--------------|------------|
-| SMOKE1 | `BLS handler is running and functional` | NFR3, NFR8, NFR13, NFR27 | @skip |
+| Test ID | Test Name                               | NFR Coverage             | Validation |
+| ------- | --------------------------------------- | ------------------------ | ---------- |
+| SMOKE1  | `BLS handler is running and functional` | NFR3, NFR8, NFR13, NFR27 | @skip      |
 
 **Smoke Test Flow:**
 
@@ -618,7 +642,9 @@ async function runSmokeTest() {
   }
 
   // 2. Create SigilClient, load identity
-  const client = new SigilClient({ /* config */ });
+  const client = new SigilClient({
+    /* config */
+  });
   await client.loadIdentity('~/.sigil/identity');
   await client.connect();
 
@@ -650,6 +676,7 @@ async function runSmokeTest() {
 ```
 
 **Success Criteria:**
+
 - Exit code 0 (pass) or 1 (fail)
 - Clear pass/fail message
 - Latency measurement logged
@@ -659,37 +686,38 @@ async function runSmokeTest() {
 
 **AC → NFR → Test Mapping:**
 
-| AC | AC Description | NFR Coverage | Integration Tests | Smoke Test | Total |
-|----|----------------|--------------|-------------------|------------|-------|
-| AC1 | BLS receives kind 30078 | NFR19, NFR27 | 3 | 1 | 4 |
-| AC2 | Event content parsing | NFR24, NFR27 | 5 | 0 | 5 |
-| AC3 | Signature validation | NFR8, NFR13, NFR27 | 8 | 1 | 9 |
-| AC4 | Reducer invocation | NFR13, A01 | 7 | 1 | 8 |
-| AC5 | Unknown reducer | NFR27 | 4 | 0 | 4 |
-| AC6 | Zero silent failures | NFR27, A09 | 8 | 1 | 9 |
-| AC7 | Error propagation | NFR24 | 10 | 0 | 10 |
-| PERF | Performance | NFR3 | 3 | 1 | 4 |
-| SEC | Security | OWASP A01-A09 | 10 | 0 | 10 |
-| ERR | Error handling | NFR24, NFR27 | 10 | 0 | 10 |
-| ID | Identity propagation | NFR13 | 4 | 0 | 4 |
-| CON | Contract compliance | NFR19, NFR24 | 7 | 0 | 7 |
-| STATE | State consistency | NFR24 | 3 | 0 | 3 |
-| INT | Story integration | NFR3, NFR8, NFR19 | 3 | 0 | 3 |
-| **TOTAL** | **14 categories** | **6 NFRs + 9 OWASP** | **97** | **1** | **98** |
+| AC        | AC Description          | NFR Coverage         | Integration Tests | Smoke Test | Total  |
+| --------- | ----------------------- | -------------------- | ----------------- | ---------- | ------ |
+| AC1       | BLS receives kind 30078 | NFR19, NFR27         | 3                 | 1          | 4      |
+| AC2       | Event content parsing   | NFR24, NFR27         | 5                 | 0          | 5      |
+| AC3       | Signature validation    | NFR8, NFR13, NFR27   | 8                 | 1          | 9      |
+| AC4       | Reducer invocation      | NFR13, A01           | 7                 | 1          | 8      |
+| AC5       | Unknown reducer         | NFR27                | 4                 | 0          | 4      |
+| AC6       | Zero silent failures    | NFR27, A09           | 8                 | 1          | 9      |
+| AC7       | Error propagation       | NFR24                | 10                | 0          | 10     |
+| PERF      | Performance             | NFR3                 | 3                 | 1          | 4      |
+| SEC       | Security                | OWASP A01-A09        | 10                | 0          | 10     |
+| ERR       | Error handling          | NFR24, NFR27         | 10                | 0          | 10     |
+| ID        | Identity propagation    | NFR13                | 4                 | 0          | 4      |
+| CON       | Contract compliance     | NFR19, NFR24         | 7                 | 0          | 7      |
+| STATE     | State consistency       | NFR24                | 3                 | 0          | 3      |
+| INT       | Story integration       | NFR3, NFR8, NFR19    | 3                 | 0          | 3      |
+| **TOTAL** | **14 categories**       | **6 NFRs + 9 OWASP** | **97**            | **1**      | **98** |
 
 **NFR → Test Mapping:**
 
-| NFR ID | NFR Description | P0/P1 | Integration Tests | Smoke Test | Total | Coverage |
-|--------|-----------------|-------|-------------------|------------|-------|----------|
-| NFR3 | ILP latency <2s | P0 | 4 | 1 | 5 | 100% ✅ (all @skip) |
-| NFR8 | Signature validation | P0 | 8 | 1 | 9 | 100% ✅ (all @skip) |
-| NFR13 | No unsigned actions | P0 | 12 | 1 | 13 | 100% ✅ (all @skip) |
-| NFR27 | Zero silent failures | P0 | 26 | 1 | 27 | 100% ✅ (all @skip) |
-| NFR24 | Error boundaries | P0 | 20 | 0 | 20 | 100% ✅ (all @skip) |
-| NFR19 | NIP-01 compliance | P1 | 10 | 0 | 10 | 100% ✅ (all @skip) |
-| OWASP | A01-A09 security | P0 | 10 | 0 | 10 | 100% ✅ (all @skip) |
+| NFR ID | NFR Description      | P0/P1 | Integration Tests | Smoke Test | Total | Coverage            |
+| ------ | -------------------- | ----- | ----------------- | ---------- | ----- | ------------------- |
+| NFR3   | ILP latency <2s      | P0    | 4                 | 1          | 5     | 100% ✅ (all @skip) |
+| NFR8   | Signature validation | P0    | 8                 | 1          | 9     | 100% ✅ (all @skip) |
+| NFR13  | No unsigned actions  | P0    | 12                | 1          | 13    | 100% ✅ (all @skip) |
+| NFR27  | Zero silent failures | P0    | 26                | 1          | 27    | 100% ✅ (all @skip) |
+| NFR24  | Error boundaries     | P0    | 20                | 0          | 20    | 100% ✅ (all @skip) |
+| NFR19  | NIP-01 compliance    | P1    | 10                | 0          | 10    | 100% ✅ (all @skip) |
+| OWASP  | A01-A09 security     | P0    | 10                | 0          | 10    | 100% ✅ (all @skip) |
 
 **Summary:**
+
 - **Total Tests:** 98 (97 integration + 1 smoke test)
 - **P0 NFR Coverage:** 100% (all critical NFRs validated)
 - **P1 NFR Coverage:** 100% (all secondary NFRs validated)
@@ -705,6 +733,7 @@ async function runSmokeTest() {
 **NFR3 - ILP Round-Trip Latency (Full End-to-End)**
 
 **Scope:** Story 2.4 validates complete ILP packet execution:
+
 1. client.publish() → ILP packet creation (Story 2.3)
 2. Event published to relay (Story 2.1)
 3. BLS receives and validates event
@@ -717,7 +746,9 @@ async function runSmokeTest() {
 // packages/client/src/integration-tests/bls-handler.integration.test.ts
 describe.skipIf(!BLS_HANDLER_DEPLOYED)('PERF: NFR3 ILP Round-Trip Latency', () => {
   it('should complete full ILP round-trip within 2 seconds', async () => {
-    const client = new SigilClient({ /* config */ });
+    const client = new SigilClient({
+      /* config */
+    });
     await client.loadIdentity('~/.sigil/identity');
     await client.connect();
 
@@ -746,7 +777,9 @@ describe.skipIf(!BLS_HANDLER_DEPLOYED)('PERF: NFR3 ILP Round-Trip Latency', () =
 
     // Performance degradation warning
     if (latency > 1000) {
-      console.warn(`⚠️  PERFORMANCE DEGRADATION: ${latency}ms (threshold: 2000ms, target: <1000ms)`);
+      console.warn(
+        `⚠️  PERFORMANCE DEGRADATION: ${latency}ms (threshold: 2000ms, target: <1000ms)`
+      );
     }
 
     // Log metrics
@@ -762,7 +795,6 @@ describe.skipIf(!BLS_HANDLER_DEPLOYED)('PERF: NFR3 ILP Round-Trip Latency', () =
     // This test requires BLS handler instrumentation
     // BLS handler should log processing time
     // Test parses logs to extract BLS processing time (informational)
-
     // TODO: Implement after BLS handler deployment
     // Expected: BLS processing time <500ms (95th percentile)
   });
@@ -770,6 +802,7 @@ describe.skipIf(!BLS_HANDLER_DEPLOYED)('PERF: NFR3 ILP Round-Trip Latency', () =
 ```
 
 **Success Criteria:**
+
 - Average latency <2s (NFR3 hard requirement)
 - p95 latency <3s (test stability buffer)
 - Warning logged if >1s (performance degradation indicator)
@@ -784,7 +817,9 @@ describe.skipIf(!BLS_HANDLER_DEPLOYED)('PERF: NFR3 ILP Round-Trip Latency', () =
 ```typescript
 describe.skipIf(!BLS_HANDLER_DEPLOYED)('SEC: NFR8 Signature Validation', () => {
   it('should accept valid signature (signed via client.identity.sign())', async () => {
-    const client = new SigilClient({ /* config */ });
+    const client = new SigilClient({
+      /* config */
+    });
     await client.loadIdentity('~/.sigil/identity');
     await client.connect();
 
@@ -798,7 +833,9 @@ describe.skipIf(!BLS_HANDLER_DEPLOYED)('SEC: NFR8 Signature Validation', () => {
   });
 
   it('should reject invalid signature with INVALID_SIGNATURE error', async () => {
-    const client = new SigilClient({ /* config */ });
+    const client = new SigilClient({
+      /* config */
+    });
     await client.loadIdentity('~/.sigil/identity');
     await client.connect();
 
@@ -834,7 +871,9 @@ describe.skipIf(!BLS_HANDLER_DEPLOYED)('SEC: NFR8 Signature Validation', () => {
   });
 
   it('should reject tampered event.id with INVALID_SIGNATURE error', async () => {
-    const client = new SigilClient({ /* config */ });
+    const client = new SigilClient({
+      /* config */
+    });
     await client.loadIdentity('~/.sigil/identity');
     await client.connect();
 
@@ -883,7 +922,9 @@ describe.skipIf(!BLS_HANDLER_DEPLOYED)('SEC: NFR8 Signature Validation', () => {
 ```typescript
 describe.skipIf(!BLS_HANDLER_DEPLOYED)('SEC: NFR13 No Unsigned Actions', () => {
   it('should reject event without signature field', async () => {
-    const client = new SigilClient({ /* config */ });
+    const client = new SigilClient({
+      /* config */
+    });
     await client.loadIdentity('~/.sigil/identity');
     await client.connect();
 
@@ -919,12 +960,10 @@ describe.skipIf(!BLS_HANDLER_DEPLOYED)('SEC: NFR13 No Unsigned Actions', () => {
   it('should validate signature BEFORE SpacetimeDB reducer call', async () => {
     // This test requires BLS handler logging/instrumentation
     // Verify signature validation occurs before SpacetimeDB HTTP call
-
     // Strategy:
     // 1. Publish event with invalid signature
     // 2. Check BLS handler logs for signature validation failure
     // 3. Verify no SpacetimeDB HTTP call made (check SpacetimeDB logs)
-
     // TODO: Implement after BLS handler deployment
     // Expected: BLS logs "Signature validation failed", no SpacetimeDB HTTP request
   });
@@ -978,7 +1017,9 @@ describe.skipIf(!BLS_HANDLER_DEPLOYED)('SEC: NFR27 Zero Silent Failures', () => 
 
   errorScenarios.forEach(({ scenario, trigger, expectedCode }) => {
     it(`should emit explicit ${expectedCode} error for: ${scenario}`, async () => {
-      const client = new SigilClient({ /* config */ });
+      const client = new SigilClient({
+        /* config */
+      });
       await client.loadIdentity('~/.sigil/identity');
       await client.connect();
 
@@ -1008,7 +1049,6 @@ describe.skipIf(!BLS_HANDLER_DEPLOYED)('SEC: NFR27 Zero Silent Failures', () => 
   it('should log all errors with event ID, pubkey, reducer, reason', async () => {
     // This test requires BLS handler logging validation
     // Verify BLS handler logs include all required fields
-
     // Expected log format:
     // {
     //   level: 'error',
@@ -1019,7 +1059,6 @@ describe.skipIf(!BLS_HANDLER_DEPLOYED)('SEC: NFR27 Zero Silent Failures', () => 
     //   message: '<human-readable error>',
     //   timestamp: '<ISO 8601>',
     // }
-
     // TODO: Implement after BLS handler deployment
   });
 });
@@ -1034,7 +1073,9 @@ describe.skipIf(!BLS_HANDLER_DEPLOYED)('SEC: NFR27 Zero Silent Failures', () => 
 ```typescript
 describe.skipIf(!BLS_HANDLER_DEPLOYED)('REL: NFR24 Error Response Format', () => {
   it('should return structured BLSErrorResponse for all errors', async () => {
-    const client = new SigilClient({ /* config */ });
+    const client = new SigilClient({
+      /* config */
+    });
     await client.loadIdentity('~/.sigil/identity');
     await client.connect();
 
@@ -1058,7 +1099,9 @@ describe.skipIf(!BLS_HANDLER_DEPLOYED)('REL: NFR24 Error Response Format', () =>
     });
 
     // Validate error code enum
-    expect(['INVALID_SIGNATURE', 'UNKNOWN_REDUCER', 'REDUCER_FAILED', 'INVALID_CONTENT']).toContain(error.errorCode);
+    expect(['INVALID_SIGNATURE', 'UNKNOWN_REDUCER', 'REDUCER_FAILED', 'INVALID_CONTENT']).toContain(
+      error.errorCode
+    );
   });
 
   it('should set retryable flag correctly for each error type', async () => {
@@ -1086,7 +1129,9 @@ describe.skipIf(!BLS_HANDLER_DEPLOYED)('REL: NFR24 Error Response Format', () =>
 ```typescript
 describe.skipIf(!BLS_HANDLER_DEPLOYED)('INT: NFR19 NIP-01 Compliance', () => {
   it('should process NIP-01 compliant kind 30078 events', async () => {
-    const client = new SigilClient({ /* config */ });
+    const client = new SigilClient({
+      /* config */
+    });
     await client.loadIdentity('~/.sigil/identity');
     await client.connect();
 
@@ -1128,29 +1173,34 @@ describe.skipIf(!BLS_HANDLER_DEPLOYED)('INT: NFR19 NIP-01 Compliance', () => {
 ### 5.1 Test Quality Criteria
 
 **Deterministic (5/5 ✅)**
+
 - Integration tests use Docker health checks (wait for BLS handler ready)
 - No hard-coded delays (use polling with timeouts)
 - Test fixtures are stable (kind 30078 events, Nostr keypairs reused from Story 1.2)
 - All tests marked @skip until external dependency complete
 
 **Isolated (4/5 ⚠️)**
+
 - Each test creates fresh `SigilClient` instance
 - Docker stack reset between test suites (documented in PREP-2)
 - BLS handler state reset required (external dependency - Crosstown team)
 - **Concern:** BLS handler state isolation depends on Crosstown implementation
 
 **Explicit (5/5 ✅)**
+
 - All assertions use `expect()` with clear messages
 - No silent failures (all error paths verified per NFR27)
 - Test names follow pattern: "should <expected behavior>"
 - AC references documented in test comments
 
 **Focused (4/5 ⚠️)**
+
 - Most tests validate single behavior
 - Some integration tests validate multiple concerns (e.g., signature validation + identity propagation)
 - **Action:** Complex tests can be split if needed during implementation
 
 **Fast (3/5 ⚠️)**
+
 - Integration tests: 1-5s per test (real BLS handler + SpacetimeDB)
 - **Concern:** 97 integration tests × 3s average = ~5 minutes total
 - **Mitigation:** Tests marked @skip (run only when BLS handler deployed), CI optimization needed
@@ -1160,30 +1210,35 @@ describe.skipIf(!BLS_HANDLER_DEPLOYED)('INT: NFR19 NIP-01 Compliance', () => {
 ### 5.2 Test Maintenance Considerations
 
 **Skip Strategy:**
+
 - All integration tests use `describe.skipIf(!BLS_HANDLER_DEPLOYED)`
 - Environment variable `BLS_HANDLER_DEPLOYED=true` enables tests
 - Smoke test checks flag before running (graceful skip)
 - CI/CD pipeline sets flag only when BLS handler ready
 
 **Test Data Management:**
+
 - Kind 30078 test events reused from Story 2.3 test utilities
 - Nostr keypairs reused from Story 1.2 test utilities
 - Error response fixtures in `packages/client/src/bls/test-utils/error-fixtures.ts`
 - SpacetimeDB reducer stubs (may be needed for testing)
 
 **Docker Stack Dependencies:**
+
 - Integration tests require full stack: BitCraft + Crosstown + BLS handler
 - Health check before test execution: `curl -f http://localhost:4041/health` (Crosstown)
 - BLS handler health check: TBD (Crosstown team defines endpoint)
 - Graceful skip if Docker unavailable (conditional test execution)
 
 **CI/CD Integration:**
+
 - Unit tests run on every PR (N/A for Story 2.4, no unit tests)
 - Integration tests run ONLY when BLS_HANDLER_DEPLOYED=true
 - Smoke test runs as quick validation before full integration suite
 - Performance tests run nightly (baseline tracking)
 
 **External Dependency Coordination:**
+
 - Crosstown team implements BLS handler per specification
 - Sigil SDK team validates contract via integration tests
 - Handoff: Crosstown team signals BLS handler readiness
@@ -1333,14 +1388,14 @@ describe.skipIf(!BLS_HANDLER_DEPLOYED)('INT: NFR19 NIP-01 Compliance', () => {
 
 ### 6.3 Risk Mitigation Summary
 
-| Risk ID | Risk Category | Residual Risk | Test Mitigation Status | Additional Actions Required |
-|---------|---------------|---------------|------------------------|----------------------------|
-| R1 | External Dependency | MEDIUM ⚠️ | Spec provided, tests defined | Crosstown team coordination required |
-| R2 | Signature Validation | LOW ✅ | Comprehensive tests | Pair programming (AGREEMENT-3) |
-| R3 | Identity Propagation | MEDIUM ⚠️ | Tests defined | SpacetimeDB reducer logging |
-| R4 | Silent Failures | LOW ✅ | 26 dedicated tests | Code review on error handling |
-| R5 | Performance | MEDIUM ⚠️ | Baseline tests | Optimization if threshold exceeded |
-| R6 | Reducer Modification | MEDIUM ⚠️ | Integration tests | Test-first reducer changes |
+| Risk ID | Risk Category        | Residual Risk | Test Mitigation Status       | Additional Actions Required          |
+| ------- | -------------------- | ------------- | ---------------------------- | ------------------------------------ |
+| R1      | External Dependency  | MEDIUM ⚠️     | Spec provided, tests defined | Crosstown team coordination required |
+| R2      | Signature Validation | LOW ✅        | Comprehensive tests          | Pair programming (AGREEMENT-3)       |
+| R3      | Identity Propagation | MEDIUM ⚠️     | Tests defined                | SpacetimeDB reducer logging          |
+| R4      | Silent Failures      | LOW ✅        | 26 dedicated tests           | Code review on error handling        |
+| R5      | Performance          | MEDIUM ⚠️     | Baseline tests               | Optimization if threshold exceeded   |
+| R6      | Reducer Modification | MEDIUM ⚠️     | Integration tests            | Test-first reducer changes           |
 
 **Overall Risk Assessment:** MEDIUM ⚠️ (acceptable with mitigations and external coordination)
 
@@ -1438,31 +1493,31 @@ describe.skipIf(!BLS_HANDLER_DEPLOYED)('INT: NFR19 NIP-01 Compliance', () => {
 
 **Comprehensive NFR → Story → Test Mapping:**
 
-| NFR ID | NFR Description | Story 2.4 Coverage | Test Suites | Test Count | Status |
-|--------|-----------------|--------------------| ------------|------------|--------|
-| NFR3 | ILP round-trip <2s | Full end-to-end | Performance integration | 5 | ✅ Planned @skip |
-| NFR8 | Signature validation | Full coverage | Signature validation integration | 9 | ✅ Planned @skip |
-| NFR13 | No unsigned actions | Full coverage | Identity propagation integration | 13 | ✅ Planned @skip |
-| NFR27 | Zero silent failures | Full coverage | Comprehensive error tests | 27 | ✅ Planned @skip |
-| NFR24 | Error boundaries | Full coverage | Error response integration | 20 | ✅ Planned @skip |
-| NFR19 | NIP-01 compliance | Event format only | Contract compliance tests | 10 | ✅ Planned @skip |
+| NFR ID | NFR Description      | Story 2.4 Coverage | Test Suites                      | Test Count | Status           |
+| ------ | -------------------- | ------------------ | -------------------------------- | ---------- | ---------------- |
+| NFR3   | ILP round-trip <2s   | Full end-to-end    | Performance integration          | 5          | ✅ Planned @skip |
+| NFR8   | Signature validation | Full coverage      | Signature validation integration | 9          | ✅ Planned @skip |
+| NFR13  | No unsigned actions  | Full coverage      | Identity propagation integration | 13         | ✅ Planned @skip |
+| NFR27  | Zero silent failures | Full coverage      | Comprehensive error tests        | 27         | ✅ Planned @skip |
+| NFR24  | Error boundaries     | Full coverage      | Error response integration       | 20         | ✅ Planned @skip |
+| NFR19  | NIP-01 compliance    | Event format only  | Contract compliance tests        | 10         | ✅ Planned @skip |
 
 ### Appendix B: OWASP Top 10 Coverage
 
 **OWASP 2021 → Test Mapping:**
 
-| OWASP ID | Category | Relevance | Test Coverage | Test Count | Status |
-|----------|----------|-----------|---------------|------------|--------|
-| A01:2021 | Broken Access Control | CRITICAL | Identity propagation validation | 2 | ✅ Planned @skip |
-| A02:2021 | Cryptographic Failures | CRITICAL | Signature library validation | 1 | ✅ Planned @skip |
-| A03:2021 | Injection | HIGH | Reducer name validation | 2 | ✅ Planned @skip |
-| A04:2021 | Insecure Design | MEDIUM | Zero silent failures | 1 | ✅ Planned @skip |
-| A05:2021 | Security Misconfiguration | MEDIUM | Admin token risk documentation | 1 | ✅ Documented |
-| A06:2021 | Vulnerable Components | HIGH | Dependency audit | 1 | ✅ Planned |
-| A07:2021 | Auth Failures | MEDIUM | Signature-only auth | 1 | ✅ Planned @skip |
-| A08:2021 | Data Integrity | HIGH | Event.id tamper detection | 1 | ✅ Planned @skip |
-| A09:2021 | Logging Failures | MEDIUM | Comprehensive logging | 1 | ✅ Planned @skip |
-| A10:2021 | SSRF | N/A | Not applicable (no user-controlled URLs) | 0 | N/A |
+| OWASP ID | Category                  | Relevance | Test Coverage                            | Test Count | Status           |
+| -------- | ------------------------- | --------- | ---------------------------------------- | ---------- | ---------------- |
+| A01:2021 | Broken Access Control     | CRITICAL  | Identity propagation validation          | 2          | ✅ Planned @skip |
+| A02:2021 | Cryptographic Failures    | CRITICAL  | Signature library validation             | 1          | ✅ Planned @skip |
+| A03:2021 | Injection                 | HIGH      | Reducer name validation                  | 2          | ✅ Planned @skip |
+| A04:2021 | Insecure Design           | MEDIUM    | Zero silent failures                     | 1          | ✅ Planned @skip |
+| A05:2021 | Security Misconfiguration | MEDIUM    | Admin token risk documentation           | 1          | ✅ Documented    |
+| A06:2021 | Vulnerable Components     | HIGH      | Dependency audit                         | 1          | ✅ Planned       |
+| A07:2021 | Auth Failures             | MEDIUM    | Signature-only auth                      | 1          | ✅ Planned @skip |
+| A08:2021 | Data Integrity            | HIGH      | Event.id tamper detection                | 1          | ✅ Planned @skip |
+| A09:2021 | Logging Failures          | MEDIUM    | Comprehensive logging                    | 1          | ✅ Planned @skip |
+| A10:2021 | SSRF                      | N/A       | Not applicable (no user-controlled URLs) | 0          | N/A              |
 
 **Total OWASP Coverage:** 9/10 applicable (A10 N/A for BLS scope)
 
@@ -1602,26 +1657,31 @@ docker compose -f docker/docker-compose.yml down
 ### Appendix F: References
 
 **Story Documents:**
+
 - Story 2.4: `_bmad-output/implementation-artifacts/2-4-bls-game-action-handler.md`
 - Crosstown BLS Spec: `docs/crosstown-bls-implementation-spec.md` (800+ lines)
 - BLS Handler Contract: `docs/bls-handler-contract.md` (to be created)
 
 **NFR Requirements:**
+
 - NFR Document: `_bmad-output/planning-artifacts/prd/non-functional-requirements.md`
 - NFR Traceability: `_bmad-output/implementation-artifacts/nfr-traceability-matrix.md`
 
 **External Standards:**
+
 - NIP-01: https://github.com/nostr-protocol/nips/blob/master/01.md
 - OWASP Top 10 2021: https://owasp.org/Top10/
 - secp256k1 (Bitcoin curves): https://en.bitcoin.it/wiki/Secp256k1
 
 **Epic 2 Integration:**
+
 - Story 2.1: Crosstown relay connection (kind 30078 routing)
 - Story 2.2: Action cost registry (fee calculation)
 - Story 2.3: ILP packet construction (event creation)
 - Story 2.5: Identity propagation verification (next story)
 
 **Architecture:**
+
 - PREP-5: BLS handler architecture spike (informs implementation spec)
 - BLOCKER-1 Resolution: Accept modifying BitCraft reducers (DEBT-4)
 
@@ -1634,6 +1694,7 @@ docker compose -f docker/docker-compose.yml down
 **Duration:** ~90 minutes (wall-clock time from start to completion)
 
 **What changed:**
+
 - **Created:** `/Users/jonathangreen/Documents/BitCraftPublic/_bmad-output/test-artifacts/nfr-testarch-story-2-4.md` (comprehensive NFR test architecture document, 1450+ lines)
 
 **Key decisions:**
@@ -1704,6 +1765,7 @@ docker compose -f docker/docker-compose.yml down
 **Recommendation:** Story 2.4 has comprehensive NFR test coverage through integration contract documentation and validation tests. All critical NFRs (NFR8, NFR13, NFR27) validated. Security review complete per AGREEMENT-2. Integration tests marked @skip until Crosstown BLS handler implemented per specification. Story ready for implementation with clear handoff to Crosstown team.
 
 **Next Steps:**
+
 1. Crosstown team implements BLS handler per specification (ACTION-1 - CRITICAL)
 2. Dev team modifies BitCraft reducers to accept identity parameter (ACTION-2 - HIGH)
 3. DevOps integrates BLS handler into Docker stack (ACTION-3 - HIGH)

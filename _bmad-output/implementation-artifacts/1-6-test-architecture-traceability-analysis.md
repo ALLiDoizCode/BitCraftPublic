@@ -11,12 +11,14 @@
 **Overall Coverage:** ✅ **COMPLETE** - All 5 acceptance criteria fully covered with comprehensive automated tests.
 
 **Test Results:**
+
 - Total Tests: 32
 - Passing: 32 (100%)
 - Failing: 0
 - Test Duration: 31.42 seconds
 
 **Acceptance Criteria Coverage:**
+
 - AC1 (Connection loss detection): ✅ 4 tests
 - AC2 (Exponential backoff): ✅ 4 tests
 - AC3 (Successful reconnection): ✅ 5 tests
@@ -25,6 +27,7 @@
 - Additional edge cases: ✅ 11 tests
 
 **Key Findings:**
+
 - ✅ All acceptance criteria have explicit test coverage
 - ✅ NFR23 (10-second reconnection) validated in tests
 - ✅ NFR10 (30-second backoff cap) validated in tests
@@ -36,6 +39,7 @@
 ### AC1: Connection Loss Detection and Reconnection Initiation
 
 **Acceptance Criteria:**
+
 > **Given** an active SpacetimeDB connection with subscriptions
 > **When** the WebSocket connection is lost unexpectedly (not manual disconnect)
 > **Then** the system emits a `connectionChange` event with status `disconnected` and includes the disconnect reason
@@ -43,28 +47,32 @@
 
 **Test Coverage:** ✅ **4 tests**
 
-| Test Name | Line Range | Status | Coverage |
-|-----------|-----------|--------|----------|
-| should detect unexpected connection loss and emit disconnected event | 40-62 | ✅ Pass | Verifies disconnect event emission with status and reason |
-| should include disconnect reason in event payload | 64-86 | ✅ Pass | Validates disconnect reason extraction from error |
-| should NOT trigger reconnection on manual disconnect | 88-110 | ✅ Pass | Confirms manual disconnect is handled correctly |
-| should start reconnection within 1 second of disconnect | 112-138 | ✅ Pass | Validates 1-second timing requirement |
+| Test Name                                                            | Line Range | Status  | Coverage                                                  |
+| -------------------------------------------------------------------- | ---------- | ------- | --------------------------------------------------------- |
+| should detect unexpected connection loss and emit disconnected event | 40-62      | ✅ Pass | Verifies disconnect event emission with status and reason |
+| should include disconnect reason in event payload                    | 64-86      | ✅ Pass | Validates disconnect reason extraction from error         |
+| should NOT trigger reconnection on manual disconnect                 | 88-110     | ✅ Pass | Confirms manual disconnect is handled correctly           |
+| should start reconnection within 1 second of disconnect              | 112-138    | ✅ Pass | Validates 1-second timing requirement                     |
 
 **Traceability Analysis:**
 
 ✅ **Requirement: Detect unexpected disconnect**
+
 - Test: Lines 51-55 simulate unexpected disconnect via event emission
 - Verification: Lines 59-61 assert disconnected status
 
 ✅ **Requirement: Emit connectionChange event with reason**
+
 - Test: Lines 75-79 simulate disconnect with specific error
 - Verification: Lines 83-85 assert reason is included in event
 
 ✅ **Requirement: Skip reconnection on manual disconnect**
+
 - Test: Line 99 sets manual disconnect flag
 - Verification: Lines 108-109 confirm no reconnecting events
 
 ✅ **Requirement: Begin reconnection within 1 second**
+
 - Test: Lines 123-127 track timing from disconnect
 - Verification: Lines 135-137 assert timing bounds (1000-1500ms)
 
@@ -75,6 +83,7 @@
 ### AC2: Exponential Backoff with Cap
 
 **Acceptance Criteria:**
+
 > **Given** reconnection attempts are in progress
 > **When** the backoff interval increases after each failed attempt
 > **Then** it follows the sequence: 1s, 2s, 4s, 8s, 16s, 30s (capped at 30 seconds per NFR10)
@@ -83,30 +92,34 @@
 
 **Test Coverage:** ✅ **4 tests**
 
-| Test Name | Line Range | Status | Coverage |
-|-----------|-----------|--------|----------|
-| should calculate exponential backoff correctly (1s, 2s, 4s, 8s, 16s, 30s) | 142-174 | ✅ Pass | Validates backoff sequence with jitter tolerance |
-| should apply jitter (±10%) to backoff delays | 176-194 | ✅ Pass | Confirms jitter variance prevents thundering herd |
-| should cap backoff delay at 30 seconds (NFR10) | 196-205 | ✅ Pass | Validates 30s cap on attempt 100 |
-| should emit reconnecting status before each attempt with attempt number | 207-236 | ✅ Pass | Verifies status events and attempt tracking |
+| Test Name                                                                 | Line Range | Status  | Coverage                                          |
+| ------------------------------------------------------------------------- | ---------- | ------- | ------------------------------------------------- |
+| should calculate exponential backoff correctly (1s, 2s, 4s, 8s, 16s, 30s) | 142-174    | ✅ Pass | Validates backoff sequence with jitter tolerance  |
+| should apply jitter (±10%) to backoff delays                              | 176-194    | ✅ Pass | Confirms jitter variance prevents thundering herd |
+| should cap backoff delay at 30 seconds (NFR10)                            | 196-205    | ✅ Pass | Validates 30s cap on attempt 100                  |
+| should emit reconnecting status before each attempt with attempt number   | 207-236    | ✅ Pass | Verifies status events and attempt tracking       |
 
 **Traceability Analysis:**
 
 ✅ **Requirement: Exponential backoff sequence (1s, 2s, 4s, 8s, 16s, 30s)**
+
 - Test: Lines 148-156 calculate backoff for attempts 0-6
 - Verification: Lines 160-173 assert each delay within jitter tolerance
-- Formula verified: 1000 * (2^n) capped at 30000, ±10% jitter
+- Formula verified: 1000 \* (2^n) capped at 30000, ±10% jitter
 
 ✅ **Requirement: Jitter ±10% applied**
+
 - Test: Line 183 generates 100 samples of same attempt
 - Verification: Lines 186-189 assert all within 900-1100ms
 - Variance check: Lines 192-193 verify >10 unique values
 
 ✅ **Requirement: 30-second cap (NFR10)**
+
 - Test: Line 203 calculates delay for attempt 100
 - Verification: Line 204 asserts ≤ 33000ms (30000 + 10% jitter)
 
 ✅ **Requirement: Emit reconnecting status before each attempt**
+
 - Test: Lines 219-224 simulate failed connection attempts
 - Verification: Lines 229-235 assert reconnecting events with attempt numbers
 
@@ -117,6 +130,7 @@
 ### AC3: Successful Reconnection and Subscription Recovery
 
 **Acceptance Criteria:**
+
 > **Given** the system is reconnecting
 > **When** a reconnection attempt succeeds
 > **Then** the connection is re-established and all subscriptions are restored within 10 seconds total (NFR23)
@@ -126,33 +140,38 @@
 
 **Test Coverage:** ✅ **5 tests**
 
-| Test Name | Line Range | Status | Coverage |
-|-----------|-----------|--------|----------|
-| should successfully reconnect and emit connected status | 240-265 | ✅ Pass | Validates connected event emission |
-| should restore all subscriptions with original filters after reconnection | 267-304 | ✅ Pass | Confirms subscription restoration with filters |
-| should emit subscriptionsRecovered event with metadata | 306-336 | ✅ Pass | Verifies recovery event with stats |
-| should emit subscriptionsRecovered with correct timing | 338-368 | ✅ Pass | Validates timing metadata |
-| should complete reconnection + subscription recovery within 10 seconds (NFR23) | 370-401 | ✅ Pass | NFR23 compliance test |
+| Test Name                                                                      | Line Range | Status  | Coverage                                       |
+| ------------------------------------------------------------------------------ | ---------- | ------- | ---------------------------------------------- |
+| should successfully reconnect and emit connected status                        | 240-265    | ✅ Pass | Validates connected event emission             |
+| should restore all subscriptions with original filters after reconnection      | 267-304    | ✅ Pass | Confirms subscription restoration with filters |
+| should emit subscriptionsRecovered event with metadata                         | 306-336    | ✅ Pass | Verifies recovery event with stats             |
+| should emit subscriptionsRecovered with correct timing                         | 338-368    | ✅ Pass | Validates timing metadata                      |
+| should complete reconnection + subscription recovery within 10 seconds (NFR23) | 370-401    | ✅ Pass | NFR23 compliance test                          |
 
 **Traceability Analysis:**
 
 ✅ **Requirement: Re-establish connection**
+
 - Test: Lines 258-259 simulate successful reconnection
 - Verification: Lines 263-264 assert connected status
 
 ✅ **Requirement: Restore subscriptions with original filters**
+
 - Test: Lines 273-280 setup subscriptions with filters
 - Verification: Lines 298-303 assert correct tableName and query
 
 ✅ **Requirement: Emit connected status**
+
 - Test: Line 259 emits connected state
 - Verification: Lines 263-264 find and assert connected event
 
 ✅ **Requirement: Emit subscriptionsRecovered event**
+
 - Test: Lines 327-328 simulate reconnection with subscriptions
 - Verification: Lines 331-335 assert recovery metadata (total, successful, failed, timing)
 
 ✅ **Requirement: Complete within 10 seconds (NFR23)**
+
 - Test: Lines 375-396 setup 10 subscriptions and track timing
 - Verification: Line 399 asserts total time < 10000ms
 
@@ -163,6 +182,7 @@
 ### AC4: State Snapshot Recovery
 
 **Acceptance Criteria:**
+
 > **Given** subscriptions are recovered after reconnection
 > **When** the initial state snapshot is received for each subscription
 > **Then** the client state is merged with the current database state (update, not replace)
@@ -171,23 +191,26 @@
 
 **Test Coverage:** ✅ **3 tests**
 
-| Test Name | Line Range | Status | Coverage |
-|-----------|-----------|--------|----------|
-| should capture subscription metadata before disconnect | 404-435 | ✅ Pass | Validates metadata capture and restoration |
-| should emit subscriptionRestore events during recovery | 437-468 | ✅ Pass | Confirms restore events for all subscriptions |
-| should preserve static data cache across reconnection | 470-493 | ✅ Pass | Verifies no static data reload |
+| Test Name                                              | Line Range | Status  | Coverage                                      |
+| ------------------------------------------------------ | ---------- | ------- | --------------------------------------------- |
+| should capture subscription metadata before disconnect | 404-435    | ✅ Pass | Validates metadata capture and restoration    |
+| should emit subscriptionRestore events during recovery | 437-468    | ✅ Pass | Confirms restore events for all subscriptions |
+| should preserve static data cache across reconnection  | 470-493    | ✅ Pass | Verifies no static data reload                |
 
 **Traceability Analysis:**
 
 ✅ **Requirement: Capture subscription metadata**
+
 - Test: Lines 410-411 setup subscriptions with filters
 - Verification: Lines 430-434 assert metadata captured (tableName, query)
 
 ✅ **Requirement: Emit subscriptionRestore events**
+
 - Test: Lines 443-445 setup 3 subscriptions
 - Verification: Lines 464-467 assert all 3 restored with correct names
 
 ✅ **Requirement: Static data cache persists (Story 1.5 integration)**
+
 - Test: Lines 475-489 track staticDataLoad events across reconnection
 - Verification: Line 492 asserts reload count = 0
 
@@ -200,6 +223,7 @@
 ### AC5: Reconnection Failure Handling
 
 **Acceptance Criteria:**
+
 > **Given** a persistent connection failure (server down)
 > **When** reconnection attempts exhaust the configured retry limit (default: 10 attempts)
 > **Then** the system emits a `connectionChange` event with status `failed`
@@ -208,33 +232,38 @@
 
 **Test Coverage:** ✅ **5 tests**
 
-| Test Name | Line Range | Status | Coverage |
-|-----------|-----------|--------|----------|
-| should stop reconnection after retry limit exhausted | 497-525 | ✅ Pass | Validates retry limit enforcement |
-| should emit failed status with comprehensive error details | 527-554 | ✅ Pass | Confirms error details in failed event |
-| should include total attempts in error details | 556-585 | ✅ Pass | Validates attempt count in error message |
-| should allow manual retry via retryConnection() after failure | 587-621 | ✅ Pass | Verifies manual retry functionality |
-| should reset attempt counter on manual retry | 623-644 | ✅ Pass | Confirms counter reset for retry |
+| Test Name                                                     | Line Range | Status  | Coverage                                 |
+| ------------------------------------------------------------- | ---------- | ------- | ---------------------------------------- |
+| should stop reconnection after retry limit exhausted          | 497-525    | ✅ Pass | Validates retry limit enforcement        |
+| should emit failed status with comprehensive error details    | 527-554    | ✅ Pass | Confirms error details in failed event   |
+| should include total attempts in error details                | 556-585    | ✅ Pass | Validates attempt count in error message |
+| should allow manual retry via retryConnection() after failure | 587-621    | ✅ Pass | Verifies manual retry functionality      |
+| should reset attempt counter on manual retry                  | 623-644    | ✅ Pass | Confirms counter reset for retry         |
 
 **Traceability Analysis:**
 
 ✅ **Requirement: Stop after retry limit exhausted**
+
 - Test: Lines 498-515 simulate 3 failed attempts
 - Verification: Lines 520-524 assert ≤3 reconnecting events and failed status
 
 ✅ **Requirement: Emit failed status with error details**
+
 - Test: Lines 534, 541-544 simulate persistent failures
 - Verification: Lines 549-553 assert failed status, error message, and error object
 
 ✅ **Requirement: Include total attempts in error**
+
 - Test: Lines 563, 570-573 fail after 3 attempts
 - Verification: Lines 579-584 extract and assert "after 3 attempts" in message
 
 ✅ **Requirement: Manual retry via retryConnection()**
+
 - Test: Lines 602-615 simulate failure then successful retry
 - Verification: Lines 619-620 assert connected status after retry
 
 ✅ **Requirement: Reset attempt counter on retry**
+
 - Test: Lines 636-640 fail first cycle, then retry
 - Verification: Line 643 asserts attemptCount ≤ 2 (reset)
 
@@ -246,33 +275,36 @@
 
 **Test Coverage:** ✅ **11 tests** (lines 647-960)
 
-| Test Name | Line Range | Focus Area |
-|-----------|-----------|------------|
-| should cancel reconnection and clean up timers via cancelReconnection() | 648-685 | Cleanup and cancellation |
-| should track reconnection metrics correctly | 687-710 | Metrics tracking |
-| should handle multiple successive reconnections | 712-742 | Successive reconnections |
-| should handle zero subscriptions gracefully | 744-769 | Edge case: empty subscriptions |
-| should emit warning when reconnection exceeds 10 seconds (NFR23) | 771-794 | NFR23 violation monitoring |
-| should prevent concurrent reconnection attempts | 796-832 | Race condition prevention |
-| should dispose and clean up resources | 834-853 | Resource cleanup |
-| should handle connection timeout during reconnection attempt | 855-882 | Timeout handling |
-| should accept custom configuration options | 884-905 | Configuration validation |
-| should handle missing event handlers gracefully | 907-928 | Robustness without handlers |
-| should handle rapid state changes without race conditions | 930-959 | Rapid state transitions |
+| Test Name                                                               | Line Range | Focus Area                     |
+| ----------------------------------------------------------------------- | ---------- | ------------------------------ |
+| should cancel reconnection and clean up timers via cancelReconnection() | 648-685    | Cleanup and cancellation       |
+| should track reconnection metrics correctly                             | 687-710    | Metrics tracking               |
+| should handle multiple successive reconnections                         | 712-742    | Successive reconnections       |
+| should handle zero subscriptions gracefully                             | 744-769    | Edge case: empty subscriptions |
+| should emit warning when reconnection exceeds 10 seconds (NFR23)        | 771-794    | NFR23 violation monitoring     |
+| should prevent concurrent reconnection attempts                         | 796-832    | Race condition prevention      |
+| should dispose and clean up resources                                   | 834-853    | Resource cleanup               |
+| should handle connection timeout during reconnection attempt            | 855-882    | Timeout handling               |
+| should accept custom configuration options                              | 884-905    | Configuration validation       |
+| should handle missing event handlers gracefully                         | 907-928    | Robustness without handlers    |
+| should handle rapid state changes without race conditions               | 930-959    | Rapid state transitions        |
 
 **Coverage Analysis:**
 
 ✅ **Cleanup and Resource Management** (3 tests)
+
 - cancelReconnection() cleanup verification
 - dispose() resource cleanup
 - No memory leaks confirmed
 
 ✅ **Metrics and Monitoring** (3 tests)
+
 - Metrics tracking validated
 - NFR23 violation detection
 - Multiple reconnection tracking
 
 ✅ **Edge Cases** (5 tests)
+
 - Zero subscriptions handled
 - Concurrent attempts prevented
 - Timeout handling verified
@@ -286,6 +318,7 @@
 ### NFR23: Connection re-establishment completes within 10 seconds
 
 **Tests:**
+
 1. **Line 370-401:** Direct NFR23 compliance test
    - Setup: 10 subscriptions
    - Measurement: Total time from disconnect to subscriptionsRecovered
@@ -302,6 +335,7 @@
 ### NFR10: Automatic reconnection with exponential backoff (max 30s)
 
 **Tests:**
+
 1. **Line 142-174:** Backoff sequence validation
    - Validates formula: 1s, 2s, 4s, 8s, 16s, 30s (capped)
    - Status: ✅ Pass
@@ -320,6 +354,7 @@
 ### Test Structure Quality: ✅ **EXCELLENT**
 
 **Strengths:**
+
 - Clear describe blocks organized by acceptance criteria
 - Descriptive test names that map to requirements
 - Proper setup/teardown with beforeEach/afterEach
@@ -327,6 +362,7 @@
 - Comprehensive assertions with timing validations
 
 **Test Organization:**
+
 ```
 ReconnectionManager - Unit Tests
 ├── AC1: Connection loss detection (4 tests)
@@ -340,12 +376,14 @@ ReconnectionManager - Unit Tests
 ### Mock Quality: ✅ **HIGH FIDELITY**
 
 **Mock Connection:**
+
 - Uses real EventEmitter (lines 23-32)
 - Realistic event emission patterns
 - Proper async behavior with vi.fn().mockResolvedValue()
 - Subscription tracking with Map
 
 **Strengths:**
+
 - No oversimplification
 - Event-driven architecture matches real SpacetimeDB SDK
 - Allows for complex state transitions
@@ -353,12 +391,14 @@ ReconnectionManager - Unit Tests
 ### Timing Validation: ✅ **RIGOROUS**
 
 **Timing Tests:**
+
 - 1-second reconnection start delay (AC1)
 - Exponential backoff delays with jitter (AC2)
 - 10-second total recovery (NFR23)
 - Recovery timing metadata (AC3)
 
 **Approach:**
+
 - Uses Date.now() for wall-clock measurements
 - Appropriate tolerances for jitter (±10%)
 - Realistic wait times with setTimeout
@@ -366,6 +406,7 @@ ReconnectionManager - Unit Tests
 ### Edge Case Coverage: ✅ **COMPREHENSIVE**
 
 **Categories Covered:**
+
 1. Resource cleanup (cancel, dispose)
 2. Concurrent attempts (race conditions)
 3. Timeout handling (connection hangs)
@@ -381,6 +422,7 @@ ReconnectionManager - Unit Tests
 **Status:** ✅ **NONE** - All acceptance criteria have comprehensive test coverage.
 
 **Analysis:**
+
 - All 5 acceptance criteria (AC1-AC5) have explicit tests
 - All sub-requirements within each AC are verified
 - NFR23 and NFR10 compliance confirmed
@@ -395,6 +437,7 @@ ReconnectionManager - Unit Tests
 **Status:** ⚠️ **EXISTS BUT REQUIRES DOCKER STACK**
 
 **Notes:**
+
 - Integration tests exist for live server validation
 - Require Docker stack from Story 1.3 running
 - Unit tests provide comprehensive coverage of all acceptance criteria
@@ -439,6 +482,7 @@ All acceptance criteria have comprehensive automated test coverage.
 **Overall Assessment:** ✅ **EXCELLENT** - Complete coverage with zero gaps
 
 **Test Quality Metrics:**
+
 - Tests Written: 32
 - Tests Passing: 32 (100%)
 - Acceptance Criteria Covered: 5/5 (100%)
@@ -447,6 +491,7 @@ All acceptance criteria have comprehensive automated test coverage.
 - Test Duration: 31.42s (acceptable)
 
 **Key Achievements:**
+
 1. ✅ Every acceptance criterion has explicit test coverage
 2. ✅ All NFRs validated with automated tests
 3. ✅ Edge cases comprehensively covered
@@ -493,6 +538,7 @@ Test Files  1 passed (1)
 ```
 
 **Test Environment:**
+
 - Framework: Vitest v4.0.18
 - Runtime: Node.js
 - Working Directory: `/Users/jonathangreen/Documents/BitCraftPublic/packages/client`
