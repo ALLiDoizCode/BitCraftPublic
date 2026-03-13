@@ -48,7 +48,10 @@ describe.skipIf(!runIntegrationTests || !blsHandlerDeployed)(
     /**
      * Helper function to publish a game action event
      */
-    async function publishAction(action: { reducer: string; args: unknown[] }): Promise<NostrEvent> {
+    async function publishAction(action: {
+      reducer: string;
+      args: unknown[];
+    }): Promise<NostrEvent> {
       const content = JSON.stringify(action);
       const pubkeyHex = bytesToHex(keypair.publicKey);
 

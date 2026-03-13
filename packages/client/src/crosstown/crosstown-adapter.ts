@@ -92,9 +92,8 @@ export class CrosstownAdapter {
     // Derive public key from secretKey
     // getPublicKey from nostr-tools v2+ returns a hex string
     const pubkeyResult = getPublicKey(secretKey);
-    this.pubkey = typeof pubkeyResult === 'string'
-      ? pubkeyResult
-      : bytesToHex(new Uint8Array(pubkeyResult));
+    this.pubkey =
+      typeof pubkeyResult === 'string' ? pubkeyResult : bytesToHex(new Uint8Array(pubkeyResult));
 
     // Determine BTP endpoint: config > env > default
     const btpEndpoint =
@@ -167,8 +166,7 @@ export class CrosstownAdapter {
       );
     }
 
-    const isProduction =
-      typeof process !== 'undefined' && process.env.NODE_ENV === 'production';
+    const isProduction = typeof process !== 'undefined' && process.env.NODE_ENV === 'production';
 
     // Production: require https:// protocol
     if (isProduction && url.protocol !== 'https:') {
@@ -184,7 +182,12 @@ export class CrosstownAdapter {
       const hostname = url.hostname.toLowerCase();
 
       // Block localhost and loopback addresses (including 0.0.0.0 which binds all interfaces)
-      if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1' || hostname === '0.0.0.0') {
+      if (
+        hostname === 'localhost' ||
+        hostname === '127.0.0.1' ||
+        hostname === '::1' ||
+        hostname === '0.0.0.0'
+      ) {
         throw new SigilError(
           'Crosstown connector URL cannot use localhost in production',
           'INVALID_CONFIG',
@@ -227,11 +230,7 @@ export class CrosstownAdapter {
     try {
       url = new URL(endpoint);
     } catch {
-      throw new SigilError(
-        `Invalid BTP endpoint URL: ${endpoint}`,
-        'INVALID_CONFIG',
-        'crosstown'
-      );
+      throw new SigilError(`Invalid BTP endpoint URL: ${endpoint}`, 'INVALID_CONFIG', 'crosstown');
     }
 
     // Only allow WebSocket protocols (insecure for dev, secure for production)
@@ -245,8 +244,7 @@ export class CrosstownAdapter {
       );
     }
 
-    const isProduction =
-      typeof process !== 'undefined' && process.env.NODE_ENV === 'production';
+    const isProduction = typeof process !== 'undefined' && process.env.NODE_ENV === 'production';
 
     // Production: require wss:// protocol
     if (isProduction && url.protocol !== 'wss:') {
@@ -439,11 +437,7 @@ export class CrosstownAdapter {
           );
 
         default:
-          return new SigilError(
-            `Crosstown error: ${error.message}`,
-            'NETWORK_ERROR',
-            'crosstown'
-          );
+          return new SigilError(`Crosstown error: ${error.message}`, 'NETWORK_ERROR', 'crosstown');
       }
     }
 
@@ -461,11 +455,7 @@ export class CrosstownAdapter {
 
     // Check for signature errors
     if (err.message?.includes('signature') || err.message?.includes('sign')) {
-      return new SigilError(
-        `Event signing failed: ${err.message}`,
-        'SIGNING_FAILED',
-        'identity'
-      );
+      return new SigilError(`Event signing failed: ${err.message}`, 'SIGNING_FAILED', 'identity');
     }
 
     // Default: network error

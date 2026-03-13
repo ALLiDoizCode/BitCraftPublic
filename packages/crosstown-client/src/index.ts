@@ -109,17 +109,11 @@ export class CrosstownClient {
       (config.secretKey instanceof Uint8Array || ArrayBuffer.isView(config.secretKey)) &&
       config.secretKey.length === 32;
     if (!isValidKey) {
-      throw new CrosstownError(
-        'secretKey must be a 32-byte Uint8Array',
-        'INVALID_CONFIG'
-      );
+      throw new CrosstownError('secretKey must be a 32-byte Uint8Array', 'INVALID_CONFIG');
     }
 
     if (!config.connectorUrl) {
-      throw new CrosstownError(
-        'connectorUrl is required',
-        'INVALID_CONFIG'
-      );
+      throw new CrosstownError('connectorUrl is required', 'INVALID_CONFIG');
     }
 
     // Ensure proper Uint8Array for downstream consumers
@@ -132,9 +126,8 @@ export class CrosstownClient {
     // Derive and cache public key at construction time
     // getPublicKey from nostr-tools v2+ returns a hex string
     const pubkeyResult = getPublicKey(secretKey);
-    this._pubkeyHex = typeof pubkeyResult === 'string'
-      ? pubkeyResult
-      : bytesToHex(new Uint8Array(pubkeyResult));
+    this._pubkeyHex =
+      typeof pubkeyResult === 'string' ? pubkeyResult : bytesToHex(new Uint8Array(pubkeyResult));
   }
 
   /**
@@ -168,10 +161,7 @@ export class CrosstownClient {
    */
   async publishEvent(template: UnsignedEventTemplate): Promise<PublishEventResult> {
     if (!this.started) {
-      throw new CrosstownError(
-        'CrosstownClient not started. Call start() first.',
-        'NOT_STARTED'
-      );
+      throw new CrosstownError('CrosstownClient not started. Call start() first.', 'NOT_STARTED');
     }
 
     // Build the event template for nostr-tools finalizeEvent
@@ -206,11 +196,7 @@ export class CrosstownClient {
       clearTimeout(timeoutId);
 
       if (response.status === 429) {
-        throw new CrosstownError(
-          'Rate limited by connector',
-          'RATE_LIMITED',
-          429
-        );
+        throw new CrosstownError('Rate limited by connector', 'RATE_LIMITED', 429);
       }
 
       if (!response.ok) {
@@ -223,20 +209,13 @@ export class CrosstownClient {
             response.status
           );
         }
-        throw new CrosstownError(
-          `Publish failed: ${errorText}`,
-          'PUBLISH_FAILED',
-          response.status
-        );
+        throw new CrosstownError(`Publish failed: ${errorText}`, 'PUBLISH_FAILED', response.status);
       }
 
-      const responseData = await response.json() as { success?: boolean; eventId?: string };
+      const responseData = (await response.json()) as { success?: boolean; eventId?: string };
 
       if (!responseData.success || !responseData.eventId) {
-        throw new CrosstownError(
-          'Invalid response from connector',
-          'INVALID_RESPONSE'
-        );
+        throw new CrosstownError('Invalid response from connector', 'INVALID_RESPONSE');
       }
 
       return {
@@ -251,18 +230,15 @@ export class CrosstownClient {
       }
 
       if ((error as Error).name === 'AbortError') {
-        throw new CrosstownError(
-          'Request timed out',
-          'TIMEOUT'
-        );
+        throw new CrosstownError('Request timed out', 'TIMEOUT');
       }
 
       // Check for signature failures
-      if ((error as Error).message?.includes('signature') || (error as Error).message?.includes('sign')) {
-        throw new CrosstownError(
-          `Signing failed: ${(error as Error).message}`,
-          'SIGNING_FAILURE'
-        );
+      if (
+        (error as Error).message?.includes('signature') ||
+        (error as Error).message?.includes('sign')
+      ) {
+        throw new CrosstownError(`Signing failed: ${(error as Error).message}`, 'SIGNING_FAILURE');
       }
 
       throw new CrosstownError(

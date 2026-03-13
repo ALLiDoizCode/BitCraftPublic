@@ -68,10 +68,7 @@ export interface ILPPacketResult {
  * // No pubkey, created_at, id, or sig -- CrosstownClient adds those
  * ```
  */
-export function constructILPPacket(
-  options: ILPPacketOptions,
-  fee: number
-): UnsignedEventTemplate {
+export function constructILPPacket(options: ILPPacketOptions, fee: number): UnsignedEventTemplate {
   // Validation: reducer must be non-empty string
   if (!options.reducer || typeof options.reducer !== 'string') {
     throw new SigilError('Reducer name must be a non-empty string', 'INVALID_ACTION', 'publish');

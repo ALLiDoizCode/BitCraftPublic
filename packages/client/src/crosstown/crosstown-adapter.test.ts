@@ -446,7 +446,10 @@ describe('CrosstownAdapter', () => {
       const eventTemplate = {
         kind: 30078,
         content: JSON.stringify({ reducer: 'test', args: [] }),
-        tags: [['d', 'test_123'], ['fee', '1']],
+        tags: [
+          ['d', 'test_123'],
+          ['fee', '1'],
+        ],
       };
 
       try {
@@ -474,7 +477,10 @@ describe('CrosstownAdapter', () => {
       const eventTemplate = {
         kind: 30078,
         content: JSON.stringify({ reducer: 'test', args: [] }),
-        tags: [['d', 'test_123'], ['fee', '1']],
+        tags: [
+          ['d', 'test_123'],
+          ['fee', '1'],
+        ],
       };
 
       try {
@@ -505,7 +511,10 @@ describe('CrosstownAdapter', () => {
       const eventTemplate = {
         kind: 30078,
         content: JSON.stringify({ reducer: 'test', args: [] }),
-        tags: [['d', 'test_123'], ['fee', '1']],
+        tags: [
+          ['d', 'test_123'],
+          ['fee', '1'],
+        ],
       };
 
       try {
@@ -535,7 +544,10 @@ describe('CrosstownAdapter', () => {
       const eventTemplate = {
         kind: 30078,
         content: JSON.stringify({ reducer: 'test', args: [] }),
-        tags: [['d', 'test_123'], ['fee', '1']],
+        tags: [
+          ['d', 'test_123'],
+          ['fee', '1'],
+        ],
       };
 
       try {
@@ -567,7 +579,10 @@ describe('CrosstownAdapter', () => {
       const eventTemplate = {
         kind: 30078,
         content: JSON.stringify({ reducer: 'test', args: [] }),
-        tags: [['d', 'test_123'], ['fee', '1']],
+        tags: [
+          ['d', 'test_123'],
+          ['fee', '1'],
+        ],
       };
 
       try {
@@ -597,7 +612,10 @@ describe('CrosstownAdapter', () => {
       const eventTemplate = {
         kind: 30078,
         content: JSON.stringify({ reducer: 'test', args: [] }),
-        tags: [['d', 'test_123'], ['fee', '1']],
+        tags: [
+          ['d', 'test_123'],
+          ['fee', '1'],
+        ],
       };
 
       try {
@@ -623,16 +641,22 @@ describe('CrosstownAdapter', () => {
     const eventTemplate = {
       kind: 30078,
       content: JSON.stringify({ reducer: 'test', args: [] }),
-      tags: [['d', 'test_123'], ['fee', '1']],
+      tags: [
+        ['d', 'test_123'],
+        ['fee', '1'],
+      ],
     };
 
     it('should map CrosstownError NETWORK_ERROR to SigilError NETWORK_ERROR', async () => {
-      const mockFetch = vi.fn().mockRejectedValue(
-        new CrosstownError('DNS lookup failed', 'NETWORK_ERROR')
-      );
+      const mockFetch = vi
+        .fn()
+        .mockRejectedValue(new CrosstownError('DNS lookup failed', 'NETWORK_ERROR'));
       global.fetch = mockFetch;
 
-      const adapter = new CrosstownAdapter({ secretKey: testSecretKey, connectorUrl: 'http://localhost:4041' });
+      const adapter = new CrosstownAdapter({
+        secretKey: testSecretKey,
+        connectorUrl: 'http://localhost:4041',
+      });
       await adapter.start();
 
       await expect(adapter.publishEvent(eventTemplate)).rejects.toMatchObject({
@@ -642,12 +666,15 @@ describe('CrosstownAdapter', () => {
     });
 
     it('should map CrosstownError TIMEOUT to SigilError NETWORK_TIMEOUT', async () => {
-      const mockFetch = vi.fn().mockRejectedValue(
-        new CrosstownError('Request timed out', 'TIMEOUT')
-      );
+      const mockFetch = vi
+        .fn()
+        .mockRejectedValue(new CrosstownError('Request timed out', 'TIMEOUT'));
       global.fetch = mockFetch;
 
-      const adapter = new CrosstownAdapter({ secretKey: testSecretKey, connectorUrl: 'http://localhost:4041' });
+      const adapter = new CrosstownAdapter({
+        secretKey: testSecretKey,
+        connectorUrl: 'http://localhost:4041',
+      });
       await adapter.start();
 
       await expect(adapter.publishEvent(eventTemplate)).rejects.toMatchObject({
@@ -657,12 +684,15 @@ describe('CrosstownAdapter', () => {
     });
 
     it('should map CrosstownError ILP_FAILURE to SigilError PUBLISH_FAILED', async () => {
-      const mockFetch = vi.fn().mockRejectedValue(
-        new CrosstownError('ILP payment error F04', 'ILP_FAILURE', 502)
-      );
+      const mockFetch = vi
+        .fn()
+        .mockRejectedValue(new CrosstownError('ILP payment error F04', 'ILP_FAILURE', 502));
       global.fetch = mockFetch;
 
-      const adapter = new CrosstownAdapter({ secretKey: testSecretKey, connectorUrl: 'http://localhost:4041' });
+      const adapter = new CrosstownAdapter({
+        secretKey: testSecretKey,
+        connectorUrl: 'http://localhost:4041',
+      });
       await adapter.start();
 
       await expect(adapter.publishEvent(eventTemplate)).rejects.toMatchObject({
@@ -672,12 +702,15 @@ describe('CrosstownAdapter', () => {
     });
 
     it('should map CrosstownError PUBLISH_FAILED to SigilError PUBLISH_FAILED', async () => {
-      const mockFetch = vi.fn().mockRejectedValue(
-        new CrosstownError('Server error', 'PUBLISH_FAILED', 500)
-      );
+      const mockFetch = vi
+        .fn()
+        .mockRejectedValue(new CrosstownError('Server error', 'PUBLISH_FAILED', 500));
       global.fetch = mockFetch;
 
-      const adapter = new CrosstownAdapter({ secretKey: testSecretKey, connectorUrl: 'http://localhost:4041' });
+      const adapter = new CrosstownAdapter({
+        secretKey: testSecretKey,
+        connectorUrl: 'http://localhost:4041',
+      });
       await adapter.start();
 
       await expect(adapter.publishEvent(eventTemplate)).rejects.toMatchObject({
@@ -687,12 +720,15 @@ describe('CrosstownAdapter', () => {
     });
 
     it('should map CrosstownError SIGNING_FAILURE to SigilError SIGNING_FAILED with identity boundary', async () => {
-      const mockFetch = vi.fn().mockRejectedValue(
-        new CrosstownError('Invalid signature', 'SIGNING_FAILURE')
-      );
+      const mockFetch = vi
+        .fn()
+        .mockRejectedValue(new CrosstownError('Invalid signature', 'SIGNING_FAILURE'));
       global.fetch = mockFetch;
 
-      const adapter = new CrosstownAdapter({ secretKey: testSecretKey, connectorUrl: 'http://localhost:4041' });
+      const adapter = new CrosstownAdapter({
+        secretKey: testSecretKey,
+        connectorUrl: 'http://localhost:4041',
+      });
       await adapter.start();
 
       await expect(adapter.publishEvent(eventTemplate)).rejects.toMatchObject({
@@ -702,12 +738,15 @@ describe('CrosstownAdapter', () => {
     });
 
     it('should map CrosstownError RATE_LIMITED to SigilError RATE_LIMITED', async () => {
-      const mockFetch = vi.fn().mockRejectedValue(
-        new CrosstownError('Too many requests', 'RATE_LIMITED', 429)
-      );
+      const mockFetch = vi
+        .fn()
+        .mockRejectedValue(new CrosstownError('Too many requests', 'RATE_LIMITED', 429));
       global.fetch = mockFetch;
 
-      const adapter = new CrosstownAdapter({ secretKey: testSecretKey, connectorUrl: 'http://localhost:4041' });
+      const adapter = new CrosstownAdapter({
+        secretKey: testSecretKey,
+        connectorUrl: 'http://localhost:4041',
+      });
       await adapter.start();
 
       await expect(adapter.publishEvent(eventTemplate)).rejects.toMatchObject({
@@ -717,12 +756,15 @@ describe('CrosstownAdapter', () => {
     });
 
     it('should map CrosstownError INVALID_RESPONSE to SigilError INVALID_RESPONSE', async () => {
-      const mockFetch = vi.fn().mockRejectedValue(
-        new CrosstownError('Malformed JSON in response', 'INVALID_RESPONSE')
-      );
+      const mockFetch = vi
+        .fn()
+        .mockRejectedValue(new CrosstownError('Malformed JSON in response', 'INVALID_RESPONSE'));
       global.fetch = mockFetch;
 
-      const adapter = new CrosstownAdapter({ secretKey: testSecretKey, connectorUrl: 'http://localhost:4041' });
+      const adapter = new CrosstownAdapter({
+        secretKey: testSecretKey,
+        connectorUrl: 'http://localhost:4041',
+      });
       await adapter.start();
 
       await expect(adapter.publishEvent(eventTemplate)).rejects.toMatchObject({
@@ -732,12 +774,15 @@ describe('CrosstownAdapter', () => {
     });
 
     it('should map CrosstownError NOT_STARTED to SigilError CROSSTOWN_NOT_CONFIGURED', async () => {
-      const mockFetch = vi.fn().mockRejectedValue(
-        new CrosstownError('Client not started', 'NOT_STARTED')
-      );
+      const mockFetch = vi
+        .fn()
+        .mockRejectedValue(new CrosstownError('Client not started', 'NOT_STARTED'));
       global.fetch = mockFetch;
 
-      const adapter = new CrosstownAdapter({ secretKey: testSecretKey, connectorUrl: 'http://localhost:4041' });
+      const adapter = new CrosstownAdapter({
+        secretKey: testSecretKey,
+        connectorUrl: 'http://localhost:4041',
+      });
       await adapter.start();
 
       await expect(adapter.publishEvent(eventTemplate)).rejects.toMatchObject({
@@ -747,12 +792,15 @@ describe('CrosstownAdapter', () => {
     });
 
     it('should map unknown CrosstownError type to SigilError NETWORK_ERROR (default)', async () => {
-      const mockFetch = vi.fn().mockRejectedValue(
-        new CrosstownError('Unknown failure', 'SOME_FUTURE_ERROR' as string)
-      );
+      const mockFetch = vi
+        .fn()
+        .mockRejectedValue(new CrosstownError('Unknown failure', 'SOME_FUTURE_ERROR' as string));
       global.fetch = mockFetch;
 
-      const adapter = new CrosstownAdapter({ secretKey: testSecretKey, connectorUrl: 'http://localhost:4041' });
+      const adapter = new CrosstownAdapter({
+        secretKey: testSecretKey,
+        connectorUrl: 'http://localhost:4041',
+      });
       await adapter.start();
 
       await expect(adapter.publishEvent(eventTemplate)).rejects.toMatchObject({
@@ -783,7 +831,10 @@ describe('CrosstownAdapter', () => {
       const mockFetch = vi.fn().mockRejectedValue(new Error('invalid signature detected'));
       global.fetch = mockFetch;
 
-      const adapter = new CrosstownAdapter({ secretKey: testSecretKey, connectorUrl: 'http://localhost:4041' });
+      const adapter = new CrosstownAdapter({
+        secretKey: testSecretKey,
+        connectorUrl: 'http://localhost:4041',
+      });
       await adapter.start();
 
       await expect(adapter.publishEvent(eventTemplate)).rejects.toMatchObject({
@@ -796,7 +847,10 @@ describe('CrosstownAdapter', () => {
       const mockFetch = vi.fn().mockRejectedValue('string error');
       global.fetch = mockFetch;
 
-      const adapter = new CrosstownAdapter({ secretKey: testSecretKey, connectorUrl: 'http://localhost:4041' });
+      const adapter = new CrosstownAdapter({
+        secretKey: testSecretKey,
+        connectorUrl: 'http://localhost:4041',
+      });
       await adapter.start();
 
       await expect(adapter.publishEvent(eventTemplate)).rejects.toMatchObject({

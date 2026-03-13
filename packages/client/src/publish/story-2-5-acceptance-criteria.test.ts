@@ -177,7 +177,11 @@ describe('Story 2.5 - AC5: Wallet balance query retains WalletClient', () => {
   });
 
   afterEach(() => {
-    try { rmSync(testDir, { recursive: true, force: true }); } catch { /* ignore */ }
+    try {
+      rmSync(testDir, { recursive: true, force: true });
+    } catch {
+      /* ignore */
+    }
     vi.restoreAllMocks();
   });
 
@@ -249,7 +253,10 @@ describe('Story 2.5 - AC7: All tests updated for new adapter behavior', () => {
   });
 
   it('crosstown-adapter.integration.test.ts should exist (integration test created)', () => {
-    const integrationTestPath = resolve(__dirname, '../integration-tests/crosstown-adapter.integration.test.ts');
+    const integrationTestPath = resolve(
+      __dirname,
+      '../integration-tests/crosstown-adapter.integration.test.ts'
+    );
     expect(existsSync(integrationTestPath)).toBe(true);
   });
 });

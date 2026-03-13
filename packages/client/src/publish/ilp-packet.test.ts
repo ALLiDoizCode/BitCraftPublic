@@ -15,10 +15,7 @@ import { SigilError } from '../nostr/nostr-client';
 describe('ILP Packet Construction', () => {
   describe('constructILPPacket - Content-Only Template (AC2, AC4)', () => {
     it('should construct valid kind 30078 content-only template', () => {
-      const template = constructILPPacket(
-        { reducer: 'player_move', args: [100, 200] },
-        10
-      );
+      const template = constructILPPacket({ reducer: 'player_move', args: [100, 200] }, 10);
 
       expect(template.kind).toBe(30078);
       expect(template.content).toBe('{"reducer":"player_move","args":[100,200]}');
@@ -26,28 +23,19 @@ describe('ILP Packet Construction', () => {
     });
 
     it('should return template WITHOUT pubkey field', () => {
-      const template = constructILPPacket(
-        { reducer: 'player_move', args: [] },
-        1
-      );
+      const template = constructILPPacket({ reducer: 'player_move', args: [] }, 1);
 
       expect(template).not.toHaveProperty('pubkey');
     });
 
     it('should return template WITHOUT created_at field', () => {
-      const template = constructILPPacket(
-        { reducer: 'player_move', args: [] },
-        1
-      );
+      const template = constructILPPacket({ reducer: 'player_move', args: [] }, 1);
 
       expect(template).not.toHaveProperty('created_at');
     });
 
     it('should return template WITHOUT id or sig fields', () => {
-      const template = constructILPPacket(
-        { reducer: 'player_move', args: [] },
-        1
-      );
+      const template = constructILPPacket({ reducer: 'player_move', args: [] }, 1);
 
       expect(template).not.toHaveProperty('id');
       expect(template).not.toHaveProperty('sig');
@@ -93,10 +81,7 @@ describe('ILP Packet Construction', () => {
         meta: { timestamp: Date.now() },
       };
 
-      const template = constructILPPacket(
-        { reducer: 'complex_action', args: complexArgs },
-        1
-      );
+      const template = constructILPPacket({ reducer: 'complex_action', args: complexArgs }, 1);
       const parsed = JSON.parse(template.content);
 
       expect(parsed.args).toEqual(complexArgs);

@@ -1,7 +1,7 @@
 # Sigil SDK - Claude Agent Guide
 
-**Last Updated:** 2026-02-27
-**Status:** Epic 1 Complete (MVP Development Phase)
+**Last Updated:** 2026-03-13
+**Status:** Epics 1-2 Complete, Epic 3 Next (MVP Development Phase)
 **Agent Model:** Claude instance + MCP tools + Skills (NOT custom cognition stack)
 
 ---
@@ -20,14 +20,14 @@ You are a Claude instance working on the **Sigil SDK** platform. Sigil enables A
 
 The comprehensive project context document (`_bmad-output/project-context.md`) is automatically loaded by BMAD workflows. It contains:
 
-- Complete architecture overview
-- Epic and story breakdown
-- Technology stack details
-- Repository structure
-- Test coverage metrics
+- Complete architecture overview and repository structure
+- Epic and story breakdown with progress tracking
+- Technology stack and dependencies
+- Test coverage metrics and quality standards
 - Known issues and technical debt
-- Development workflow instructions
-- Documentation index
+- Code review checklist (OWASP, TypeScript safety, Rust safety)
+- Naming conventions, API patterns, and team agreements
+- Documentation index (planning artifacts, story reports, ADRs)
 
 **You MUST read project-context.md before starting any work.**
 
@@ -44,23 +44,15 @@ The Five-Layer Cognition Architecture documented in the architecture was SUPERSE
 
 ### 3. Current Project Status
 
-**Epic 1: COMPLETE** (6/6 stories, 937 tests passing)
+**Epic 1: COMPLETE** (6/6 stories) -- Project foundation, identity, Docker, SpacetimeDB, static data, reconnection.
 
-- Monorepo scaffolding (TypeScript + Rust)
-- Nostr keypair identity management
-- Docker development environment (BitCraft + Crosstown)
-- SpacetimeDB connection and subscriptions
-- Static data table loading (40/148 tables)
-- Auto-reconnection with state recovery
+**Epic 2: COMPLETE** (5/5 stories) -- Nostr relay client, action cost registry, wallet client, ILP packets, BLS contract spec, `@crosstown/client` integration.
 
-**Epic 2: PREPARATION PHASE** (5 prep tasks before kickoff)
+**Total Tests:** 651 passing (641 TS unit + 7 Rust + 3 root integration), 103 integration tests skipped (require Docker).
 
-- ✅ Complete subscription recovery (PREP-1)
-- ✅ Validate Linux compatibility (PREP-2) - CI now runs on Ubuntu + macOS
-- Must research Crosstown protocols (PREP-4)
-- Must spike BLS handler architecture (PREP-5)
+**Epic 3: NEXT** -- BitCraft BLS Game Action Handler (4 stories). Implements the BLS handler per the integration contract spec'd in Story 2.4.
 
-**See:** `_bmad-output/implementation-artifacts/epic-1-retro-2026-02-27.md` for full retrospective and prep task details.
+**See:** `_bmad-output/project-context.md` for full epic breakdown, story details, and deliverables.
 
 ---
 
@@ -108,17 +100,11 @@ Integration tests and local development require the Docker stack:
 # Start BitCraft server + Crosstown node
 docker compose -f docker/docker-compose.yml up -d
 
-# Verify services are healthy
-docker compose -f docker/docker-compose.yml ps
-
-# View BitCraft server logs
-docker compose -f docker/docker-compose.yml logs -f bitcraft-server
-
 # Health check
 curl http://localhost:3000/database/bitcraft/info
 curl http://localhost:4041/health
 
-# Run integration tests (127 tests)
+# Run integration tests
 pnpm test:integration
 
 # Stop services
@@ -129,48 +115,40 @@ docker compose -f docker/docker-compose.yml down
 
 ---
 
-## Development Workflow
-
-### Working on TypeScript Packages
-
-```bash
-# Client library (@sigil/client)
-cd packages/client
-pnpm test:watch        # TDD watch mode
-pnpm build             # Build dist/
-
-# MCP server (@sigil/mcp-server) - Future Epic 6
-cd packages/mcp-server
-# (placeholder only)
-
-# TUI backend (@sigil/tui-backend) - Future Epic 7
-cd packages/tui-backend
-# (placeholder only)
-```
-
-### Working on Rust Code
-
-```bash
-# TUI (sigil-tui)
-cd crates/tui
-cargo build            # Build binary
-cargo test             # Run tests
-cargo clippy           # Lint
-```
+## Development Commands
 
 ### Running Tests
 
 ```bash
 # From repository root:
-pnpm test:unit         # 810 unit tests (fast, no Docker)
-pnpm test:integration  # 127 integration tests (requires Docker)
-pnpm test              # All tests
-pnpm test:coverage     # Generate coverage report
+pnpm test:unit                              # Unit tests (fast, no Docker)
+pnpm test:integration                       # Integration tests (requires Docker)
+pnpm test                                   # All tests
+pnpm test:coverage                          # Generate coverage report
+pnpm --filter @sigil/client test:unit       # Client-only unit tests
+pnpm --filter @sigil/client test:watch      # TDD watch mode
+pnpm smoke:bls                              # BLS handler smoke test (requires Docker + BLS handler)
+```
+
+### Building
+
+```bash
+pnpm build                                  # Build all TS packages
+cd crates/tui && cargo build                # Build Rust TUI
+cd crates/tui && cargo clippy               # Lint Rust
+```
+
+### Docker Stack Management
+
+```bash
+docker compose -f docker/docker-compose.yml up -d       # Start
+docker compose -f docker/docker-compose.yml ps           # Status
+docker compose -f docker/docker-compose.yml logs -f bitcraft-server  # Logs
+docker compose -f docker/docker-compose.yml restart      # Restart
+docker compose -f docker/docker-compose.yml down -v && rm -rf docker/volumes/* && docker compose -f docker/docker-compose.yml up -d  # Full reset
 ```
 
 ### BMAD Workflow Commands
-
-You have access to BMAD (Build-Measure-Analyze-Deploy) workflow skills:
 
 ```bash
 # Generate fresh project context
@@ -184,236 +162,40 @@ You have access to BMAD (Build-Measure-Analyze-Deploy) workflow skills:
 
 ---
 
-## Key Conventions
+## Common Pitfalls
 
-### Naming Conventions
-
-**TypeScript:**
-
-- Files: `kebab-case.ts`
-- Functions/variables: `camelCase`
-- Types/interfaces: `PascalCase`
-- Constants: `SCREAMING_SNAKE_CASE`
-
-**Rust:**
-
-- Files: `snake_case.rs`
-- Functions/variables: `snake_case`
-- Types/structs: `PascalCase`
-- Constants: `SCREAMING_SNAKE_CASE`
-
-**Cross-Language:**
-
-- JSON fields (IPC): `camelCase`
-- MCP tool names: `snake_case`
-- Rust serde: `#[serde(rename_all = "camelCase")]`
-
-### API Patterns
-
-**Client API Design:**
-
-```typescript
-// Identity (Story 1.2)
-await client.loadIdentity('/path/to/keypair.json');
-const publicKey = client.identity.publicKey.npub; // npub1abc...
-const signedEvent = await client.identity.sign(eventTemplate);
-
-// SpacetimeDB Read Access (Story 1.4)
-client.spacetimedb.tables.players.onInsert((player) => { ... });
-const allPlayers = client.spacetimedb.tables.players.getAll();
-
-// Static Data (Story 1.5)
-const staticData = await client.spacetimedb.staticData.load();
-const item = staticData.itemDesc.get(itemId);
-
-// Write Path (Future Epic 2)
-await client.publish({ reducer: 'move_player', args: [x, y] });
-```
-
-### Testing Patterns
-
-**Test-Driven Development (TDD):**
-
-- **AGREEMENT-1:** Write tests BEFORE implementation for features with >3 acceptance criteria
-- Co-located tests: `*.test.ts` for TypeScript, `#[cfg(test)]` for Rust
-- Test names: Descriptive (what is tested, expected outcome)
-- Traceability: AC → Test mapping documented in story reports
-
-**See:** Epic 1 retrospective (AGREEMENT-1) for TDD adoption rationale.
-
----
-
-## Common Tasks
-
-### Adding a New Reducer Call (Epic 2+)
-
-1. Define the reducer signature in skill file (YAML frontmatter + markdown)
-2. Add ILP cost to action cost registry
-3. Update `client.publish()` to support the reducer
-4. Write tests BEFORE implementation
-5. Document in story report with traceability
-
-### Adding a New Table Subscription (Epic 2+)
-
-1. Add table to static data loader if it's a `*_desc` table
-2. Update `client.spacetimedb.tables` with typed access
-3. Wire up `onInsert`/`onUpdate`/`onDelete` callbacks
-4. Write integration test (requires Docker)
-5. Document subscription recovery behavior
-
-### Debugging Docker Stack Issues
-
-```bash
-# Check service health
-docker compose -f docker/docker-compose.yml ps
-
-# View logs
-docker compose -f docker/docker-compose.yml logs bitcraft-server
-docker compose -f docker/docker-compose.yml logs crosstown-node
-
-# Restart services
-docker compose -f docker/docker-compose.yml restart
-
-# Full reset (WARNING: deletes persistent data)
-docker compose -f docker/docker-compose.yml down -v
-rm -rf docker/volumes/*
-docker compose -f docker/docker-compose.yml up -d
-```
-
-**See:** `docker/README.md` for comprehensive troubleshooting.
-
----
-
-## Security & Code Review
-
-### Security Checklist (AGREEMENT-2)
-
-Every story MUST pass OWASP Top 10 review before "done":
-
-- [ ] No hardcoded secrets or API keys
-- [ ] Input validation on all external data (WebSocket, IPC, file paths)
-- [ ] Path traversal prevention (Docker volumes, file I/O)
-- [ ] Rate limiting on public endpoints (Nostr relay, MCP tools)
-- [ ] Dependency vulnerabilities checked (`pnpm audit`, `cargo audit`)
-
-### Code Review Standards
-
-- No `any` types in TypeScript (use `unknown` or specific types)
-- No `unsafe` blocks in Rust (unless justified and documented)
-- Error handling required (try/catch, Result<T, E>)
-- Test traceability documented (AC → Test mapping)
-
-**See:** `_bmad-output/project-context.md` → "Code Review Checklist" for full checklist.
-
----
-
-## Documentation References
-
-### Planning Artifacts
-
-- **Epics:** `_bmad-output/planning-artifacts/epics.md` (13 epics, 61 stories)
-- **Architecture:** `_bmad-output/planning-artifacts/architecture/index.md` (14 architecture docs)
-- **PRD:** `_bmad-output/planning-artifacts/prd/index.md` (archived, superseded by architecture)
-
-### Implementation Artifacts (Epic 1)
-
-- **Sprint Status:** `_bmad-output/implementation-artifacts/sprint-status.yaml`
-- **Retrospective:** `_bmad-output/implementation-artifacts/epic-1-retro-2026-02-27.md`
-- **Story Reports:** `_bmad-output/implementation-artifacts/1-{1-6}-*.md` (6 completed stories)
-- **Test Traceability:** `_bmad-output/implementation-artifacts/reports/` (AC → Test mapping)
-
-### Setup Guides
-
-- **Docker:** `docker/README.md`
-- **Client Library:** `packages/client/README.md` (future)
-- **Project Context:** `_bmad-output/project-context.md` (auto-loaded by BMAD)
-
----
-
-## Team Agreements (Epic 1 Retrospective)
-
-**AGREEMENT-1: Test-First for Complex Features**
-For features with >3 acceptance criteria, write tests before implementation.
-
-**AGREEMENT-2: Security Review on Every Story**
-Every story must pass OWASP Top 10 review before marking "done". No exceptions.
-
-**AGREEMENT-3: Pair on Unfamiliar Technologies**
-When working with new tech (Nostr, ILP, BLS), pair programming or pair review is mandatory.
-
-**AGREEMENT-4: Technical Debt Tracking**
-Any deferred work must be captured as GitHub issues and linked in story documentation.
-
-**AGREEMENT-5: Integration Test Documentation**
-Integration tests requiring Docker must have clear setup instructions and graceful failure messages.
-
-**See:** `_bmad-output/implementation-artifacts/epic-1-retro-2026-02-27.md` for full team agreements.
-
----
-
-## Known Limitations & Technical Debt
-
-### Critical (Blocks Epic 2)
-
-**DEBT-1: Complete Story 1.6 Subscription Recovery**
-Subscription re-subscribe logic after reconnection is stubbed. Must complete before Epic 2 (PREP-1).
-
-### Medium Priority
-
-**DEBT-2: Load Remaining 108 Static Data Tables**
-Only 40/148 static data tables loaded. May block Epic 4-5 agent skills and game analysis.
-
-**DEBT-3: Add Linux Integration Test Coverage**
-Epic 1 tested on macOS only. Linux validation required before Epic 2 (PREP-2).
-
-**See:** `_bmad-output/project-context.md` → "Known Issues & Technical Debt" for full list and mitigation plans.
+- **Don't duplicate project-context.md** -- It's auto-loaded, no need to repeat its content
+- **Don't skip TDD** -- Write tests BEFORE implementation for features with >3 acceptance criteria (AGREEMENT-1)
+- **Don't commit without security review** -- OWASP Top 10 check required on every story (AGREEMENT-2)
+- **Don't modify BitCraft server** -- Runs unmodified (design principle)
+- **Pair on unfamiliar tech** -- Nostr, ILP, BLS require pair programming or pair review (AGREEMENT-3)
+- **Track technical debt** -- Deferred work must be captured and linked in story docs (AGREEMENT-4)
 
 ---
 
 ## Getting Help
 
-### When Stuck
-
-1. **Read project-context.md first** - Most answers are there
-2. **Check story reports** - Completed work has comprehensive documentation
-3. **Review architecture docs** - 14 architecture documents in `_bmad-output/planning-artifacts/architecture/`
-4. **Check Docker README** - Docker issues covered in `docker/README.md`
-5. **Use BMAD workflows** - `/bmad-bmm-generate-project-context yolo` regenerates context
-
-### Common Pitfalls
-
-- **Don't duplicate project-context.md** - It's auto-loaded, no need to repeat
-- **Don't skip TDD** - Epic 1 proved TDD reduces defects (AGREEMENT-1)
-- **Don't commit without security review** - OWASP Top 10 check required (AGREEMENT-2)
-- **Don't assume Linux works** - macOS-only testing so far (DEBT-3)
-- **Don't modify BitCraft server** - Runs unmodified (design principle)
+1. **Read project-context.md first** -- Most answers are there
+2. **Check story reports** -- `_bmad-output/implementation-artifacts/` has comprehensive documentation for all completed stories
+3. **Review architecture docs** -- `_bmad-output/planning-artifacts/architecture/` has 22 architecture documents
+4. **Check Docker README** -- `docker/README.md` covers Docker issues
+5. **Use BMAD workflows** -- `/bmad-bmm-generate-project-context yolo` regenerates context
 
 ---
 
-## Next Steps for Epic 2
+## Next Steps: Epic 3 Preparation
 
-Before starting Epic 2 implementation, complete these prep tasks:
+**Epic 3: BitCraft BLS Game Action Handler** (4 stories)
 
-1. **PREP-1:** Complete Story 1.6 Task 5 (subscription recovery) - 8 hours
-2. **PREP-2:** Validate Linux compatibility - 4 hours
-3. **PREP-4:** Research Crosstown Nostr relay protocol - 4 hours
-4. **PREP-5:** Spike BLS handler architecture - 6 hours
-5. **ACTION-1:** Establish integration test strategy - 2 hours
+- 3.1: BLS Package Setup & Crosstown SDK Node
+- 3.2: Game Action Handler (kind 30078)
+- 3.3: Pricing Configuration & Fee Schedule
+- 3.4: Identity Propagation & End-to-End Verification
 
-**Total Prep Effort:** 24 hours (3 days at 8 hours/day)
+**Key Context:**
+- Integration contract is fully spec'd in Story 2.4 (`docs/bls-handler-contract.md`, `docs/crosstown-bls-implementation-spec.md`)
+- This is the first server-side component (high risk -- new infrastructure)
+- Requires modifying BitCraft reducers to accept `identity: String` as first parameter
+- Wallet balance checks and ILP fee deduction are EVM onchain (out of Sigil scope)
 
-**See:** Epic 1 retrospective for prep task details and acceptance criteria.
-
----
-
-## Questions?
-
-This guide intentionally keeps details minimal to avoid duplicating project-context.md. For comprehensive information:
-
-- **Project Context:** `_bmad-output/project-context.md` (auto-loaded)
-- **Architecture:** `_bmad-output/planning-artifacts/architecture/index.md`
-- **Epics:** `_bmad-output/planning-artifacts/epics.md`
-- **Docker Setup:** `docker/README.md`
-- **Retrospective:** `_bmad-output/implementation-artifacts/epic-1-retro-2026-02-27.md`
-
-**Happy coding!**
+**See:** `_bmad-output/project-context.md` for full Epic 3 details and risk assessment.

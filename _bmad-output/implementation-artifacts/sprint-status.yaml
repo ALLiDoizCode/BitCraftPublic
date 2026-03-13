@@ -46,8 +46,9 @@ epics:
   - id: epic-2
     title: 'Action Execution & Payment Pipeline'
     phase: mvp
-    status: in-progress
-    retrospective_status: not_started
+    status: done
+    retrospective_status: done
+    retrospective_date: 2026-03-13
     stories:
       - id: story-2.1
         title: 'Crosstown Relay Connection & Event Subscriptions'

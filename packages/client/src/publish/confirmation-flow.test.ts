@@ -162,10 +162,7 @@ describe('Confirmation Flow (AC3)', () => {
       const testPubkeyHex = bytesToHex(testKeypair.publicKey);
 
       // constructILPPacket now takes 2 args (no pubkey)
-      const template = constructILPPacket(
-        { reducer: 'player_move', args: [100, 200] },
-        1
-      );
+      const template = constructILPPacket({ reducer: 'player_move', args: [100, 200] }, 1);
 
       // Use finalizeEvent to sign (simulating what CrosstownClient does)
       const signedPacket = finalizeEvent(
@@ -183,10 +180,7 @@ describe('Confirmation Flow (AC3)', () => {
     });
 
     it('should verify confirmation event includes all required fields', async () => {
-      const template = constructILPPacket(
-        { reducer: 'craft_item', args: { itemId: 42 } },
-        15
-      );
+      const template = constructILPPacket({ reducer: 'craft_item', args: { itemId: 42 } }, 15);
 
       const signedPacket = finalizeEvent(
         {
@@ -212,10 +206,7 @@ describe('Confirmation Flow (AC3)', () => {
 
   describe('Confirmation Result Details (AC3)', () => {
     it('should include eventId in confirmation result', async () => {
-      const template = constructILPPacket(
-        { reducer: 'player_move', args: [100, 200] },
-        1
-      );
+      const template = constructILPPacket({ reducer: 'player_move', args: [100, 200] }, 1);
 
       const signedPacket = finalizeEvent(
         {
@@ -240,10 +231,7 @@ describe('Confirmation Flow (AC3)', () => {
     });
 
     it('should include reducer in confirmation result', async () => {
-      const template = constructILPPacket(
-        { reducer: 'craft_item', args: { itemId: 42 } },
-        15
-      );
+      const template = constructILPPacket({ reducer: 'craft_item', args: { itemId: 42 } }, 15);
 
       const signedPacket = finalizeEvent(
         {

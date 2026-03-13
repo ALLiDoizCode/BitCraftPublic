@@ -306,9 +306,9 @@ describe('Client Publish - Adapter Wiring (Story 2.5)', () => {
 
       // If adapter was created, the REGISTRY_NOT_LOADED check comes after adapter check
       if ((client as any).crosstownAdapter) {
-        await expect(
-          client.publish.publish({ reducer: 'player_move', args: [] })
-        ).rejects.toThrow(SigilError);
+        await expect(client.publish.publish({ reducer: 'player_move', args: [] })).rejects.toThrow(
+          SigilError
+        );
 
         try {
           await client.publish.publish({ reducer: 'player_move', args: [] });
@@ -346,9 +346,9 @@ describe('Client Publish - Adapter Wiring (Story 2.5)', () => {
       // Adapter must be created during connect() -- fail if not
       expect((client as any).crosstownAdapter).not.toBeNull();
 
-      await expect(
-        client.publish.publish({ reducer: 'player_move', args: [] })
-      ).rejects.toThrow(SigilError);
+      await expect(client.publish.publish({ reducer: 'player_move', args: [] })).rejects.toThrow(
+        SigilError
+      );
 
       try {
         await client.publish.publish({ reducer: 'player_move', args: [] });
@@ -386,9 +386,9 @@ describe('Client Publish - Adapter Wiring (Story 2.5)', () => {
       // Adapter must be created during connect() -- fail if not
       expect((client as any).crosstownAdapter).not.toBeNull();
 
-      await expect(
-        client.publish.publish({ reducer: 'player_move', args: [] })
-      ).rejects.toThrow(SigilError);
+      await expect(client.publish.publish({ reducer: 'player_move', args: [] })).rejects.toThrow(
+        SigilError
+      );
 
       try {
         await client.publish.publish({ reducer: 'player_move', args: [] });
@@ -424,9 +424,9 @@ describe('Client Publish - Adapter Wiring (Story 2.5)', () => {
       // Adapter must be created during connect() -- fail if not
       expect((client as any).crosstownAdapter).not.toBeNull();
 
-      await expect(
-        client.publish.publish({ reducer: 'player_move', args: [] })
-      ).rejects.toThrow(SigilError);
+      await expect(client.publish.publish({ reducer: 'player_move', args: [] })).rejects.toThrow(
+        SigilError
+      );
 
       try {
         await client.publish.publish({ reducer: 'player_move', args: [] });
@@ -463,9 +463,9 @@ describe('Client Publish - Adapter Wiring (Story 2.5)', () => {
       // Adapter must be created during connect() -- fail if not
       expect((client as any).crosstownAdapter).not.toBeNull();
 
-      await expect(
-        client.publish.publish({ reducer: 'player_move', args: [] })
-      ).rejects.toThrow(SigilError);
+      await expect(client.publish.publish({ reducer: 'player_move', args: [] })).rejects.toThrow(
+        SigilError
+      );
 
       try {
         await client.publish.publish({ reducer: 'player_move', args: [] });
@@ -488,8 +488,8 @@ describe('Client Publish - Adapter Wiring (Story 2.5)', () => {
         crosstownConnectorUrl: 'http://localhost:4041',
       });
 
-      expect((client as any)).toHaveProperty('crosstownAdapter');
-      expect((client as any)).not.toHaveProperty('crosstownConnector');
+      expect(client as any).toHaveProperty('crosstownAdapter');
+      expect(client as any).not.toHaveProperty('crosstownConnector');
     });
 
     it('[P1] should not expose signEvent in exports', async () => {
