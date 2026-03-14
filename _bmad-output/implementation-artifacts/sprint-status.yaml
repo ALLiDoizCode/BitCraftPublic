@@ -97,7 +97,7 @@ epics:
     stories:
       - id: story-4.1
         title: 'Skill File Format & Parser'
-        status: backlog
+        status: done
       - id: story-4.2
         title: 'Agent.md Configuration & Skill Selection'
         status: backlog

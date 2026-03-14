@@ -83,3 +83,28 @@ export {
   type SigilClientConfig,
   type PublishAPI,
 } from './client';
+
+// Agent module - Skill file parsing and registry (Story 4.1)
+export {
+  // Types
+  type Skill,
+  type SkillMetadata,
+  type SkillParam,
+  type SkillParamType,
+  type SkillSubscription,
+  type SkillEval,
+  type SkillExpected,
+  type SkillParseErrorCode,
+  SkillParseError,
+  // Parser
+  parseSkillFile,
+  parseSkillMetadata,
+  // Loader
+  type SkillLoadResult,
+  type SkillMetadataLoadResult,
+  loadSkillDirectory,
+  loadSkillDirectoryMetadata,
+  // Registry
+  SkillRegistry,
+  createSkillRegistryFromDirectory,
+} from './agent';
