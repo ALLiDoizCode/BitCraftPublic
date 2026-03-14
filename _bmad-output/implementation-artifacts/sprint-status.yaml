@@ -83,7 +83,7 @@ epics:
         status: done
       - id: story-3.3
         title: 'Pricing Configuration & Fee Schedule'
-        status: backlog
+        status: done
       - id: story-3.4
         title: 'Identity Propagation & End-to-End Verification'
         status: backlog

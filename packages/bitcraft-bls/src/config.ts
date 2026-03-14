@@ -3,7 +3,11 @@
  *
  * Loads configuration from environment variables with validation and defaults.
  * Secret values (BLS_SECRET_KEY, SPACETIMEDB_TOKEN) are NEVER logged.
+ *
+ * Story 3.3: Added feeSchedulePath and feeSchedule fields for per-reducer pricing.
  */
+
+import { loadFeeSchedule, type FeeSchedule } from './fee-schedule.js';
 
 /**
  * BLS node configuration interface.
@@ -25,6 +29,10 @@ export interface BLSConfig {
   logLevel: string;
   /** Health check HTTP port */
   port: number;
+  /** Path to fee schedule JSON file (optional, from BLS_FEE_SCHEDULE_PATH) */
+  feeSchedulePath?: string;
+  /** Loaded fee schedule (populated when feeSchedulePath is set) */
+  feeSchedule?: FeeSchedule;
 }
 
 /**
@@ -79,14 +87,37 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     throw new Error(`SPACETIMEDB_URL must be a valid HTTP or HTTPS URL. Got: ${spacetimedbUrl}`);
   }
 
+  // Fee schedule loading (optional, Story 3.3)
+  const feeSchedulePath = env.BLS_FEE_SCHEDULE_PATH || undefined;
+  let feeSchedule: FeeSchedule | undefined;
+  let kindPricing: Record<number, bigint> = { 30078: 100n };
+
+  if (feeSchedulePath) {
+    // Load and validate fee schedule -- startup failure is correct behavior for invalid config
+    feeSchedule = loadFeeSchedule(feeSchedulePath);
+
+    // Derive kindPricing[30078] as the minimum of defaultCost and all action costs.
+    // This serves as an efficient SDK-level pre-filter: the SDK gate rejects packets
+    // that are underpaid for ANY action, while per-reducer pricing in the handler
+    // enforces exact costs.
+    const allCosts = [
+      feeSchedule.defaultCost,
+      ...Object.values(feeSchedule.actions).map((a) => a.cost),
+    ];
+    const minCost = Math.min(...allCosts);
+    kindPricing = { 30078: BigInt(minCost) };
+  }
+
   return {
     secretKey,
     spacetimedbUrl,
     spacetimedbDatabase: env.SPACETIMEDB_DATABASE || 'bitcraft',
     spacetimedbToken,
     ilpAddress: env.BLS_ILP_ADDRESS || 'g.crosstown.bitcraft',
-    kindPricing: { 30078: 100n },
+    kindPricing,
     logLevel: env.BLS_LOG_LEVEL || 'info',
     port,
+    feeSchedulePath,
+    feeSchedule,
   };
 }

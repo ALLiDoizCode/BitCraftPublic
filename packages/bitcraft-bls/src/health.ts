@@ -3,12 +3,14 @@
  *
  * Provides a lightweight health endpoint using Node.js built-in http module.
  * Reports node status, identity, and connectivity.
+ * Story 3.3: Added GET /fee-schedule endpoint for fee transparency (NFR12).
  *
- * SECURITY: NEVER exposes secret keys or admin tokens.
+ * SECURITY: NEVER exposes secret keys or admin tokens (OWASP A02).
  */
 
 import { createServer, type Server, type IncomingMessage, type ServerResponse } from 'node:http';
 import { createRequire } from 'node:module';
+import type { FeeSchedule } from './fee-schedule.js';
 
 /** Package version read from package.json (cached at module load) */
 const PACKAGE_VERSION: string = (() => {
@@ -44,6 +46,8 @@ export interface HealthServerState {
   startTime: number;
   /** Set to true if the node encountered a fatal error during startup */
   error?: boolean;
+  /** Loaded fee schedule for /fee-schedule endpoint (Story 3.3) */
+  feeSchedule?: FeeSchedule;
 }
 
 /**
@@ -84,6 +88,22 @@ export function createHealthServer(
 
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify(health));
+      return;
+    }
+
+    // GET /fee-schedule -- publicly verifiable fee data (Story 3.3, NFR12)
+    // SECURITY: returns ONLY fee data, NEVER tokens or keys (OWASP A02)
+    if (req.method === 'GET' && req.url === '/fee-schedule') {
+      const feeData = state.feeSchedule
+        ? {
+            version: state.feeSchedule.version,
+            defaultCost: state.feeSchedule.defaultCost,
+            actions: state.feeSchedule.actions,
+          }
+        : { version: 1, defaultCost: 100, actions: {} };
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(feeData));
       return;
     }
 

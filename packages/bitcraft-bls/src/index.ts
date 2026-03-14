@@ -33,6 +33,13 @@ export {
   type SpacetimeDBCallerConfig,
   type ReducerResult,
 } from './spacetimedb-caller.js';
+export {
+  loadFeeSchedule,
+  getFeeForReducer,
+  FeeScheduleError,
+  type FeeSchedule,
+  type FeeScheduleEntry,
+} from './fee-schedule.js';
 
 import { loadConfig } from './config.js';
 import { createBLSNode } from './node.js';
@@ -53,7 +60,8 @@ async function main(): Promise<void> {
   const { node, identity } = createBLSNode(config);
 
   // 2.5. Register game action handler for kind 30078
-  const handler = createGameActionHandler(config);
+  // Pass identity.pubkey for self-write bypass (Story 3.3)
+  const handler = createGameActionHandler(config, identity.pubkey);
   node.on(30078, handler);
   console.log('[BLS] Handler registered for kind 30078 (game actions)');
 
@@ -63,6 +71,7 @@ async function main(): Promise<void> {
     evmAddress: identity.evmAddress,
     connected: false,
     startTime: Date.now(),
+    feeSchedule: config.feeSchedule,
   };
   const { server: healthServer, listening } = createHealthServer(config.port, healthState);
   await listening;

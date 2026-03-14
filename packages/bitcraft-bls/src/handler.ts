@@ -7,9 +7,13 @@
  * Flow:
  * 1. ctx.decode() to get NostrEvent
  * 2. Parse event.content to extract { reducer, args }
- * 3. Prepend ctx.pubkey as first arg (identity propagation)
- * 4. Call SpacetimeDB HTTP API with the reducer and args
- * 5. Return ctx.accept() on success or ctx.reject() on failure
+ * 3. Per-reducer pricing check (Story 3.3):
+ *    - Self-write bypass: skip pricing if ctx.pubkey === node identity pubkey
+ *    - Look up reducer cost from fee schedule
+ *    - Reject with F04 if ctx.amount < reducerCost
+ * 4. Prepend ctx.pubkey as first arg (identity propagation)
+ * 5. Call SpacetimeDB HTTP API with the reducer and args
+ * 6. Return ctx.accept() on success or ctx.reject() on failure
  *
  * SECURITY:
  * - NEVER logs SPACETIMEDB_TOKEN (OWASP A02)
@@ -22,6 +26,7 @@
 import type { HandlerFn, AcceptResponse, RejectResponse } from '@crosstown/sdk';
 import type { BLSConfig } from './config.js';
 import { parseEventContent, ContentParseError } from './content-parser.js';
+import { getFeeForReducer } from './fee-schedule.js';
 import {
   callReducer,
   ReducerCallError,
@@ -41,10 +46,11 @@ function truncatePubkey(pubkey: string): string {
 /**
  * Create the game action handler for kind 30078 events.
  *
- * @param config - BLS configuration (provides SpacetimeDB connection details)
+ * @param config - BLS configuration (provides SpacetimeDB connection details and fee schedule)
+ * @param identityPubkey - Optional node identity pubkey for self-write bypass
  * @returns Handler function compatible with @crosstown/sdk HandlerFn
  */
-export function createGameActionHandler(config: BLSConfig): HandlerFn {
+export function createGameActionHandler(config: BLSConfig, identityPubkey?: string): HandlerFn {
   // Build SpacetimeDB caller config from BLS config
   const callerConfig: SpacetimeDBCallerConfig = {
     url: config.spacetimedbUrl,
@@ -66,13 +72,35 @@ export function createGameActionHandler(config: BLSConfig): HandlerFn {
       const { reducer, args } = parseEventContent(event.content);
       reducerName = reducer;
 
-      // 3. Prepend ctx.pubkey as first argument (identity propagation)
+      // 3. Per-reducer pricing check (Story 3.3)
+      if (config.feeSchedule) {
+        // Self-write bypass: node's own pubkey skips per-reducer pricing
+        if (identityPubkey && ctx.pubkey === identityPubkey) {
+          console.log(`[BLS] Self-write bypass | eventId: ${eventId} | reducer: ${reducer}`);
+        } else {
+          // Look up reducer cost from fee schedule
+          const reducerCost = getFeeForReducer(config.feeSchedule, reducer);
+          const requiredAmount = BigInt(reducerCost);
+
+          if (ctx.amount < requiredAmount) {
+            console.error(
+              `[BLS] Payment insufficient | eventId: ${eventId} | pubkey: ${truncatePubkey(ctx.pubkey)} | reducer: ${reducer} | paid: ${ctx.amount} | required: ${requiredAmount}`
+            );
+            return ctx.reject(
+              'F04',
+              `Insufficient payment for ${reducer}: ${ctx.amount} < ${requiredAmount}`
+            );
+          }
+        }
+      }
+
+      // 4. Prepend ctx.pubkey as first argument (identity propagation)
       const argsWithIdentity: unknown[] = [ctx.pubkey, ...args];
 
-      // 4. Call SpacetimeDB reducer
+      // 5. Call SpacetimeDB reducer
       await callReducer(callerConfig, reducer, argsWithIdentity);
 
-      // 5. Success
+      // 6. Success
       const duration = Date.now() - startTime;
       console.log(
         `[BLS] Action succeeded | eventId: ${eventId} | pubkey: ${truncatePubkey(ctx.pubkey)} | reducer: ${reducer} | duration: ${duration}ms`
