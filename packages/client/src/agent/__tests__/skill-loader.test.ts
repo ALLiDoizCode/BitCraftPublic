@@ -16,18 +16,13 @@ import { describe, it, expect } from 'vitest';
 import { join } from 'node:path';
 import { writeFileSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import {
-  loadSkillDirectory,
-  loadSkillDirectoryMetadata,
-} from '../skill-loader.js';
+import { loadSkillDirectory, loadSkillDirectoryMetadata } from '../skill-loader.js';
 import { SkillParseError } from '../types.js';
 
 const FIXTURES_DIR = join(__dirname, 'fixtures', 'skills');
 
 /** Helper to create a temporary directory with skill files */
-function createTempSkillDir(
-  files: Record<string, string>
-): string {
+function createTempSkillDir(files: Record<string, string>): string {
   const dir = mkdtempSync(join(tmpdir(), 'skill-loader-test-'));
   for (const [name, content] of Object.entries(files)) {
     writeFileSync(join(dir, name), content, 'utf-8');
@@ -56,13 +51,7 @@ function validSkillContent(name: string, reducer?: string): string {
 }
 
 /** Malformed skill file content (missing required fields) */
-const MALFORMED_CONTENT = [
-  '---',
-  'name: broken_skill',
-  '---',
-  '',
-  '# Broken',
-].join('\n');
+const MALFORMED_CONTENT = ['---', 'name: broken_skill', '---', '', '# Broken'].join('\n');
 
 describe('Skill Directory Loader (Story 4.1)', () => {
   describe('AC3 - Directory loading with error isolation', () => {

@@ -13,10 +13,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import {
-  SkillRegistry,
-  createSkillRegistryFromDirectory,
-} from '../skill-registry.js';
+import { SkillRegistry, createSkillRegistryFromDirectory } from '../skill-registry.js';
 import { parseSkillFile } from '../skill-parser.js';
 import { SkillParseError } from '../types.js';
 import type { Skill } from '../types.js';
@@ -185,8 +182,7 @@ describe('Skill Registry (Story 4.1)', () => {
   describe('createSkillRegistryFromDirectory()', () => {
     it('integrates loader + registry from fixture directory', async () => {
       // Given the fixtures directory with 3 prototype skill files
-      const { registry, errors } =
-        await createSkillRegistryFromDirectory(FIXTURES_DIR);
+      const { registry, errors } = await createSkillRegistryFromDirectory(FIXTURES_DIR);
 
       // Then all 3 skills should be registered
       expect(registry.size).toBe(3);
@@ -208,14 +204,8 @@ describe('Skill Registry (Story 4.1)', () => {
   describe('AC5 - Uniform consumption format (NFR21)', () => {
     it('registry preserves all fields from parseSkillFile() output (round-trip integrity)', () => {
       // Given a skill parsed directly from file content
-      const content = readFileSync(
-        join(FIXTURES_DIR, 'harvest-resource.skill.md'),
-        'utf-8'
-      );
-      const parsedSkill = parseSkillFile(
-        'harvest-resource.skill.md',
-        content
-      );
+      const content = readFileSync(join(FIXTURES_DIR, 'harvest-resource.skill.md'), 'utf-8');
+      const parsedSkill = parseSkillFile('harvest-resource.skill.md', content);
 
       // When the parsed skill is registered and then retrieved
       const registry = new SkillRegistry();
@@ -237,18 +227,11 @@ describe('Skill Registry (Story 4.1)', () => {
 
     it('createSkillRegistryFromDirectory() output matches direct parseSkillFile() for each skill', async () => {
       // Given the fixtures directory loaded via the convenience factory
-      const { registry } =
-        await createSkillRegistryFromDirectory(FIXTURES_DIR);
+      const { registry } = await createSkillRegistryFromDirectory(FIXTURES_DIR);
 
       // And the same file parsed directly
-      const craftContent = readFileSync(
-        join(FIXTURES_DIR, 'craft-item.skill.md'),
-        'utf-8'
-      );
-      const directParsed = parseSkillFile(
-        join(FIXTURES_DIR, 'craft-item.skill.md'),
-        craftContent
-      );
+      const craftContent = readFileSync(join(FIXTURES_DIR, 'craft-item.skill.md'), 'utf-8');
+      const directParsed = parseSkillFile(join(FIXTURES_DIR, 'craft-item.skill.md'), craftContent);
 
       // When retrieving from the registry
       const registrySkill = registry.get('craft_item');

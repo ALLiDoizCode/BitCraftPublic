@@ -57,9 +57,7 @@ function validateDirectoryPath(dirPath: string): void {
   for (const separator of separators) {
     const segments = dirPath.split(separator);
     if (segments.some((segment) => segment === '..')) {
-      throw new Error(
-        `Directory path contains path traversal sequences (..): ${dirPath}`
-      );
+      throw new Error(`Directory path contains path traversal sequences (..): ${dirPath}`);
     }
   }
 }
@@ -73,10 +71,7 @@ function validateDirectoryPath(dirPath: string): void {
 async function listSkillFiles(dirPath: string): Promise<string[]> {
   const entries = await readdir(dirPath, { withFileTypes: true });
   return entries
-    .filter(
-      (entry) =>
-        entry.isFile() && entry.name.endsWith(SKILL_FILE_EXTENSION)
-    )
+    .filter((entry) => entry.isFile() && entry.name.endsWith(SKILL_FILE_EXTENSION))
     .map((entry) => entry.name);
 }
 
@@ -138,9 +133,7 @@ async function loadSkillFilesFromDirectory<T extends { name: string }>(
         return {
           type: 'error',
           error: new SkillParseError(
-            err instanceof Error
-              ? err.message
-              : `Unknown error parsing ${filename}`,
+            err instanceof Error ? err.message : `Unknown error parsing ${filename}`,
             'PARSE_ERROR',
             filePath
           ),
@@ -179,9 +172,7 @@ async function loadSkillFilesFromDirectory<T extends { name: string }>(
  * @returns Object with skills map and errors array
  * @throws {Error} If dirPath contains path traversal sequences or does not exist
  */
-export async function loadSkillDirectory(
-  dirPath: string
-): Promise<SkillLoadResult> {
+export async function loadSkillDirectory(dirPath: string): Promise<SkillLoadResult> {
   return loadSkillFilesFromDirectory<Skill>(dirPath, parseSkillFile);
 }
 

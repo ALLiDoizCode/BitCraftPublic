@@ -168,9 +168,7 @@ describe('Skill Parser (Story 4.1)', () => {
 
       // When parseSkillFile is called
       // Then it should throw SkillParseError with MISSING_FRONTMATTER
-      expect(() => parseSkillFile('no-front.skill.md', content)).toThrow(
-        SkillParseError
-      );
+      expect(() => parseSkillFile('no-front.skill.md', content)).toThrow(SkillParseError);
       try {
         parseSkillFile('no-front.skill.md', content);
       } catch (e) {
@@ -186,9 +184,7 @@ describe('Skill Parser (Story 4.1)', () => {
 
       // When parseSkillFile is called
       // Then it should throw SkillParseError with MISSING_REQUIRED_FIELD
-      expect(() => parseSkillFile('empty-front.skill.md', content)).toThrow(
-        SkillParseError
-      );
+      expect(() => parseSkillFile('empty-front.skill.md', content)).toThrow(SkillParseError);
       try {
         parseSkillFile('empty-front.skill.md', content);
       } catch (e) {
@@ -218,9 +214,7 @@ describe('Skill Parser (Story 4.1)', () => {
 
       // When parseSkillFile is called
       // Then it should throw identifying the file and missing field
-      expect(() => parseSkillFile('nameless.skill.md', content)).toThrow(
-        SkillParseError
-      );
+      expect(() => parseSkillFile('nameless.skill.md', content)).toThrow(SkillParseError);
       try {
         parseSkillFile('nameless.skill.md', content);
       } catch (e) {
@@ -251,9 +245,7 @@ describe('Skill Parser (Story 4.1)', () => {
 
       // When parseSkillFile is called
       // Then it should throw identifying the missing reducer field
-      expect(() =>
-        parseSkillFile('no-reducer.skill.md', content)
-      ).toThrow(SkillParseError);
+      expect(() => parseSkillFile('no-reducer.skill.md', content)).toThrow(SkillParseError);
       try {
         parseSkillFile('no-reducer.skill.md', content);
       } catch (e) {
@@ -270,9 +262,7 @@ describe('Skill Parser (Story 4.1)', () => {
 
       // When parseSkillFile is called
       // Then it should throw SkillParseError with PARSE_ERROR
-      expect(() =>
-        parseSkillFile('oversized.skill.md', oversizedContent)
-      ).toThrow(SkillParseError);
+      expect(() => parseSkillFile('oversized.skill.md', oversizedContent)).toThrow(SkillParseError);
       try {
         parseSkillFile('oversized.skill.md', oversizedContent);
       } catch (e) {

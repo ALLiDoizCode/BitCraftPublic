@@ -62,8 +62,7 @@ describe('Skill Eval Parser (Story 4.1)', () => {
           reducer: 'player_move',
           args: [150, 200],
         },
-        criteria:
-          'Correctly extracts numeric coordinates from natural language',
+        criteria: 'Correctly extracts numeric coordinates from natural language',
       });
     });
 
@@ -176,8 +175,7 @@ describe('Skill Eval Parser (Story 4.1)', () => {
       expect(skill.evals[2]).toEqual({
         prompt: 'Gather some wood',
         expected: 'skill_not_triggered',
-        criteria:
-          'Gathering intent should trigger harvest_resource, not crafting',
+        criteria: 'Gathering intent should trigger harvest_resource, not crafting',
       });
     });
 
@@ -194,9 +192,7 @@ describe('Skill Eval Parser (Story 4.1)', () => {
 
       // When parseSkillFile is called
       // Then it should throw SkillParseError
-      expect(() =>
-        parseSkillFile('eval-no-prompt.skill.md', content)
-      ).toThrow(SkillParseError);
+      expect(() => parseSkillFile('eval-no-prompt.skill.md', content)).toThrow(SkillParseError);
     });
 
     it('eval missing expected field -> error', () => {
@@ -234,9 +230,7 @@ describe('Skill Eval Parser (Story 4.1)', () => {
 
       // When parseSkillFile is called
       // Then it should throw SkillParseError
-      expect(() =>
-        parseSkillFile('eval-no-criteria.skill.md', content)
-      ).toThrow(SkillParseError);
+      expect(() => parseSkillFile('eval-no-criteria.skill.md', content)).toThrow(SkillParseError);
     });
 
     it('eval with expected as string skill_not_triggered (YAML unquoted) parses correctly', () => {

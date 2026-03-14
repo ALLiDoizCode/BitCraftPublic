@@ -88,8 +88,7 @@ function extractFrontmatter(
     };
   } catch (err: unknown) {
     // gray-matter / js-yaml parse errors (including custom tag rejection)
-    const message =
-      err instanceof Error ? err.message : 'Unknown YAML parsing error';
+    const message = err instanceof Error ? err.message : 'Unknown YAML parsing error';
     throw new SkillParseError(
       `Invalid YAML in frontmatter: ${message} (${filePath})`,
       'INVALID_YAML',
@@ -161,10 +160,7 @@ function validateReducerName(reducer: string, filePath: string): void {
 /**
  * Validate and parse parameters array from frontmatter data.
  */
-function validateParams(
-  rawParams: unknown[],
-  filePath: string
-): SkillParam[] {
+function validateParams(rawParams: unknown[], filePath: string): SkillParam[] {
   return rawParams.map((rawParam, index) => {
     if (typeof rawParam !== 'object' || rawParam === null) {
       throw new SkillParseError(
@@ -231,10 +227,7 @@ function validateParams(
 /**
  * Validate and parse subscriptions array from frontmatter data.
  */
-function validateSubscriptions(
-  rawSubscriptions: unknown[],
-  filePath: string
-): SkillSubscription[] {
+function validateSubscriptions(rawSubscriptions: unknown[], filePath: string): SkillSubscription[] {
   return rawSubscriptions.map((rawSub, index) => {
     if (typeof rawSub !== 'object' || rawSub === null) {
       throw new SkillParseError(
@@ -275,10 +268,7 @@ function validateSubscriptions(
 /**
  * Validate and parse evals array from frontmatter data.
  */
-function validateEvals(
-  rawEvals: unknown[],
-  filePath: string
-): SkillEval[] {
+function validateEvals(rawEvals: unknown[], filePath: string): SkillEval[] {
   return rawEvals.map((rawEval, index) => {
     if (typeof rawEval !== 'object' || rawEval === null) {
       throw new SkillParseError(
@@ -314,10 +304,7 @@ function validateEvals(
 
     if (evalEntry.expected === 'skill_not_triggered') {
       expected = 'skill_not_triggered';
-    } else if (
-      typeof evalEntry.expected === 'object' &&
-      evalEntry.expected !== null
-    ) {
+    } else if (typeof evalEntry.expected === 'object' && evalEntry.expected !== null) {
       const expectedObj = evalEntry.expected as Record<string, unknown>;
 
       // Validate expected.reducer is a non-empty string
@@ -346,9 +333,10 @@ function validateEvals(
 
       expected = {
         reducer: expectedObj.reducer,
-        args: expectedObj.args === null || expectedObj.args === undefined
-          ? null
-          : (expectedObj.args as unknown[]),
+        args:
+          expectedObj.args === null || expectedObj.args === undefined
+            ? null
+            : (expectedObj.args as unknown[]),
       };
     } else {
       throw new SkillParseError(
@@ -373,9 +361,7 @@ function validateEvals(
  * Returns undefined if tags is not present.
  * Non-string array elements are coerced to strings (forward-compatible behavior).
  */
-function parseTags(
-  data: Record<string, unknown>
-): string[] | undefined {
+function parseTags(data: Record<string, unknown>): string[] | undefined {
   if (data.tags === undefined || data.tags === null) {
     return undefined;
   }
@@ -401,22 +387,14 @@ function parseTags(
 export function parseSkillFile(filePath: string, content: string): Skill {
   const { data, body } = extractFrontmatter(filePath, content);
 
-  const { name, description, reducer } = validateRequiredFields(
-    data,
-    filePath
-  );
+  const { name, description, reducer } = validateRequiredFields(data, filePath);
   validateReducerName(reducer, filePath);
 
   const params = validateParams(data.params as unknown[], filePath);
-  const subscriptions = validateSubscriptions(
-    data.subscriptions as unknown[],
-    filePath
-  );
+  const subscriptions = validateSubscriptions(data.subscriptions as unknown[], filePath);
 
   // Parse optional evals
-  const evals = Array.isArray(data.evals)
-    ? validateEvals(data.evals, filePath)
-    : [];
+  const evals = Array.isArray(data.evals) ? validateEvals(data.evals, filePath) : [];
 
   // Parse optional tags
   const tags = parseTags(data);
@@ -447,23 +425,14 @@ export function parseSkillFile(filePath: string, content: string): Skill {
  * @returns Parsed SkillMetadata object (frontmatter only)
  * @throws {SkillParseError} If content is invalid or missing required fields
  */
-export function parseSkillMetadata(
-  filePath: string,
-  content: string
-): SkillMetadata {
+export function parseSkillMetadata(filePath: string, content: string): SkillMetadata {
   const { data } = extractFrontmatter(filePath, content);
 
-  const { name, description, reducer } = validateRequiredFields(
-    data,
-    filePath
-  );
+  const { name, description, reducer } = validateRequiredFields(data, filePath);
   validateReducerName(reducer, filePath);
 
   const params = validateParams(data.params as unknown[], filePath);
-  const subscriptions = validateSubscriptions(
-    data.subscriptions as unknown[],
-    filePath
-  );
+  const subscriptions = validateSubscriptions(data.subscriptions as unknown[], filePath);
 
   const tags = parseTags(data);
 

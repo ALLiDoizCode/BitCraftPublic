@@ -108,3 +108,28 @@ export {
   SkillRegistry,
   createSkillRegistryFromDirectory,
 } from './agent';
+
+// Agent module - Agent.md configuration and skill selection (Story 4.2)
+export {
+  // Agent Config Types
+  type AgentBudgetConfig,
+  type AgentLoggingConfig,
+  type AgentConfig,
+  type ResolvedAgentConfig,
+  type AgentConfigErrorCode,
+  AgentConfigError,
+  // Agent Config Parser
+  parseAgentConfig,
+  // Agent Config Loader
+  loadAgentConfig,
+  reloadAgentConfig,
+  // Agent File Generator
+  type AgentFileOutput,
+  generateClaudeMd,
+  generateAgentsMd,
+  generateAgentFiles,
+  // Triggering Precision Validator
+  type TriggeringPrecisionWarning,
+  type TriggeringPrecisionReport,
+  validateTriggeringPrecision,
+} from './agent';

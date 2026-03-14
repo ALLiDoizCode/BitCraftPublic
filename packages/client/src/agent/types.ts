@@ -126,12 +126,7 @@ export class SkillParseError extends Error {
   /** List of missing or invalid fields (for MISSING_REQUIRED_FIELD, INVALID_PARAM_TYPE) */
   readonly fields?: string[];
 
-  constructor(
-    message: string,
-    code: SkillParseErrorCode,
-    filePath: string,
-    fields?: string[]
-  ) {
+  constructor(message: string, code: SkillParseErrorCode, filePath: string, fields?: string[]) {
     super(message);
     this.name = 'SkillParseError';
     this.code = code;

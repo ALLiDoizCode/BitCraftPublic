@@ -100,7 +100,7 @@ epics:
         status: done
       - id: story-4.2
         title: 'Agent.md Configuration & Skill Selection'
-        status: backlog
+        status: done
       - id: story-4.3
         title: 'Configuration Validation Against SpacetimeDB'
         status: backlog

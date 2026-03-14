@@ -31,12 +31,8 @@ function createTestSkill(overrides: Partial<Skill> = {}): Skill {
     name: 'test_skill',
     description: 'A test skill',
     reducer: 'test_action',
-    params: [
-      { name: 'target_id', type: 'u64', description: 'Target entity ID' },
-    ],
-    subscriptions: [
-      { table: 'player_state', description: 'Current player state' },
-    ],
+    params: [{ name: 'target_id', type: 'u64', description: 'Target entity ID' }],
+    subscriptions: [{ table: 'player_state', description: 'Current player state' }],
     body: '# Test Skill\n\nA test skill body.',
     evals: [],
     ...overrides,
@@ -105,10 +101,7 @@ describe('Skill Progressive Disclosure (Story 4.1)', () => {
       const content = readFixture('harvest-resource.skill.md');
 
       // When both parsers are called
-      const metadata = parseSkillMetadata(
-        'harvest-resource.skill.md',
-        content
-      );
+      const metadata = parseSkillMetadata('harvest-resource.skill.md', content);
       const full = parseSkillFile('harvest-resource.skill.md', content);
 
       // Then the metadata fields should match exactly

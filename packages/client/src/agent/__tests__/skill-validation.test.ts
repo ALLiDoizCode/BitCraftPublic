@@ -23,15 +23,10 @@ function createSkillContent(overrides: Record<string, string> = {}): string {
     name: 'test_skill',
     description: 'A test skill for validation',
     reducer: 'test_action',
-    params: [
-      '  - name: target_id',
-      '    type: u64',
-      '    description: Target entity ID',
-    ].join('\n'),
-    subscriptions: [
-      '  - table: player_state',
-      '    description: Current player state',
-    ].join('\n'),
+    params: ['  - name: target_id', '    type: u64', '    description: Target entity ID'].join(
+      '\n'
+    ),
+    subscriptions: ['  - table: player_state', '    description: Current player state'].join('\n'),
   };
 
   const merged = { ...defaults, ...overrides };
@@ -46,9 +41,7 @@ function createSkillContent(overrides: Record<string, string> = {}): string {
     }
   }
 
-  return ['---', ...frontmatterLines, '---', '', '# Test Skill', ''].join(
-    '\n'
-  );
+  return ['---', ...frontmatterLines, '---', '', '# Test Skill', ''].join('\n');
 }
 
 describe('Skill Validation (Story 4.1)', () => {
@@ -70,9 +63,7 @@ describe('Skill Validation (Story 4.1)', () => {
 
       // When parseSkillFile is called
       // Then it should throw SkillParseError with INVALID_REDUCER_NAME
-      expect(() =>
-        parseSkillFile('space-reducer.skill.md', content)
-      ).toThrow(SkillParseError);
+      expect(() => parseSkillFile('space-reducer.skill.md', content)).toThrow(SkillParseError);
       try {
         parseSkillFile('space-reducer.skill.md', content);
       } catch (e) {
@@ -89,9 +80,7 @@ describe('Skill Validation (Story 4.1)', () => {
 
       // When parseSkillFile is called
       // Then it should throw SkillParseError with INVALID_REDUCER_NAME
-      expect(() =>
-        parseSkillFile('long-reducer.skill.md', content)
-      ).toThrow(SkillParseError);
+      expect(() => parseSkillFile('long-reducer.skill.md', content)).toThrow(SkillParseError);
       try {
         parseSkillFile('long-reducer.skill.md', content);
       } catch (e) {
@@ -142,9 +131,7 @@ describe('Skill Validation (Story 4.1)', () => {
 
       // When parseSkillFile is called
       // Then it should throw SkillParseError with INVALID_PARAM_TYPE
-      expect(() =>
-        parseSkillFile('bad-param-type.skill.md', content)
-      ).toThrow(SkillParseError);
+      expect(() => parseSkillFile('bad-param-type.skill.md', content)).toThrow(SkillParseError);
       try {
         parseSkillFile('bad-param-type.skill.md', content);
       } catch (e) {
@@ -173,9 +160,7 @@ describe('Skill Validation (Story 4.1)', () => {
 
       // When parseSkillFile is called
       // Then it should throw SkillParseError with MISSING_REQUIRED_FIELD
-      expect(() =>
-        parseSkillFile('no-params.skill.md', content)
-      ).toThrow(SkillParseError);
+      expect(() => parseSkillFile('no-params.skill.md', content)).toThrow(SkillParseError);
       try {
         parseSkillFile('no-params.skill.md', content);
       } catch (e) {
@@ -203,9 +188,7 @@ describe('Skill Validation (Story 4.1)', () => {
 
       // When parseSkillFile is called
       // Then it should throw SkillParseError with MISSING_REQUIRED_FIELD
-      expect(() =>
-        parseSkillFile('no-subs.skill.md', content)
-      ).toThrow(SkillParseError);
+      expect(() => parseSkillFile('no-subs.skill.md', content)).toThrow(SkillParseError);
       try {
         parseSkillFile('no-subs.skill.md', content);
       } catch (e) {
@@ -218,41 +201,29 @@ describe('Skill Validation (Story 4.1)', () => {
     it('rejects param entry missing name -> error', () => {
       // Given a skill file with a param entry missing the name field
       const content = createSkillContent({
-        params: [
-          '  - type: i32',
-          '    description: Missing name parameter',
-        ].join('\n'),
+        params: ['  - type: i32', '    description: Missing name parameter'].join('\n'),
       });
 
       // When parseSkillFile is called
       // Then it should throw SkillParseError
-      expect(() =>
-        parseSkillFile('no-param-name.skill.md', content)
-      ).toThrow(SkillParseError);
+      expect(() => parseSkillFile('no-param-name.skill.md', content)).toThrow(SkillParseError);
     });
 
     it('rejects subscription entry missing table -> error', () => {
       // Given a skill file with a subscription entry missing the table field
       const content = createSkillContent({
-        subscriptions: [
-          '  - description: Subscription without table name',
-        ].join('\n'),
+        subscriptions: ['  - description: Subscription without table name'].join('\n'),
       });
 
       // When parseSkillFile is called
       // Then it should throw SkillParseError
-      expect(() =>
-        parseSkillFile('no-sub-table.skill.md', content)
-      ).toThrow(SkillParseError);
+      expect(() => parseSkillFile('no-sub-table.skill.md', content)).toThrow(SkillParseError);
     });
 
     it('rejects param entry missing type -> MISSING_REQUIRED_FIELD', () => {
       // Given a skill file with a param entry missing the type field
       const content = createSkillContent({
-        params: [
-          '  - name: target_id',
-          '    description: Target entity with no type',
-        ].join('\n'),
+        params: ['  - name: target_id', '    description: Target entity with no type'].join('\n'),
       });
 
       // When parseSkillFile is called
@@ -270,10 +241,7 @@ describe('Skill Validation (Story 4.1)', () => {
     it('rejects param entry missing description -> MISSING_REQUIRED_FIELD', () => {
       // Given a skill file with a param entry missing the description field
       const content = createSkillContent({
-        params: [
-          '  - name: target_id',
-          '    type: u64',
-        ].join('\n'),
+        params: ['  - name: target_id', '    type: u64'].join('\n'),
       });
 
       // When parseSkillFile is called
@@ -291,9 +259,7 @@ describe('Skill Validation (Story 4.1)', () => {
     it('rejects subscription entry missing description -> error', () => {
       // Given a skill file with a subscription entry missing the description field
       const content = createSkillContent({
-        subscriptions: [
-          '  - table: player_state',
-        ].join('\n'),
+        subscriptions: ['  - table: player_state'].join('\n'),
       });
 
       // When parseSkillFile is called
@@ -328,9 +294,7 @@ describe('Skill Validation (Story 4.1)', () => {
 
       // When parseSkillFile is called
       // Then it should throw SkillParseError with MISSING_REQUIRED_FIELD
-      expect(() =>
-        parseSkillFile('no-desc.skill.md', content)
-      ).toThrow(SkillParseError);
+      expect(() => parseSkillFile('no-desc.skill.md', content)).toThrow(SkillParseError);
       try {
         parseSkillFile('no-desc.skill.md', content);
       } catch (e) {
