@@ -86,7 +86,7 @@ epics:
         status: done
       - id: story-3.4
         title: 'Identity Propagation & End-to-End Verification'
-        status: backlog
+        status: done
 
   - id: epic-4
     title: 'Declarative Agent Configuration'

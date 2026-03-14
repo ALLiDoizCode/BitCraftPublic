@@ -1,5 +1,13 @@
 ---
-stepsCompleted: ['step-01-load-context', 'step-02-define-thresholds', 'step-03-gather-evidence', 'step-04-assess-nfrs', 'step-05-recommendations', 'step-06-generate-report']
+stepsCompleted:
+  [
+    'step-01-load-context',
+    'step-02-define-thresholds',
+    'step-03-gather-evidence',
+    'step-04-assess-nfrs',
+    'step-05-recommendations',
+    'step-06-generate-report',
+  ]
 lastStep: 'step-06-generate-report'
 lastSaved: '2026-03-13'
 workflowType: 'testarch-nfr-assess'
@@ -343,17 +351,17 @@ No immediate actions required. All NFRs pass.
 
 **Based on ADR Quality Readiness Checklist (8 categories, 29 criteria)**
 
-| Category                                         | Criteria Met | PASS | CONCERNS | FAIL | Overall Status     |
-| ------------------------------------------------ | ------------ | ---- | -------- | ---- | ------------------ |
-| 1. Testability & Automation                      | 4/4          | 4    | 0        | 0    | PASS               |
-| 2. Test Data Strategy                            | 3/3          | 3    | 0        | 0    | PASS               |
-| 3. Scalability & Availability                    | 3/4          | 3    | 1        | 0    | PASS               |
-| 4. Disaster Recovery                             | N/A          | N/A  | N/A      | N/A  | N/A (config only)  |
-| 5. Security                                      | 4/4          | 4    | 0        | 0    | PASS               |
-| 6. Monitorability, Debuggability & Manageability | 3/4          | 3    | 1        | 0    | PASS               |
-| 7. QoS & QoE                                     | 3/4          | 3    | 1        | 0    | PASS               |
-| 8. Deployability                                 | 3/3          | 3    | 0        | 0    | PASS               |
-| **Total**                                        | **23/26**    | **23** | **3** | **0** | **PASS**           |
+| Category                                         | Criteria Met | PASS   | CONCERNS | FAIL  | Overall Status    |
+| ------------------------------------------------ | ------------ | ------ | -------- | ----- | ----------------- |
+| 1. Testability & Automation                      | 4/4          | 4      | 0        | 0     | PASS              |
+| 2. Test Data Strategy                            | 3/3          | 3      | 0        | 0     | PASS              |
+| 3. Scalability & Availability                    | 3/4          | 3      | 1        | 0     | PASS              |
+| 4. Disaster Recovery                             | N/A          | N/A    | N/A      | N/A   | N/A (config only) |
+| 5. Security                                      | 4/4          | 4      | 0        | 0     | PASS              |
+| 6. Monitorability, Debuggability & Manageability | 3/4          | 3      | 1        | 0     | PASS              |
+| 7. QoS & QoE                                     | 3/4          | 3      | 1        | 0     | PASS              |
+| 8. Deployability                                 | 3/3          | 3      | 0        | 0     | PASS              |
+| **Total**                                        | **23/26**    | **23** | **3**    | **0** | **PASS**          |
 
 **Criteria Met Scoring:**
 

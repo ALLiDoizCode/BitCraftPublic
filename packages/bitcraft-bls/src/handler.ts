@@ -11,13 +11,15 @@
  *    - Self-write bypass: skip pricing if ctx.pubkey === node identity pubkey
  *    - Look up reducer cost from fee schedule
  *    - Reject with F04 if ctx.amount < reducerCost
- * 4. Prepend ctx.pubkey as first arg (identity propagation)
- * 5. Call SpacetimeDB HTTP API with the reducer and args
- * 6. Return ctx.accept() on success or ctx.reject() on failure
+ * 4. Validate ctx.pubkey format (Story 3.4: defense-in-depth identity validation)
+ * 5. Prepend ctx.pubkey as first arg (identity propagation)
+ * 6. Call SpacetimeDB HTTP API with the reducer and args
+ * 7. Return ctx.accept() on success or ctx.reject() on failure
  *
  * SECURITY:
  * - NEVER logs SPACETIMEDB_TOKEN (OWASP A02)
  * - Reducer name validated by content parser (OWASP A03)
+ * - Pubkey validated as 64-char lowercase hex before propagation (OWASP A01, A03)
  * - Zero silent failures (NFR27): every execution results in accept or reject
  *
  * @module handler
@@ -32,16 +34,7 @@ import {
   ReducerCallError,
   type SpacetimeDBCallerConfig,
 } from './spacetimedb-caller.js';
-
-/**
- * Truncate a pubkey for logging: first 8 + last 4 hex chars.
- * Example: "32e1827635450ebb3c5a7d12c1f8e7b2b514439ac10a67eef3d9fd9c5c68e245"
- *       -> "32e18276...e245"
- */
-function truncatePubkey(pubkey: string): string {
-  if (pubkey.length <= 12) return pubkey;
-  return `${pubkey.slice(0, 8)}...${pubkey.slice(-4)}`;
-}
+import { truncatePubkey, PUBKEY_REGEX } from './utils.js';
 
 /**
  * Create the game action handler for kind 30078 events.
@@ -94,13 +87,34 @@ export function createGameActionHandler(config: BLSConfig, identityPubkey?: stri
         }
       }
 
-      // 4. Prepend ctx.pubkey as first argument (identity propagation)
+      // 4. Validate ctx.pubkey format (Story 3.4: defense-in-depth)
+      if (typeof ctx.pubkey !== 'string' || ctx.pubkey.length !== 64) {
+        const detail =
+          typeof ctx.pubkey === 'string' ? `${ctx.pubkey.length} chars` : typeof ctx.pubkey;
+        console.error(
+          `[BLS] Action failed | eventId: ${eventId} | pubkey: ${truncatePubkey(ctx.pubkey)} | reducer: ${reducer} | error: F06: Invalid identity: pubkey must be 64-char hex (got ${detail})`
+        );
+        return ctx.reject('F06', `Invalid identity: pubkey must be 64-char hex`);
+      }
+      if (!PUBKEY_REGEX.test(ctx.pubkey)) {
+        console.error(
+          `[BLS] Action failed | eventId: ${eventId} | pubkey: ${truncatePubkey(ctx.pubkey)} | reducer: ${reducer} | error: F06: Invalid identity: pubkey contains non-hex characters`
+        );
+        return ctx.reject('F06', `Invalid identity: pubkey contains non-hex characters`);
+      }
+
+      // 5. Prepend ctx.pubkey as first argument (identity propagation)
       const argsWithIdentity: unknown[] = [ctx.pubkey, ...args];
 
-      // 5. Call SpacetimeDB reducer
+      // Log identity propagation (Story 3.4: observability)
+      console.log(
+        `[BLS] Identity propagated | eventId: ${eventId} | pubkey: ${truncatePubkey(ctx.pubkey)} | reducer: ${reducer}`
+      );
+
+      // 6. Call SpacetimeDB reducer
       await callReducer(callerConfig, reducer, argsWithIdentity);
 
-      // 6. Success
+      // 7. Success
       const duration = Date.now() - startTime;
       console.log(
         `[BLS] Action succeeded | eventId: ${eventId} | pubkey: ${truncatePubkey(ctx.pubkey)} | reducer: ${reducer} | duration: ${duration}ms`

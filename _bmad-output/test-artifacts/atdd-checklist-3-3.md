@@ -1,5 +1,12 @@
 ---
-stepsCompleted: ['step-01-preflight-and-context', 'step-02-generation-mode', 'step-03-test-strategy', 'step-04-generate-tests', 'step-05-validate-and-complete']
+stepsCompleted:
+  [
+    'step-01-preflight-and-context',
+    'step-02-generation-mode',
+    'step-03-test-strategy',
+    'step-04-generate-tests',
+    'step-05-validate-and-complete',
+  ]
 lastStep: 'step-05-validate-and-complete'
 lastSaved: '2026-03-13'
 workflowType: 'testarch-atdd'
@@ -59,7 +66,7 @@ Story 3.3 adds pricing configuration to the BLS node. It introduces a fee schedu
 
 **Stack detected:** backend (Node.js + TypeScript + vitest)
 **Test framework:** vitest (configured in packages/bitcraft-bls/vitest.config.ts)
-**Existing patterns:** 15 test files in packages/bitcraft-bls/src/__tests__/, 3 test factories (bls-config, handler-context, identity)
+**Existing patterns:** 15 test files in packages/bitcraft-bls/src/**tests**/, 3 test factories (bls-config, handler-context, identity)
 **Knowledge loaded:** data-factories, test-quality, test-levels-framework, test-priorities-matrix
 **E2E/Playwright:** Not applicable (backend-only story, no UI impact)
 
@@ -67,23 +74,25 @@ Story 3.3 adds pricing configuration to the BLS node. It introduces a fee schedu
 
 ## Test Strategy - AC to Test Level Mapping
 
-| AC | Test Level | Test File | Test Count | Priority |
-|----|-----------|-----------|------------|----------|
-| AC1 | Unit | pricing-config.test.ts | 11 | P0 |
-| AC2 | Unit | fee-schedule.test.ts | 12 | P0 |
-| AC2, AC3 | Unit | pricing-enforcement.test.ts | 8 | P0 |
-| AC3 | Unit | self-write-bypass.test.ts | 5 | P0 |
-| AC4 | Unit | fee-schedule-endpoint.test.ts | 5 | P1 |
-| AC4 | Integration | fee-schedule-consistency.test.ts | 4 | P1 |
-| AC1-5 | Integration | pricing-integration.test.ts | 6 | P2 |
+| AC       | Test Level  | Test File                        | Test Count | Priority |
+| -------- | ----------- | -------------------------------- | ---------- | -------- |
+| AC1      | Unit        | pricing-config.test.ts           | 11         | P0       |
+| AC2      | Unit        | fee-schedule.test.ts             | 12         | P0       |
+| AC2, AC3 | Unit        | pricing-enforcement.test.ts      | 8          | P0       |
+| AC3      | Unit        | self-write-bypass.test.ts        | 5          | P0       |
+| AC4      | Unit        | fee-schedule-endpoint.test.ts    | 5          | P1       |
+| AC4      | Integration | fee-schedule-consistency.test.ts | 4          | P1       |
+| AC1-5    | Integration | pricing-integration.test.ts      | 6          | P2       |
 
 ---
 
 ## Test Files Created
 
 ### 1. `packages/bitcraft-bls/src/__tests__/fee-schedule.test.ts` (12 tests)
+
 **Covers:** AC2, AC4
 **Tests:**
+
 - `parses valid fee schedule JSON successfully`
 - `loads fee schedule with per-reducer costs -- each reducer has different cost`
 - `returns action cost for known reducer`
@@ -98,8 +107,10 @@ Story 3.3 adds pricing configuration to the BLS node. It introduces a fee schedu
 - `throws FeeScheduleError for file content exceeding 1MB` (OWASP A03)
 
 ### 2. `packages/bitcraft-bls/src/__tests__/pricing-config.test.ts` (11 tests)
+
 **Covers:** AC1, AC2, AC3
 **Tests:**
+
 - `kindPricing includes kind 30078 with configured price`
 - `uses default kindPricing { 30078: 100n } when no fee schedule path provided`
 - `loads fee schedule from BLS_FEE_SCHEDULE_PATH when set`
@@ -113,8 +124,10 @@ Story 3.3 adds pricing configuration to the BLS node. It introduces a fee schedu
 - `config defaults when no fee schedule provided`
 
 ### 3. `packages/bitcraft-bls/src/__tests__/pricing-enforcement.test.ts` (8 tests)
+
 **Covers:** AC2, AC3
 **Tests:**
+
 - `rejects when payment < reducer cost with F04`
 - `accepts when payment >= reducer cost`
 - `uses defaultCost for reducer not in fee schedule`
@@ -125,8 +138,10 @@ Story 3.3 adds pricing configuration to the BLS node. It introduces a fee schedu
 - `per-reducer pricing: expensive action empire_form (cost 100) fails with small payment`
 
 ### 4. `packages/bitcraft-bls/src/__tests__/self-write-bypass.test.ts` (5 tests)
+
 **Covers:** AC3
 **Tests:**
+
 - `per-reducer pricing bypassed for node own pubkey`
 - `non-node pubkeys are subject to both SDK and per-reducer pricing`
 - `self-write bypass works with zero-amount packets`
@@ -134,8 +149,10 @@ Story 3.3 adds pricing configuration to the BLS node. It introduces a fee schedu
 - `SDK createPricingValidator allows free access for node own pubkey (SDK default)`
 
 ### 5. `packages/bitcraft-bls/src/__tests__/fee-schedule-endpoint.test.ts` (5 tests)
+
 **Covers:** AC4
 **Tests:**
+
 - `GET /fee-schedule returns JSON fee schedule`
 - `response includes all reducer costs`
 - `response includes default cost`
@@ -143,8 +160,10 @@ Story 3.3 adds pricing configuration to the BLS node. It introduces a fee schedu
 - `endpoint NEVER includes tokens or keys in response (OWASP A02)`
 
 ### 6. `packages/bitcraft-bls/src/__tests__/pricing-integration.test.ts` (6 tests, Docker-dependent)
+
 **Covers:** AC1-5
 **Tests:**
+
 - `full handler flow with sufficient payment -- handler invoked, action succeeds`
 - `handler with insufficient payment for specific reducer -- F04 rejection before handler`
 - `SDK-level pricing: packet below kindPricing minimum -- F04 before handler`
@@ -153,8 +172,10 @@ Story 3.3 adds pricing configuration to the BLS node. It introduces a fee schedu
 - `self-write bypass: node own pubkey processes action with zero payment`
 
 ### 7. `packages/bitcraft-bls/src/__tests__/fee-schedule-consistency.test.ts` (4 tests, Docker-dependent)
+
 **Covers:** AC4
 **Tests:**
+
 - `BLS fee schedule format matches client ActionCostRegistry format`
 - `cost lookup for player_move returns same value from BLS and client registries`
 - `cost lookup for unknown reducer returns defaultCost from both sources`
@@ -165,8 +186,10 @@ Story 3.3 adds pricing configuration to the BLS node. It introduces a fee schedu
 ## Stub Module Created
 
 ### `packages/bitcraft-bls/src/fee-schedule.ts`
+
 **Purpose:** TDD red phase stub -- provides type definitions and function signatures for test imports.
 **Contents:**
+
 - `FeeScheduleEntry` interface (cost, category?, frequency?)
 - `FeeSchedule` interface (version, defaultCost, actions)
 - `FeeScheduleError` class (extends Error, has code property)
@@ -180,12 +203,14 @@ This stub ensures tests can import the module without compilation errors while m
 ## Implementation Checklist for DEV Team
 
 ### RED Phase (TEA -- COMPLETE)
+
 - [x] All 51 acceptance tests generated with `it.skip()`
 - [x] Stub module created with interfaces and throw-not-implemented functions
 - [x] Full regression suite passes (124 existing tests pass, 86 skipped including 51 new)
 - [x] No test interdependencies (all tests independent)
 
 ### GREEN Phase (DEV -- TODO)
+
 For each item below, remove the `it.skip()` from related tests, implement the feature, and verify tests pass.
 
 1. **Task 1: Implement `loadFeeSchedule()` and `getFeeForReducer()`**
@@ -228,6 +253,7 @@ For each item below, remove the `it.skip()` from related tests, implement the fe
    - Integration tests require Docker: `pnpm --filter bitcraft-bls test:integration`
 
 ### REFACTOR Phase (DEV -- after GREEN)
+
 - Remove stub comments from fee-schedule.ts
 - Extract shared test constants (pubkeys, event factories) if duplication emerges
 - Review error messages for consistency with existing handler error patterns

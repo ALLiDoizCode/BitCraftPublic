@@ -24,35 +24,35 @@ Implemented the Game Action Handler for kind 30078 events in the BLS (BitCraft L
 
 ### `packages/bitcraft-bls/src/` (source)
 
-| File | Status | Description |
-|------|--------|-------------|
-| `content-parser.ts` | Created | Content parser: `parseEventContent()`, `ContentParseError`, strict regex validation, 1MB limit |
-| `spacetimedb-caller.ts` | Created | SpacetimeDB HTTP caller: `callReducer()`, `ReducerCallError`, AbortController timeout, error body truncation |
-| `handler.ts` | Created | Handler factory: `createGameActionHandler()`, orchestrates decode→parse→prepend→call→accept/reject |
-| `index.ts` | Modified | Added handler registration (`node.on(30078, handler)`) and exports |
+| File                    | Status   | Description                                                                                                  |
+| ----------------------- | -------- | ------------------------------------------------------------------------------------------------------------ |
+| `content-parser.ts`     | Created  | Content parser: `parseEventContent()`, `ContentParseError`, strict regex validation, 1MB limit               |
+| `spacetimedb-caller.ts` | Created  | SpacetimeDB HTTP caller: `callReducer()`, `ReducerCallError`, AbortController timeout, error body truncation |
+| `handler.ts`            | Created  | Handler factory: `createGameActionHandler()`, orchestrates decode→parse→prepend→call→accept/reject           |
+| `index.ts`              | Modified | Added handler registration (`node.on(30078, handler)`) and exports                                           |
 
 ### `packages/bitcraft-bls/src/__tests__/` (tests)
 
-| File | Status | Description |
-|------|--------|-------------|
-| `content-parser.test.ts` | Created | 17 unit tests — JSON parsing, field validation, injection prevention, size limits |
-| `spacetimedb-caller.test.ts` | Created | 12 unit tests — HTTP responses, timeouts, network errors, token security |
-| `handler-dispatch.test.ts` | Created | 10 unit tests — Event decoding, content parsing, pubkey prepend, error routing |
-| `identity-prepend.test.ts` | Created | 6 unit tests — Pubkey first element, args preservation, hex format |
-| `error-mapping.test.ts` | Created | 5 unit tests — F06/T00 mapping, error detail inclusion |
-| `ac-coverage-gaps-3-2.test.ts` | Created | 7 unit tests — Gap-fill for handler registration, log formats, no-call on invalid content |
-| `handler-e2e-integration.test.ts` | Created | 12 integration tests (Docker-dependent) — Full handler flow, concurrent actions |
-| `handler-error-integration.test.ts` | Created | 8 integration tests (Docker-dependent) — Invalid content, unknown reducers, errors |
+| File                                | Status  | Description                                                                               |
+| ----------------------------------- | ------- | ----------------------------------------------------------------------------------------- |
+| `content-parser.test.ts`            | Created | 17 unit tests — JSON parsing, field validation, injection prevention, size limits         |
+| `spacetimedb-caller.test.ts`        | Created | 12 unit tests — HTTP responses, timeouts, network errors, token security                  |
+| `handler-dispatch.test.ts`          | Created | 10 unit tests — Event decoding, content parsing, pubkey prepend, error routing            |
+| `identity-prepend.test.ts`          | Created | 6 unit tests — Pubkey first element, args preservation, hex format                        |
+| `error-mapping.test.ts`             | Created | 5 unit tests — F06/T00 mapping, error detail inclusion                                    |
+| `ac-coverage-gaps-3-2.test.ts`      | Created | 7 unit tests — Gap-fill for handler registration, log formats, no-call on invalid content |
+| `handler-e2e-integration.test.ts`   | Created | 12 integration tests (Docker-dependent) — Full handler flow, concurrent actions           |
+| `handler-error-integration.test.ts` | Created | 8 integration tests (Docker-dependent) — Invalid content, unknown reducers, errors        |
 
 ### `_bmad-output/` (artifacts)
 
-| File | Status | Description |
-|------|--------|-------------|
+| File                                                             | Status           | Description                                    |
+| ---------------------------------------------------------------- | ---------------- | ---------------------------------------------- |
 | `implementation-artifacts/3-2-game-action-handler-kind-30078.md` | Created+Modified | Story spec with dev record, code review record |
-| `implementation-artifacts/sprint-status.yaml` | Modified | story-3.2 status: done |
-| `test-artifacts/atdd-checklist-3-2.md` | Created | ATDD checklist |
-| `test-artifacts/nfr-assessment-3-2.md` | Created | NFR assessment report |
-| `implementation-artifacts/reports/3-2-testarch-trace-report.md` | Created | Traceability report |
+| `implementation-artifacts/sprint-status.yaml`                    | Modified         | story-3.2 status: done                         |
+| `test-artifacts/atdd-checklist-3-2.md`                           | Created          | ATDD checklist                                 |
+| `test-artifacts/nfr-assessment-3-2.md`                           | Created          | NFR assessment report                          |
+| `implementation-artifacts/reports/3-2-testarch-trace-report.md`  | Created          | Traceability report                            |
 
 ## Pipeline Steps
 
@@ -222,7 +222,7 @@ Implemented the Game Action Handler for kind 30078 events in the BLS (BitCraft L
 ## Code Review Findings
 
 | Pass | Critical | High | Medium | Low | Total Found | Fixed | Remaining |
-|------|----------|------|--------|-----|-------------|-------|-----------|
+| ---- | -------- | ---- | ------ | --- | ----------- | ----- | --------- |
 | #1   | 0        | 0    | 3      | 4   | 7           | 7     | 0         |
 | #2   | 0        | 0    | 1      | 2   | 3           | 3     | 0         |
 | #3   | 0        | 0    | 1      | 1   | 2           | 2     | 0         |

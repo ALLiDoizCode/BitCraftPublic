@@ -249,7 +249,7 @@ The SDK provides a default behavior where the node's own pubkey can submit event
 ```typescript
 // SDK pricing configuration (from createNode options)
 interface NodeConfig {
-  kindPricing?: Record<number, bigint>;  // e.g., { 30078: 100n }
+  kindPricing?: Record<number, bigint>; // e.g., { 30078: 100n }
   // ... other config
 }
 
@@ -257,15 +257,18 @@ interface NodeConfig {
 function createPricingValidator(kindPricing: Record<number, bigint>): PricingValidatorFn;
 
 // PricingValidatorFn checks amount against min price for a kind
-type PricingValidatorFn = (kind: number, amount: bigint) => {
+type PricingValidatorFn = (
+  kind: number,
+  amount: bigint
+) => {
   valid: boolean;
-  code?: string;   // 'F04' for insufficient payment
+  code?: string; // 'F04' for insufficient payment
   message?: string;
 };
 
 // HandlerContext amount field
-ctx.amount  // bigint: ILP payment amount (set by sender)
-ctx.pubkey  // string: verified Nostr pubkey (64-char hex)
+ctx.amount; // bigint: ILP payment amount (set by sender)
+ctx.pubkey; // string: verified Nostr pubkey (64-char hex)
 ```
 
 [Source: packages/crosstown-sdk/src/index.ts]
@@ -315,11 +318,11 @@ Call SpacetimeDB (existing handler flow from Story 3.2)
 
 ### ILP Error Code for Pricing
 
-| Condition | ILP Code | Message Pattern | Retryable |
-|---|---|---|---|
-| SDK: insufficient for kind | `F04` | (handled by SDK, not our handler) | No |
-| Handler: insufficient for reducer | `F04` | `Insufficient payment for {reducer}: {amount} < {cost}` | No |
-| Handler: self-write bypass | (no error) | Action proceeds without payment | N/A |
+| Condition                         | ILP Code   | Message Pattern                                         | Retryable |
+| --------------------------------- | ---------- | ------------------------------------------------------- | --------- |
+| SDK: insufficient for kind        | `F04`      | (handled by SDK, not our handler)                       | No        |
+| Handler: insufficient for reducer | `F04`      | `Insufficient payment for {reducer}: {amount} < {cost}` | No        |
+| Handler: self-write bypass        | (no error) | Action proceeds without payment                         | N/A       |
 
 [Source: _bmad-output/planning-artifacts/test-design-epic-3.md, Section 2.3]
 
@@ -496,12 +499,12 @@ For Story 3.3, use: `feat(3-3): ...` format.
 
 ## FR/NFR Traceability
 
-| Requirement | Coverage | Notes |
-|---|---|---|
-| FR20 (ILP fee collection) | AC1, AC3 | kindPricing configured in createNode(), SDK rejects underpaid packets with F04; per-reducer pricing adds fine-grained enforcement |
-| FR45 (ILP fee schedule configuration) | AC2, AC4 | JSON fee schedule loaded at startup with per-reducer costs; format compatible with client registry; exposed via /fee-schedule endpoint |
-| NFR12 (Fee schedules publicly verifiable) | AC4 | /fee-schedule endpoint exposes fee data; format matches client action cost registry |
-| NFR17 (Accurate fee accounting under concurrent load) | AC5 | SDK handles payment validation atomically per packet; per-reducer pricing check is stateless (no shared mutable state) |
+| Requirement                                           | Coverage | Notes                                                                                                                                  |
+| ----------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| FR20 (ILP fee collection)                             | AC1, AC3 | kindPricing configured in createNode(), SDK rejects underpaid packets with F04; per-reducer pricing adds fine-grained enforcement      |
+| FR45 (ILP fee schedule configuration)                 | AC2, AC4 | JSON fee schedule loaded at startup with per-reducer costs; format compatible with client registry; exposed via /fee-schedule endpoint |
+| NFR12 (Fee schedules publicly verifiable)             | AC4      | /fee-schedule endpoint exposes fee data; format matches client action cost registry                                                    |
+| NFR17 (Accurate fee accounting under concurrent load) | AC5      | SDK handles payment validation atomically per packet; per-reducer pricing check is stateless (no shared mutable state)                 |
 
 ## Definition of Done
 
@@ -526,6 +529,7 @@ For Story 3.3, use: `feat(3-3): ...` format.
 **Agent Model Used:** Claude Opus 4.6
 
 **Implementation Plan:**
+
 - Task 1: Implemented `fee-schedule.ts` with `loadFeeSchedule()`, `getFeeForReducer()`, `FeeScheduleError`, and `validateFeeSchedule()` internal helper. Uses Node.js built-in `fs.readFileSync`. Includes path traversal prevention, 1MB file size limit, JSON schema validation.
 - Task 2: Extended `BLSConfig` with `feeSchedulePath` and `feeSchedule` fields. Modified `loadConfig()` to read `BLS_FEE_SCHEDULE_PATH`, load/validate fee schedule, and derive `kindPricing[30078]` as minimum cost across all actions and defaultCost.
 - Task 3: Extended `createGameActionHandler()` with optional `identityPubkey` parameter. Added per-reducer pricing check after content parsing: self-write bypass for node pubkey, F04 rejection for underpaid packets. Imported `getFeeForReducer` from fee-schedule module.
@@ -534,10 +538,12 @@ For Story 3.3, use: `feat(3-3): ...` format.
 - Task 6: Enabled 5 integration tests in pricing-integration.test.ts (skipped without Docker). fee-schedule-consistency.test.ts (4 tests) was re-classified as unit tests in review #2 (no Docker needed).
 
 **Debug Log:**
+
 - No issues encountered during implementation. All tests passed on first run.
 - Tests were pre-written in ATDD red phase with `.skip` -- implementation filled in stubs and enabled tests.
 
 **Completion Notes List:**
+
 1. `fee-schedule.ts`: Full implementation replacing TDD stubs. `loadFeeSchedule()` validates JSON schema (version=1, non-negative finite defaultCost, object actions, non-negative finite action costs), rejects `..` path segments, limits file to 1MB. `getFeeForReducer()` returns action cost or defaultCost, validates reducer name against `REDUCER_NAME_REGEX`.
 2. `config.ts`: Added `feeSchedulePath` and `feeSchedule` to `BLSConfig`. `loadConfig()` reads `BLS_FEE_SCHEDULE_PATH`, calls `loadFeeSchedule()`, derives `kindPricing[30078]` as `BigInt(Math.min(defaultCost, ...allActionCosts))`. Backward compatible when env var absent.
 3. `handler.ts`: `createGameActionHandler(config, identityPubkey?)` now checks per-reducer pricing after content parsing. Self-write bypass when `ctx.pubkey === identityPubkey`. F04 rejection with message `Insufficient payment for {reducer}: {amount} < {cost}`. Logging: `[BLS] Payment insufficient` for rejections, `[BLS] Self-write bypass` for node pubkey.
@@ -568,15 +574,15 @@ For Story 3.3, use: `feat(3-3): ...` format.
 
 **Issues Found & Fixed:**
 
-| ID  | Severity | Description                                                                                     | Resolution                                                                                             |
-| --- | -------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| M1  | Medium   | File List missing 2 entries (`ac-coverage-gaps-3-3.test.ts`, `nfr-assessment-3-3.md`)           | FIXED -- Added both files to File List in story doc                                                    |
-| M2  | Medium   | `/fee-schedule` default response missing `version` field for consistency                        | FIXED -- Default response now returns `{ version: 1, defaultCost: 100, actions: {} }`                  |
-| M3  | Medium   | File size check using `string.length` (character count) instead of `Buffer.byteLength` (bytes)  | FIXED -- Changed to `Buffer.byteLength(content)` for accurate byte-length check                        |
-| L1  | Low      | Fee-schedule-endpoint test not expecting `version` in default response                          | FIXED -- Updated test to expect `version: 1` in default response (code/test fix)                       |
-| L2  | Low      | Dev Agent Record test counts were stale                                                         | FIXED -- Corrected to 58 unit, 9 integration, 182 total BLS tests (documentation fix)                  |
-| L3  | Low      | MAX_FILE_SIZE comment said "bytes" but implementation used character count                       | FIXED -- Corrected comment to match implementation after M3 fix (documentation fix)                     |
-| L4  | Low      | Minor documentation accuracy review finding                                                     | No code change needed -- verified as accurate design choice (documentation fix)                         |
+| ID  | Severity | Description                                                                                    | Resolution                                                                            |
+| --- | -------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| M1  | Medium   | File List missing 2 entries (`ac-coverage-gaps-3-3.test.ts`, `nfr-assessment-3-3.md`)          | FIXED -- Added both files to File List in story doc                                   |
+| M2  | Medium   | `/fee-schedule` default response missing `version` field for consistency                       | FIXED -- Default response now returns `{ version: 1, defaultCost: 100, actions: {} }` |
+| M3  | Medium   | File size check using `string.length` (character count) instead of `Buffer.byteLength` (bytes) | FIXED -- Changed to `Buffer.byteLength(content)` for accurate byte-length check       |
+| L1  | Low      | Fee-schedule-endpoint test not expecting `version` in default response                         | FIXED -- Updated test to expect `version: 1` in default response (code/test fix)      |
+| L2  | Low      | Dev Agent Record test counts were stale                                                        | FIXED -- Corrected to 58 unit, 9 integration, 182 total BLS tests (documentation fix) |
+| L3  | Low      | MAX_FILE_SIZE comment said "bytes" but implementation used character count                     | FIXED -- Corrected comment to match implementation after M3 fix (documentation fix)   |
+| L4  | Low      | Minor documentation accuracy review finding                                                    | No code change needed -- verified as accurate design choice (documentation fix)       |
 
 **Review Follow-ups:** None -- all issues resolved in this pass.
 
@@ -601,23 +607,23 @@ For Story 3.3, use: `feat(3-3): ...` format.
 
 **Issues Found & Fixed:**
 
-| ID  | Severity | Description                                                                                                          | Resolution                                                                                                                                     |
-| --- | -------- | -------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| M1  | Medium   | `MAX_FILE_SIZE` comment says "characters" but code now uses `Buffer.byteLength()` (bytes) after Review #1 fix M3     | FIXED -- Comment updated to "Maximum file size in bytes (1MB). Compared against Buffer.byteLength()."                                          |
-| L1  | Low      | Self-write bypass described as "debug level" in story Task 3 but uses `console.log` (info); project has no `console.debug` convention | ACCEPTED -- Project convention uses `console.log` for info. No `console.debug` exists anywhere in codebase. Test validates `console.log`.      |
-| L2  | Low      | `validateFeeSchedule()` did not validate action keys (reducer names) against `REDUCER_NAME_REGEX`, allowing dead config entries | FIXED -- Added action name validation in `validateFeeSchedule()`. Added 3 tests for invalid/valid action names in `ac-coverage-gaps-3-3.test.ts`. |
+| ID  | Severity | Description                                                                                                                                               | Resolution                                                                                                                                             |
+| --- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| M1  | Medium   | `MAX_FILE_SIZE` comment says "characters" but code now uses `Buffer.byteLength()` (bytes) after Review #1 fix M3                                          | FIXED -- Comment updated to "Maximum file size in bytes (1MB). Compared against Buffer.byteLength()."                                                  |
+| L1  | Low      | Self-write bypass described as "debug level" in story Task 3 but uses `console.log` (info); project has no `console.debug` convention                     | ACCEPTED -- Project convention uses `console.log` for info. No `console.debug` exists anywhere in codebase. Test validates `console.log`.              |
+| L2  | Low      | `validateFeeSchedule()` did not validate action keys (reducer names) against `REDUCER_NAME_REGEX`, allowing dead config entries                           | FIXED -- Added action name validation in `validateFeeSchedule()`. Added 3 tests for invalid/valid action names in `ac-coverage-gaps-3-3.test.ts`.      |
 | L3  | Low      | `fee-schedule-consistency.test.ts` unnecessarily skipped (requires Docker env vars) but tests only read local JSON files; also had wrong `__dirname` path | FIXED -- Removed Docker skip condition; fixed path from `../../../../client/` to `../../../client/`. Tests now run as unit tests (4 tests un-skipped). |
 
 **Review Follow-ups:** None -- all issues resolved in this pass.
 
 ### Review Pass #3
 
-| Field              | Value                             |
-| ------------------ | --------------------------------- |
-| **Date**           | 2026-03-13                        |
-| **Reviewer Model** | Claude Opus 4.6 (claude-opus-4-6) |
+| Field              | Value                                                 |
+| ------------------ | ----------------------------------------------------- |
+| **Date**           | 2026-03-13                                            |
+| **Reviewer Model** | Claude Opus 4.6 (claude-opus-4-6)                     |
 | **Review Type**    | Adversarial code review (yolo) + OWASP security audit |
-| **Outcome**        | PASS (all issues resolved)        |
+| **Outcome**        | PASS (all issues resolved)                            |
 
 **Issue Counts by Severity:**
 
@@ -631,38 +637,40 @@ For Story 3.3, use: `feat(3-3): ...` format.
 
 **Issues Found & Fixed:**
 
-| ID  | Severity | Description                                                                                                          | Resolution                                                                                                                                     |
-| --- | -------- | -------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| M1  | Medium   | File List missing `atdd-checklist-3-3.md` -- file appears in git diff but not in story File List                     | FIXED -- Added `_bmad-output/test-artifacts/atdd-checklist-3-3.md` to File List Created section                                                |
-| L1  | Low      | Dev Agent Record per-story test counts stale: says "58 unit + 9 integration" but actual is 65 unit + 5 integration   | FIXED -- Updated Completion Notes and Task 5/6 descriptions to reflect accurate counts (65 unit + 5 integration = 70 Story 3.3 tests)          |
-| L2  | Low      | pricing-integration.test.ts has 5 tests but Task 6 spec says "~6 tests"; SDK-level test removed with comment         | ACCEPTED -- The "~6" was approximate; removal is documented in code comment (lines 100-102). Actual count already correct in test count fixes.  |
-| L3  | Low      | `getFeeForReducer` silently returns defaultCost for invalid reducer names instead of throwing                         | ACCEPTED -- Defensive design choice. Content parser validates upstream. Double-validation would add complexity without benefit.                  |
+| ID  | Severity | Description                                                                                                        | Resolution                                                                                                                                     |
+| --- | -------- | ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| M1  | Medium   | File List missing `atdd-checklist-3-3.md` -- file appears in git diff but not in story File List                   | FIXED -- Added `_bmad-output/test-artifacts/atdd-checklist-3-3.md` to File List Created section                                                |
+| L1  | Low      | Dev Agent Record per-story test counts stale: says "58 unit + 9 integration" but actual is 65 unit + 5 integration | FIXED -- Updated Completion Notes and Task 5/6 descriptions to reflect accurate counts (65 unit + 5 integration = 70 Story 3.3 tests)          |
+| L2  | Low      | pricing-integration.test.ts has 5 tests but Task 6 spec says "~6 tests"; SDK-level test removed with comment       | ACCEPTED -- The "~6" was approximate; removal is documented in code comment (lines 100-102). Actual count already correct in test count fixes. |
+| L3  | Low      | `getFeeForReducer` silently returns defaultCost for invalid reducer names instead of throwing                      | ACCEPTED -- Defensive design choice. Content parser validates upstream. Double-validation would add complexity without benefit.                |
 
 **OWASP Top 10 Security Audit Results:**
 
-| OWASP Category | Status | Notes |
-| --- | --- | --- |
-| A01: Broken Access Control | PASS | Fee endpoint is read-only, no auth required (fees are public). Self-write bypass uses strict equality. |
-| A02: Cryptographic Failures | PASS | No tokens, keys, or secrets in `/fee-schedule` response. Verified via grep and test assertions. |
-| A03: Injection | PASS | Path traversal prevention (`..` rejection), 1MB file size limit, `REDUCER_NAME_REGEX` on action keys and names, `JSON.parse` only (no eval/dynamic code). |
-| A04: Insecure Design | PASS | Fail-safe startup on invalid config, descriptive error messages, two-level pricing enforcement. |
-| A05: Security Misconfiguration | PASS | Optional `BLS_FEE_SCHEDULE_PATH` with safe default. Health server binds to 127.0.0.1 by default. |
-| A06: Vulnerable Components | PASS | No new dependencies added. Uses Node.js built-in `fs` and `http`. |
-| A07: Auth Failures | N/A | No authentication in this story (fee endpoint is intentionally public). |
-| A08: Software/Data Integrity | PASS | Fee schedule loaded once at startup (no runtime reload). JSON schema validated. |
-| A09: Security Logging | PASS | Pricing rejections logged with context. Self-write bypass logged. Never logs tokens or keys. |
-| A10: SSRF | N/A | No outbound URL requests in fee schedule module. |
+| OWASP Category                 | Status | Notes                                                                                                                                                     |
+| ------------------------------ | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A01: Broken Access Control     | PASS   | Fee endpoint is read-only, no auth required (fees are public). Self-write bypass uses strict equality.                                                    |
+| A02: Cryptographic Failures    | PASS   | No tokens, keys, or secrets in `/fee-schedule` response. Verified via grep and test assertions.                                                           |
+| A03: Injection                 | PASS   | Path traversal prevention (`..` rejection), 1MB file size limit, `REDUCER_NAME_REGEX` on action keys and names, `JSON.parse` only (no eval/dynamic code). |
+| A04: Insecure Design           | PASS   | Fail-safe startup on invalid config, descriptive error messages, two-level pricing enforcement.                                                           |
+| A05: Security Misconfiguration | PASS   | Optional `BLS_FEE_SCHEDULE_PATH` with safe default. Health server binds to 127.0.0.1 by default.                                                          |
+| A06: Vulnerable Components     | PASS   | No new dependencies added. Uses Node.js built-in `fs` and `http`.                                                                                         |
+| A07: Auth Failures             | N/A    | No authentication in this story (fee endpoint is intentionally public).                                                                                   |
+| A08: Software/Data Integrity   | PASS   | Fee schedule loaded once at startup (no runtime reload). JSON schema validated.                                                                           |
+| A09: Security Logging          | PASS   | Pricing rejections logged with context. Self-write bypass logged. Never logs tokens or keys.                                                              |
+| A10: SSRF                      | N/A    | No outbound URL requests in fee schedule module.                                                                                                          |
 
 **Review Follow-ups:** None -- all issues resolved in this pass.
 
 ## File List
 
 **Created:**
+
 - `packages/bitcraft-bls/src/__tests__/ac-coverage-gaps-3-3.test.ts` -- 17 AC coverage gap tests (path traversal, non-finite costs, concurrent pricing, case-sensitive self-write bypass, action name validation)
 - `_bmad-output/test-artifacts/nfr-assessment-3-3.md` -- NFR assessment for Story 3.3
 - `_bmad-output/test-artifacts/atdd-checklist-3-3.md` -- ATDD checklist for Story 3.3
 
 **Modified:**
+
 - `packages/bitcraft-bls/src/fee-schedule.ts` -- Full implementation; review fixes: accurate byte-length check via Buffer.byteLength, corrected MAX_FILE_SIZE comment, added action name validation against REDUCER_NAME_REGEX
 - `packages/bitcraft-bls/src/config.ts` -- Added feeSchedulePath, feeSchedule, loadFeeSchedule integration
 - `packages/bitcraft-bls/src/handler.ts` -- Added per-reducer pricing, self-write bypass, identityPubkey param
@@ -674,18 +682,19 @@ For Story 3.3, use: `feat(3-3): ...` format.
 - `packages/bitcraft-bls/src/__tests__/self-write-bypass.test.ts` -- Enabled 5 tests (removed .skip)
 - `packages/bitcraft-bls/src/__tests__/fee-schedule-endpoint.test.ts` -- Enabled 5 tests; review fix: test now expects `version: 1` in default response
 - `packages/bitcraft-bls/src/__tests__/pricing-integration.test.ts` -- Enabled 5 integration tests (removed .skip)
-- `packages/bitcraft-bls/src/__tests__/fee-schedule-consistency.test.ts` -- 4 cross-package tests; review fix: removed unnecessary Docker skip condition, fixed __dirname path resolution
+- `packages/bitcraft-bls/src/__tests__/fee-schedule-consistency.test.ts` -- 4 cross-package tests; review fix: removed unnecessary Docker skip condition, fixed \_\_dirname path resolution
 - `_bmad-output/implementation-artifacts/sprint-status.yaml` -- Updated story-3.3 status to done
 - `_bmad-output/implementation-artifacts/3-3-pricing-configuration-and-fee-schedule.md` -- This story file
 
 **Deleted:**
+
 - (none)
 
 ## Change Log
 
-| Date | Change | Author |
-|------|--------|--------|
-| 2026-03-13 | Story 3.3 implementation complete: fee schedule loader, BLS config integration, per-reducer pricing enforcement, self-write bypass, /fee-schedule endpoint, 58 unit tests + 9 integration tests. | Claude Opus 4.6 |
+| Date       | Change                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Author                     |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| 2026-03-13 | Story 3.3 implementation complete: fee schedule loader, BLS config integration, per-reducer pricing enforcement, self-write bypass, /fee-schedule endpoint, 58 unit tests + 9 integration tests.                                                                                                                                                                                                                                                                                                                                                                                                                                  | Claude Opus 4.6            |
 | 2026-03-13 | Code review #1 (adversarial): 0 critical, 0 high, 3 medium, 4 low issues found. Fixed: (1) /fee-schedule default response now includes `version: 1` for consistency; (2) file size check uses Buffer.byteLength for accurate byte counting; (3) corrected MAX_FILE_SIZE comment from "bytes" to "characters"; (4) fee-schedule-endpoint test updated to expect version in default response; (5) File List updated to include 2 missing files (ac-coverage-gaps-3-3.test.ts, nfr-assessment-3-3.md); (6) Dev Agent Record test counts corrected (58 unit, 9 integration, 182 total BLS tests). All tests pass. Status set to done. | Claude Opus 4.6 (reviewer) |
-| 2026-03-13 | Code review #2 (adversarial, yolo): 0 critical, 0 high, 1 medium, 3 low issues found. Fixed: (1) MAX_FILE_SIZE comment corrected from "characters" to "bytes" (was stale after review #1 M3 fix); (2) added action name validation against REDUCER_NAME_REGEX in validateFeeSchedule() with 3 new tests; (3) fee-schedule-consistency tests un-skipped from Docker requirement, fixed broken __dirname path. Total BLS unit tests: 189. All tests pass. | Claude Opus 4.6 (reviewer) |
-| 2026-03-13 | Code review #3 (adversarial, yolo + OWASP security audit): 0 critical, 0 high, 1 medium, 3 low issues found. Fixed: (1) File List missing atdd-checklist-3-3.md; (2) stale per-story test counts in Dev Agent Record corrected to 65 unit + 5 integration = 70 Story 3.3 tests. OWASP Top 10 audit: all 8 applicable categories PASS. Total BLS: 189 unit tests, 832 full suite. All tests pass. | Claude Opus 4.6 (reviewer) |
+| 2026-03-13 | Code review #2 (adversarial, yolo): 0 critical, 0 high, 1 medium, 3 low issues found. Fixed: (1) MAX_FILE_SIZE comment corrected from "characters" to "bytes" (was stale after review #1 M3 fix); (2) added action name validation against REDUCER_NAME_REGEX in validateFeeSchedule() with 3 new tests; (3) fee-schedule-consistency tests un-skipped from Docker requirement, fixed broken \_\_dirname path. Total BLS unit tests: 189. All tests pass.                                                                                                                                                                         | Claude Opus 4.6 (reviewer) |
+| 2026-03-13 | Code review #3 (adversarial, yolo + OWASP security audit): 0 critical, 0 high, 1 medium, 3 low issues found. Fixed: (1) File List missing atdd-checklist-3-3.md; (2) stale per-story test counts in Dev Agent Record corrected to 65 unit + 5 integration = 70 Story 3.3 tests. OWASP Top 10 audit: all 8 applicable categories PASS. Total BLS: 189 unit tests, 832 full suite. All tests pass.                                                                                                                                                                                                                                  | Claude Opus 4.6 (reviewer) |
