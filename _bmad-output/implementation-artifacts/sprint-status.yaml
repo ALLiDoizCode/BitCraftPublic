@@ -92,7 +92,7 @@ epics:
   - id: epic-4
     title: 'Declarative Agent Configuration'
     phase: mvp
-    status: backlog
+    status: in-progress
     retrospective_status: not_started
     stories:
       - id: story-4.1

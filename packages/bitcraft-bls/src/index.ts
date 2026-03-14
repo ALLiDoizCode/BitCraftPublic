@@ -40,13 +40,8 @@ export {
   type FeeSchedule,
   type FeeScheduleEntry,
 } from './fee-schedule.js';
-export {
-  verifyIdentityChain,
-  IdentityChainError,
-  type IdentityChainResult,
-} from './identity-chain.js';
-export { logVerificationEvent, type VerificationConfig } from './verification.js';
 export { truncatePubkey, PUBKEY_REGEX } from './utils.js';
+export { createLogger, type Logger, type LogEntry, type LogLevel } from './logger.js';
 
 import { loadConfig } from './config.js';
 import { createBLSNode } from './node.js';

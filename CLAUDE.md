@@ -46,7 +46,7 @@ The Five-Layer Cognition Architecture documented in the architecture was SUPERSE
 
 **Epics 1-3: COMPLETE** (15/15 stories delivered)
 
-**Total Tests:** 972 passing (866 TS unit + 8 Rust + 98 root integration), 212 skipped (require Docker).
+**Total Tests:** 984 passing (879 TS unit + 7 Rust + 98 root integration), 212 skipped (require Docker).
 
 **Epic 4: NEXT** -- Declarative Agent Configuration (7 stories). Client-side configuration, skill file parsing, budget tracking, event interpretation, decision logging.
 
