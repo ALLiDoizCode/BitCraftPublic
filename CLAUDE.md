@@ -1,7 +1,7 @@
 # Sigil SDK - Claude Agent Guide
 
-**Last Updated:** 2026-03-13
-**Status:** Epics 1-2 Complete, Epic 3 Next (MVP Development Phase)
+**Last Updated:** 2026-03-14
+**Status:** Epics 1-3 Complete, Epic 4 Next (MVP Development Phase)
 **Agent Model:** Claude instance + MCP tools + Skills (NOT custom cognition stack)
 
 ---
@@ -44,15 +44,13 @@ The Five-Layer Cognition Architecture documented in the architecture was SUPERSE
 
 ### 3. Current Project Status
 
-**Epic 1: COMPLETE** (6/6 stories) -- Project foundation, identity, Docker, SpacetimeDB, static data, reconnection.
+**Epics 1-3: COMPLETE** (15/15 stories delivered)
 
-**Epic 2: COMPLETE** (5/5 stories) -- Nostr relay client, action cost registry, wallet client, ILP packets, BLS contract spec, `@crosstown/client` integration.
+**Total Tests:** 972 passing (866 TS unit + 8 Rust + 98 root integration), 212 skipped (require Docker).
 
-**Total Tests:** 651 passing (641 TS unit + 7 Rust + 3 root integration), 103 integration tests skipped (require Docker).
+**Epic 4: NEXT** -- Declarative Agent Configuration (7 stories). Client-side configuration, skill file parsing, budget tracking, event interpretation, decision logging.
 
-**Epic 3: NEXT** -- BitCraft BLS Game Action Handler (4 stories). Implements the BLS handler per the integration contract spec'd in Story 2.4.
-
-**See:** `_bmad-output/project-context.md` for full epic breakdown, story details, and deliverables.
+**See:** `_bmad-output/project-context.md` for full epic breakdown, story details, deliverables, and known issues/technical debt.
 
 ---
 
@@ -94,15 +92,16 @@ pnpm test:unit
 
 ### Docker Stack Setup
 
-Integration tests and local development require the Docker stack:
+Integration tests and local development require the Docker stack (3 services: bitcraft-server, crosstown-node, bitcraft-bls):
 
 ```bash
-# Start BitCraft server + Crosstown node
+# Start all services
 docker compose -f docker/docker-compose.yml up -d
 
 # Health check
 curl http://localhost:3000/database/bitcraft/info
 curl http://localhost:4041/health
+curl http://localhost:3001/health
 
 # Run integration tests
 pnpm test:integration
@@ -110,6 +109,8 @@ pnpm test:integration
 # Stop services
 docker compose -f docker/docker-compose.yml down
 ```
+
+**Note:** The `bitcraft-bls` service requires `SPACETIMEDB_ADMIN_TOKEN` to be set in your environment or `.env` file.
 
 **See:** `docker/README.md` for detailed Docker setup, troubleshooting, and advanced usage.
 
@@ -126,6 +127,7 @@ pnpm test:integration                       # Integration tests (requires Docker
 pnpm test                                   # All tests
 pnpm test:coverage                          # Generate coverage report
 pnpm --filter @sigil/client test:unit       # Client-only unit tests
+pnpm --filter @sigil/bitcraft-bls test      # BLS handler tests
 pnpm --filter @sigil/client test:watch      # TDD watch mode
 pnpm smoke:bls                              # BLS handler smoke test (requires Docker + BLS handler)
 ```
@@ -143,7 +145,7 @@ cd crates/tui && cargo clippy               # Lint Rust
 ```bash
 docker compose -f docker/docker-compose.yml up -d       # Start
 docker compose -f docker/docker-compose.yml ps           # Status
-docker compose -f docker/docker-compose.yml logs -f bitcraft-server  # Logs
+docker compose -f docker/docker-compose.yml logs -f bitcraft-bls  # BLS handler logs
 docker compose -f docker/docker-compose.yml restart      # Restart
 docker compose -f docker/docker-compose.yml down -v && rm -rf docker/volumes/* && docker compose -f docker/docker-compose.yml up -d  # Full reset
 ```
@@ -164,39 +166,50 @@ docker compose -f docker/docker-compose.yml down -v && rm -rf docker/volumes/* &
 
 ## Common Pitfalls
 
-- **Don't duplicate project-context.md** -- It's auto-loaded, no need to repeat its content
-- **Don't skip TDD** -- Write tests BEFORE implementation for features with >3 acceptance criteria (AGREEMENT-1)
-- **Don't commit without security review** -- OWASP Top 10 check required on every story (AGREEMENT-2)
-- **BitCraft reducer modifications are scoped** -- Reducers will be modified to accept `nostr_pubkey: String` as first parameter for identity propagation (decided in Story 2.4, BLOCKER-1). All other BitCraft server code runs unmodified.
-- **Pair on unfamiliar tech** -- Nostr, ILP, BLS require pair programming or pair review (AGREEMENT-3)
-- **Track technical debt** -- Deferred work must be captured and linked in story docs (AGREEMENT-4)
+- **Don't duplicate project-context.md** -- It's auto-loaded, no need to repeat its content here or in code comments
+- **Don't skip TDD** -- Write tests BEFORE implementation for features with >3 acceptance criteria
+- **Don't commit without security review** -- OWASP Top 10 check required on every story
+- **Execute retro action items** -- All action items from retrospectives must be completed within the next epic (AGREEMENT-9)
+- **No placeholder tests without tracking** -- Integration test placeholders must be tracked with test name, purpose, dependencies, and effort estimate (AGREEMENT-10)
+- **Dead code gets 1-epic grace period** -- Exported code with zero production consumers must be integrated or removed after one epic (AGREEMENT-11)
+
+**See:** `_bmad-output/project-context.md` for the full list of team agreements (AGREEMENT-1 through AGREEMENT-11) and the code review checklist.
 
 ---
 
 ## Getting Help
 
 1. **Read project-context.md first** -- Most answers are there
-2. **Check story reports** -- `_bmad-output/implementation-artifacts/` has comprehensive documentation for all completed stories
+2. **Check story reports** -- `_bmad-output/implementation-artifacts/` and `_bmad-output/auto-bmad-artifacts/` have comprehensive documentation for all completed stories
 3. **Review architecture docs** -- `_bmad-output/planning-artifacts/architecture/` has 22 architecture documents
 4. **Check Docker README** -- `docker/README.md` covers Docker issues
 5. **Use BMAD workflows** -- `/bmad-bmm-generate-project-context yolo` regenerates context
 
 ---
 
-## Next Steps: Epic 3 Preparation
+## Next Steps: Epic 4 Preparation
 
-**Epic 3: BitCraft BLS Game Action Handler** (4 stories)
+**Epic 4: Declarative Agent Configuration** (7 stories)
 
-- 3.1: BLS Package Setup & Crosstown SDK Node
-- 3.2: Game Action Handler (kind 30078)
-- 3.3: Pricing Configuration & Fee Schedule
-- 3.4: Identity Propagation & End-to-End Verification
+- 4.1: Skill File Format & Parser
+- 4.2: Agent.md Configuration & Skill Selection
+- 4.3: Configuration Validation Against SpacetimeDB
+- 4.4: Budget Tracking & Limits
+- 4.5: Event Interpretation as Semantic Narratives
+- 4.6: Structured Decision Logging
+- 4.7: Swappable Agent Configuration
 
 **Key Context:**
 
-- Integration contract is fully spec'd in Story 2.4 (`docs/bls-handler-contract.md`, `docs/crosstown-bls-implementation-spec.md`)
-- This is the first server-side component (high risk -- new infrastructure)
-- Requires modifying BitCraft reducers to accept `identity: String` as first parameter
-- Wallet balance checks and ILP fee deduction are EVM onchain (out of Sigil scope)
+- Client-side configuration and parsing logic (lower risk than Epic 3's server-side work)
+- Skill files produce `{ reducer, args }` payloads consumed by BLS handler (Story 3.2)
+- Pricing model compatible: action cost registry (Story 2.2) + fee schedule (Story 3.3)
+- Preparation tasks from Epic 3 retro must be completed first: PREP-E4-1 through PREP-E4-5
 
-**See:** `_bmad-output/project-context.md` for full Epic 3 details and risk assessment.
+**Critical Prep Before Starting:**
+
+- PREP-E4-1: Complete deferred Epic 2/3 action items (4 of 8 Epic 2 retro commitments unaddressed)
+- PREP-E4-2: Clean up dead code from Epic 3 (verifyIdentityChain, logVerificationEvent)
+- PREP-E4-3: Research SKILL.md file format
+
+**See:** `_bmad-output/project-context.md` for full Epic 4 details, prep items, and risk assessment.

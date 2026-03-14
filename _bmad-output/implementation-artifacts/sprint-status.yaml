@@ -72,8 +72,9 @@ epics:
   - id: epic-3
     title: 'BitCraft BLS Game Action Handler'
     phase: mvp
-    status: in-progress
-    retrospective_status: not_started
+    status: done
+    retrospective_status: done
+    retrospective_date: 2026-03-14
     stories:
       - id: story-3.1
         title: 'BLS Package Setup & Crosstown SDK Node'
@@ -304,5 +305,5 @@ sprint_metadata:
   mvp_stories: 45
   phase2_stories: 15
   phase3_stories: 1
-  last_updated: 2026-03-13
-  current_sprint_focus: epic-3
+  last_updated: 2026-03-14
+  current_sprint_focus: epic-4
