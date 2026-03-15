@@ -103,7 +103,7 @@ epics:
         status: done
       - id: story-4.3
         title: 'Configuration Validation Against SpacetimeDB'
-        status: backlog
+        status: done
       - id: story-4.4
         title: 'Budget Tracking & Limits'
         status: backlog

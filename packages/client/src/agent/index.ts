@@ -1,9 +1,9 @@
 /**
  * Agent Module - Barrel Exports
- * Stories 4.1-4.2: Skill File Format & Parser, Agent.md Configuration & Skill Selection
+ * Stories 4.1-4.3: Skill File Format & Parser, Agent.md Configuration, Config Validation
  *
  * Re-exports all public types and functions from the agent module.
- * Will be extended as more agent modules are added in Stories 4.3-4.7.
+ * Will be extended as more agent modules are added in Stories 4.4-4.7.
  *
  * @module agent
  */
@@ -62,3 +62,34 @@ export type {
 } from './triggering-precision.js';
 
 export { validateTriggeringPrecision } from './triggering-precision.js';
+
+// Config Validation Types (Story 4.3)
+export type {
+  ModuleInfo,
+  ModuleReducerInfo,
+  ModuleReducerParam,
+  ValidationCheckResult,
+  ValidationCheckType,
+  ValidationReport,
+  ConfigValidationErrorCode,
+  ModuleInfoProvider,
+} from './config-validation-types.js';
+
+export { ConfigValidationError } from './config-validation-types.js';
+
+// Module Info Fetcher (Story 4.3)
+export { SpacetimeDBModuleInfoFetcher, createOfflineModuleInfo } from './module-info-fetcher.js';
+export type { ModuleInfoFetcherConfig } from './module-info-fetcher.js';
+
+// Reducer Validator (Story 4.3)
+export { validateReducers } from './reducer-validator.js';
+
+// Table Validator (Story 4.3)
+export { validateTables } from './table-validator.js';
+
+// Config Validator (Story 4.3)
+export {
+  validateAgentConfig,
+  validateAgentConfigOffline,
+  formatValidationReport,
+} from './config-validator.js';

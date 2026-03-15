@@ -133,3 +133,29 @@ export {
   type TriggeringPrecisionReport,
   validateTriggeringPrecision,
 } from './agent';
+
+// Agent module - Configuration validation against SpacetimeDB (Story 4.3)
+export {
+  // Config Validation Types
+  type ModuleInfo,
+  type ModuleReducerInfo,
+  type ModuleReducerParam,
+  type ValidationCheckResult,
+  type ValidationCheckType,
+  type ValidationReport,
+  type ConfigValidationErrorCode,
+  type ModuleInfoProvider,
+  ConfigValidationError,
+  // Module Info Fetcher
+  SpacetimeDBModuleInfoFetcher,
+  type ModuleInfoFetcherConfig,
+  createOfflineModuleInfo,
+  // Reducer Validator
+  validateReducers,
+  // Table Validator
+  validateTables,
+  // Config Validator
+  validateAgentConfig,
+  validateAgentConfigOffline,
+  formatValidationReport,
+} from './agent';
