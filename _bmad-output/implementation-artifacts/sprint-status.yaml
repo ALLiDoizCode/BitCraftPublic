@@ -112,7 +112,7 @@ epics:
         status: done
       - id: story-4.6
         title: 'Structured Decision Logging'
-        status: backlog
+        status: done
       - id: story-4.7
         title: 'Swappable Agent Configuration'
         status: backlog

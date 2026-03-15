@@ -1,10 +1,11 @@
 /**
  * Agent Module - Barrel Exports
- * Stories 4.1-4.5: Skill File Format & Parser, Agent.md Configuration,
- * Config Validation, Budget Tracking & Limits, Event Interpretation
+ * Stories 4.1-4.6: Skill File Format & Parser, Agent.md Configuration,
+ * Config Validation, Budget Tracking & Limits, Event Interpretation,
+ * Structured Decision Logging
  *
  * Re-exports all public types and functions from the agent module.
- * Will be extended as more agent modules are added in Stories 4.6-4.7.
+ * Will be extended as more agent modules are added in Story 4.7.
  *
  * @module agent
  */
@@ -133,3 +134,20 @@ export {
 
 // Event Interpreter (Story 4.5)
 export { EventInterpreter, createEventInterpreterWithStaticData } from './event-interpreter.js';
+
+// Decision Log Types (Story 4.6)
+export type {
+  DecisionLogEntry,
+  DecisionLoggerConfig,
+  DecisionLogResult,
+  DecisionContext,
+  SkillMetrics,
+  AggregateMetrics,
+  EvalResult,
+} from './decision-log-types.js';
+
+// Decision Logger (Story 4.6)
+export { DecisionLogger, createDecisionLogger } from './decision-logger.js';
+
+// Decision Log Metrics (Story 4.6)
+export { computeMetrics, parseJsonlFile } from './decision-log-metrics.js';

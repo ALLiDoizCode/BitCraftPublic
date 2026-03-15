@@ -195,3 +195,21 @@ export {
   EventInterpreter,
   createEventInterpreterWithStaticData,
 } from './agent';
+
+// Agent module - Structured decision logging (Story 4.6)
+export {
+  // Decision Log Types
+  type DecisionLogEntry,
+  type DecisionLoggerConfig,
+  type DecisionLogResult,
+  type DecisionContext,
+  type SkillMetrics,
+  type AggregateMetrics,
+  type EvalResult,
+  // Decision Logger
+  DecisionLogger,
+  createDecisionLogger,
+  // Decision Log Metrics
+  computeMetrics,
+  parseJsonlFile,
+} from './agent';
