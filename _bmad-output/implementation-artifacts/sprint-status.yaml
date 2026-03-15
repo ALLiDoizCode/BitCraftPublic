@@ -106,7 +106,7 @@ epics:
         status: done
       - id: story-4.4
         title: 'Budget Tracking & Limits'
-        status: backlog
+        status: done
       - id: story-4.5
         title: 'Event Interpretation as Semantic Narratives'
         status: backlog

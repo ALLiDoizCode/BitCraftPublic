@@ -1,9 +1,10 @@
 /**
  * Agent Module - Barrel Exports
- * Stories 4.1-4.3: Skill File Format & Parser, Agent.md Configuration, Config Validation
+ * Stories 4.1-4.4: Skill File Format & Parser, Agent.md Configuration,
+ * Config Validation, Budget Tracking & Limits
  *
  * Re-exports all public types and functions from the agent module.
- * Will be extended as more agent modules are added in Stories 4.4-4.7.
+ * Will be extended as more agent modules are added in Stories 4.5-4.7.
  *
  * @module agent
  */
@@ -93,3 +94,19 @@ export {
   validateAgentConfigOffline,
   formatValidationReport,
 } from './config-validator.js';
+
+// Budget Types (Story 4.4)
+export type {
+  BudgetTrackerConfig,
+  BudgetStatus,
+  BudgetMetrics,
+  BudgetWarningEvent,
+} from './budget-types.js';
+
+export { BudgetExceededError } from './budget-types.js';
+
+// Budget Tracker (Story 4.4)
+export { BudgetTracker, createBudgetTrackerFromConfig } from './budget-tracker.js';
+
+// Budget Publish Guard (Story 4.4)
+export { BudgetPublishGuard } from './budget-publish-guard.js';

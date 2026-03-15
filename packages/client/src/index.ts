@@ -159,3 +159,18 @@ export {
   validateAgentConfigOffline,
   formatValidationReport,
 } from './agent';
+
+// Agent module - Budget tracking and limits (Story 4.4)
+export {
+  // Budget Types
+  type BudgetTrackerConfig,
+  type BudgetStatus,
+  type BudgetMetrics,
+  type BudgetWarningEvent,
+  BudgetExceededError,
+  // Budget Tracker
+  BudgetTracker,
+  createBudgetTrackerFromConfig,
+  // Budget Publish Guard
+  BudgetPublishGuard,
+} from './agent';
