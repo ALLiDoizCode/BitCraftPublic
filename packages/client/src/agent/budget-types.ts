@@ -100,7 +100,7 @@ export class BudgetExceededError extends Error {
     reducer: string,
     actionCost: number,
     remaining: number,
-    limit: number,
+    limit: number
   ) {
     super(message);
     this.name = 'BudgetExceededError';

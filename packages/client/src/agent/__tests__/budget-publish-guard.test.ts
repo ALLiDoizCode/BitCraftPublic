@@ -44,20 +44,20 @@ describe('BudgetPublishGuard (Story 4.4)', () => {
   describe('constructor validation', () => {
     it('rejects null budgetTracker', () => {
       expect(
-        () => new BudgetPublishGuard(null as unknown as BudgetTracker, createMockCostLookup()),
+        () => new BudgetPublishGuard(null as unknown as BudgetTracker, createMockCostLookup())
       ).toThrow('BudgetPublishGuard requires a BudgetTracker instance');
     });
 
     it('rejects undefined budgetTracker', () => {
       expect(
-        () => new BudgetPublishGuard(undefined as unknown as BudgetTracker, createMockCostLookup()),
+        () => new BudgetPublishGuard(undefined as unknown as BudgetTracker, createMockCostLookup())
       ).toThrow('BudgetPublishGuard requires a BudgetTracker instance');
     });
 
     it('rejects null costLookup', () => {
       const tracker = new BudgetTracker(createTestConfig());
       expect(
-        () => new BudgetPublishGuard(tracker, null as unknown as (reducer: string) => number),
+        () => new BudgetPublishGuard(tracker, null as unknown as (reducer: string) => number)
       ).toThrow('BudgetPublishGuard requires a costLookup function');
     });
   });

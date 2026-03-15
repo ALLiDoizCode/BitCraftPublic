@@ -67,7 +67,7 @@ describe('Budget Warning Events (Story 4.4)', () => {
       // Then both 0.8 and 0.9 thresholds fire
       expect(warningHandler).toHaveBeenCalledTimes(2);
       const events = warningHandler.mock.calls.map(
-        (call) => (call[0] as BudgetWarningEvent).threshold,
+        (call) => (call[0] as BudgetWarningEvent).threshold
       );
       expect(events).toContain(0.8);
       expect(events).toContain(0.9);
@@ -109,9 +109,7 @@ describe('Budget Warning Events (Story 4.4)', () => {
 
     it('custom thresholds trigger at configured percentages', () => {
       // Given custom thresholds [0.5, 0.75, 0.95]
-      const tracker = new BudgetTracker(
-        createTestConfig({ warningThresholds: [0.5, 0.75, 0.95] }),
-      );
+      const tracker = new BudgetTracker(createTestConfig({ warningThresholds: [0.5, 0.75, 0.95] }));
       const thresholdsFired: number[] = [];
       tracker.on('budgetWarning', (event: BudgetWarningEvent) => {
         thresholdsFired.push(event.threshold);

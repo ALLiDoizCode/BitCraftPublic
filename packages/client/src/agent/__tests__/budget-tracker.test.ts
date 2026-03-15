@@ -80,16 +80,16 @@ describe('BudgetTracker (Story 4.4)', () => {
 
     it('rejects warning thresholds outside (0, 1) range', () => {
       expect(() => new BudgetTracker(createTestConfig({ warningThresholds: [0] }))).toThrow(
-        'Invalid warning threshold',
+        'Invalid warning threshold'
       );
       expect(() => new BudgetTracker(createTestConfig({ warningThresholds: [1] }))).toThrow(
-        'Invalid warning threshold',
+        'Invalid warning threshold'
       );
       expect(() => new BudgetTracker(createTestConfig({ warningThresholds: [-0.5] }))).toThrow(
-        'Invalid warning threshold',
+        'Invalid warning threshold'
       );
       expect(() => new BudgetTracker(createTestConfig({ warningThresholds: [1.5] }))).toThrow(
-        'Invalid warning threshold',
+        'Invalid warning threshold'
       );
     });
   });

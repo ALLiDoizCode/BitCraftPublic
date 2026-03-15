@@ -1,10 +1,10 @@
 /**
  * Agent Module - Barrel Exports
- * Stories 4.1-4.4: Skill File Format & Parser, Agent.md Configuration,
- * Config Validation, Budget Tracking & Limits
+ * Stories 4.1-4.5: Skill File Format & Parser, Agent.md Configuration,
+ * Config Validation, Budget Tracking & Limits, Event Interpretation
  *
  * Re-exports all public types and functions from the agent module.
- * Will be extended as more agent modules are added in Stories 4.5-4.7.
+ * Will be extended as more agent modules are added in Stories 4.6-4.7.
  *
  * @module agent
  */
@@ -110,3 +110,26 @@ export { BudgetTracker, createBudgetTrackerFromConfig } from './budget-tracker.j
 
 // Budget Publish Guard (Story 4.4)
 export { BudgetPublishGuard } from './budget-publish-guard.js';
+
+// Event Interpreter Types (Story 4.5)
+export type {
+  TableUpdateEvent,
+  EventCategory,
+  SemanticNarrative,
+  CorrelatedNarrative,
+  TableInterpreter,
+  NameResolver,
+  EventInterpreterConfig,
+} from './event-interpreter-types.js';
+
+// Table Interpreters (Story 4.5)
+export {
+  createPlayerPositionInterpreter,
+  createInventoryInterpreter,
+  createResourceInterpreter,
+  createGenericInterpreter,
+  DEFAULT_TABLE_INTERPRETERS,
+} from './table-interpreters.js';
+
+// Event Interpreter (Story 4.5)
+export { EventInterpreter, createEventInterpreterWithStaticData } from './event-interpreter.js';

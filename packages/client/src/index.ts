@@ -174,3 +174,24 @@ export {
   // Budget Publish Guard
   BudgetPublishGuard,
 } from './agent';
+
+// Agent module - Event interpretation as semantic narratives (Story 4.5)
+export {
+  // Event Interpreter Types
+  type TableUpdateEvent,
+  type EventCategory,
+  type SemanticNarrative,
+  type CorrelatedNarrative,
+  type TableInterpreter,
+  type NameResolver,
+  type EventInterpreterConfig,
+  // Table Interpreters
+  createPlayerPositionInterpreter,
+  createInventoryInterpreter,
+  createResourceInterpreter,
+  createGenericInterpreter,
+  DEFAULT_TABLE_INTERPRETERS,
+  // Event Interpreter
+  EventInterpreter,
+  createEventInterpreterWithStaticData,
+} from './agent';

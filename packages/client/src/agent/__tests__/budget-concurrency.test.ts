@@ -97,7 +97,7 @@ describe('Budget Concurrency (Story 4.4 - R4-003 Mitigation)', () => {
             resolve({ success: false, index: i });
           }
         });
-      }),
+      })
     );
 
     // Exactly 5 should succeed (50 / 10 = 5 actions)

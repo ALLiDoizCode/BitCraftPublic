@@ -52,13 +52,13 @@ export class BudgetTracker extends EventEmitter {
   private validateConfig(config: BudgetTrackerConfig): void {
     if (!Number.isFinite(config.limit) || config.limit < 0) {
       throw new Error(
-        `Invalid budget limit: ${config.limit}. Must be a non-negative finite number.`,
+        `Invalid budget limit: ${config.limit}. Must be a non-negative finite number.`
       );
     }
     for (const threshold of config.warningThresholds) {
       if (!Number.isFinite(threshold) || threshold <= 0 || threshold >= 1) {
         throw new Error(
-          `Invalid warning threshold: ${threshold}. Must be a finite number between 0 and 1 (exclusive).`,
+          `Invalid warning threshold: ${threshold}. Must be a finite number between 0 and 1 (exclusive).`
         );
       }
     }
@@ -75,7 +75,7 @@ export class BudgetTracker extends EventEmitter {
         reducer,
         cost,
         this.remaining,
-        this._limit,
+        this._limit
       );
     }
   }
@@ -130,9 +130,7 @@ export class BudgetTracker extends EventEmitter {
    */
   checkAndRecord(reducer: string, cost: number): void {
     if (!Number.isFinite(cost) || cost < 0) {
-      throw new Error(
-        `Invalid action cost: ${cost}. Must be a non-negative finite number.`,
-      );
+      throw new Error(`Invalid action cost: ${cost}. Must be a non-negative finite number.`);
     }
     this.checkBudget(reducer, cost);
     this.recordSpend(reducer, cost);
@@ -199,9 +197,7 @@ export class BudgetTracker extends EventEmitter {
    */
   adjustLimit(newLimit: number): void {
     if (!Number.isFinite(newLimit) || newLimit < 0) {
-      throw new Error(
-        `Invalid budget limit: ${newLimit}. Must be a non-negative finite number.`,
-      );
+      throw new Error(`Invalid budget limit: ${newLimit}. Must be a non-negative finite number.`);
     }
     this._limit = newLimit;
   }
