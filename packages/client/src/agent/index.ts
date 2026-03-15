@@ -1,11 +1,10 @@
 /**
  * Agent Module - Barrel Exports
- * Stories 4.1-4.6: Skill File Format & Parser, Agent.md Configuration,
+ * Stories 4.1-4.7: Skill File Format & Parser, Agent.md Configuration,
  * Config Validation, Budget Tracking & Limits, Event Interpretation,
- * Structured Decision Logging
+ * Structured Decision Logging, Swappable Agent Configuration
  *
  * Re-exports all public types and functions from the agent module.
- * Will be extended as more agent modules are added in Story 4.7.
  *
  * @module agent
  */
@@ -151,3 +150,24 @@ export { DecisionLogger, createDecisionLogger } from './decision-logger.js';
 
 // Decision Log Metrics (Story 4.6)
 export { computeMetrics, parseJsonlFile } from './decision-log-metrics.js';
+
+// Config Version Types (Story 4.7)
+export type { ConfigVersion, SkillVersion, ConfigSnapshot } from './config-version-types.js';
+
+// Config Version Computation (Story 4.7)
+export {
+  computeContentHash,
+  computeSkillVersion,
+  computeConfigVersion,
+  createConfigSnapshot,
+  formatVersionForDecisionLog,
+} from './config-version.js';
+
+// Versioned Config Loader (Story 4.7)
+export type { VersionedAgentConfig } from './versioned-config-loader.js';
+
+export {
+  readSkillContents,
+  loadVersionedAgentConfig,
+  reloadVersionedAgentConfig,
+} from './versioned-config-loader.js';

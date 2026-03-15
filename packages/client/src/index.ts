@@ -213,3 +213,22 @@ export {
   computeMetrics,
   parseJsonlFile,
 } from './agent';
+
+// Agent module - Swappable agent configuration (Story 4.7)
+export {
+  // Config Version Types
+  type ConfigVersion,
+  type SkillVersion,
+  type ConfigSnapshot,
+  // Config Version Computation
+  computeContentHash,
+  computeSkillVersion,
+  computeConfigVersion,
+  createConfigSnapshot,
+  formatVersionForDecisionLog,
+  // Versioned Config Loader
+  type VersionedAgentConfig,
+  readSkillContents,
+  loadVersionedAgentConfig,
+  reloadVersionedAgentConfig,
+} from './agent';
