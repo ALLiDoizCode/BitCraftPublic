@@ -127,7 +127,7 @@ epics:
     stories:
       - id: story-5.1
         title: 'Server Source Analysis & Reducer Catalog'
-        status: backlog
+        status: done
       - id: story-5.2
         title: 'Game State Model & Table Relationships'
         status: backlog
