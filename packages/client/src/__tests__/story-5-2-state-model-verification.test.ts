@@ -46,8 +46,7 @@ function hasStateModelSection(): boolean {
     return false;
   }
 }
-const runVerification =
-  process.env.RUN_VERIFICATION_TESTS === 'true' || hasStateModelSection();
+const runVerification = process.env.RUN_VERIFICATION_TESTS === 'true' || hasStateModelSection();
 
 // The 14 game systems from Story 5.1 (AC3 requirement)
 const REQUIRED_GAME_SYSTEMS = [
@@ -237,9 +236,7 @@ describe.skipIf(!runVerification)(
         // When: We check that it still exists after Story 5.2 updates
         // Then: The Table-Reducer Relationships section is preserved
         const hasTableReducerSection = headings.some(
-          (h) =>
-            (h.includes('table') && h.includes('reducer')) ||
-            h.includes('table-reducer')
+          (h) => (h.includes('table') && h.includes('reducer')) || h.includes('table-reducer')
         );
         expect(hasTableReducerSection).toBe(true);
       });
@@ -302,7 +299,8 @@ describe.skipIf(!runVerification)(
 
         // Count unique table names that look like entity tables (ending in _state, _slot, etc.)
         // or matching known entity table patterns
-        const tableNamePattern = /\|\s*`?([a-z][a-z0-9_]*(?:_state|_tiles?|_slot|_spawn|_matrix|_description|_unlock|_stack|_listing|_session|_order|_outcome|_trail|_chunks|_function|_progress|_site|_clump|_deposit|_energy|_buff|_scaling|_report|_settings|_action|_log|_shaping|_paved))`?\s*\|/gi;
+        const tableNamePattern =
+          /\|\s*`?([a-z][a-z0-9_]*(?:_state|_tiles?|_slot|_spawn|_matrix|_description|_unlock|_stack|_listing|_session|_order|_outcome|_trail|_chunks|_function|_progress|_site|_clump|_deposit|_energy|_buff|_scaling|_report|_settings|_action|_log|_shaping|_paved))`?\s*\|/gi;
         const matches = entityMappingContent.match(tableNamePattern);
         const uniqueTables = matches
           ? new Set(
@@ -372,17 +370,14 @@ describe.skipIf(!runVerification)(
         expect(foundCategories.length).toBeGreaterThanOrEqual(6);
       });
 
-      it.each(SPOT_CHECK_ENTITY_TABLES)(
-        'should document the "%s" entity table',
-        (tableName) => {
-          // Given: The entity mapping section exists
-          // When: We search for this specific entity table
-          // Then: The table is documented in the state model
-          const stateModelSection = extractSection(content, 'State Model');
-          const searchContent = stateModelSection || content;
-          expect(searchContent).toContain(tableName);
-        }
-      );
+      it.each(SPOT_CHECK_ENTITY_TABLES)('should document the "%s" entity table', (tableName) => {
+        // Given: The entity mapping section exists
+        // When: We search for this specific entity table
+        // Then: The table is documented in the state model
+        const stateModelSection = extractSection(content, 'State Model');
+        const searchContent = stateModelSection || content;
+        expect(searchContent).toContain(tableName);
+      });
 
       it('should distinguish entity tables from static data tables', () => {
         // Given: Entity tables and static data tables have different purposes
@@ -474,9 +469,10 @@ describe.skipIf(!runVerification)(
         }
 
         // If pattern matching doesn't find enough, also count table rows in FK sections
-        const fkSection = extractSection(content, 'Foreign Key') ||
-                          extractSection(content, 'Relationship') ||
-                          extractSection(content, 'FK');
+        const fkSection =
+          extractSection(content, 'Foreign Key') ||
+          extractSection(content, 'Relationship') ||
+          extractSection(content, 'FK');
         if (fkSection) {
           const tableRows = fkSection.match(/^\|[^|]+\|[^|]+\|[^|]+\|/gm);
           if (tableRows) {
@@ -533,8 +529,7 @@ describe.skipIf(!runVerification)(
         // Given: Story 5.2 requires a Mermaid relationship diagram
         // When: We search for Mermaid erDiagram syntax
         // Then: An erDiagram code block exists
-        const hasMermaidErDiagram =
-          /```mermaid[\s\S]*?erDiagram[\s\S]*?```/i.test(content);
+        const hasMermaidErDiagram = /```mermaid[\s\S]*?erDiagram[\s\S]*?```/i.test(content);
         expect(hasMermaidErDiagram).toBe(true);
       });
 
@@ -602,9 +597,7 @@ describe.skipIf(!runVerification)(
         // Given: The game reference document exists
         // When: We look for a subscription section
         // Then: A dedicated subscription requirements section exists
-        const hasSubscriptionSection = headings.some(
-          (h) => h.includes('subscription')
-        );
+        const hasSubscriptionSection = headings.some((h) => h.includes('subscription'));
         expect(hasSubscriptionSection).toBe(true);
       });
 
@@ -630,8 +623,7 @@ describe.skipIf(!runVerification)(
         // When: We look for SQL subscription examples
         // Then: At least one SQL example is present
         const hasSQLExample =
-          /SELECT\s+\*\s+FROM\s+[a-z_]+/i.test(content) ||
-          /SELECT.*FROM.*WHERE/i.test(content);
+          /SELECT\s+\*\s+FROM\s+[a-z_]+/i.test(content) || /SELECT.*FROM.*WHERE/i.test(content);
         expect(hasSQLExample).toBe(true);
       });
 
@@ -642,7 +634,7 @@ describe.skipIf(!runVerification)(
         const hasDistinction =
           (/per.?player/i.test(content) && /global/i.test(content)) ||
           (/filtered/i.test(content) && /entity_id/i.test(content)) ||
-          (/WHERE\s+entity_id/i.test(content));
+          /WHERE\s+entity_id/i.test(content);
         expect(hasDistinction).toBe(true);
       });
 
@@ -728,8 +720,7 @@ describe.skipIf(!runVerification)(
         // When: We look for this total count
         // Then: The 148 count is mentioned
         const has148Reference =
-          /148/i.test(content) &&
-          (/static.*data|_desc|stage_|import_/i.test(content));
+          /148/i.test(content) && /static.*data|_desc|stage_|import_/i.test(content);
         expect(has148Reference).toBe(true);
       });
 
@@ -738,8 +729,7 @@ describe.skipIf(!runVerification)(
         // When: We look for this baseline count
         // Then: The 40 count is mentioned in context of loaded/existing tables
         const has40Reference =
-          /\b40\b/.test(content) &&
-          (/loaded|existing|current|already/i.test(content));
+          /\b40\b/.test(content) && /loaded|existing|current|already/i.test(content);
         expect(has40Reference).toBe(true);
       });
 
@@ -812,9 +802,7 @@ describe.skipIf(!runVerification)(
         // When: Story 5.2 extends with entity-to-entity and entity-to-static FKs
         // Then: At least 30 total FK relationships are documented
         // Count arrow patterns that indicate FK relationships
-        const arrowPatterns = content.match(
-          /[a-z_]+(?:\.[a-z_]+)?\s*(?:->|→)\s*[a-z_]+/gi
-        );
+        const arrowPatterns = content.match(/[a-z_]+(?:\.[a-z_]+)?\s*(?:->|→)\s*[a-z_]+/gi);
         const tableRowFKs = content.match(
           /\|\s*`?[a-z_]+`?\s*\|\s*`?[a-z_]+_id`?\s*\|\s*`?[a-z_]+`?\s*\|/gi
         );
@@ -830,8 +818,7 @@ describe.skipIf(!runVerification)(
         // Given: 14 game systems exist from Story 5.1
         // When: We check all 14 have subscription documentation
         // Then: All 14 are mentioned in subscription context
-        const subscriptionSection =
-          extractSection(content, 'Subscription') || content;
+        const subscriptionSection = extractSection(content, 'Subscription') || content;
 
         const coveredSystems = REQUIRED_GAME_SYSTEMS.filter((system) =>
           subscriptionSection.toLowerCase().includes(system.toLowerCase())
@@ -853,22 +840,18 @@ describe.skipIf(!runVerification)(
         const hasQuickRef =
           /subscription.*quick.*reference/i.test(content) ||
           /quick.*reference.*subscription/i.test(content) ||
-          (headings.some((h) => h.includes('quick reference')) &&
-            /subscription/i.test(content));
+          (headings.some((h) => h.includes('quick reference')) && /subscription/i.test(content));
         expect(hasQuickRef).toBe(true);
       });
 
-      it.each(DOWNSTREAM_STORIES)(
-        'should include subscription mapping for Story %s',
-        (story) => {
-          // Given: The subscription quick reference exists
-          // When: We look for story-specific subscription mappings
-          // Then: Each downstream story has subscription documentation
-          // nosemgrep: javascript.lang.security.audit.detect-non-literal-regexp.detect-non-literal-regexp -- values from hardcoded DOWNSTREAM_STORIES const array, escaped via escapeRegExp()
-          const storyPattern = new RegExp(`(?:story\\s*)?${escapeRegExp(story)}`, 'i');
-          expect(storyPattern.test(content)).toBe(true);
-        }
-      );
+      it.each(DOWNSTREAM_STORIES)('should include subscription mapping for Story %s', (story) => {
+        // Given: The subscription quick reference exists
+        // When: We look for story-specific subscription mappings
+        // Then: Each downstream story has subscription documentation
+        // nosemgrep: javascript.lang.security.audit.detect-non-literal-regexp.detect-non-literal-regexp -- values from hardcoded DOWNSTREAM_STORIES const array, escaped via escapeRegExp()
+        const storyPattern = new RegExp(`(?:story\\s*)?${escapeRegExp(story)}`, 'i');
+        expect(storyPattern.test(content)).toBe(true);
+      });
     });
 
     // ==========================================================================
@@ -907,7 +890,8 @@ describe.skipIf(!runVerification)(
         const hasPositionDoc =
           /mobile_entity_state.*position/i.test(content) ||
           /position.*mobile_entity_state/i.test(content) ||
-          (content.includes('mobile_entity_state') && /x|y|position|location|coordinate/i.test(content));
+          (content.includes('mobile_entity_state') &&
+            /x|y|position|location|coordinate/i.test(content));
         expect(hasPositionDoc).toBe(true);
       });
 
@@ -917,8 +901,7 @@ describe.skipIf(!runVerification)(
         // Then: The identity chain from user_state to player entities is documented
         expect(content).toContain('user_state');
         const hasIdentityRoot =
-          /user_state.*entity_id/i.test(content) ||
-          /identity.*user_state/i.test(content);
+          /user_state.*entity_id/i.test(content) || /identity.*user_state/i.test(content);
         expect(hasIdentityRoot).toBe(true);
       });
     });
@@ -949,8 +932,7 @@ describe.skipIf(!runVerification)(
         // When: Story 5.2 documents subscriptions
         // Then: The Impact Matrix is referenced or cross-referenced
         const hasImpactRef =
-          /impact.*matrix/i.test(content) ||
-          /reducer.*table.*impact/i.test(content);
+          /impact.*matrix/i.test(content) || /reducer.*table.*impact/i.test(content);
         expect(hasImpactRef).toBe(true);
       });
 
@@ -1003,12 +985,13 @@ describe.skipIf(!runVerification)(
         //        against this analysis to identify gaps"
         // When: We look for a per-story mapping in the static data gap analysis
         // Then: Stories 5.4-5.8 appear with their required static data tables
-        const gapSection = extractSection(content, 'Static Data Gap Analysis') ||
-                           extractSection(content, 'Gap Analysis') ||
-                           '';
+        const gapSection =
+          extractSection(content, 'Static Data Gap Analysis') ||
+          extractSection(content, 'Gap Analysis') ||
+          '';
 
-        const storiesInGap = ['5.4', '5.5', '5.6', '5.7', '5.8'].filter(
-          (story) => gapSection.includes(story)
+        const storiesInGap = ['5.4', '5.5', '5.6', '5.7', '5.8'].filter((story) =>
+          gapSection.includes(story)
         );
         // At least 3 stories should appear in the gap analysis
         expect(storiesInGap.length).toBeGreaterThanOrEqual(3);
@@ -1049,9 +1032,9 @@ describe.skipIf(!runVerification)(
         // Then: Hybrid tables (like health_state, stamina_state) are identified
         const hasHybrid =
           /hybrid/i.test(content) ||
-          (/player.*actions.*trigger.*server.*resolves/i.test(content)) ||
-          (/health_state.*combat.*agent/i.test(content)) ||
-          (/stamina_state.*player.*agent/i.test(content));
+          /player.*actions.*trigger.*server.*resolves/i.test(content) ||
+          /health_state.*combat.*agent/i.test(content) ||
+          /stamina_state.*player.*agent/i.test(content);
         expect(hasHybrid).toBe(true);
       });
     });
@@ -1064,9 +1047,10 @@ describe.skipIf(!runVerification)(
         // Given: AC4 requires static data categorized by game system
         // When: We count distinct game system groups in the static data categorization
         // Then: At least 10 game system groups are documented (document has 15)
-        const staticDataSection = extractSection(content, 'Static Data Tables by Game System') ||
-                                  extractSection(content, 'Static Data Tables Categorized') ||
-                                  '';
+        const staticDataSection =
+          extractSection(content, 'Static Data Tables by Game System') ||
+          extractSection(content, 'Static Data Tables Categorized') ||
+          '';
 
         // Count game system categories in table format: | **System** | tables |
         const categories = staticDataSection.match(/\|\s*\*\*[^|]+\*\*\s*\|/g);
@@ -1083,9 +1067,10 @@ describe.skipIf(!runVerification)(
         // Given: Combat is a key game system requiring static data
         // When: We look for combat-related static data tables
         // Then: Combat static data tables like combat_action_desc, enemy_desc are documented
-        const staticDataSection = extractSection(content, 'Static Data Tables by Game System') ||
-                                  extractSection(content, 'Static Data Tables Categorized') ||
-                                  content;
+        const staticDataSection =
+          extractSection(content, 'Static Data Tables by Game System') ||
+          extractSection(content, 'Static Data Tables Categorized') ||
+          content;
 
         const hasCombatStatic =
           staticDataSection.includes('combat_action_desc') ||
@@ -1098,13 +1083,13 @@ describe.skipIf(!runVerification)(
         // Given: Equipment and tools are key game systems requiring static data
         // When: We look for equipment-related static data tables
         // Then: Equipment static data tables like equipment_desc, tool_desc are documented
-        const staticDataSection = extractSection(content, 'Static Data Tables by Game System') ||
-                                  extractSection(content, 'Static Data Tables Categorized') ||
-                                  content;
+        const staticDataSection =
+          extractSection(content, 'Static Data Tables by Game System') ||
+          extractSection(content, 'Static Data Tables Categorized') ||
+          content;
 
         const hasEquipmentStatic =
-          staticDataSection.includes('equipment_desc') ||
-          staticDataSection.includes('tool_desc');
+          staticDataSection.includes('equipment_desc') || staticDataSection.includes('tool_desc');
         expect(hasEquipmentStatic).toBe(true);
       });
     });

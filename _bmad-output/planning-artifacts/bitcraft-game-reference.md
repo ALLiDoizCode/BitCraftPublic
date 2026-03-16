@@ -1541,3 +1541,855 @@ SELECT * FROM onboarding_state WHERE entity_id = ?
 **Player-mutated (via reducers):** `player_state`, `mobile_entity_state`, `inventory_state`, `equipment_state`, `progressive_action_state`, `building_state`, `claim_state`, `trade_session_state`, `chat_message_state`, `quest_chain_state`, and most other tables
 
 **Hybrid (player actions trigger, server resolves):** `health_state` (combat + starvation agent), `stamina_state` (player actions + regen agent), `resource_health_state` (extraction + respawn agent), `active_buff_state` (combat + regen agent)
+
+---
+
+## Game Loops
+
+**Added by:** Story 5.3 (Game Loop Mapping & Precondition Documentation)
+**Source:** `BitCraftServer/packages/game/src/game/handlers/` (reducer implementations with precondition logic)
+
+This section documents the complete game loops available in BitCraft -- the sequences of reducer calls that constitute meaningful gameplay -- with preconditions, expected state transitions, and Mermaid sequence diagrams. Each loop builds on the Reducer Catalog (Story 5.1) and State Model (Story 5.2) sections above.
+
+### Precondition Categories
+
+Each precondition is classified into one of four categories:
+
+| Category | Description | Example |
+|----------|-------------|---------|
+| **State** | Game state must be in a specific condition | Player alive, has items, has stamina |
+| **Spatial** | Player must be near an entity or location | Near resource node, near building, in claim territory |
+| **Temporal** | Timing constraints must be met | Cooldown elapsed, progressive action timer complete, not rate-limited |
+| **Identity** | Player must have specific identity/permissions | Must be signed in, must be claim member, must own building |
+
+### MVP vs. Phase 2 Classification
+
+| Game Loop | MVP (5.4-5.8) | Phase 2 | Reason |
+|-----------|---------------|---------|--------|
+| Player Lifecycle | 5.4, 5.5 | -- | Fundamental; required for all other tests |
+| Movement | 5.5 | -- | Core gameplay; simple to validate |
+| Gathering | 5.6 | -- | Multi-table mutation; critical for inventory |
+| Crafting | 5.7 | -- | Dependent action chains; progressive action pattern |
+| Building | -- | Phase 2 | Complex permissions, claim system dependencies |
+| Combat | -- | Phase 2 | Multi-entity, complex mechanics (abilities, threat) |
+| Trading | -- | Phase 2 | Multi-player coordination |
+| Chat | 5.8 (simple) | Full in Phase 2 | Simple message post for error scenario testing |
+| Empire | -- | Phase 2 | Multi-player, territory control |
+
+---
+
+### Player Lifecycle (MVP -- Stories 5.4, 5.5)
+
+**Purpose:** Establish and manage a player session on the server, including connection, sign-in, gameplay, sign-out, and death/respawn.
+
+#### Reducer Sequence
+
+1. `player_queue_join`(ctx) -- enter server queue
+2. `sign_in`(ctx, PlayerSignInRequest) -- begin game session
+3. _(gameplay reducers: movement, gathering, crafting, etc.)_
+4. `sign_out`(ctx) -- end session gracefully
+
+**Death/Respawn Sub-Loop:**
+
+1. `health_state.health` reaches 0 (caused by combat or starvation, server-side)
+2. `player_respawn`(ctx, teleport_home: bool) -- revive after timer
+
+#### Preconditions
+
+| Step | Precondition | Category | Error on Failure |
+|------|-------------|----------|------------------|
+| `player_queue_join` | `user_state` entry exists for `ctx.sender` | Identity | `"You must have a character to join the queue"` |
+| `player_queue_join` | Server is not sign-in blocked (or player is GM) | State | `"Server is unavailable at this time, please try again later."` |
+| `player_queue_join` | Queue is not full | State | `"The queue is full, please try again at another time"` |
+| `sign_in` | `user_state.can_sign_in == true` (set by queue processing) | State | `"You must join the queue first."` |
+| `sign_in` | Player not already signed in (`signed_in_player_state` does not exist) | State | `"Already signed in"` |
+| `sign_in` | Player not permanently/temporarily blocked | Identity | `"Your account is blocked from logging in."` |
+| `sign_out` | Player is signed in (`player_state.signed_in == true`) | State | _(silent return, no error)_ |
+| `player_respawn` | Player is signed in (`actor_id(ctx, true)`) | Identity | `"Not signed in"` |
+| `player_respawn` | `health_state.health == 0` (player is dead) | State | `"You cannot respawn while still alive"` |
+| `player_respawn` | Respawn timer elapsed (`died_timestamp + respawn_seconds <= now`) | Temporal | `"You are not able to respawn yet"` |
+
+#### State Transitions
+
+| Step | Tables Written | Key Changes |
+|------|---------------|-------------|
+| `player_queue_join` | `player_queue_state`, `user_state` | `can_sign_in` set to `true` (if not queued) |
+| `sign_in` | `player_state`, `signed_in_player_state`, `inventory_state`, `active_buff_state`, `mobile_entity_state`, `player_action_state` | `player_state.signed_in = true`, `signed_in_player_state` row inserted, inventory unlocked, destination reset to current location, innerlight buff applied |
+| `sign_out` | `player_state`, `signed_in_player_state`, `target_state`, `threat_state`, `mobile_entity_state`, `trade_session_state` | `player_state.signed_in = false`, `signed_in_player_state` row deleted, trade sessions cancelled, movement stopped, buffs paused |
+| `player_respawn` | `health_state`, `stamina_state`, `satiation_state`, `active_buff_state` | `health_state.health` restored (10 or max if teleporting home), `stamina = 1.0`, satiation maxed, innerlight buff applied |
+
+#### Mermaid Sequence Diagram
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant S as SpacetimeDB
+    participant T as Tables
+
+    C->>S: player_queue_join()
+    S->>T: Read user_state (ctx.sender)
+    T-->>S: user_state found
+    alt Queue available or SkipQueue role
+        S->>T: Set user_state.can_sign_in = true
+        T-->>C: Subscription update (user_state)
+    else Queue full
+        S-->>C: Err("The queue is full")
+    end
+
+    C->>S: sign_in(PlayerSignInRequest)
+    S->>T: Read user_state, signed_in_player_state
+    alt can_sign_in && not already signed in
+        S->>T: Insert signed_in_player_state, update player_state
+        S->>T: Unlock inventory, reset mobile_entity_state
+        T-->>C: Subscription updates (multiple tables)
+    else Already signed in
+        S-->>C: Err("Already signed in")
+    end
+
+    Note over C,T: Gameplay (movement, crafting, etc.)
+
+    C->>S: sign_out()
+    S->>T: Update player_state.signed_in = false
+    S->>T: Delete signed_in_player_state
+    S->>T: Cancel trades, stop movement, pause buffs
+    T-->>C: Subscription updates
+
+    Note over C,T: Death/Respawn Sub-Loop
+    S->>T: health_state.health reaches 0 (server-side)
+    T-->>C: Subscription update (health_state)
+
+    C->>S: player_respawn(teleport_home)
+    S->>T: Read health_state
+    alt health == 0 && respawn timer elapsed
+        S->>T: Restore health, stamina, satiation
+        T-->>C: Subscription updates
+    else Still alive or timer not elapsed
+        S-->>C: Err("You cannot respawn while still alive")
+    end
+```
+
+---
+
+### Movement (MVP -- Story 5.5)
+
+**Purpose:** Move the player character across the game world.
+
+#### Reducer Sequence
+
+1. Query `mobile_entity_state` for current position (via subscription)
+2. `player_move`(ctx, PlayerMoveRequest) -- move to destination
+3. Observe `mobile_entity_state` update via subscription
+
+**Request structure:** `PlayerMoveRequest { timestamp: u64, destination: Option<OffsetCoordinatesFloat>, origin: Option<OffsetCoordinatesFloat>, duration: f32, move_type: i32, running: bool }`
+
+#### Preconditions
+
+| Step | Precondition | Category | Error on Failure |
+|------|-------------|----------|------------------|
+| `player_move` | Player signed in (`actor_id(ctx, true)`) | Identity | `"Not signed in"` |
+| `player_move` | Player alive (`HealthState::check_incapacitated`) | State | _(incapacitated check error)_ |
+| `player_move` | Player not mounted on deployable | State | `"Can't walk while in a deployable."` |
+| `player_move` | Valid destination coordinates provided | Spatial | `"Expected destination in move request"` |
+| `player_move` | Valid origin coordinates provided | Spatial | `"Expected origin in move request"` |
+| `player_move` | Terrain exists at target location | Spatial | `"You can't go here!"` |
+| `player_move` | Elevation difference <= 6 between origin and destination | Spatial | `"~Origin elevation mismatch"` |
+| `player_move` | Move timestamp/distance/speed validation passes (anti-cheat) | Temporal | _(move validation strike)_ |
+| `player_move` | Stamina >= 0 (for running, auto-cancels run if depleted) | State | _(auto-cancels running, no error)_ |
+
+#### State Transitions
+
+| Tables Written | Key Changes |
+|---------------|-------------|
+| `mobile_entity_state` | `location_x` and `location_z` set to origin, `destination_x` and `destination_z` set to target, `is_running` updated, `timestamp` updated |
+| `stamina_state` | `stamina` decremented by distance * sprint drain rate (only if running) |
+| `player_action_state` | Updated with `PlayerActionType::PlayerMove` |
+| `exploration_chunks_state` | Updated if entering new chunk |
+| `player_state` | Explore tracking updated |
+
+#### Mermaid Sequence Diagram
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant S as SpacetimeDB
+    participant T as Tables
+
+    C->>S: player_move(PlayerMoveRequest)
+    S->>T: Read user_state, signed_in_player_state
+    S->>T: Read health_state (incapacitated check)
+    S->>T: Read mobile_entity_state (current position)
+    S->>T: Read character_stats_state (speed)
+    S->>T: Read terrain_chunk_state (elevation)
+    alt Preconditions met
+        S->>T: Update mobile_entity_state (new position)
+        S->>T: Update stamina_state (if running)
+        S->>T: Update player_action_state
+        T-->>C: Subscription update (mobile_entity_state)
+    else Not signed in
+        S-->>C: Err("Not signed in")
+    end
+```
+
+---
+
+### Gathering (MVP -- Story 5.6)
+
+**Purpose:** Extract resources from world nodes, adding items to player inventory.
+
+#### Reducer Sequence
+
+1. `player_move`(ctx, PlayerMoveRequest) -- move near resource node
+2. `extract_start`(ctx, PlayerExtractRequest) -- begin extraction (progressive action)
+3. _(wait for progressive action timer -- duration from `extraction_recipe_desc.time_requirement`)_
+4. `extract`(ctx, PlayerExtractRequest) -- complete extraction
+5. Observe `inventory_state` update via subscription
+6. _(repeat steps 2-5 for multi-hit resources until `resource_health_state.health` reaches 0)_
+
+**Request structure:** `PlayerExtractRequest { recipe_id: i32, target_entity_id: u64, timestamp: u64, clear_from_claim: bool }`
+
+#### Preconditions
+
+| Step | Precondition | Category | Error on Failure |
+|------|-------------|----------|------------------|
+| `extract_start` / `extract` | Player signed in (`actor_id(ctx, true)`) | Identity | `"Not signed in"` |
+| `extract_start` / `extract` | Player alive (`HealthState::check_incapacitated`) | State | _(incapacitated check error)_ |
+| `extract` | Action target and timing validated (`PlayerActionState::validate`, `validate_action_timing`) | Temporal | _(action validation error)_ |
+| `extract_start` / `extract` | Valid recipe exists (`extraction_recipe_desc.id`) | State | `"Recipe not found."` |
+| `extract_start` / `extract` | `stamina_state.stamina >= recipe.stamina_requirement` | State | `"Not enough stamina!"` |
+| `extract_start` / `extract` | Resource exists and is not depleted (`resource_state` exists, `resource_health_state.health > 0`) | State | `"Deposit already depleted."` |
+| `extract_start` / `extract` | Player not swimming (unless on deployable) | Spatial | `"Action disallowed while swimming"` |
+| `extract_start` / `extract` | Player within recipe range of resource (`distance <= recipe.range + deployable_radius + 1.0`) | Spatial | `"You are too far."` |
+| `extract_start` / `extract` | Player has claim permission (`Permission::Usage`) on tile | Identity | `"You don't have permission to forage on this claim."` |
+| `extract_start` / `extract` | Required tool equipped (if `recipe.tool_requirements` not empty and `!recipe.allow_use_hands`) | State | _(tool-specific error from `ToolDesc::get_required_tool`)_ |
+| `extract_start` / `extract` | Required knowledges acquired (if `recipe.required_knowledges` not empty) | State | `"You don't have the knowledge required to perform this action"` |
+| `extract_start` / `extract` | Consumed items available in inventory (if `recipe.consumed_item_stacks` not empty) | State | `"Missing {item_name}"` or `"Missing requirements."` |
+
+#### State Transitions
+
+| Step | Tables Written | Key Changes |
+|------|---------------|-------------|
+| `extract_start` | `progressive_action_state`, `player_action_state` | Progressive action created with timing data, player action type set to `Extract` |
+| `extract` | `resource_health_state` | `health` decremented by damage (tool power * crit outcome) |
+| `extract` | `inventory_state` | Items from `recipe.extracted_item_stacks` added to player inventory (via `deposit_to_player_inventory_and_nearby_deployables`) |
+| `extract` | `stamina_state` | `stamina` decremented by `recipe.stamina_requirement` |
+| `extract` | `experience_state` | XP added per `recipe.experience_per_progress` |
+| `extract` | `extract_outcome_state` | Updated with damage done and target entity |
+| `extract` (depleted) | `resource_state` | Despawned if `health` reaches 0; offspawn may be triggered |
+| `extract` | `inventory_state` (consumed items) | `recipe.consumed_item_stacks` removed from inventory |
+
+#### Mermaid Sequence Diagram
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant S as SpacetimeDB
+    participant T as Tables
+
+    C->>S: player_move(to resource)
+    S->>T: Update mobile_entity_state
+    T-->>C: Position updated
+
+    C->>S: extract_start(PlayerExtractRequest)
+    S->>T: Read user_state, health_state, stamina_state
+    S->>T: Read extraction_recipe_desc, resource_state
+    S->>T: Check distance, permissions, tool requirements
+    alt Preconditions met
+        S->>T: Create progressive_action_state
+        S->>T: Set player_action_state to Extract
+        T-->>C: Subscription update (progressive_action_state)
+    else Too far
+        S-->>C: Err("You are too far.")
+    end
+
+    Note over C: Wait for recipe.time_requirement
+
+    C->>S: extract(PlayerExtractRequest)
+    S->>T: Validate action timing
+    S->>T: Read resource_health_state
+    alt Action valid and resource not depleted
+        S->>T: Decrement resource_health_state.health
+        S->>T: Add items to inventory_state
+        S->>T: Decrement stamina_state
+        S->>T: Add experience_state XP
+        T-->>C: Subscription updates (inventory, resource_health)
+    else Not enough stamina
+        S-->>C: Err("Not enough stamina!")
+    end
+```
+
+---
+
+### Crafting (MVP -- Story 5.7)
+
+**Purpose:** Craft items at a building station, consuming materials and producing products.
+
+#### Reducer Sequence
+
+1. `player_move`(ctx, PlayerMoveRequest) -- move to/enter building
+2. `craft_initiate_start`(ctx, PlayerCraftInitiateRequest) -- begin crafting
+3. _(wait for progressive action timer -- duration from `crafting_recipe_desc.time_requirement`)_
+4. `craft_initiate`(ctx, PlayerCraftInitiateRequest) -- complete initiation phase (consumes materials, advances progress)
+5. `craft_continue_start`(ctx, PlayerCraftContinueRequest) -- continue crafting (for multi-step recipes)
+6. _(wait for timer)_
+7. `craft_continue`(ctx, PlayerCraftContinueRequest) -- complete continuation
+8. _(repeat steps 5-7 until `progressive_action_state.progress >= recipe.actions_required * craft_count`)_
+9. `craft_collect`(ctx, PlayerCraftCollectRequest) -- collect finished product
+
+**Request structures:**
+- `PlayerCraftInitiateRequest { recipe_id: i32, building_entity_id: u64, count: i32, timestamp: u64, is_public: bool }`
+- `PlayerCraftContinueRequest { progressive_action_entity_id: u64, timestamp: u64 }`
+- `PlayerCraftCollectRequest { pocket_id: u64, recipe_id: i32 }`
+
+#### Preconditions
+
+| Step | Precondition | Category | Error on Failure |
+|------|-------------|----------|------------------|
+| All `craft_*` | Player signed in (`actor_id(ctx, true)`) | Identity | `"Not signed in"` |
+| All `craft_*` | Player alive (`HealthState::check_incapacitated`) | State | _(incapacitated check error)_ |
+| `craft_initiate_start` | Valid recipe exists (`crafting_recipe_desc.id`) | State | `"Invalid recipe"` |
+| `craft_initiate_start` | Building exists (`building_state.entity_id`) | Spatial | `"Building doesn't exist"` |
+| `craft_initiate_start` | Building fulfills recipe's `building_requirement` (function type + tier) | State | `"Invalid building"` |
+| `craft_initiate_start` | Building has available crafting slots | State | `"Every crafting slot of this building is busy at the moment. Try again later."` |
+| `craft_initiate_start` | Player not at max concurrent slots | State | `"Collect or complete existing crafts before starting a new one."` |
+| `craft_initiate_start` | Count <= 999999 | State | `"Quantity too large"` |
+| `craft_initiate` / `craft_continue` | `stamina_state.stamina >= recipe.stamina_requirement` | State | `"Not enough stamina."` |
+| `craft_initiate` / `craft_continue` | Player has `Permission::Usage` on building | Identity | `"You don't have the permission to use this building"` |
+| `craft_initiate` / `craft_continue` | Player near building (distance <= 2 for unenterable, or inside enterable building) | Spatial | `"Too far"` or `"Player isn't inside a building"` |
+| `craft_initiate` / `craft_continue` | Action timing validated (`PlayerActionState::validate_action_timing`) | Temporal | _(action timing error)_ |
+| `craft_initiate` (first call) | Materials available in inventory (`recipe.consumed_item_stacks`) | State | _(inventory withdrawal error)_ |
+| `craft_initiate` / `craft_continue` | Required tool equipped (if `recipe.tool_requirements` not empty) | State | _(tool-specific error)_ |
+| `craft_initiate` / `craft_continue` | Required knowledges acquired | State | `"You don't have the knowledge required to craft this"` |
+| `craft_initiate` / `craft_continue` | Required claim tech unlocked (if `recipe.required_claim_tech_id != 0`) | Identity | `"Missing claim upgrades"` |
+| `craft_collect` | `progressive_action_state` completed (`ProgressiveActionStatus::Completed`) | State | `"Recipe not fully crafted yet"` |
+| `craft_collect` | Player owns the craft (`progressive_action.owner_entity_id == actor_id`) | Identity | `"You don't own this craft"` |
+| `craft_collect` | Player near building (distance <= 2) | Spatial | `"Too far"` |
+
+#### State Transitions
+
+| Step | Tables Written | Key Changes |
+|------|---------------|-------------|
+| `craft_initiate_start` | `progressive_action_state` | New progressive action created with `recipe_id`, `building_entity_id`, `owner_entity_id`, `craft_count` |
+| `craft_initiate` | `inventory_state` | `recipe.consumed_item_stacks * count` removed from player inventory |
+| `craft_initiate` | `progressive_action_state` | `progress` advanced, `recipe_id` set |
+| `craft_initiate` | `experience_state` | XP added per `recipe.experience_per_progress` |
+| `craft_initiate` | `stamina_state` | `stamina` decremented by `recipe.stamina_requirement` |
+| `craft_continue` | `progressive_action_state` | `progress` incremented by damage (tool power * crit) |
+| `craft_continue` | `stamina_state` | `stamina` decremented |
+| `craft_continue` | `experience_state` | XP added |
+| `craft_collect` | `inventory_state` | `recipe.crafted_item_stacks * craft_count` added to player inventory |
+| `craft_collect` | `progressive_action_state` | Row deleted |
+| `craft_collect` | `public_progressive_action_state` | Row deleted (if public) |
+
+#### Passive Crafting Sub-Loop
+
+1. `passive_craft_queue`(ctx, PlayerPassiveCraftQueueRequest) -- queue background craft at building
+2. _(server timer processes the craft in the background)_
+3. `passive_craft_collect`(ctx, passive_craft_entity_id) -- collect finished product
+
+**Key differences from active crafting:** No `_start`/complete pattern; the server processes the craft on a timer. Player does not need to remain at the building.
+
+#### Mermaid Sequence Diagram
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant S as SpacetimeDB
+    participant T as Tables
+
+    C->>S: player_move(to building)
+    S->>T: Update mobile_entity_state
+    T-->>C: Position updated
+
+    C->>S: craft_initiate_start(PlayerCraftInitiateRequest)
+    S->>T: Read crafting_recipe_desc, building_state, building_desc
+    S->>T: Validate building function, slots, permissions
+    alt Preconditions met
+        S->>T: Create progressive_action_state
+        S->>T: Set player_action_state to Craft
+        T-->>C: Subscription update (progressive_action_state)
+    else Invalid building
+        S-->>C: Err("Invalid building")
+    end
+
+    Note over C: Wait for recipe.time_requirement
+
+    C->>S: craft_initiate(PlayerCraftInitiateRequest)
+    S->>T: Validate action timing, stamina, permissions
+    alt Valid
+        S->>T: Withdraw materials from inventory_state
+        S->>T: Update progressive_action_state.progress
+        S->>T: Add experience_state XP
+        T-->>C: Subscription updates
+    else Not enough stamina
+        S-->>C: Err("Not enough stamina.")
+    end
+
+    loop Multi-step recipe (repeat until progress complete)
+        C->>S: craft_continue_start(PlayerCraftContinueRequest)
+        S->>T: Validate, create progressive action timing
+        T-->>C: Subscription update
+
+        Note over C: Wait for recipe.time_requirement
+
+        C->>S: craft_continue(PlayerCraftContinueRequest)
+        S->>T: Advance progress, decrement stamina
+        T-->>C: Subscription update (progressive_action_state)
+    end
+
+    C->>S: craft_collect(PlayerCraftCollectRequest)
+    S->>T: Validate completion, ownership, distance
+    alt Craft complete
+        S->>T: Add crafted items to inventory_state
+        S->>T: Delete progressive_action_state
+        T-->>C: Subscription update (inventory_state)
+    else Not complete
+        S-->>C: Err("Recipe not fully crafted yet")
+    end
+```
+
+---
+
+### Building Construction (Phase 2)
+
+**Purpose:** Construct buildings on claimed territory, advancing through a project site lifecycle.
+
+#### Reducer Sequence
+
+1. `project_site_place`(ctx, PlayerProjectSitePlaceRequest) -- place construction project
+2. `project_site_add_materials`(ctx, PlayerProjectSiteAddMaterialsRequest) -- add materials (repeat)
+3. `project_site_advance_project_start`(ctx, PlayerProjectSiteAdvanceProjectRequest) -- begin construction step
+4. _(wait for progressive action timer)_
+5. `project_site_advance_project`(ctx, PlayerProjectSiteAdvanceProjectRequest) -- complete construction step
+6. _(repeat steps 3-5 until building complete)_
+
+**Repair/Deconstruction:**
+- `building_repair_start` / `building_repair` -- repair damaged building
+- `building_deconstruct_start` / `building_deconstruct` -- tear down building
+
+#### Preconditions
+
+| Step | Precondition | Category | Error on Failure |
+|------|-------------|----------|------------------|
+| `project_site_place` | Player signed in | Identity | `"Not signed in"` |
+| `project_site_place` | Player alive | State | _(incapacitated check error)_ |
+| `project_site_place` | Player not mounted | State | `"Can't place a building while in a deployable."` |
+| `project_site_place` | No construction privilege suspension | Identity | `"Your construction priveleges have been suspended"` |
+| `project_site_place` | Valid coordinates on passable terrain | Spatial | _(footprint validation error)_ |
+| `project_site_place` | `Permission::Build` on tile | Identity | `"You don't have permission to build there"` |
+| `project_site_place` | Claim permission `ClaimPermission::Build` (if on claimed land) | Identity | `"You don't have permission to build there."` |
+| `project_site_place` | Required claim tech unlocked | Identity | `"This claim is missing necessary upgrades for this project"` |
+| `project_site_place` | Not overlapping multiple claims | Spatial | `"You cannot build a project site overlapping several claims"` |
+| `project_site_place` | Not in Ancient Ruins/Dungeon dimension | Spatial | `"Can't build inside Ancient Ruins"` |
+| `project_site_place` | Required knowledges acquired | State | `"You don't have the knowledge required to build this"` |
+| `project_site_add_materials` | Materials available in inventory | State | _(withdrawal error)_ |
+| `project_site_advance_project` | Action timing validated | Temporal | _(timing error)_ |
+
+#### State Transitions
+
+| Step | Tables Written | Key Changes |
+|------|---------------|-------------|
+| `project_site_place` | `project_site_state`, `location_state`, `footprint_tile_state` | Project site created with recipe, footprint tiles reserved |
+| `project_site_add_materials` | `project_site_state`, `inventory_state` | Materials transferred from inventory to project site |
+| `project_site_advance_project` | `project_site_state` | `progress` incremented |
+| Building complete | `building_state`, `project_site_state` | `building_state` row created, `project_site_state` row deleted |
+| `building_deconstruct` | `building_state`, `inventory_state` | Building deleted, partial material refund |
+| `building_repair` | `building_state` | Building health restored |
+
+#### Mermaid Sequence Diagram
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant S as SpacetimeDB
+    participant T as Tables
+
+    C->>S: project_site_place(PlayerProjectSitePlaceRequest)
+    S->>T: Read user_state, health_state
+    S->>T: Validate coordinates, permissions, claim membership
+    S->>T: Validate footprint placement (terrain, overlap)
+    alt Preconditions met
+        S->>T: Insert project_site_state
+        S->>T: Insert footprint_tile_state entries
+        S->>T: Insert location_state
+        T-->>C: Subscription updates
+    else No permission
+        S-->>C: Err("You don't have permission to build there")
+    end
+
+    loop Add materials
+        C->>S: project_site_add_materials(...)
+        S->>T: Transfer items from inventory to project_site
+        T-->>C: Subscription update
+    end
+
+    loop Advance construction
+        C->>S: project_site_advance_project_start(...)
+        S->>T: Create progressive action timing
+        T-->>C: Subscription update
+
+        Note over C: Wait for timer
+
+        C->>S: project_site_advance_project(...)
+        S->>T: Increment progress
+        T-->>C: Subscription update (project_site_state)
+    end
+
+    Note over S,T: On completion: building_state created, project_site_state deleted
+```
+
+---
+
+### Combat (Phase 2)
+
+**Purpose:** Engage in combat with enemies or other players, dealing damage and earning XP.
+
+#### Reducer Sequence
+
+1. `target_update`(ctx, TargetUpdateRequest) -- select target
+2. `attack_start`(ctx, EntityAttackRequest) -- begin attack wind-up
+3. _(wait for `combat_action_desc_v3.lead_in_time`)_
+4. `attack`(ctx, EntityAttackRequest) -- execute attack
+5. _(server schedules `attack_impact` timer for damage application)_
+6. _(repeat steps 2-4 until target dies or combat ends)_
+7. `player_respawn`(ctx, teleport_home) -- if player dies
+
+#### Preconditions
+
+| Step | Precondition | Category | Error on Failure |
+|------|-------------|----------|------------------|
+| `attack_start` | Player signed in (`ensure_signed_in`) | Identity | `"Not signed in"` |
+| `attack_start` | Player is the attacker (`attacker_entity_id == actor_id`) | Identity | `"Unauthorized"` |
+| `attack_start` | Player alive (`HealthState::check_incapacitated`) | State | _(incapacitated error)_ |
+| `attack_start` / `attack` | Attacker health > 0 | State | `"Attacker is dead."` |
+| `attack_start` / `attack` | Defender health > 0 | State | _(silent error, empty string)_ |
+| `attack_start` / `attack` | Combat action exists (`combat_action_desc_v3.id`) | State | `"Combat action doesn't exist"` |
+| `attack_start` / `attack` | Attacker has the ability (`ability_state` exists) | State | `"You don't know this ability"` |
+| `attack_start` / `attack` | Target within range (`max_range` from combat action desc) | Spatial | `"Too far"` |
+| `attack_start` / `attack` | Targeting matrix allows attack | State | `"Unable to target that entity"` |
+| `attack` (player) | Ability not under cooldown | Temporal | _(silent error, empty string)_ |
+| `attack` (player) | `stamina_state.stamina >= combat_action.stamina_use` | State | `"Not enough stamina."` |
+| `attack` (player) | Correct weapon type equipped | State | `"You cannot use this action with your currently equipped weapon"` |
+| `attack` (player) | Weapon tier >= enemy tier | State | `"You need a tier {n} weapon to attack this type of enemy"` |
+| `attack` (player) | Player stationary (if `!can_move_during_lead_in`) | Spatial | _(silent error, empty string)_ |
+
+#### State Transitions
+
+| Step | Tables Written | Key Changes |
+|------|---------------|-------------|
+| `target_update` | `target_state` | `target_entity_id` set |
+| `attack_start` | `player_action_state`, `combat_state` | Action set to `Attack`, `last_attacked_timestamp` updated |
+| `attack` | `combat_state`, `ability_state`, `stamina_state` | Cooldowns set, stamina decremented |
+| `attack_impact` | `health_state` (defender), `attack_outcome_state`, `threat_state`, `contribution_state` | Defender HP reduced, threat updated, attack outcome recorded |
+| Player death | `health_state` | `health` reaches 0, `died_timestamp` set |
+
+#### Mermaid Sequence Diagram
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant S as SpacetimeDB
+    participant T as Tables
+
+    C->>S: target_update(TargetUpdateRequest)
+    S->>T: Set target_state.target_entity_id
+    T-->>C: Subscription update
+
+    C->>S: attack_start(EntityAttackRequest)
+    S->>T: Read health_state, ability_state, stamina_state
+    S->>T: Check range, targeting matrix, weapon
+    alt Preconditions met
+        S->>T: Update combat_state, player_action_state
+        T-->>C: Subscription update
+    else Too far
+        S-->>C: Err("Too far")
+    end
+
+    Note over C: Wait for lead_in_time
+
+    C->>S: attack(EntityAttackRequest)
+    S->>T: Validate timing, cooldowns, stamina
+    alt Attack valid
+        S->>T: Decrement stamina_state
+        S->>T: Schedule attack_impact timer
+        S->>T: Set ability cooldown
+        Note over S,T: attack_impact_migrated fires
+        S->>T: Calculate damage, reduce defender health_state
+        S->>T: Update attack_outcome_state, threat_state
+        T-->>C: Subscription updates (health, outcome)
+    else Not enough stamina
+        S-->>C: Err("Not enough stamina.")
+    end
+```
+
+---
+
+### Trading (Phase 2)
+
+**Purpose:** Trade items between players (P2P) or via marketplace orders.
+
+#### Reducer Sequence (P2P Trade)
+
+1. `trade_initiate_session`(ctx, PlayerTradeInitiateSessionRequest) -- initiate trade
+2. `trade_accept_session`(ctx, PlayerTradeAcceptSessionRequest) -- acceptor agrees to trade
+3. `trade_add_item`(ctx, PlayerTradeAddItemRequest) -- add items (both players, repeat)
+4. `trade_accept`(ctx, PlayerTradeAcceptRequest) -- accept terms (both players must accept)
+5. _(trade finalizes when both players have accepted)_
+
+#### Reducer Sequence (Market Orders)
+
+1. `order_post_sell_order`(ctx, PlayerPostOrderRequest) / `order_post_buy_order`(ctx, PlayerPostOrderRequest) -- post order
+2. _(server matches orders automatically)_
+3. `order_collect`(ctx, PlayerOrderCollectRequest) -- collect filled order
+
+#### Preconditions (P2P Trade)
+
+| Step | Precondition | Category | Error on Failure |
+|------|-------------|----------|------------------|
+| `trade_initiate_session` | Both players signed in | Identity | `"Cannot trade with this player."` |
+| `trade_initiate_session` | Initiator alive | State | _(incapacitated error)_ |
+| `trade_initiate_session` | Neither player in another active trade | State | `"Cannot start another trade"` |
+| `trade_initiate_session` | Neither player in combat | State | `"Cannot trade while in combat"` |
+| `trade_accept` | Valid session exists | State | `"No such trade session."` |
+| `trade_accept` | Session not already resolved | State | `"Cannot accept this trade."` |
+| `trade_accept` | Player is member of trade session | Identity | `"Not a member of trade session."` |
+| `trade_accept` | Players within trade distance | Spatial | _(distance validation error)_ |
+| `trade_accept` (finalize) | Both inventories have offered items | State | `"Initiator missing required items."` or `"Acceptor missing required items."` |
+| `trade_accept` (finalize) | Both inventories have space for received items | State | `"Acceptor inventory too full to accept."` |
+
+#### State Transitions
+
+| Step | Tables Written | Key Changes |
+|------|---------------|-------------|
+| `trade_initiate_session` | `trade_session_state`, `location_state` | Trade session created with `SessionOffered` status |
+| `trade_accept_session` | `trade_session_state` | Status changed to `SessionAccepted` |
+| `trade_add_item` | `trade_session_state` | Item added to initiator/acceptor offer |
+| `trade_accept` (one side) | `trade_session_state` | Status changed to `InitiatorAccepted` or `AcceptorAccepted` |
+| `trade_accept` (finalize) | `trade_session_state`, `inventory_state` (both players) | Status `SessionResolved`, items transferred between inventories |
+
+#### Mermaid Sequence Diagram
+
+```mermaid
+sequenceDiagram
+    participant P1 as Player 1 (Initiator)
+    participant S as SpacetimeDB
+    participant T as Tables
+    participant P2 as Player 2 (Acceptor)
+
+    P1->>S: trade_initiate_session({acceptor_entity_id})
+    S->>T: Validate both players signed in, not in trade/combat
+    S->>T: Insert trade_session_state (SessionOffered)
+    T-->>P1: Subscription update
+    T-->>P2: Subscription update
+
+    P2->>S: trade_accept_session({session_entity_id})
+    S->>T: Update status to SessionAccepted
+    T-->>P1: Subscription update
+    T-->>P2: Subscription update
+
+    P1->>S: trade_add_item({session, pocket, inventory})
+    S->>T: Add item to initiator_offer
+    P2->>S: trade_add_item({session, pocket, inventory})
+    S->>T: Add item to acceptor_offer
+
+    P1->>S: trade_accept({session_entity_id})
+    S->>T: Status = InitiatorAccepted
+
+    P2->>S: trade_accept({session_entity_id})
+    S->>T: Both accepted: finalize trade
+    alt Both have items and space
+        S->>T: Transfer items between inventory_state
+        S->>T: Status = SessionResolved
+        T-->>P1: Subscription update (inventory)
+        T-->>P2: Subscription update (inventory)
+    else Missing items
+        S-->>P2: Err("Acceptor missing required items.")
+    end
+```
+
+---
+
+### Chat (MVP simple for Story 5.8 / Full Phase 2)
+
+**Purpose:** Send chat messages to other players.
+
+#### Reducer Sequence
+
+1. `chat_post_message`(ctx, PlayerChatPostMessageRequest) -- post message
+2. Subscribers observe `chat_message_state` insert
+
+**Request structure:** `PlayerChatPostMessageRequest { text: String, channel_id: ChatChannel, target_id: u64, language_code: String }`
+
+#### Preconditions
+
+| Step | Precondition | Category | Error on Failure |
+|------|-------------|----------|------------------|
+| `chat_post_message` | Player signed in (`actor_id(ctx, true)`) | Identity | `"Not signed in"` |
+| `chat_post_message` | Message text not empty | State | `"Can't send empty chat message"` |
+| `chat_post_message` | Text passes sanitization and length check (<= 250 chars) | State | `"Failed to send chat messages"` |
+| `chat_post_message` | Chat privileges not suspended (`UserModerationState::validate_chat_privileges`) | Identity | `"Your chat priveleges have been suspended"` |
+| `chat_post_message` | Region chat: 2+ hours play time (or has a title collectible) | Temporal | `"Region chat is unlocked after two hours for new accounts."` |
+| `chat_post_message` | Region chat: username is not default "player..." | State | `"You need to set your username to post in Region chat."` |
+| `chat_post_message` | Region chat: rate limit (3 messages per 15 seconds) | Temporal | `"You can only send {n} messages per {s} seconds in Region chat"` |
+| `chat_post_message` | Non-local channels must not have `target_id` | State | `"This regional channel shouldn't have a target"` |
+
+#### State Transitions
+
+| Tables Written | Key Changes |
+|---------------|-------------|
+| `chat_message_state` | New row inserted with `entity_id`, `text`, `timestamp`, `owner_entity_id`, `channel_id`, `target_id`, `username`, `title_id` |
+
+#### Mermaid Sequence Diagram
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant S as SpacetimeDB
+    participant T as Tables
+
+    C->>S: chat_post_message(PlayerChatPostMessageRequest)
+    S->>T: Read user_state, player_state
+    S->>T: Validate text, moderation, rate limit
+    alt Preconditions met
+        S->>T: Insert chat_message_state
+        T-->>C: Subscription update (chat_message_state)
+    else Rate limited
+        S-->>C: Err("You can only send 3 messages per 15 seconds")
+    end
+```
+
+---
+
+### Empire Management (Phase 2)
+
+**Purpose:** Manage empire territory, supply chains, and siege warfare.
+
+#### Reducer Sequence (Territory Management)
+
+1. `empire_claim_join`(ctx, building_entity_id, empire_entity_id) -- join claim to empire
+2. `empire_queue_supplies`(ctx, EmpireQueueSuppliesRequest) -- queue supplies for node
+3. `empire_resupply_node_start`(ctx, EmpireResupplyNodeRequest) -- begin resupply (progressive action)
+4. _(wait for timer)_
+5. `empire_resupply_node`(ctx, EmpireResupplyNodeRequest) -- complete resupply
+
+#### Reducer Sequence (Siege Warfare)
+
+1. `empire_deploy_siege_engine_start`(ctx, EmpireStartSiegeRequest) -- begin siege deployment
+2. _(wait for timer)_
+3. `empire_deploy_siege_engine`(ctx, EmpireStartSiegeRequest) -- complete deployment
+4. `empire_add_siege_supplies`(ctx, EmpireAddSiegeSuppliesRequest) -- supply siege engine
+
+#### Preconditions
+
+| Step | Precondition | Category | Error on Failure |
+|------|-------------|----------|------------------|
+| `empire_claim_join` | Player signed in | Identity | `"Not signed in"` |
+| `empire_claim_join` | Player is member of an empire | Identity | _(empire membership error)_ |
+| `empire_claim_join` | Building belongs to player's claim | Identity | _(permission error)_ |
+| `empire_resupply_node_start` | Player signed in | Identity | `"Not signed in"` |
+| `empire_resupply_node_start` | Player has required supplies | State | _(supply error)_ |
+| `empire_resupply_node` | Action timing validated | Temporal | _(timing error)_ |
+| `empire_deploy_siege_engine_start` | Player is empire member | Identity | _(empire membership error)_ |
+| `empire_deploy_siege_engine_start` | Player has siege engine items | State | _(inventory error)_ |
+
+#### State Transitions
+
+| Step | Tables Written | Key Changes |
+|------|---------------|-------------|
+| `empire_claim_join` | Claim/empire linkage tables | Claim associated with empire |
+| `empire_queue_supplies` | Supply queue state | Supplies queued for node |
+| `empire_resupply_node` | Territory/supply state | Node supplies replenished |
+| `empire_deploy_siege_engine` | Siege state | Siege engine placed on map |
+
+#### Mermaid Sequence Diagram
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant S as SpacetimeDB
+    participant T as Tables
+
+    C->>S: empire_claim_join(building_entity_id, empire_entity_id)
+    S->>T: Validate empire membership, claim ownership
+    alt Valid
+        S->>T: Link claim to empire
+        T-->>C: Subscription update
+    else Not a member
+        S-->>C: Err("Empire membership required")
+    end
+
+    C->>S: empire_resupply_node_start(EmpireResupplyNodeRequest)
+    S->>T: Validate supplies, empire membership
+    alt Valid
+        S->>T: Create progressive action
+        T-->>C: Subscription update
+    else Missing supplies
+        S-->>C: Err("Missing supplies")
+    end
+
+    Note over C: Wait for timer
+
+    C->>S: empire_resupply_node(EmpireResupplyNodeRequest)
+    S->>T: Validate action timing
+    S->>T: Transfer supplies to node
+    T-->>C: Subscription update
+```
+
+---
+
+### Precondition Quick Reference
+
+Common preconditions mapped to the error messages they produce when violated, for use in Story 5.8 error scenario testing.
+
+| Precondition | Source Code Check | Error Message | Reducers Affected |
+|-------------|-------------------|---------------|-------------------|
+| Player not registered | `user_state().identity().find(ctx.sender)` returns `None` | `"Invalid sender"` | All player reducers (via `actor_id`) |
+| Player not signed in | `signed_in_player_state().entity_id().find(id)` returns `None` | `"Not signed in"` | All reducers using `actor_id(ctx, true)` |
+| Player already signed in | `signed_in_player_state().entity_id().find(id)` returns `Some` | `"Already signed in"` | `sign_in` |
+| Player incapacitated | `HealthState::check_incapacitated(ctx, id, _)` | _(incapacitated check error)_ | `player_move`, `extract`, `craft_*`, `attack`, `trade_*`, `project_site_place` |
+| Not enough stamina | `stamina_state.stamina < required` | `"Not enough stamina!"` (extract) / `"Not enough stamina."` (craft, attack) | `extract`, `craft_*`, `attack` |
+| Too far from target | Distance calculation exceeds `range` | `"You are too far."` (extract) / `"Too far"` (craft, attack) | `extract`, `craft_collect`, `craft_*`, `attack` |
+| Invalid recipe | `crafting_recipe_desc.id().find(id)` returns `None` | `"Invalid recipe"` (craft) / `"Recipe not found."` (extract) | `craft_initiate_start`, `extract` |
+| Resource depleted | `resource_health_state.health <= 0` | `"Deposit already depleted."` | `extract` |
+| Missing materials | `inventory.remove_input_stacks()` fails | `"Missing {item_name}"` | `craft_initiate` (withdrawal), `extract` |
+| Building doesn't exist | `building_state().entity_id().find(id)` returns `None` | `"Building doesn't exist"` | `craft_initiate_start`, `craft_collect` |
+| No crafting slots | `active_count >= max_count` | `"Every crafting slot of this building is busy at the moment. Try again later."` | `craft_initiate_start` |
+| Craft not complete | `get_status != Completed` | `"Recipe not fully crafted yet"` | `craft_collect` |
+| No permission (usage) | `PermissionState::can_interact_with_building` returns `false` | `"You don't have the permission to use this building"` | `craft_*` |
+| No permission (build) | `PermissionState::can_interact_with_tile` returns `false` | `"You don't have permission to build there"` | `project_site_place` |
+| No permission (forage) | `PermissionState::can_interact_with_tile` returns `false` | `"You don't have permission to forage on this claim."` | `extract` |
+| Cannot walk while mounted | `mounting_state().entity_id().find(id)` returns `Some` | `"Can't walk while in a deployable."` | `player_move` |
+| Queue full | `queued_player_count >= max_queue_length` | `"The queue is full, please try again at another time"` | `player_queue_join` |
+| Must join queue first | `user_state.can_sign_in == false` | `"You must join the queue first."` | `sign_in` |
+| Account blocked | `UserModerationPolicy::PermanentBlockLogin` or `TemporaryBlockLogin` | `"Your account is blocked from logging in."` | `sign_in` |
+| Cannot respawn alive | `health_state.health > 0` | `"You cannot respawn while still alive"` | `player_respawn` |
+| Respawn timer not elapsed | `died_timestamp + respawn_seconds > now` | `"You are not able to respawn yet"` | `player_respawn` |
+| Empty chat message | `text.len() <= 0` | `"Can't send empty chat message"` | `chat_post_message` |
+| Chat moderation | `UserModerationState::validate_chat_privileges` | `"Your chat priveleges have been suspended"` | `chat_post_message` |
+| Region chat time limit | `time_signed_in < TWO_HOURS` | `"Region chat is unlocked after two hours for new accounts."` | `chat_post_message` |
+| Region chat rate limit | `msg_count >= 3` in 15-second window | `"You can only send 3 messages per 15 seconds in Region chat"` | `chat_post_message` |
+| Swimming restriction | `terrain_source.player_should_swim()` | `"Action disallowed while swimming"` | `extract` |
+| Not own craft | `progressive_action.owner_entity_id != actor_id` | `"You don't own this craft"` | `craft_collect` |
+| Trade already active | Existing non-resolved trade session exists | `"Cannot start another trade"` | `trade_initiate_session` |
+| In combat | `ThreatState::in_combat(ctx, id)` | `"Cannot trade while in combat"` | `trade_initiate_session` |
+| Missing tool | `ToolDesc::get_required_tool()` returns `Err` | _(tool-specific error from ToolDesc)_ | `extract`, `craft_*` |
+| Missing knowledge | `Discovery::already_acquired_secondary()` returns `false` | `"You don't have the knowledge required to..."` | `extract`, `craft_*`, `project_site_place` |
+
+---
+
+### Testing Path Classification
+
+Each game loop is classified by which validation story exercises it and whether it requires direct WebSocket or could use BLS:
+
+| Game Loop | Validation Story | Test via WebSocket | Test via BLS | Notes |
+|-----------|-----------------|-------------------|-------------|-------|
+| Player Lifecycle | 5.4, 5.5 | Yes | No (BLOCKER-1) | WebSocket direct; `sign_in`/`sign_out` use `ctx.sender` |
+| Movement | 5.5 | Yes | No (BLOCKER-1) | WebSocket direct; `player_move` uses `actor_id(ctx, true)` |
+| Gathering | 5.6 | Yes | No (BLOCKER-1) | WebSocket direct; two-phase `extract_start`/`extract` |
+| Crafting | 5.7 | Yes | No (BLOCKER-1) | WebSocket direct; multi-step progressive action |
+| Building | Phase 2 | Yes | No (BLOCKER-1) | Complex claim/permission dependencies |
+| Combat | Phase 2 | Yes | No (BLOCKER-1) | Multi-entity, timer-based impact resolution |
+| Trading | Phase 2 | Yes (2 players) | No (BLOCKER-1) | Requires two simultaneous WebSocket connections |
+| Chat | 5.8 | Yes | No (BLOCKER-1) | Simple single-reducer test for error scenarios |
+| Empire | Phase 2 | Yes | No (BLOCKER-1) | Multi-player, territory control |
+
+**Per BLOCKER-1:** All Stories 5.4-5.8 validation tests should call reducers directly via SpacetimeDB WebSocket client (as a connected player), bypassing the BLS handler. This validates reducer behavior itself, deferring BLS identity propagation resolution.
