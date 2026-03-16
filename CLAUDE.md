@@ -1,7 +1,7 @@
 # Sigil SDK - Claude Agent Guide
 
-**Last Updated:** 2026-03-14
-**Status:** Epics 1-3 Complete, Epic 4 Next (MVP Development Phase)
+**Last Updated:** 2026-03-15
+**Status:** Epics 1-4 Complete, Epic 5 Next (MVP Development Phase)
 **Agent Model:** Claude instance + MCP tools + Skills (NOT custom cognition stack)
 
 ---
@@ -12,26 +12,11 @@ You are a Claude instance working on the **Sigil SDK** platform. Sigil enables A
 
 **IMPORTANT:** Your full project context is automatically loaded from `_bmad-output/project-context.md`. This guide provides high-level pointers and setup instructions only. Do NOT duplicate information that already exists in project-context.md.
 
+**You MUST read project-context.md before starting any work.** It contains the complete architecture overview, repository structure, epic/story breakdown, test metrics, known issues, code review checklist, naming conventions, team agreements (AGREEMENT-1 through AGREEMENT-13), and documentation index.
+
 ---
 
-## What You Need to Know
-
-### 1. Project Context is Auto-Loaded
-
-The comprehensive project context document (`_bmad-output/project-context.md`) is automatically loaded by BMAD workflows. It contains:
-
-- Complete architecture overview and repository structure
-- Epic and story breakdown with progress tracking
-- Technology stack and dependencies
-- Test coverage metrics and quality standards
-- Known issues and technical debt
-- Code review checklist (OWASP, TypeScript safety, Rust safety)
-- Naming conventions, API patterns, and team agreements
-- Documentation index (planning artifacts, story reports, ADRs)
-
-**You MUST read project-context.md before starting any work.**
-
-### 2. Your Role as a Claude Agent
+## Your Role as a Claude Agent
 
 You are NOT building a custom cognition stack. The architecture decision was made to use:
 
@@ -42,13 +27,15 @@ You are NOT building a custom cognition stack. The architecture decision was mad
 
 The Five-Layer Cognition Architecture documented in the architecture was SUPERSEDED by this simpler agent model.
 
-### 3. Current Project Status
+---
 
-**Epics 1-3: COMPLETE** (15/15 stories delivered)
+## Current Project Status
 
-**Total Tests:** 984 passing (879 TS unit + 7 Rust + 98 root integration), 212 skipped (require Docker).
+**Epics 1-4: COMPLETE** (22/22 stories delivered)
 
-**Epic 4: NEXT** -- Declarative Agent Configuration (7 stories). Client-side configuration, skill file parsing, budget tracking, event interpretation, decision logging.
+**Total Tests:** 1426 passing (1320 TS workspace + 98 root integration + 8 Rust), 242 skipped (require Docker).
+
+**Epic 5: NEXT** -- BitCraft Game Analysis & Playability Validation (8 stories). Server source analysis, game state modeling, game loop mapping, and end-to-end pipeline validation with Docker stack.
 
 **See:** `_bmad-output/project-context.md` for full epic breakdown, story details, deliverables, and known issues/technical debt.
 
@@ -57,8 +44,6 @@ The Five-Layer Cognition Architecture documented in the architecture was SUPERSE
 ## Setup Instructions
 
 ### Prerequisites Check
-
-Before starting development, verify:
 
 ```bash
 # Check Node.js version (must be >= 20.0.0)
@@ -70,7 +55,7 @@ pnpm --version
 # Check Rust toolchain (must be >= 1.70, for TUI work)
 rustc --version
 
-# Check Docker Desktop is running
+# Check Docker Desktop is running (required for Epic 5)
 docker info
 ```
 
@@ -116,51 +101,28 @@ docker compose -f docker/docker-compose.yml down
 
 ---
 
-## Development Commands
-
-### Running Tests
+## Essential Commands (Quick Reference)
 
 ```bash
-# From repository root:
+# Tests
 pnpm test:unit                              # Unit tests (fast, no Docker)
 pnpm test:integration                       # Integration tests (requires Docker)
 pnpm test                                   # All tests
-pnpm test:coverage                          # Generate coverage report
-pnpm --filter @sigil/client test:unit       # Client-only unit tests
-pnpm --filter @sigil/bitcraft-bls test      # BLS handler tests
 pnpm --filter @sigil/client test:watch      # TDD watch mode
-pnpm smoke:bls                              # BLS handler smoke test (requires Docker + BLS handler)
-```
 
-### Building
-
-```bash
+# Build
 pnpm build                                  # Build all TS packages
 cd crates/tui && cargo build                # Build Rust TUI
-cd crates/tui && cargo clippy               # Lint Rust
+
+# Docker (full reset)
+docker compose -f docker/docker-compose.yml down -v && rm -rf docker/volumes/* && docker compose -f docker/docker-compose.yml up -d
+
+# BMAD
+/bmad-bmm-generate-project-context yolo     # Regenerate project context
+/bmad-bmm-check-implementation-readiness    # Check readiness for next epic
 ```
 
-### Docker Stack Management
-
-```bash
-docker compose -f docker/docker-compose.yml up -d       # Start
-docker compose -f docker/docker-compose.yml ps           # Status
-docker compose -f docker/docker-compose.yml logs -f bitcraft-bls  # BLS handler logs
-docker compose -f docker/docker-compose.yml restart      # Restart
-docker compose -f docker/docker-compose.yml down -v && rm -rf docker/volumes/* && docker compose -f docker/docker-compose.yml up -d  # Full reset
-```
-
-### BMAD Workflow Commands
-
-```bash
-# Generate fresh project context
-/bmad-bmm-generate-project-context yolo
-
-# Check implementation readiness for next epic
-/bmad-bmm-check-implementation-readiness
-
-# Other BMAD commands are available via /help
-```
+**See:** `_bmad-output/project-context.md` for the complete command reference including per-package test commands, coverage, Docker management, and CI/CD details.
 
 ---
 
@@ -169,11 +131,8 @@ docker compose -f docker/docker-compose.yml down -v && rm -rf docker/volumes/* &
 - **Don't duplicate project-context.md** -- It's auto-loaded, no need to repeat its content here or in code comments
 - **Don't skip TDD** -- Write tests BEFORE implementation for features with >3 acceptance criteria
 - **Don't commit without security review** -- OWASP Top 10 check required on every story
-- **Execute retro action items** -- All action items from retrospectives must be completed within the next epic (AGREEMENT-9)
-- **No placeholder tests without tracking** -- Integration test placeholders must be tracked with test name, purpose, dependencies, and effort estimate (AGREEMENT-10)
-- **Dead code gets 1-epic grace period** -- Exported code with zero production consumers must be integrated or removed after one epic (AGREEMENT-11)
 
-**See:** `_bmad-output/project-context.md` for the full list of team agreements (AGREEMENT-1 through AGREEMENT-11) and the code review checklist.
+**See:** `_bmad-output/project-context.md` for the full list of team agreements (AGREEMENT-1 through AGREEMENT-13) and the code review checklist.
 
 ---
 
@@ -187,29 +146,29 @@ docker compose -f docker/docker-compose.yml down -v && rm -rf docker/volumes/* &
 
 ---
 
-## Next Steps: Epic 4 Preparation
+## Next Steps: Epic 5 Preparation
 
-**Epic 4: Declarative Agent Configuration** (7 stories)
+**Epic 5: BitCraft Game Analysis & Playability Validation** (8 stories)
 
-- 4.1: Skill File Format & Parser
-- 4.2: Agent.md Configuration & Skill Selection
-- 4.3: Configuration Validation Against SpacetimeDB
-- 4.4: Budget Tracking & Limits
-- 4.5: Event Interpretation as Semantic Narratives
-- 4.6: Structured Decision Logging
-- 4.7: Swappable Agent Configuration
+- 5.1: Server Source Analysis & Reducer Catalog
+- 5.2: Game State Model & Table Relationships
+- 5.3: Game Loop Mapping & Precondition Documentation
+- 5.4: Basic Action Round-Trip Validation
+- 5.5: Player Lifecycle & Movement Validation
+- 5.6: Resource Gathering & Inventory Validation
+- 5.7: Multi-Step Crafting Loop Validation
+- 5.8: Error Scenarios & Graceful Degradation
 
 **Key Context:**
 
-- Client-side configuration and parsing logic (lower risk than Epic 3's server-side work)
-- Skill files produce `{ reducer, args }` payloads consumed by BLS handler (Story 3.2)
-- Pricing model compatible: action cost registry (Story 2.2) + fee schedule (Story 3.3)
-- Preparation tasks from Epic 3 retro must be completed first: PREP-E4-1 through PREP-E4-5
+- Fundamentally different from Epics 1-4: Stories 5.1-5.3 are research/documentation, Stories 5.4-5.8 are validation with Docker stack
+- First epic requiring sustained Docker integration testing
+- Produces: BitCraft Game Reference doc (`_bmad-output/planning-artifacts/bitcraft-game-reference.md`), reusable integration test fixtures
 
 **Critical Prep Before Starting:**
 
-- PREP-E4-1: Complete deferred Epic 2/3 action items (4 of 8 Epic 2 retro commitments unaddressed)
-- PREP-E4-2: Clean up dead code from Epic 3 (verifyIdentityChain, logVerificationEvent)
-- PREP-E4-3: Research SKILL.md file format
+- PREP-E5-1: Update project context -- DONE
+- PREP-E5-2: Verify Docker stack health -- Not started
+- PREP-E5-3: Assess BitCraft server source availability -- Not started
 
-**See:** `_bmad-output/project-context.md` for full Epic 4 details, prep items, and risk assessment.
+**See:** `_bmad-output/project-context.md` for full Epic 5 details, prep items, and risk assessment.

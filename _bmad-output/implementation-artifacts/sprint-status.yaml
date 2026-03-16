@@ -92,8 +92,9 @@ epics:
   - id: epic-4
     title: 'Declarative Agent Configuration'
     phase: mvp
-    status: in-progress
-    retrospective_status: not_started
+    status: done
+    retrospective_status: done
+    retrospective_date: 2026-03-15
     stories:
       - id: story-4.1
         title: 'Skill File Format & Parser'
