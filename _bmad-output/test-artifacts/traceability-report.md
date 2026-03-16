@@ -6,20 +6,16 @@ stepsCompleted:
   - 'step-04-analyze-gaps'
   - 'step-05-gate-decision'
 lastStep: 'step-05-gate-decision'
-lastSaved: '2026-03-15'
+lastSaved: '2026-03-16'
 workflowType: 'testarch-trace'
 inputDocuments:
-  - '_bmad-output/implementation-artifacts/5-1-server-source-analysis-and-reducer-catalog.md'
-  - '_bmad-output/planning-artifacts/bitcraft-game-reference.md'
-  - '_bmad-output/test-artifacts/atdd-checklist-5-1.md'
-  - '_bmad-output/test-artifacts/nfr-assessment-5-1.md'
-  - 'packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts'
+  - '_bmad-output/implementation-artifacts/5-2-game-state-model-and-table-relationships.md'
 ---
 
-# Traceability Matrix & Gate Decision - Story 5.1
+# Traceability Matrix & Gate Decision - Story 5.2
 
-**Story:** Server Source Analysis & Reducer Catalog
-**Date:** 2026-03-15
+**Story:** Game State Model & Table Relationships
+**Date:** 2026-03-16
 **Evaluator:** TEA Agent (Claude Opus 4.6)
 
 ---
@@ -32,10 +28,10 @@ Note: This workflow does not generate tests. If gaps exist, run `*atdd` or `*aut
 
 | Priority  | Total Criteria | FULL Coverage | Coverage % | Status |
 | --------- | -------------- | ------------- | ---------- | ------ |
-| P0        | 3              | 3             | 100%       | PASS   |
-| P1        | 2              | 2             | 100%       | PASS   |
-| P2        | 0              | 0             | 100%       | PASS   |
-| P3        | 0              | 0             | 100%       | PASS   |
+| P0        | 0              | 0             | 100%       | N/A    |
+| P1        | 5              | 5             | 100%       | PASS   |
+| P2        | 0              | 0             | 100%       | N/A    |
+| P3        | 0              | 0             | 100%       | N/A    |
 | **Total** | **5**          | **5**         | **100%**   | **PASS** |
 
 **Legend:**
@@ -44,222 +40,226 @@ Note: This workflow does not generate tests. If gaps exist, run `*atdd` or `*aut
 - WARN - Coverage below threshold but not critical
 - FAIL - Coverage below minimum threshold (blocker)
 
+**Priority Rationale:** All 5 ACs are classified as P1 (core functionality for downstream stories). This story is research/documentation only -- no revenue, security, or compliance paths exist that would warrant P0 classification.
+
 ---
 
 ### Detailed Mapping
 
-#### AC1: Reducer catalog completeness (P0)
+#### AC1: Entity table mapping completeness (P1)
 
-- **Coverage:** FULL PASS
+**Acceptance Criterion:** Entity tables are mapped to game concepts with table name, primary key, key columns, and game concept.
+
+- **Coverage:** FULL
 - **Tests:**
-  - `AC1/V5.1-01-001` - packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts:129
+  - `5.2-UNIT-001` - story-5-2-state-model-verification.test.ts:281
     - **Given:** The game reference document exists
-    - **When:** We look for a reducer catalog section
-    - **Then:** The document has a heading for the reducer catalog
-  - `AC1/V5.1-01-002` - packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts:140
-    - **Given:** The game reference document exists
-    - **When:** We search for the total reducer count
-    - **Then:** A count is documented (either exact or approximate)
-  - `AC1/V5.1-01-003` - packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts:152
-    - **Given:** The game reference document has a reducer catalog
-    - **When:** We count documented reducer entries across all formats
-    - **Then:** At least 100 unique reducers are documented (669 total found, ~180 player-facing)
-  - `COMPLETENESS-001` - packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts:424
-    - **Given:** The story requires reducer coverage >= 90% of all public reducers
-    - **When:** We count unique reducer names documented in table rows
-    - **Then:** At least 100 unique reducer names in table format
-  - `COMPLETENESS-002` - packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts:440
-    - **Given:** The story requires >= 80% of cataloged reducers have complete argument types
-    - **When:** We count reducers with type annotations vs total in the Reducer Catalog section
-    - **Then:** The ratio is >= 80%
-  - `RETURN-001` - packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts:583
-    - **Given:** AC1 requires return behavior documentation for each reducer
-    - **When:** We search for return type documentation
-    - **Then:** The Result<(), String> pattern is documented
-  - `RETURN-002` - packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts:594
-    - **Given:** The document explains reducer behavior
-    - **When:** We look for return value constraint documentation
-    - **Then:** The API constraint about no return values is documented
-  - `DATALOADING-001` - packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts:716
-    - **Given:** AC1 requires all public reducers cataloged
-    - **When:** We look for import/stage reducer documentation
-    - **Then:** The data loading category is documented
-  - `DATALOADING-002` - packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts:726
-    - **Given:** Import/stage reducers are server-initialization only
-    - **When:** We check the documentation
-    - **Then:** It clearly states these are not for gameplay or client.publish() calls
+    - **When:** We look for an entity mapping section
+    - **Then:** A section for entity-to-concept mapping exists
+  - `5.2-UNIT-002` - story-5-2-state-model-verification.test.ts:294
+    - **Given:** The entity table section exists
+    - **When:** We count unique entity table names documented in table rows
+    - **Then:** At least 68 entity tables are mapped (85% of ~80)
+  - `5.2-UNIT-003` - story-5-2-state-model-verification.test.ts:337
+    - **Given:** Entity tables are mapped
+    - **When:** We check for PK documentation
+    - **Then:** Primary key information is present
+  - `5.2-UNIT-004` - story-5-2-state-model-verification.test.ts:351
+    - **Given:** Entity tables are mapped
+    - **When:** We check for concept category documentation
+    - **Then:** At least 6 of 8 game concept categories are present
+  - `5.2-UNIT-005` through `5.2-UNIT-014` - story-5-2-state-model-verification.test.ts:375
+    - **Given:** The entity mapping section exists
+    - **When:** We search for each of 10 spot-check entity tables
+    - **Then:** Each table (player_state, mobile_entity_state, health_state, stamina_state, inventory_state, equipment_state, building_state, combat_state, trade_session_state, progressive_action_state) is documented
+  - `5.2-UNIT-015` - story-5-2-state-model-verification.test.ts:387
+    - **Given:** Entity tables and static data tables have different purposes
+    - **When:** We check the document structure
+    - **Then:** Entity tables and static data tables are in separate sections
+  - `5.2-UNIT-016` - story-5-2-state-model-verification.test.ts:400
+    - **Given:** AC1 requires key columns documentation
+    - **When:** We look for "Key Columns" in entity mapping table headers
+    - **Then:** The entity mapping tables include a Key Columns column
+  - `5.2-UNIT-017` - story-5-2-state-model-verification.test.ts:414
+    - **Given:** Task 1.5 requires compound PK documentation
+    - **When:** We check for compound PK documentation
+    - **Then:** At least one compound PK is documented
+  - `5.2-UNIT-018` - story-5-2-state-model-verification.test.ts:429
+    - **Given:** The story mapped 138 entity tables into 21 categories
+    - **When:** We count category subsections
+    - **Then:** At least 15 distinct game concept categories are documented
 
 - **Gaps:** None
-
-- **Recommendation:** Coverage is comprehensive. 9 tests verify AC1 from multiple angles including catalog structure, completeness metrics, return behavior, and data loading reducer categorization.
+- **Recommendation:** None required -- all AC1 aspects thoroughly covered by 18 tests
 
 ---
 
-#### AC2: Argument signature documentation (P0)
+#### AC2: Table relationship documentation (P1)
 
-- **Coverage:** FULL PASS
+**Acceptance Criterion:** FK relationships, static data lookups, and Mermaid ER diagram documented.
+
+- **Coverage:** FULL
 - **Tests:**
-  - `AC2/V5.1-02-001` - packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts:177
-    - **Given:** The game reference has a reducer catalog
-    - **When:** We search for type annotations in reducer signatures
-    - **Then:** At least 10 reducers have typed parameters documented
-  - `AC2/V5.1-02-002` - packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts:190
-    - **Given:** The game reference document exists
-    - **When:** We search for identity parameter documentation
-    - **Then:** The document explains how identity is handled in reducer signatures
-  - `AC2/V5.1-02-003` - packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts:202
-    - **Given:** The game reference documents identity conventions
-    - **When:** We search for Nostr-to-SpacetimeDB identity mapping
-    - **Then:** The document explains the mapping
-  - `AC2+AC4/V5.1-04-001` - packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts:258
-    - **Given:** The game reference document exists
-    - **When:** We search for an identity propagation section
-    - **Then:** A dedicated heading exists
-  - `AC2+AC4/V5.1-04-002` - packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts:269
-    - **Given:** The identity section exists
-    - **When:** We look for ReducerContext.sender documentation
-    - **Then:** The convention is documented
-  - `AC2+AC4/V5.1-04-003` - packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts:280
-    - **Given:** The identity section exists
-    - **When:** We search for BLOCKER-1 documentation
-    - **Then:** The blocker is analyzed with a recommendation
-  - `AC2+AC4/V5.1-04-004` - packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts:289
-    - **Given:** The identity section exists
-    - **When:** We search for BLS handler identity documentation
-    - **Then:** The BLS identity propagation path is documented
-  - `SPOTCHECK-001..010` - packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts:485
-    - **Given:** The reducer catalog documents key reducers
-    - **When:** We look for 10 specific reducers (player_move, sign_in, sign_out, extract, craft_initiate, trade_accept, attack, chat_post_message, building_deconstruct, player_respawn)
-    - **Then:** Each appears with argument type information and (ctx signature context
-  - `BLOCKER1-001` - packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts:532
-    - **Given:** The identity propagation section analyzes BLOCKER-1
-    - **When:** We look for resolution options or recommendations
-    - **Then:** At least one resolution option is documented
-  - `BLOCKER1-002` - packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts:543
-    - **Given:** BLOCKER-1 is about identity propagation mismatch
-    - **When:** We look for the mismatch description
-    - **Then:** The problem is clearly stated
-
-- **Gaps:** None
-
-- **Recommendation:** Coverage is excellent. 20 tests (including 10 spot-checks for specific reducers) verify AC2 from multiple angles including type annotations, identity convention, Nostr mapping, ReducerContext.sender, BLOCKER-1 analysis, and BLS handler documentation.
-
----
-
-#### AC3: Game system grouping (P1)
-
-- **Coverage:** FULL PASS
-- **Tests:**
-  - `AC3/V5.1-03-001..010` - packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts:218
-    - **Given:** The game reference has a reducer catalog
-    - **When:** We search for each of 10 game system sections (movement, gathering, crafting, combat, building, trading, empire, chat, player lifecycle, administrative)
-    - **Then:** Each system is documented as a heading or section (10 parameterized tests via it.each)
-  - `AC3/V5.1-03-011` - packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts:232
-    - **Given:** The game reference document exists
-    - **When:** We check all 10 required game systems
-    - **Then:** All 10 are mentioned in the document
-  - `AC3/V5.1-03-012` - packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts:242
-    - **Given:** Game systems are documented
-    - **When:** We look for sequence indicators
-    - **Then:** At least one game system shows an ordered sequence
-  - `SEQUENCE-001` - packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts:610
-    - **Given:** AC3 requires each system's reducers ordered by typical invocation
-    - **When:** We count systems with documented sequences
-    - **Then:** At least 3 game systems show invocation sequences (arrows or "sequence" mentions)
-
-- **Gaps:** None
-
-- **Recommendation:** All 10 game systems verified individually plus overall count and invocation sequence ordering. 13 tests total.
-
----
-
-#### AC4: BitCraft Game Reference document (P0)
-
-- **Coverage:** FULL PASS
-- **Tests:**
-  - `AC4/V5.1-05-001` - packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts:110
-    - **Given:** The story implementation is complete
-    - **When:** We check the expected output path
-    - **Then:** The file exists at _bmad-output/planning-artifacts/bitcraft-game-reference.md
-  - `AC4/V5.1-05-002` - packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts:117
-    - **Given:** The game reference document exists
-    - **When:** We measure its length
-    - **Then:** It has substantial content (>5000 characters)
-  - `STRUCTURAL-001` - packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts:361
-    - **Given:** The game reference document exists
-    - **When:** We check for a constraints section
-    - **Then:** Known constraints are documented
-  - `STRUCTURAL-002` - packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts:372
-    - **Given:** The game reference document exists
-    - **When:** We check for a quick reference section
-    - **Then:** A quick reference for downstream stories exists
-  - `STRUCTURAL-003` - packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts:383
-    - **Given:** The reducer catalog uses consistent naming
-    - **When:** We check for reducer name format
-    - **Then:** All reducer names follow snake_case convention (no camelCase)
-  - `STRUCTURAL-004` - packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts:399
-    - **Given:** The game reference document exists
-    - **When:** We check for an overview section
-    - **Then:** An overview with architecture context exists
-  - `STRUCTURAL-005` - packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts:408
-    - **Given:** The game reference document exists
-    - **When:** We check for a module structure section
-    - **Then:** The document describes the server module organization
-  - `QUICKREF-001..005` - packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts:515
-    - **Given:** The quick reference section exists
-    - **When:** We search for story-specific reducer listings
-    - **Then:** Each downstream story (5.4, 5.5, 5.6, 5.7, 5.8) has associated reducer documentation (5 parameterized tests via it.each)
-  - `IMPACT-001` - packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts:629
-    - **Given:** AC4 says the document includes table impact information
-    - **When:** We look for the impact matrix section
-    - **Then:** A section mapping reducers to the tables they read/write exists
-  - `PROGRESSIVE-001` - packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts:645
-    - **Given:** Many BitCraft reducers use the two-phase progressive action pattern
-    - **When:** We look for documentation of this pattern
-    - **Then:** The pattern is explained
-  - `PROGRESSIVE-002` - packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts:657
-    - **Given:** The progressive action pattern is documented
-    - **When:** We look for specific reducer pairs
-    - **Then:** At least 3 reducer pairs are listed as using the pattern
-  - `AGENTS-001` - packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts:677
-    - **Given:** Task 1.4 requires analysis of server-side agents
-    - **When:** We look for agent documentation
-    - **Then:** Background agents are documented as non-player-callable
-  - `AGENTS-002` - packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts:689
-    - **Given:** There are ~21 server-side agents
-    - **When:** We count named agents in the document
-    - **Then:** At least 5 agents are documented by name
-
-- **Gaps:** None
-
-- **Recommendation:** Coverage is thorough. 18 tests verify AC4 across file existence, content size, structural sections (overview, module structure, constraints, quick reference, impact matrix), naming conventions, progressive action pattern documentation, server-side agents, and per-story quick reference coverage.
-
----
-
-#### AC5: Table-reducer cross-reference (P1)
-
-- **Coverage:** FULL PASS
-- **Tests:**
-  - `AC5/V5.1-06-001` - packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts:307
-    - **Given:** The game reference document exists
-    - **When:** We search for a table-reducer relationships section
-    - **Then:** A dedicated heading exists
-  - `AC5/V5.1-06-002` - packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts:322
-    - **Given:** The relationships section exists
-    - **When:** We count FK relationship entries
-    - **Then:** At least 10 relationships are documented (18 actual)
-  - `AC5/V5.1-06-003` - packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts:343
-    - **Given:** FK relationships are documented
-    - **When:** We search for argument-to-table mappings
-    - **Then:** Concrete mappings are present (e.g., item_id -> item_desc.id)
-  - `FK-SPOTCHECK-001..005` - packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts:569
+  - `5.2-UNIT-019` - story-5-2-state-model-verification.test.ts:446
+    - **Given:** The game reference document has a State Model section
+    - **When:** We look for FK relationship documentation
+    - **Then:** A foreign key relationships section exists
+  - `5.2-UNIT-020` - story-5-2-state-model-verification.test.ts:459
+    - **Given:** Story 5.1 documented 18 FK relationships
+    - **When:** Story 5.2 adds entity-to-entity and entity-to-static relationships
+    - **Then:** At least 30 total FK relationships are documented
+  - `5.2-UNIT-021` through `5.2-UNIT-025` - story-5-2-state-model-verification.test.ts:494
     - **Given:** The FK relationships section exists
-    - **When:** We look for 5 specific FK mappings (recipe_id -> extraction_recipe_desc, recipe_id -> crafting_recipe_desc, building_entity_id -> building_state, session_entity_id -> trade_session_state, claim_entity_id -> claim_state)
-    - **Then:** Both the argument name and referenced table appear in the document (5 parameterized tests via it.each)
+    - **When:** We look for 5 entity-to-entity FK spot-checks (user_state->player_state, player_state->mobile_entity_state, player_state->health_state, player_state->inventory_state, player_state->equipment_state)
+    - **Then:** Both source and target tables appear with FK field
+  - `5.2-UNIT-026` through `5.2-UNIT-030` - story-5-2-state-model-verification.test.ts:506
+    - **Given:** The FK relationships section exists
+    - **When:** We look for 5 entity-to-static FK spot-checks (building_state->building_desc, inventory_state->item_desc, progressive_action_state->crafting_recipe_desc, progressive_action_state->extraction_recipe_desc, resource_state->resource_desc)
+    - **Then:** Both source entity and target static data tables are documented
+  - `5.2-UNIT-031` - story-5-2-state-model-verification.test.ts:517
+    - **Given:** FK relationships are documented
+    - **When:** We look for cardinality information
+    - **Then:** Relationship types (1:1, 1:N) are documented
+  - `5.2-UNIT-032` - story-5-2-state-model-verification.test.ts:532
+    - **Given:** Story 5.2 requires a Mermaid diagram
+    - **When:** We search for Mermaid erDiagram syntax
+    - **Then:** An erDiagram code block exists
+  - `5.2-UNIT-033` - story-5-2-state-model-verification.test.ts:541
+    - **Given:** The Mermaid diagram exists
+    - **When:** We check for core table names inside the diagram
+    - **Then:** At least 3 of 5 key tables appear
+  - `5.2-UNIT-034` - story-5-2-state-model-verification.test.ts:563
+    - **Given:** The Mermaid diagram uses erDiagram format
+    - **When:** We check for relationship syntax
+    - **Then:** Mermaid ER relationship syntax is present
+  - `5.2-UNIT-035` - story-5-2-state-model-verification.test.ts:578
+    - **Given:** The story requires a focused diagram
+    - **When:** We count unique entities
+    - **Then:** Count is between 10 and 40
 
 - **Gaps:** None
+- **Recommendation:** None required -- all AC2 aspects covered (FK relationships + Mermaid diagram) by 17 tests
 
-- **Recommendation:** 8 tests verify AC5 including section existence, count threshold, concrete argument-to-table mappings, and 5 specific FK relationship spot-checks.
+---
+
+#### AC3: Subscription requirements per game system (P1)
+
+**Acceptance Criterion:** Each of 14 game systems lists minimum table subscriptions with example SQL.
+
+- **Coverage:** FULL
+- **Tests:**
+  - `5.2-UNIT-036` - story-5-2-state-model-verification.test.ts:604
+    - **Given:** The game reference document exists
+    - **When:** We look for a subscription section
+    - **Then:** A dedicated subscription requirements section exists
+  - `5.2-UNIT-037` through `5.2-UNIT-050` - story-5-2-state-model-verification.test.ts:611
+    - **Given:** The subscription section exists
+    - **When:** We search for each of 14 game systems
+    - **Then:** All 14 have documented subscription tables (movement, gathering, crafting, combat, building, trading, empire, chat, player lifecycle, administrative, claim, rental, housing, quest)
+  - `5.2-UNIT-051` - story-5-2-state-model-verification.test.ts:628
+    - **Given:** Subscription requirements are documented
+    - **When:** We look for SQL subscription examples
+    - **Then:** At least one SQL example is present
+  - `5.2-UNIT-052` - story-5-2-state-model-verification.test.ts:637
+    - **Given:** Subscription requirements are documented
+    - **When:** We look for per-player vs global distinction
+    - **Then:** The document explains the difference
+  - `5.2-UNIT-053` - story-5-2-state-model-verification.test.ts:649
+    - **Given:** AC3 requires subscription queries with example SQL
+    - **When:** We count SQL examples in subscription section
+    - **Then:** At least 5 SQL examples exist
+  - `5.2-UNIT-054` - story-5-2-state-model-verification.test.ts:665
+    - **Given:** Task 5.5 requires update frequency documentation
+    - **When:** We look for frequency docs
+    - **Then:** Update frequency or data volume is documented
+  - `5.2-UNIT-055` - story-5-2-state-model-verification.test.ts:683
+    - **Given:** Subscription requirements are per game system
+    - **When:** We look for table lists associated with game systems
+    - **Then:** At least 5 game systems have explicit table subscription lists
+
+- **Gaps:** None
+- **Recommendation:** None required -- all AC3 aspects thoroughly covered by 20 tests (14 parametrized + 6 structural)
+
+---
+
+#### AC4: Static data dependency analysis (P1)
+
+**Acceptance Criterion:** Static data tables categorized by game system, gap analysis vs. 40 loaded tables.
+
+- **Coverage:** FULL
+- **Tests:**
+  - `5.2-UNIT-056` - story-5-2-state-model-verification.test.ts:713
+    - **Given:** The game reference document exists
+    - **When:** We look for a static data gap analysis section
+    - **Then:** A section analyzing static data dependencies exists
+  - `5.2-UNIT-057` - story-5-2-state-model-verification.test.ts:726
+    - **Given:** Story 5.1 established 148 *_desc tables
+    - **When:** We look for this total count
+    - **Then:** The 148 count is mentioned
+  - `5.2-UNIT-058` - story-5-2-state-model-verification.test.ts:736
+    - **Given:** Story 1.5 loaded 40 static data tables
+    - **When:** We look for this baseline count
+    - **Then:** The 40 count is mentioned
+  - `5.2-UNIT-059` - story-5-2-state-model-verification.test.ts:746
+    - **Given:** 40 tables are loaded out of 148 total
+    - **When:** We look for gap analysis
+    - **Then:** The document identifies missing essential tables
+  - `5.2-UNIT-060` through `5.2-UNIT-067` - story-5-2-state-model-verification.test.ts:759
+    - **Given:** The gap analysis identifies essential tables
+    - **When:** We search for each of 8 essential static data tables
+    - **Then:** Each table (extraction_recipe_desc, crafting_recipe_desc, item_desc, resource_desc, building_desc, food_desc, tool_desc, equipment_desc) appears
+  - `5.2-UNIT-068` - story-5-2-state-model-verification.test.ts:769
+    - **Given:** Static data tables are analyzed
+    - **When:** We check for categorization
+    - **Then:** Tables organized by game system (crafting, building, resource, item)
+
+- **Gaps:** None
+- **Recommendation:** None required -- all AC4 aspects covered by 13 tests
+
+---
+
+#### AC5: Game Reference document update (P1)
+
+**Acceptance Criterion:** Document includes entity-to-concept mapping, table relationships, subscription requirements, and static data dependencies.
+
+- **Coverage:** FULL
+- **Tests:**
+  - `5.2-UNIT-069` - story-5-2-state-model-verification.test.ts:198
+    - **Given:** Story 5.2 implementation is complete
+    - **When:** We check the expected output path
+    - **Then:** The file exists
+  - `5.2-UNIT-070` - story-5-2-state-model-verification.test.ts:205
+    - **Given:** The game reference document exists
+    - **When:** We look for a State Model section heading
+    - **Then:** A dedicated section exists
+  - `5.2-UNIT-071` through `5.2-UNIT-075` - story-5-2-state-model-verification.test.ts:215
+    - **Given:** Story 5.1 created various sections
+    - **When:** We check they still exist after Story 5.2 updates
+    - **Then:** Reducer Catalog, Identity Propagation, Table-Reducer Relationships, Known Constraints, and Quick Reference sections are preserved
+  - `5.2-UNIT-076` - story-5-2-state-model-verification.test.ts:267
+    - **Given:** Story 5.1 created the initial document
+    - **When:** Story 5.2 adds the State Model section
+    - **Then:** Document is substantially larger (>30K chars)
+
+- **Gaps:** None
+- **Recommendation:** None required -- all AC5 aspects covered by 8 tests
+
+---
+
+### Additional Coverage (Beyond ACs)
+
+The test suite includes 28 additional tests beyond direct AC coverage:
+
+| Describe Block | Test Count | Coverage Area |
+| --- | --- | --- |
+| Completeness metrics | 3 | V5.2-01/02/03 metric thresholds |
+| Subscription Quick Reference for Stories 5.4-5.8 | 6 | Downstream story subscription mapping |
+| Document structure and formatting | 4 | snake_case, tables, position data, identity root |
+| Cross-reference with Story 5.1 content | 3 | No FK duplication, Impact Matrix ref, name consistency |
+| DEBT-2 support | 3 | Essential unloaded tables, priority ranking, per-story mapping |
+| Read-Only vs. Player-Mutated classification | 3 | Task 1.4: read-only, player-mutated, hybrid tables |
+| Static data categorization breadth | 3 | 10+ game system groups, combat static, equipment static |
+| Entity mapping table format validation | 3 | Mutated By column, 138 table count, 108 static count |
 
 ---
 
@@ -267,13 +267,13 @@ Note: This workflow does not generate tests. If gaps exist, run `*atdd` or `*aut
 
 #### Critical Gaps (BLOCKER)
 
-0 gaps found. **No critical gaps. All P0 criteria have FULL coverage.**
+0 gaps found. **No blockers.**
 
 ---
 
 #### High Priority Gaps (PR BLOCKER)
 
-0 gaps found. **No high priority gaps. All P1 criteria have FULL coverage.**
+0 gaps found. **No PR blockers.**
 
 ---
 
@@ -294,17 +294,17 @@ Note: This workflow does not generate tests. If gaps exist, run `*atdd` or `*aut
 #### Endpoint Coverage Gaps
 
 - Endpoints without direct API tests: 0
-- Notes: Story 5.1 is a research/documentation story. No API endpoints are created or consumed by this story. The story analyzes BitCraft server reducers via source code, not HTTP endpoints. No API test coverage is expected or applicable.
+- **N/A** -- Story 5.2 is a research/documentation story with no API endpoints. No endpoint coverage analysis is applicable.
 
 #### Auth/Authz Negative-Path Gaps
 
 - Criteria missing denied/invalid-path tests: 0
-- Notes: N/A -- Story 5.1 has no authentication or authorization boundaries. It is read-only analysis of public source code (Apache 2.0 licensed). The identity propagation analysis (AC2) documents authentication conventions but does not implement them.
+- **N/A** -- Story 5.2 is a research/documentation story with no authentication/authorization boundaries.
 
 #### Happy-Path-Only Criteria
 
 - Criteria missing error/edge scenarios: 0
-- Notes: The verification tests cover structural completeness of the document, not runtime behavior. Error scenarios are N/A for document verification. The test suite does include negative scenarios implicitly (e.g., verifying camelCase names are absent, verifying minimum thresholds).
+- **N/A** -- Story 5.2 verification tests validate document structure completeness. Error/edge scenario testing is not applicable to documentation verification.
 
 ---
 
@@ -314,29 +314,21 @@ Note: This workflow does not generate tests. If gaps exist, run `*atdd` or `*aut
 
 **BLOCKER Issues**
 
-None identified.
+None.
 
 **WARNING Issues**
 
-None identified.
+- `story-5-2-state-model-verification.test.ts` - 1144 lines (exceeds 300 line limit) - This is a document verification test suite covering all 5 ACs + 5 verification checks + additional structural tests. Splitting would reduce cohesion without improving debuggability, given all tests operate on a single document. **Accepted** per Story 5.1 precedent (similar verification file pattern).
 
 **INFO Issues**
 
-- `describe.skipIf` pattern used -- Tests auto-skip when `RUN_VERIFICATION_TESTS=true` is not set AND the game reference document does not exist. This is by design to protect baseline, but should be noted for CI configuration.
-- `nosemgrep` comments present on 6 lines -- Intentional security review annotations for dynamic RegExp construction from hardcoded const arrays. Not a quality issue; reflects security-conscious coding.
+- Tests use regex-based document parsing rather than structured data validation. This is inherent to the story type (documentation verification) and is the same pattern used in Story 5.1's 66 tests.
 
 ---
 
 #### Tests Passing Quality Gates
 
-**66/66 tests (100%) meet all quality criteria** PASS
-
-- All tests have explicit assertions
-- All tests follow Given-When-Then structure (documented in comments)
-- No hard waits or sleeps
-- Test file is 740 lines (exceeds 300-line guideline, but acceptable for a comprehensive verification suite covering 5 ACs with parameterized tests)
-- Test duration: 15ms total (well under 90s target)
-- Self-cleaning: N/A (read-only file validation, no state to clean)
+**103/104 tests (99%) meet all quality criteria** (1 file-size warning accepted)
 
 ---
 
@@ -344,27 +336,27 @@ None identified.
 
 #### Acceptable Overlap (Defense in Depth)
 
-- AC1: Reducer catalog tested at section-level (heading exists), count-level (total reducer count), entry-level (100+ unique entries in tables), and metric-level (80% signature coverage). This multi-layer approach is intentional and provides defense in depth.
-- AC2: Identity convention tested at section-level (heading exists), content-level (ReducerContext/ctx.sender mentioned), and integration-level (BLOCKER-1 analysis present, BLS handler documented). Intentional overlap to validate the most critical finding.
-- AC4: Document existence tested at file-level (exists), size-level (>5000 chars), and structure-level (overview, constraints, quick reference sections). Appropriate for the primary deliverable.
+- AC1 entity table count: Tested at >= 68 tables (AC1 test) and >= 68 tables (Completeness metrics). Both validate the same metric from different describe blocks but serve different purposes (AC verification vs. completeness metric). **Acceptable.**
+- AC2 FK count: Tested at >= 30 relationships (AC2 test) and >= 30 relationships (Completeness metrics). Same pattern as above. **Acceptable.**
+- AC3 game systems: Tested individually for 14 systems (AC3 parametrized tests) and all 14 as a batch (Completeness metrics). **Acceptable.**
 
 #### Unacceptable Duplication
 
-None identified. All overlap is intentional defense-in-depth for a documentation verification story.
+None identified.
 
 ---
 
 ### Coverage by Test Level
 
-| Test Level | Tests  | Criteria Covered | Coverage % |
-| ---------- | ------ | ---------------- | ---------- |
-| Unit       | 66     | 5/5              | 100%       |
-| E2E        | 0      | N/A              | N/A        |
-| API        | 0      | N/A              | N/A        |
-| Component  | 0      | N/A              | N/A        |
-| **Total**  | **66** | **5/5**          | **100%**   |
+| Test Level | Tests | Criteria Covered | Coverage % |
+| ---------- | ----- | ---------------- | ---------- |
+| E2E        | 0     | 0                | N/A        |
+| API        | 0     | 0                | N/A        |
+| Component  | 0     | 0                | N/A        |
+| Unit       | 104   | 5/5              | 100%       |
+| **Total**  | **104** | **5/5**        | **100%**   |
 
-Note: All 66 tests are unit-level document verification tests (vitest, file-based validation). E2E, API, and Component test levels are not applicable for a research/documentation story. Stories 5.4-5.8 serve as de facto E2E acceptance tests for the document's accuracy.
+**Note:** Story 5.2 is a research/documentation story. Unit-level verification tests (document structure validation) are the appropriate and only applicable test level. The story explicitly states: "There are no unit tests or integration tests to write -- verification is through completeness checks and peer review. Stories 5.4-5.8 serve as the de facto acceptance tests."
 
 ---
 
@@ -372,16 +364,15 @@ Note: All 66 tests are unit-level document verification tests (vitest, file-base
 
 #### Immediate Actions (Before PR Merge)
 
-None required. All 5 acceptance criteria have FULL coverage with 66 passing tests.
+None required. All 5 ACs have FULL coverage.
 
 #### Short-term Actions (This Milestone)
 
-1. **Validate document accuracy via Stories 5.4-5.8** - The verification tests validate document structure and completeness but cannot verify content accuracy against the live BitCraft server. Stories 5.4-5.8 will call real reducers and surface any inaccuracies.
-2. **Complete runtime schema cross-reference when Docker available** - Task 6 was skipped. This cross-reference is optional but would increase confidence in the reducer catalog's completeness.
+1. **Validate document accuracy during Stories 5.4-5.8** - The downstream validation stories will serve as integration-level acceptance tests. If subscription requirements or table relationships documented in Story 5.2 are incorrect, tests in Stories 5.5-5.7 will fail.
 
 #### Long-term Actions (Backlog)
 
-1. **Iterate game reference based on validation story findings** - Update the document with runtime findings (error messages, timing requirements, state prerequisites) discovered during Stories 5.4-5.8.
+1. **Runtime schema cross-reference (Task 7)** - When Docker is available, validate entity table list against runtime SpacetimeDB schema. Currently skipped.
 
 ---
 
@@ -396,22 +387,22 @@ None required. All 5 acceptance criteria have FULL coverage with 66 passing test
 
 #### Test Execution Results
 
-- **Total Tests**: 66
-- **Passed**: 66 (100%)
+- **Total Tests**: 104
+- **Passed**: 104 (100%)
 - **Failed**: 0 (0%)
 - **Skipped**: 0 (0%)
-- **Duration**: 158ms
+- **Duration**: 168ms
 
 **Priority Breakdown:**
 
-- **P0 Tests**: 38/38 passed (100%) PASS
-- **P1 Tests**: 28/28 passed (100%) PASS
-- **P2 Tests**: 0/0 passed (100%) PASS
-- **P3 Tests**: 0/0 passed (100%) PASS
+- **P0 Tests**: N/A (no P0 criteria for documentation story)
+- **P1 Tests**: 104/104 passed (100%)
+- **P2 Tests**: N/A
+- **P3 Tests**: N/A
 
-**Overall Pass Rate**: 100% PASS
+**Overall Pass Rate**: 100%
 
-**Test Results Source**: Local run (vitest 4.1.0, 2026-03-15)
+**Test Results Source**: Local run via `RUN_VERIFICATION_TESTS=true npx vitest run`
 
 ---
 
@@ -419,59 +410,42 @@ None required. All 5 acceptance criteria have FULL coverage with 66 passing test
 
 **Requirements Coverage:**
 
-- **P0 Acceptance Criteria**: 3/3 covered (100%) PASS
-- **P1 Acceptance Criteria**: 2/2 covered (100%) PASS
-- **P2 Acceptance Criteria**: 0/0 covered (100%) PASS
+- **P0 Acceptance Criteria**: 0/0 covered (100% -- N/A)
+- **P1 Acceptance Criteria**: 5/5 covered (100%)
+- **P2 Acceptance Criteria**: 0/0 covered (100% -- N/A)
 - **Overall Coverage**: 100%
 
 **Code Coverage** (if available):
 
-- **Line Coverage**: N/A -- Documentation story, no application code
-- **Branch Coverage**: N/A
-- **Function Coverage**: N/A
-
-**Coverage Source**: Phase 1 traceability analysis
+- Not applicable -- documentation verification tests do not produce code coverage metrics.
 
 ---
 
 #### Non-Functional Requirements (NFRs)
 
-**Security**: PASS PASS
+**Security**: PASS (N/A for documentation story -- OWASP Top 10 assessment complete, all categories N/A)
 
-- Security Issues: 0
-- Document contains no credentials, tokens, or private keys (verified by NFR assessment)
-- OWASP Top 10 assessment completed (all categories N/A or PASS for documentation story)
+**Performance**: NOT_ASSESSED (no application code)
 
-**Performance**: N/A
+**Reliability**: NOT_ASSESSED (no application code)
 
-- N/A -- Documentation story, no runtime components
+**Maintainability**: PASS
 
-**Reliability**: PASS PASS
+- Document follows consistent naming conventions (snake_case)
+- Extends existing Game Reference without destructive changes
+- 3 code review passes completed (32 issues found, 29 fixed, 2 accepted, 1 noted)
 
-- Existing test suite unaffected (1426 tests pass, no regression)
-- Zero modifications to any production code
-
-**Maintainability**: PASS PASS
-
-- Document quality verified: consistent naming, clear structure, accurate content
-- 10/10 reducer signatures spot-checked against source code match exactly
-- 6/6 verification checks (V5.1-01 through V5.1-06) all pass
-
-**NFR Source**: `_bmad-output/test-artifacts/nfr-assessment-5-1.md`
+**NFR Source**: `_bmad-output/test-artifacts/nfr-assessment-5-2.md`
 
 ---
 
 #### Flakiness Validation
 
-**Burn-in Results** (if available):
+**Burn-in Results**: Not available (not applicable for document verification tests)
 
-- **Burn-in Iterations**: N/A -- File-based verification tests, no flakiness risk
-- **Flaky Tests Detected**: 0 PASS
-- **Stability Score**: 100%
-
-Tests read a static markdown file from disk. No network calls, no timing dependencies, no external services. Flakiness risk is zero by design.
-
-**Burn-in Source**: N/A (deterministic file-based tests)
+- **Burn-in Iterations**: N/A
+- **Flaky Tests Detected**: 0 (tests are deterministic -- reading a static file)
+- **Stability Score**: 100% (deterministic tests)
 
 ---
 
@@ -481,11 +455,11 @@ Tests read a static markdown file from disk. No network calls, no timing depende
 
 | Criterion             | Threshold | Actual | Status |
 | --------------------- | --------- | ------ | ------ |
-| P0 Coverage           | 100%      | 100%   | PASS   |
-| P0 Test Pass Rate     | 100%      | 100%   | PASS   |
-| Security Issues       | 0         | 0      | PASS   |
-| Critical NFR Failures | 0         | 0      | PASS   |
-| Flaky Tests           | 0         | 0      | PASS   |
+| P0 Coverage           | 100%      | 100% (N/A -- 0 P0 criteria) | PASS |
+| P0 Test Pass Rate     | 100%      | 100% (N/A -- 0 P0 tests) | PASS |
+| Security Issues       | 0         | 0      | PASS |
+| Critical NFR Failures | 0         | 0      | PASS |
+| Flaky Tests           | 0         | 0      | PASS |
 
 **P0 Evaluation**: ALL PASS
 
@@ -495,10 +469,10 @@ Tests read a static markdown file from disk. No network calls, no timing depende
 
 | Criterion              | Threshold | Actual | Status |
 | ---------------------- | --------- | ------ | ------ |
-| P1 Coverage            | >=90%     | 100%   | PASS   |
-| P1 Test Pass Rate      | >=90%     | 100%   | PASS   |
-| Overall Test Pass Rate | >=80%     | 100%   | PASS   |
-| Overall Coverage       | >=80%     | 100%   | PASS   |
+| P1 Coverage            | >= 90%    | 100%   | PASS |
+| P1 Test Pass Rate      | >= 90%    | 100%   | PASS |
+| Overall Test Pass Rate | >= 80%    | 100%   | PASS |
+| Overall Coverage       | >= 80%    | 100%   | PASS |
 
 **P1 Evaluation**: ALL PASS
 
@@ -506,10 +480,10 @@ Tests read a static markdown file from disk. No network calls, no timing depende
 
 #### P2/P3 Criteria (Informational, Don't Block)
 
-| Criterion         | Actual | Notes                       |
-| ----------------- | ------ | --------------------------- |
-| P2 Test Pass Rate | 100%   | Tracked, doesn't block      |
-| P3 Test Pass Rate | 100%   | Tracked, doesn't block      |
+| Criterion         | Actual | Notes |
+| ----------------- | ------ | ----- |
+| P2 Test Pass Rate | N/A    | No P2 criteria |
+| P3 Test Pass Rate | N/A    | No P3 criteria |
 
 ---
 
@@ -519,7 +493,11 @@ Tests read a static markdown file from disk. No network calls, no timing depende
 
 ### Rationale
 
-All P0 criteria met with 100% coverage and 100% pass rates across all 66 verification tests. All P1 criteria exceeded thresholds with 100% overall pass rate and 100% coverage across all 5 acceptance criteria. No security issues detected. No flaky tests (deterministic file-based validation). Story 5.1 is a research/documentation story that produced a comprehensive BitCraft Game Reference document (718 lines) cataloging 669 reducers across 14 game systems, with full BLOCKER-1 identity propagation analysis, 18 FK relationships, and quick reference tables for Stories 5.4-5.8. The verification tests validate document structure and completeness at a high confidence level.
+All P0 criteria met (no P0 criteria exist for this documentation story, so default PASS). All P1 criteria exceeded thresholds with 100% coverage across all 5 acceptance criteria and 100% test pass rate (104/104 tests passing). No security issues detected. No flaky tests (deterministic document verification). Story 5.2 is ready for completion.
+
+The 104 verification tests comprehensively validate all 5 acceptance criteria, the 5 verification checks (V5.2-01 through V5.2-05), and the completeness metrics defined in the story. Additional tests cover downstream story subscription mapping, DEBT-2 support, document structure, cross-reference consistency with Story 5.1, and read-only vs. player-mutated table classification.
+
+**Uncovered ACs**: None. All 5 acceptance criteria (AC1-AC5) have FULL test coverage.
 
 ---
 
@@ -527,17 +505,19 @@ All P0 criteria met with 100% coverage and 100% pass rates across all 66 verific
 
 #### For PASS Decision
 
-1. **Proceed to Story 5.2**
-   - Story 5.2 (Game State Model & Table Relationships) consumes the reducer catalog for FK relationship analysis
-   - The game reference document is ready as input
+1. **Proceed to Story 5.3**
+   - Story 5.3 (Game Loop Mapping & Precondition Documentation) consumes entity-to-concept mapping and subscription requirements from this story
+   - No additional testing required before proceeding
 
 2. **Post-Completion Monitoring**
-   - Stories 5.4-5.8 serve as runtime validation of the document's accuracy
-   - Any reducer signature mismatches will surface as test failures in those stories
+   - Stories 5.4-5.8 serve as integration-level validation of Story 5.2's documentation accuracy
+   - If subscription requirements or table relationships are incorrect, those stories' tests will fail
 
 3. **Success Criteria**
-   - Game reference document remains accurate through Stories 5.4-5.8 validation
-   - No reducer signature corrections needed (10/10 spot-checks already match source)
+   - Game Reference document at 1543 lines with complete State Model section
+   - 138 entity tables mapped across 21 categories
+   - 80 FK relationships documented (exceeding 30 target)
+   - All 14 game systems have subscription requirements
 
 ---
 
@@ -545,20 +525,19 @@ All P0 criteria met with 100% coverage and 100% pass rates across all 66 verific
 
 **Immediate Actions** (next 24-48 hours):
 
-1. Mark Story 5.1 as DONE in sprint status
-2. Begin Story 5.2 (Game State Model & Table Relationships)
-3. Complete PREP-E5-2 (Verify Docker stack health) before Stories 5.4-5.8
+1. Mark Story 5.2 as "done" in sprint status
+2. Begin Story 5.3 (Game Loop Mapping & Precondition Documentation)
+3. Commit story completion with `feat(5-2): story complete`
 
 **Follow-up Actions** (next milestone/release):
 
-1. Complete runtime schema cross-reference when Docker available (Task 6, LOW priority)
-2. Iterate game reference document based on validation story findings
-3. Update project-context.md with Epic 5 progress
+1. Complete Task 7 (Runtime Schema Cross-Reference) when Docker is available
+2. Address DEBT-2 static data gap using priority table from this story
 
 **Stakeholder Communication**:
 
-- Notify PM: Story 5.1 PASS - Game reference document complete with 669 reducers cataloged, BLOCKER-1 analysis done, 66 verification tests passing
-- Notify DEV lead: BLOCKER-1 finding is critical - BLS identity prepend is incompatible with unmodified BitCraft reducers; recommended approach for Stories 5.4-5.8 is direct WebSocket client
+- Notify PM: Story 5.2 PASS -- all 5 ACs verified with 104 tests, ready for Story 5.3
+- Notify DEV lead: Game Reference document extended from 720 to 1543 lines with comprehensive state model
 
 ---
 
@@ -568,8 +547,8 @@ All P0 criteria met with 100% coverage and 100% pass rates across all 66 verific
 traceability_and_gate:
   # Phase 1: Traceability
   traceability:
-    story_id: "5.1"
-    date: "2026-03-15"
+    story_id: "5.2"
+    date: "2026-03-16"
     coverage:
       overall: 100%
       p0: 100%
@@ -582,13 +561,13 @@ traceability_and_gate:
       medium: 0
       low: 0
     quality:
-      passing_tests: 66
-      total_tests: 66
+      passing_tests: 104
+      total_tests: 104
       blocker_issues: 0
-      warning_issues: 0
+      warning_issues: 1
     recommendations:
-      - "Validate document accuracy via Stories 5.4-5.8 (runtime reducer calls)"
-      - "Complete runtime schema cross-reference when Docker available (Task 6, LOW priority)"
+      - "Validate document accuracy during Stories 5.4-5.8"
+      - "Complete Task 7 runtime schema cross-reference when Docker available"
 
   # Phase 2: Gate Decision
   gate_decision:
@@ -613,41 +592,24 @@ traceability_and_gate:
       min_overall_pass_rate: 80
       min_coverage: 80
     evidence:
-      test_results: "local vitest run 2026-03-15"
+      test_results: "local_run"
       traceability: "_bmad-output/test-artifacts/traceability-report.md"
-      nfr_assessment: "_bmad-output/test-artifacts/nfr-assessment-5-1.md"
-      code_coverage: "N/A (documentation story)"
-    next_steps: "Proceed to Story 5.2. Validate document accuracy via Stories 5.4-5.8."
-    waiver: null
+      nfr_assessment: "_bmad-output/test-artifacts/nfr-assessment-5-2.md"
+      code_coverage: "not_applicable"
+    next_steps: "Proceed to Story 5.3; validate accuracy during Stories 5.4-5.8"
 ```
-
----
-
-## Uncovered ACs
-
-**None.** All 5 acceptance criteria (AC1-AC5) have FULL test coverage:
-
-| AC   | Description                          | Priority | Coverage | Test Count | Status |
-| ---- | ------------------------------------ | -------- | -------- | ---------- | ------ |
-| AC1  | Reducer catalog completeness         | P0       | FULL     | 9          | PASS   |
-| AC2  | Argument signature documentation     | P0       | FULL     | 20         | PASS   |
-| AC3  | Game system grouping                 | P1       | FULL     | 13         | PASS   |
-| AC4  | BitCraft Game Reference document     | P0       | FULL     | 18         | PASS   |
-| AC5  | Table-reducer cross-reference        | P1       | FULL     | 8          | PASS   |
-
-Note: Test counts sum to 68, but some tests contribute to multiple ACs (e.g., identity propagation tests cover both AC2 and AC4). The actual unique test count is 66.
 
 ---
 
 ## Related Artifacts
 
-- **Story File:** `_bmad-output/implementation-artifacts/5-1-server-source-analysis-and-reducer-catalog.md`
+- **Story File:** `_bmad-output/implementation-artifacts/5-2-game-state-model-and-table-relationships.md`
+- **Test Design:** `_bmad-output/planning-artifacts/test-design-epic-5.md` (Section 2.2)
+- **ATDD Checklist:** `_bmad-output/test-artifacts/atdd-checklist-5-2.md`
+- **NFR Assessment:** `_bmad-output/test-artifacts/nfr-assessment-5-2.md`
+- **Test Results:** Local vitest run (104/104 passing, 168ms)
+- **Test Files:** `packages/client/src/__tests__/story-5-2-state-model-verification.test.ts`
 - **Primary Deliverable:** `_bmad-output/planning-artifacts/bitcraft-game-reference.md`
-- **Test Design:** `_bmad-output/planning-artifacts/test-design-epic-5.md`
-- **ATDD Checklist:** `_bmad-output/test-artifacts/atdd-checklist-5-1.md`
-- **NFR Assessment:** `_bmad-output/test-artifacts/nfr-assessment-5-1.md`
-- **Test Results:** Local vitest run (66/66 passed, 158ms)
-- **Test Files:** `packages/client/src/__tests__/story-5-1-game-reference-verification.test.ts`
 
 ---
 
@@ -656,7 +618,7 @@ Note: Test counts sum to 68, but some tests contribute to multiple ACs (e.g., id
 **Phase 1 - Traceability Assessment:**
 
 - Overall Coverage: 100%
-- P0 Coverage: 100% PASS
+- P0 Coverage: 100% (N/A)
 - P1 Coverage: 100% PASS
 - Critical Gaps: 0
 - High Priority Gaps: 0
@@ -671,11 +633,11 @@ Note: Test counts sum to 68, but some tests contribute to multiple ACs (e.g., id
 
 **Next Steps:**
 
-- PASS: Proceed to Story 5.2
+- PASS: Proceed to Story 5.3
 
-**Generated:** 2026-03-15
+**Generated:** 2026-03-16
 **Workflow:** testarch-trace v5.0 (Enhanced with Gate Decision)
 
 ---
 
-<!-- Powered by BMAD-CORE -->
+<!-- Powered by BMAD-CORE™ -->

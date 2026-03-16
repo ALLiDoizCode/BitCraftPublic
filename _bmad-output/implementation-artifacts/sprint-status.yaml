@@ -130,7 +130,7 @@ epics:
         status: done
       - id: story-5.2
         title: 'Game State Model & Table Relationships'
-        status: backlog
+        status: done
       - id: story-5.3
         title: 'Game Loop Mapping & Precondition Documentation'
         status: backlog

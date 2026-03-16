@@ -717,3 +717,827 @@ Reducers using this pattern:
 - `project_site_advance_project_start` / `project_site_advance_project`
 - `prospect_start` / `prospect`
 - `ability_custom_activate_start` / `ability_custom_activate`
+
+---
+
+## State Model
+
+**Added by:** Story 5.2 (Game State Model & Table Relationships)
+**Source:** `BitCraftServer/packages/game/src/messages/components.rs` (138 entity tables), `BitCraftServer/packages/game/src/messages/static_data.rs` (108 static data tables)
+
+### Entity-to-Concept Mapping
+
+The BitCraft SpacetimeDB module defines **138 entity/state tables** (in `messages/components.rs`) and **108 static data tables** (in `messages/static_data.rs`). Entity tables store mutable game state that changes during gameplay; static data tables store immutable reference data loaded at server startup.
+
+All entity tables use `entity_id: u64` as their primary key (with the exception of `user_state` which uses `identity: Identity`, and a few tables that use compound keys).
+
+#### Player Core (14 tables)
+
+| Table | PK | Key Columns | Mutated By |
+|-------|-----|-------------|------------|
+| `user_state` | `entity_id: u64` (also unique index on `identity: Identity`) | `identity`, `can_sign_in` | `sign_in`, `sign_out` |
+| `player_state` | `entity_id: u64` | `time_played`, `session_start_timestamp`, `signed_in`, `traveler_tasks_expiration` | `sign_in`, `sign_out`, movement |
+| `player_username_state` | `entity_id: u64` | `username` | Character creation |
+| `player_lowercase_username_state` | `entity_id: u64` | `username_lowercase` | Character creation |
+| `signed_in_player_state` | `entity_id: u64` | (no additional columns) | `sign_in`, `sign_out` |
+| `player_action_state` | `entity_id: u64` | `chunk_index`, `layer`, `player_action_type`, `timestamp` | All player actions |
+| `player_timestamp_state` | `entity_id: u64` | (timestamps for rate limiting) | Various actions |
+| `player_settings_state` | `entity_id: u64` | (legacy settings) | `player_settings_state_update` |
+| `player_settings_state_v2` | `entity_id: u64` | `fill_player_inventory`, `fill_deployable_inventory_first`, etc. | `player_settings_state_update` |
+| `player_prefs_state` | `entity_id: u64` | (client preferences) | Settings update |
+| `player_report_state` | `entity_id: u64` | (player report data) | `report_player` |
+| `player_report_state_timestamp` | (compound) | (report timestamps) | `report_player` |
+| `onboarding_state` | `entity_id: u64` | (quest/tutorial progress) | Onboarding reducers |
+| `player_note_state` | `entity_id: u64` | (player notes) | Note creation |
+
+#### Position/Movement (5 tables)
+
+| Table | PK | Key Columns | Mutated By |
+|-------|-----|-------------|------------|
+| `mobile_entity_state` | `entity_id: u64` | `chunk_index`, `timestamp`, `location_x`, `location_z`, `destination_x`, `destination_z`, `dimension`, `is_running` | `player_move`, `deployable_move`, teleportation |
+| `location_state` | `entity_id: u64` | `x`, `z`, `chunk_index`, `dimension` | Position updates (buildings, resources) |
+| `exploration_chunks_state` | `entity_id: u64` | (explored chunk data) | `player_move` (chunk changes) |
+| `crumb_trail_state` | `entity_id: u64` | (prospecting trail data) | `prospect`, movement |
+| `move_validation_strike_counter_state` | `entity_id: u64` | `validation_failure_timestamps` | Server-side validation |
+
+#### Health/Stamina/Stats (7 tables)
+
+| Table | PK | Key Columns | Mutated By |
+|-------|-----|-------------|------------|
+| `health_state` | `entity_id: u64` | `health: f32`, `died_timestamp`, `last_health_decrease_timestamp` | Combat, starvation, server agents |
+| `stamina_state` | `entity_id: u64` | `stamina: f32`, `last_stamina_decrease_timestamp` | Movement, extraction, crafting |
+| `satiation_state` | `entity_id: u64` | (food/hunger state) | `eat`, starvation agent |
+| `character_stats_state` | `entity_id: u64` | `values: Vec<f32>` | Equipment changes, buff changes |
+| `teleportation_energy_state` | `entity_id: u64` | `energy: f32` | Teleportation, regen agent |
+| `active_buff_state` | `entity_id: u64` | `active_buffs: Vec<ActiveBuff>` | Combat, food, equipment |
+| `starving_player_state` | `entity_id: u64` | (starvation tracking) | Server-side starvation agent |
+
+#### Experience/Knowledge (20 tables)
+
+| Table | PK | Key Columns | Mutated By |
+|-------|-----|-------------|------------|
+| `experience_state` | `entity_id: u64` | `experience_stacks: Vec<ExperienceStack>` | Crafting, extraction, combat |
+| `partial_experience_state` | `entity_id: u64` | `experience_stacks: Vec<ExperienceStackF32>` | Partial XP accumulation |
+| `knowledge_achievement_state` | `entity_id: u64` | `entries: Vec<KnowledgeEntry>` | Discovery system |
+| `knowledge_battle_action_state` | `entity_id: u64` | `entries: Vec<KnowledgeEntry>` | Combat discovery |
+| `knowledge_building_state` | `entity_id: u64` | `entries: Vec<KnowledgeEntry>` | Building discovery |
+| `knowledge_cargo_state` | `entity_id: u64` | `entries: Vec<KnowledgeEntry>` | Cargo discovery |
+| `knowledge_construction_state` | `entity_id: u64` | `entries: Vec<KnowledgeEntry>` | Construction discovery |
+| `knowledge_resource_placement_state` | `entity_id: u64` | `entries: Vec<KnowledgeEntry>` | Resource placement discovery |
+| `knowledge_craft_state` | `entity_id: u64` | `entries: Vec<KnowledgeEntry>` | Crafting discovery |
+| `knowledge_enemy_state` | `entity_id: u64` | `entries: Vec<KnowledgeEntry>` | Enemy discovery |
+| `knowledge_extract_state` | `entity_id: u64` | `entries: Vec<KnowledgeEntry>` | Extraction discovery |
+| `knowledge_item_state` | `entity_id: u64` | `entries: Vec<KnowledgeEntry>` | Item discovery |
+| `knowledge_lore_state` | `entity_id: u64` | `entries: Vec<KnowledgeEntry>` | Lore discovery |
+| `knowledge_npc_state` | `entity_id: u64` | `entries: Vec<KnowledgeEntry>` | NPC discovery |
+| `knowledge_resource_state` | `entity_id: u64` | `entries: Vec<KnowledgeEntry>` | Resource discovery |
+| `knowledge_ruins_state` | `entity_id: u64` | `entries: Vec<KnowledgeLocationEntry>` | Exploration |
+| `knowledge_claim_state` | `entity_id: u64` | `entries: Vec<KnowledgeEntityEntry>` | Claim discovery |
+| `knowledge_secondary_state` | `entity_id: u64` | `entries: Vec<KnowledgeEntry>` | Secondary knowledge |
+| `knowledge_vault_state` | `entity_id: u64` | `entries: Vec<KnowledgeEntry>` | Vault discovery |
+| `knowledge_deployable_state` | `entity_id: u64` | `entries: Vec<KnowledgeEntry>` | Deployable discovery |
+
+#### Inventory/Equipment (8 tables)
+
+| Table | PK | Key Columns | Mutated By |
+|-------|-----|-------------|------------|
+| `inventory_state` | `entity_id: u64` | `pockets: Vec<Pocket>`, `inventory_index`, `cargo_index`, `owner_entity_id`, `player_owner_entity_id` | Crafting, extraction, trading, eating |
+| `equipment_state` | `entity_id: u64` | `equipment_slots: Vec<EquipmentSlot>` | `equipment_add`, `equipment_remove` |
+| `dropped_inventory_state` | `entity_id: u64` | `owner_entity_id` | `item_drop`, inventory overflow |
+| `lost_items_state` | `owner_entity_id: u64` (PK) | (lost item data) | Death, inventory loss |
+| `vault_state` | `entity_id: u64` | (collectible vault) | Collectible management |
+| `deployable_collectible_state` | `entity_id: u64` | `owner_entity_id` | Collectible activation |
+| `deployable_collectible_state_v2` | `entity_id: u64` | `owner_entity_id` | Collectible activation |
+| `unclaimed_shards_state` | (compound) | (unclaimed shard data) | Loot distribution |
+
+#### Combat (10 tables)
+
+| Table | PK | Key Columns | Mutated By |
+|-------|-----|-------------|------------|
+| `combat_state` | `entity_id: u64` | `last_attacked_timestamp`, `global_cooldown`, `last_performed_action_entity_id` | `attack`, `attack_start` |
+| `target_state` | `entity_id: u64` | `target_entity_id` (indexed) | `target_update` |
+| `threat_state` | `entity_id: u64` | (aggro/threat list) | Combat actions |
+| `attack_outcome_state` | `entity_id: u64` | (attack result data) | Combat resolution |
+| `targetable_state` | `entity_id: u64` | (targetability flags) | Sign-in, death |
+| `duel_state` | `entity_id: u64` | (duel participants/state) | `player_duel_initiate` |
+| `action_state` | `entity_id: u64` | `owner_entity_id` (indexed) | Combat actions |
+| `ability_state` | `entity_id: u64` | `owner_entity_id`, `ability: AbilityType`, `cooldown` | `ability_set`, combat |
+| `action_bar_state` | `entity_id: u64` | (action bar layout) | `ability_set`, `ability_remove` |
+| `combat_dimension_state` | `entity_id: u64` | (combat dimension data) | Combat encounters |
+
+#### Crafting/Progressive Actions (4 tables)
+
+| Table | PK | Key Columns | Mutated By |
+|-------|-----|-------------|------------|
+| `progressive_action_state` | `entity_id: u64` | `building_entity_id`, `function_type`, `progress`, `recipe_id`, `craft_count`, `owner_entity_id`, `preparation` | `craft_initiate`, `extract`, all progressive actions |
+| `public_progressive_action_state` | `entity_id: u64` | `owner_entity_id`, `building_entity_id` (indexed) | Public crafting visibility |
+| `passive_craft_state` | `entity_id: u64` | `building_entity_id`, `recipe_id`, `owner_entity_id` | `passive_craft_queue`, `passive_craft_collect` |
+| `extract_outcome_state` | `entity_id: u64` | (extraction result data) | `extract` |
+
+#### Buildings (10 tables)
+
+| Table | PK | Key Columns | Mutated By |
+|-------|-----|-------------|------------|
+| `building_state` | `entity_id: u64` | `building_description_id`, `claim_entity_id`, `direction_index`, `health` | Building construction, repair, deconstruct |
+| `building_nickname_state` | `entity_id: u64` | `nickname` | `building_set_nickname` |
+| `footprint_tile_state` | `entity_id: u64` | `owner_entity_id`, `footprint_type` | Building placement/removal |
+| `project_site_state` | `entity_id: u64` | `construction_recipe_id`, `resource_placement_recipe_id`, `items`, `cargos`, `progress`, `owner_id` | `project_site_place`, `project_site_add_materials` |
+| `pillar_shaping_state` | `entity_id: u64` | `pillar_type_id` | `pillar_shaping_place_pillar` |
+| `paved_tile_state` | `entity_id: u64` | `tile_type_id`, `related_entity_id` | `paving_place_tile` |
+| `terraform_progress_state` | `entity_id: u64` | `final_height_target`, `next_height_target`, `progress` | `terraform` |
+| `waystone_state` | `building_entity_id: u64` (PK) | `claim_entity_id`, `coordinates` | Building construction |
+| `bank_state` | `building_entity_id: u64` (PK) | `claim_entity_id`, `coordinates` | Building construction |
+| `marketplace_state` | `building_entity_id: u64` (PK) | `claim_entity_id`, `coordinates` | Building construction |
+
+#### Resources (4 tables)
+
+| Table | PK | Key Columns | Mutated By |
+|-------|-----|-------------|------------|
+| `resource_state` | `entity_id: u64` | `resource_id` (indexed), resource properties | Resource spawning, extraction |
+| `resource_health_state` | `entity_id: u64` | `health: i32` | `extract`, regen agents |
+| `growth_state` | `entity_id: u64` | (growth/farming data) | Growth agent |
+| `loot_chest_state` | `entity_id: u64` | (loot chest contents) | World generation, player interaction |
+
+#### Territory/Claims (8 tables)
+
+| Table | PK | Key Columns | Mutated By |
+|-------|-----|-------------|------------|
+| `claim_state` | `entity_id: u64` | `owner_player_entity_id`, `owner_building_entity_id`, `neutral`, `name` | Claim management reducers |
+| `claim_local_state` | `entity_id: u64` | `supplies`, `building_maintenance`, `num_tiles`, `num_tile_neighbors` | Claim supply management |
+| `claim_local_supply_security_threshold_state` | `entity_id: u64` | `supply_security_threshold_hours` | `claim_set_protection_threshold` |
+| `claim_tile_state` | `entity_id: u64` | `claim_id` (indexed) | `claim_add_tile`, `claim_remove_tile` |
+| `claim_tech_state` | `entity_id: u64` | (unlocked technologies) | `claim_tech_learn` |
+| `claim_member_state` | `entity_id: u64` | `claim_entity_id`, `player_entity_id`, `user_name`, permission flags | `claim_add_member`, `claim_set_member_permissions` |
+| `claim_recruitment_state` | `entity_id: u64` | (recruitment listing data) | `claim_add_recruitment` |
+| `auto_claim_state` | `entity_id: u64` | `owner_entity_id` | Server-side auto-claim |
+
+#### Trading (7 tables)
+
+| Table | PK | Key Columns | Mutated By |
+|-------|-----|-------------|------------|
+| `trade_session_state` | `entity_id: u64` | `status`, `initiator_entity_id`, `acceptor_entity_id`, `initiator_offer`, `acceptor_offer` | Trade reducers |
+| `trade_order_state` | `entity_id: u64` | `shop_entity_id` (indexed), `remaining_stock`, `offer_items`, `required_items` | Barter stall reducers |
+| `sell_order_state` | `entity_id: u64` | `owner_entity_id`, marketplace order data | `order_post_sell_order` |
+| `buy_order_state` | `entity_id: u64` | `owner_entity_id`, marketplace order data | `order_post_buy_order` |
+| `closed_listing_state` | `entity_id: u64` | `owner_entity_id` | Order completion |
+| `barter_stall_state` | `entity_id: u64` | (barter stall config) | `barter_stall_order_create` |
+| `traveler_task_state` | `entity_id: u64` | `player_entity_id`, `npc_entity_id`, task data | Traveler task agent |
+
+#### NPCs/Enemies (6 tables)
+
+| Table | PK | Key Columns | Mutated By |
+|-------|-----|-------------|------------|
+| `enemy_state` | `entity_id: u64` | `herd_entity_id` (indexed), enemy properties | Server agents, combat |
+| `enemy_scaling_state` | `entity_id: u64` | (scaling data) | Server agents |
+| `enemy_mob_monitor_state` | `entity_id: u64` | (mob monitoring) | Server agents |
+| `npc_state` | `entity_id: u64` | `building_entity_id` (indexed), NPC properties | NPC AI agent |
+| `herd_state` | `entity_id: u64` | `enemy_ai_params_desc_id` (indexed), herd data | NPC AI agent |
+| `attached_herds_state` | `entity_id: u64` | (attached herd data) | NPC AI agent |
+
+#### Deployables/Mounts (3 tables)
+
+| Table | PK | Key Columns | Mutated By |
+|-------|-----|-------------|------------|
+| `deployable_state` | `entity_id: u64` | `owner_id`, `deployable_description_id`, `hidden` | `deployable_deploy`, `deployable_store` |
+| `mounting_state` | `entity_id: u64` | `deployable_entity_id` (indexed) | `deployable_mount`, `deployable_dismount` |
+| `unclaimed_collectibles_state` | (compound) | (unclaimed collectible data) | Collectible system |
+
+#### Housing/Rental (6 tables)
+
+| Table | PK | Key Columns | Mutated By |
+|-------|-----|-------------|------------|
+| `rent_state` | `entity_id: u64` | `dimension_network_id`, `claim_entity_id`, `white_list`, `daily_rent`, `paid_rent`, `active` | Rental reducers |
+| `player_housing_state` | `entity_id: u64` | `entrance_building_entity_id` (indexed), housing data | Housing reducers |
+| `player_housing_customization_state` | `entity_id: u64` | (customization data) | Housing customization |
+| `player_housing_moving_cost_state` | `entity_id: u64` | (moving cost data) | Housing system |
+| `dimension_description_state` | `entity_id: u64` | `dimension_network_entity_id` (indexed), dimension properties | Interior system |
+| `dimension_network_state` | `entity_id: u64` | `building_id`, `claim_entity_id`, `rent_entity_id` | Interior/portal system |
+
+#### World/Environment (5 tables)
+
+| Table | PK | Key Columns | Mutated By |
+|-------|-----|-------------|------------|
+| `terrain_chunk_state` | `entity_id: u64` | `dimension` (indexed), terrain data | Terraforming, world gen |
+| `portal_state` | `entity_id: u64` | portal connection data | Portal system |
+| `interior_collapse_trigger_state` | `entity_id: u64` | (collapse trigger data) | Dungeon system |
+| `dungeon_state` | `entity_id: u64` | (dungeon instance data) | Dungeon system |
+| `interior_player_count_state` | `entity_id: u64` | (player count per interior) | Entry/exit |
+
+#### Chat/Social (2 tables)
+
+| Table | PK | Key Columns | Mutated By |
+|-------|-----|-------------|------------|
+| `chat_message_state` | `entity_id: u64` | `username`, `channel_id`, `target_id`, `text`, `timestamp`, `owner_entity_id` | `chat_post_message` |
+| `permission_state` | `entity_id: u64` | permission data | `permission_edit` |
+
+#### Quest/Onboarding (1 table)
+
+| Table | PK | Key Columns | Mutated By |
+|-------|-----|-------------|------------|
+| `quest_chain_state` | `entity_id: u64` | quest chain progress data | Quest reducers |
+
+#### Alerts/Notifications (1 table)
+
+| Table | PK | Key Columns | Mutated By |
+|-------|-----|-------------|------------|
+| `alert_state` | `entity_id: u64` | `player_entity_id` (indexed), alert type/data | Various systems |
+
+#### Prospecting (3 tables)
+
+| Table | PK | Key Columns | Mutated By |
+|-------|-----|-------------|------------|
+| `prospecting_state` | `entity_id: u64` | `crumb_trail_entity_id` (indexed) | `prospect` |
+| `crumb_trail_contribution_lock_state` | `entity_id: u64` | `crumb_trail_entity_id` (indexed) | Prospecting system |
+| `crumb_trail_contribution_spent_state` | `entity_id: u64` | `crumb_trail_entity_id` | Prospecting system |
+
+#### Administrative/Server (10 tables)
+
+| Table | PK | Key Columns | Mutated By |
+|-------|-----|-------------|------------|
+| `user_moderation_state` | `entity_id: u64` | `target_entity_id`, `user_moderation_policy`, timestamps | Admin reducers |
+| `moderation_action_log_entry` | `entity_id: u64` | (moderation log data) | Admin reducers |
+| `storage_log_state` | `entity_id: u64` | (action log data) | Various (server logging) |
+| `user_previous_region_state` | (compound) | (region transfer data) | Region transfer |
+| `knowledge_pillar_shaping_state` | `entity_id: u64` | `entries: Vec<KnowledgeEntry>` | Pillar shaping discovery |
+| `knowledge_paving_state` | `entity_id: u64` | `entries: Vec<KnowledgeEntry>` | Paving discovery |
+| `global_search_state` | `entity_id: u64` | (search index data) | Server-side indexing |
+| `a_i_debug_state` | `entity_id: u64` | (AI debug data) | Debug/server agents |
+| `distant_visible_entity` | `entity_id: u64` | (LOD visibility data) | Server-side |
+| `the_great_placeholder_table` | (compound) | (placeholder for schema stability) | N/A |
+
+#### Other (4 tables)
+
+| Table | PK | Key Columns | Mutated By |
+|-------|-----|-------------|------------|
+| `contribution_state` | `entity_id: u64` | (combat contribution data) | Combat resolution |
+| `light_source_state` | `entity_id: u64` | (light source data) | Building/deployable placement |
+| `rez_sick_long_term_state` | `entity_id: u64` | (resurrection sickness / long-term rez sickness) | Death/respawn, movement into claims |
+| `toolbar_state` | `entity_id: u64` | `owner_entity_id`, `index`, `actions` | Equipment changes |
+
+**Entity Table Coverage:** 138 tables mapped to 21 game concept categories (100% of tables in `components.rs`). This exceeds the 85% target of ~80 tables from the entities/ directory. The discrepancy between 138 tables and the ~80 estimate is because `components.rs` registers additional tables (knowledge tables, admin tables, server-agent tables) that are not individually represented as files in the `entities/` directory.
+
+### Foreign Key Relationships (Entity-to-Entity)
+
+Extending the 18 reducer-argument-to-table FK relationships documented in Story 5.1 (preserved above in "Foreign Key Relationships" section), the following entity-to-entity and entity-to-static-data FK relationships have been identified:
+
+#### Entity-to-Entity FK Relationships
+
+| # | Source Table | Source Column | Target Table | Target Column | Relationship | Notes |
+|---|-------------|---------------|-------------|---------------|-------------|-------|
+| 19 | `user_state` | `identity` | SpacetimeDB Identity | `ctx.sender` | 1:1 | Root identity resolution |
+| 20 | `user_state` | `entity_id` | `player_state` | `entity_id` | 1:1 | User to player mapping |
+| 21 | `player_state` | `entity_id` | `mobile_entity_state` | `entity_id` | 1:1 | Player position |
+| 22 | `player_state` | `entity_id` | `health_state` | `entity_id` | 1:1 | Player health |
+| 23 | `player_state` | `entity_id` | `stamina_state` | `entity_id` | 1:1 | Player stamina |
+| 24 | `player_state` | `entity_id` | `experience_state` | `entity_id` | 1:1 | Player XP |
+| 25 | `player_state` | `entity_id` | `character_stats_state` | `entity_id` | 1:1 | Derived stats |
+| 26 | `player_state` | `entity_id` | `active_buff_state` | `entity_id` | 1:1 | Active buffs |
+| 27 | `player_state` | `entity_id` | `satiation_state` | `entity_id` | 1:1 | Food/hunger |
+| 28 | `player_state` | `entity_id` | `teleportation_energy_state` | `entity_id` | 1:1 | Teleport energy |
+| 29 | `player_state` | `entity_id` | `player_action_state` | `entity_id` | 1:1 | Current action |
+| 30 | `player_state` | `entity_id` | `signed_in_player_state` | `entity_id` | 1:1 (optional) | Only while signed in |
+| 31 | `inventory_state` | `owner_entity_id` | `player_state` | `entity_id` | N:1 | Player has multiple inventories (main=0, toolbelt=1, wallet=2) |
+| 32 | `equipment_state` | `entity_id` | `player_state` | `entity_id` | 1:1 | Player equipment |
+| 33 | `trade_session_state` | `initiator_entity_id` | `player_state` | `entity_id` | N:1 | Trade initiator |
+| 34 | `trade_session_state` | `acceptor_entity_id` | `player_state` | `entity_id` | N:1 | Trade acceptor |
+| 35 | `progressive_action_state` | `owner_entity_id` | `player_state` | `entity_id` | N:1 | Action owner |
+| 36 | `progressive_action_state` | `building_entity_id` | `building_state` | `entity_id` | N:1 | Crafting location |
+| 37 | `building_state` | `claim_entity_id` | `claim_state` | `entity_id` | N:1 | Building's claim |
+| 38 | `claim_state` | `owner_player_entity_id` | `player_state` | `entity_id` | N:1 | Claim owner |
+| 39 | `claim_state` | `owner_building_entity_id` | `building_state` | `entity_id` | 1:1 | Claim totem building |
+| 40 | `claim_member_state` | `claim_entity_id` | `claim_state` | `entity_id` | N:1 | Claim membership |
+| 41 | `claim_member_state` | `player_entity_id` | `player_state` | `entity_id` | N:1 | Member player |
+| 42 | `claim_tile_state` | `claim_id` | `claim_state` | `entity_id` | N:1 | Claim territory tiles |
+| 43 | `claim_tech_state` | `entity_id` | `claim_state` | `entity_id` | 1:1 | Claim tech tree |
+| 44 | `claim_local_state` | `entity_id` | `claim_state` | `entity_id` | 1:1 | Claim local data |
+| 45 | `deployable_state` | `owner_id` | `player_state` | `entity_id` | N:1 | Deployable owner |
+| 46 | `mounting_state` | `entity_id` | `player_state` | `entity_id` | 1:1 | Mounted player |
+| 47 | `mounting_state` | `deployable_entity_id` | `deployable_state` | `entity_id` | 1:1 | Mount entity |
+| 48 | `rent_state` | `claim_entity_id` | `claim_state` | `entity_id` | N:1 | Rental claim |
+| 49 | `rent_state` | `dimension_network_id` | `dimension_network_state` | `entity_id` | 1:1 | Rental interior |
+| 50 | `dimension_network_state` | `building_id` | `building_state` | `entity_id` | 1:1 | Portal building |
+| 51 | `dimension_network_state` | `claim_entity_id` | `claim_state` | `entity_id` | N:1 | Interior claim |
+| 52 | `dimension_network_state` | `rent_entity_id` | `rent_state` | `entity_id` | 1:1 | Interior rental |
+| 53 | `enemy_state` | `herd_entity_id` | `herd_state` | `entity_id` | N:1 | Enemy herd |
+| 54 | `npc_state` | `building_entity_id` | `building_state` | `entity_id` | N:1 | NPC location |
+| 55 | `ability_state` | `owner_entity_id` | `player_state` | `entity_id` | N:1 | Player abilities |
+| 56 | `passive_craft_state` | `owner_entity_id` | `player_state` | `entity_id` | N:1 | Passive craft owner |
+| 57 | `passive_craft_state` | `building_entity_id` | `building_state` | `entity_id` | N:1 | Passive craft building |
+| 58 | `alert_state` | `player_entity_id` | `player_state` | `entity_id` | N:1 | Alert recipient |
+| 59 | `sell_order_state` / `buy_order_state` | `owner_entity_id` | `player_state` | `entity_id` | N:1 | Order owner |
+| 60 | `contribution_state` | `entity_id` | `enemy_state` | `entity_id` | N:1 | Combat contribution |
+| 61 | `player_housing_state` | `entrance_building_entity_id` | `building_state` | `entity_id` | 1:1 | Housing entrance |
+| 62 | `footprint_tile_state` | `owner_entity_id` | `building_state` | `entity_id` | N:1 | Building footprint |
+| 63 | `project_site_state` | `owner_id` | `player_state` | `entity_id` | N:1 | Project owner |
+| 64 | `dropped_inventory_state` | `owner_entity_id` | `player_state` | `entity_id` | N:1 | Drop source player |
+| 65 | `waystone_state` | `claim_entity_id` | `claim_state` | `entity_id` | N:1 | Waystone claim |
+| 66 | `bank_state` | `claim_entity_id` | `claim_state` | `entity_id` | N:1 | Bank claim |
+| 67 | `marketplace_state` | `claim_entity_id` | `claim_state` | `entity_id` | N:1 | Market claim |
+| 68 | `quest_chain_state` | `entity_id` | `player_state` | `entity_id` | 1:1 | Player quest progress |
+
+#### Entity-to-Static-Data FK Relationships
+
+| # | Source Table | Source Column | Target Table | Target Column | Notes |
+|---|-------------|---------------|-------------|---------------|-------|
+| 69 | `building_state` | `building_description_id` | `building_desc` | `id` | Building type |
+| 70 | `resource_state` | `resource_id` | `resource_desc` | `id` | Resource type |
+| 71 | `inventory_state` items | `item_id` (in pocket ItemStack) | `item_desc` | `id` | Item definition |
+| 72 | `progressive_action_state` | `recipe_id` | `crafting_recipe_desc` | `id` | Crafting recipe |
+| 73 | `progressive_action_state` | `recipe_id` | `extraction_recipe_desc` | `id` | Extraction recipe (alternative) |
+| 74 | `deployable_state` | `deployable_description_id` | `deployable_desc_v4` | `id` | Deployable type |
+| 75 | `project_site_state` | `construction_recipe_id` | `construction_recipe_desc_v2` | `id` | Construction recipe |
+| 76 | `project_site_state` | `resource_placement_recipe_id` | `resource_placement_recipe_desc_v2` | `id` | Resource placement |
+| 77 | `enemy_state` | (enemy type) | `enemy_desc` | `id` | Enemy definition |
+| 78 | `herd_state` | `enemy_ai_params_desc_id` | `enemy_ai_params_desc` | `id` | AI behavior |
+| 79 | `npc_state` | (npc desc reference) | `npc_desc` | `id` | NPC definition |
+| 80 | `claim_tech_state` | (tech ids) | `claim_tech_desc_v2` | `id` | Tech tree definition |
+
+**Total FK Relationships:** 80 (18 from Story 5.1 + 50 entity-to-entity + 12 entity-to-static-data). Exceeds the 30+ target.
+
+### Entity Relationship Diagram
+
+The following Mermaid diagram shows the core entity relationships relevant to Stories 5.4-5.8. It focuses on ~30 key tables and their primary relationships.
+
+```mermaid
+erDiagram
+    user_state {
+        u64 entity_id PK
+        Identity identity UK
+        bool can_sign_in
+    }
+    player_state {
+        u64 entity_id PK
+        bool signed_in
+        i32 time_played
+    }
+    signed_in_player_state {
+        u64 entity_id PK
+    }
+    mobile_entity_state {
+        u64 entity_id PK
+        u64 chunk_index
+        i32 location_x
+        i32 location_z
+        i32 destination_x
+        i32 destination_z
+        u32 dimension
+        bool is_running
+    }
+    health_state {
+        u64 entity_id PK
+        f32 health
+    }
+    stamina_state {
+        u64 entity_id PK
+        f32 stamina
+    }
+    character_stats_state {
+        u64 entity_id PK
+        vec_f32 values
+    }
+    experience_state {
+        u64 entity_id PK
+        vec experience_stacks
+    }
+    satiation_state {
+        u64 entity_id PK
+    }
+    active_buff_state {
+        u64 entity_id PK
+        vec active_buffs
+    }
+    inventory_state {
+        u64 entity_id PK
+        vec pockets
+        i32 inventory_index
+        u64 owner_entity_id
+    }
+    equipment_state {
+        u64 entity_id PK
+        vec equipment_slots
+    }
+    progressive_action_state {
+        u64 entity_id PK
+        u64 building_entity_id
+        i32 recipe_id
+        u64 owner_entity_id
+        i32 progress
+    }
+    passive_craft_state {
+        u64 entity_id PK
+        u64 building_entity_id
+        i32 recipe_id
+        u64 owner_entity_id
+    }
+    building_state {
+        u64 entity_id PK
+        i32 building_description_id
+        u64 claim_entity_id
+    }
+    resource_state {
+        u64 entity_id PK
+        i32 resource_id
+    }
+    resource_health_state {
+        u64 entity_id PK
+        i32 health
+    }
+    claim_state {
+        u64 entity_id PK
+        u64 owner_player_entity_id
+        u64 owner_building_entity_id
+        String name
+    }
+    claim_member_state {
+        u64 entity_id PK
+        u64 claim_entity_id
+        u64 player_entity_id
+    }
+    claim_tile_state {
+        u64 entity_id PK
+        u64 claim_id
+    }
+    trade_session_state {
+        u64 entity_id PK
+        u64 initiator_entity_id
+        u64 acceptor_entity_id
+    }
+    deployable_state {
+        u64 entity_id PK
+        u64 owner_id
+        i32 deployable_description_id
+    }
+    rent_state {
+        u64 entity_id PK
+        u64 claim_entity_id
+        i32 daily_rent
+    }
+    item_desc {
+        i32 id PK
+        String name
+    }
+    crafting_recipe_desc {
+        i32 id PK
+    }
+    extraction_recipe_desc {
+        i32 id PK
+    }
+    building_desc {
+        i32 id PK
+    }
+    resource_desc {
+        i32 id PK
+    }
+    deployable_desc_v4 {
+        i32 id PK
+    }
+
+    user_state ||--|| player_state : "entity_id"
+    player_state ||--|| signed_in_player_state : "entity_id (optional)"
+    player_state ||--|| mobile_entity_state : "entity_id"
+    player_state ||--|| health_state : "entity_id"
+    player_state ||--|| stamina_state : "entity_id"
+    player_state ||--|| character_stats_state : "entity_id"
+    player_state ||--|| experience_state : "entity_id"
+    player_state ||--|| satiation_state : "entity_id"
+    player_state ||--|| active_buff_state : "entity_id"
+    player_state ||--|| equipment_state : "entity_id"
+    player_state ||--o{ inventory_state : "owner_entity_id"
+    player_state ||--o{ progressive_action_state : "owner_entity_id"
+    player_state ||--o{ passive_craft_state : "owner_entity_id"
+    player_state ||--o{ deployable_state : "owner_id"
+    player_state ||--o{ claim_member_state : "player_entity_id"
+    trade_session_state }o--|| player_state : "initiator_entity_id"
+    trade_session_state }o--|| player_state : "acceptor_entity_id"
+    progressive_action_state }o--|| building_state : "building_entity_id"
+    passive_craft_state }o--|| building_state : "building_entity_id"
+    building_state }o--|| claim_state : "claim_entity_id"
+    claim_state ||--o{ claim_member_state : "claim_entity_id"
+    claim_state ||--o{ claim_tile_state : "claim_id"
+    claim_state ||--|| building_state : "owner_building_entity_id"
+    claim_state }o--|| player_state : "owner_player_entity_id"
+    rent_state }o--|| claim_state : "claim_entity_id"
+    resource_state ||--|| resource_health_state : "entity_id"
+    building_state }o--o| building_desc : "building_description_id"
+    resource_state }o--o| resource_desc : "resource_id"
+    progressive_action_state }o--o| crafting_recipe_desc : "recipe_id"
+    deployable_state }o--o| deployable_desc_v4 : "deployable_description_id"
+```
+
+### Static Data Tables by Game System
+
+The BitCraft module defines **108 static data tables** (in `messages/static_data.rs`). These are loaded at server startup and are immutable during gameplay. The Story 1.5 client currently loads **34 tables** (via `static-data-tables.ts`); however, the list in that file uses placeholder names that do not match actual server table names. The actual loaded tables will depend on the SpacetimeDB generated types.
+
+#### Static Data Tables Categorized by Game System
+
+| Game System | Static Data Tables |
+|------------|-------------------|
+| **Items/Inventory** | `item_desc`, `cargo_desc`, `item_list_desc`, `item_conversion_recipe_desc`, `collectible_desc` |
+| **Crafting** | `crafting_recipe_desc`, `construction_recipe_desc`, `construction_recipe_desc_v2`, `deconstruction_recipe_desc`, `resource_placement_recipe_desc`, `resource_placement_recipe_desc_v2` |
+| **Gathering** | `extraction_recipe_desc`, `resource_desc`, `resource_clump_desc`, `resource_growth_recipe_desc`, `single_resource_to_clump_desc`, `prospecting_desc` |
+| **Combat** | `combat_action_desc`, `combat_action_desc_v2`, `combat_action_desc_v3`, `combat_action_multi_hit_desc`, `enemy_desc`, `enemy_scaling_desc`, `enemy_ai_params_desc`, `contribution_loot_desc`, `contribution_loot_desc_v2`, `weapon_desc`, `weapon_type_desc`, `targeting_matrix_desc`, `buff_desc`, `buff_type_desc` |
+| **Buildings** | `building_desc`, `building_type_desc`, `building_function_type_mapping_desc`, `building_claim_desc`, `building_repairs_desc`, `building_spawn_desc`, `building_portal_desc`, `building_portal_desc_v2`, `wall_desc`, `elevator_desc`, `gate_desc` |
+| **Equipment/Tools** | `equipment_desc`, `tool_desc`, `tool_type_desc`, `clothing_desc`, `food_desc`, `teleport_item_desc` |
+| **Skills/Knowledge** | `skill_desc`, `character_stat_desc`, `knowledge_scroll_desc`, `knowledge_scroll_type_desc`, `knowledge_stat_modifier_desc`, `secondary_knowledge_desc`, `ability_custom_desc`, `ability_unlock_desc` |
+| **Claims/Territory** | `claim_tile_cost`, `claim_tech_desc`, `claim_tech_desc_v2`, `terraform_recipe_desc` |
+| **Trading** | `traveler_trade_order_desc`, `traveler_task_desc` |
+| **Empire** | `empire_color_desc`, `empire_icon_desc`, `empire_notification_desc`, `empire_rank_desc`, `empire_supplies_desc`, `empire_territory_desc`, `hexite_exchange_entry_desc` |
+| **Interiors/Housing** | `interior_shape_desc`, `interior_instance_desc`, `interior_environment_desc`, `interior_network_desc`, `interior_portal_connections_desc`, `interior_spawn_desc`, `player_housing_desc`, `premium_item_desc`, `premium_service_desc` |
+| **Quest/Onboarding** | `quest_chain_desc`, `quest_stage_desc`, `onboarding_reward_desc`, `stage_rewards_desc`, `achievement_desc`, `alert_desc` |
+| **Loot** | `loot_table_desc`, `loot_rarity_desc`, `loot_chest_desc`, `chest_rarity_desc` |
+| **World/Environment** | `biome_desc`, `pillar_shaping_desc`, `paving_tile_desc`, `environment_debuff_desc`, `emote_desc`, `emote_desc_v2`, `distant_visible_entity_desc`, `climb_requirement_desc`, `pathfinding_desc`, `wind_dbg_desc`, `wind_params_desc` |
+| **NPCs** | `npc_desc` |
+| **Parameters** | `parameters_desc`, `parameters_desc_v2`, `parameters_player_move_desc`, `private_parameters_desc`, `player_action_desc`, `reserved_name_desc`, `ability_type_enum`, `deployable_desc`, `deployable_desc_v2`, `deployable_desc_v3`, `deployable_desc_v4` |
+
+#### Static Data Gap Analysis (DEBT-2)
+
+**Tables essential for Stories 5.4-5.8:**
+
+| Story | Required Static Data Tables | Loaded? | Priority |
+|-------|---------------------------|---------|----------|
+| 5.4 (Basic Round-Trip) | `parameters_desc_v2` | Not verified (placeholder names) | CRITICAL |
+| 5.5 (Player Lifecycle/Movement) | `parameters_desc_v2`, `parameters_player_move_desc`, `biome_desc` | Not verified (placeholder names) | HIGH |
+| 5.6 (Gathering/Inventory) | `extraction_recipe_desc`, `resource_desc`, `item_desc`, `tool_desc`, `food_desc`, `cargo_desc` | Partial (`item_desc` listed) | CRITICAL |
+| 5.7 (Crafting) | `crafting_recipe_desc`, `item_desc`, `building_desc`, `construction_recipe_desc_v2` | Partial (`item_desc`, `building_desc` listed) | CRITICAL |
+| 5.8 (Error Scenarios) | Same as 5.5-5.7 | See 5.5-5.7 | HIGH |
+
+**Gap assessment:** The `static-data-tables.ts` file contains 34 entries, but many use placeholder names (e.g., `placeholder_1_desc`, `placeholder_2_desc`) that do NOT match actual BitCraft server table names. This means the effective number of correctly loaded tables is significantly less than 34. The following tables are definitely essential and must be verified as loadable:
+
+| Priority | Table | Purpose | Loaded in Story 1.5? |
+|----------|-------|---------|---------------------|
+| P0 (Critical) | `item_desc` | Item definitions for inventory validation | Listed (name matches) |
+| P0 (Critical) | `crafting_recipe_desc` | Recipe validation for crafting tests | Not verified |
+| P0 (Critical) | `extraction_recipe_desc` | Recipe validation for gathering tests | Not verified |
+| P0 (Critical) | `resource_desc` | Resource type identification | Not verified |
+| P0 (Critical) | `building_desc` | Building type identification | Listed (name matches) |
+| P1 (High) | `tool_desc` | Tool requirements for gathering | Not verified |
+| P1 (High) | `food_desc` | Food effects for eating tests | Not verified |
+| P1 (High) | `equipment_desc` | Equipment stats | Not verified |
+| P1 (High) | `parameters_desc_v2` | Game parameters/constants | Not verified |
+| P2 (Medium) | `skill_desc` | Skill definitions for XP | Listed (name matches) |
+| P2 (Medium) | `cargo_desc` | Cargo item definitions | Not verified |
+| P2 (Medium) | `construction_recipe_desc_v2` | Building construction recipes | Not verified |
+
+**Recommendation for DEBT-2:** Before Stories 5.6/5.7, verify that the SpacetimeDB generated types include these static data tables and that the client can subscribe to them. The placeholder table names in `static-data-tables.ts` should be replaced with actual table names from the server schema.
+
+### Subscription Requirements Per Game System
+
+For each of the 14 game systems identified in Story 5.1, the minimum set of table subscriptions needed to observe state changes:
+
+#### 1. Movement System
+
+**Tables (per-player):**
+- `mobile_entity_state` -- position/movement (primary)
+- `stamina_state` -- stamina changes from running
+- `player_action_state` -- action type tracking
+- `exploration_chunks_state` -- explored areas
+
+**Example subscription SQL:**
+```sql
+SELECT * FROM mobile_entity_state WHERE entity_id = ?
+SELECT * FROM stamina_state WHERE entity_id = ?
+SELECT * FROM player_action_state WHERE entity_id = ?
+```
+
+**Update frequency:** High (every move action)
+
+#### 2. Gathering System
+
+**Tables (per-player):**
+- `progressive_action_state` -- extraction progress (filtered by `owner_entity_id`)
+- `inventory_state` -- items received (filtered by `owner_entity_id`)
+- `stamina_state` -- stamina cost
+- `experience_state` -- XP gained
+- `extract_outcome_state` -- extraction results
+
+**Tables (spatial/global):**
+- `resource_state` -- nearby resource nodes
+- `resource_health_state` -- resource depletion
+
+**Example subscription SQL:**
+```sql
+SELECT * FROM progressive_action_state WHERE owner_entity_id = ?
+SELECT * FROM inventory_state WHERE owner_entity_id = ?
+SELECT * FROM resource_state WHERE resource_id IN (...)
+SELECT * FROM resource_health_state WHERE entity_id = ?
+```
+
+**Static data needed:** `extraction_recipe_desc`, `resource_desc`, `item_desc`, `tool_desc`
+
+#### 3. Crafting System
+
+**Tables (per-player):**
+- `progressive_action_state` -- crafting progress
+- `public_progressive_action_state` -- public craft visibility
+- `passive_craft_state` -- background crafts
+- `inventory_state` -- materials consumed/items produced
+- `experience_state` -- XP gained
+
+**Tables (building-scoped):**
+- `building_state` -- crafting station
+
+**Example subscription SQL:**
+```sql
+SELECT * FROM progressive_action_state WHERE owner_entity_id = ?
+SELECT * FROM passive_craft_state WHERE owner_entity_id = ?
+SELECT * FROM inventory_state WHERE owner_entity_id = ?
+SELECT * FROM building_state WHERE entity_id = ?
+```
+
+**Static data needed:** `crafting_recipe_desc`, `item_desc`, `building_desc`
+
+#### 4. Combat System
+
+**Tables (per-player):**
+- `health_state` -- HP changes
+- `combat_state` -- combat cooldowns
+- `target_state` -- current target
+- `attack_outcome_state` -- attack results
+- `ability_state` -- ability cooldowns (filtered by `owner_entity_id`)
+- `active_buff_state` -- buffs/debuffs
+- `targetable_state` -- targetability
+
+**Tables (spatial):**
+- `enemy_state` -- nearby enemies
+- `threat_state` -- aggro state
+
+**Example subscription SQL:**
+```sql
+SELECT * FROM health_state WHERE entity_id = ?
+SELECT * FROM combat_state WHERE entity_id = ?
+SELECT * FROM target_state WHERE entity_id = ?
+SELECT * FROM enemy_state WHERE herd_entity_id = ?
+```
+
+**Static data needed:** `combat_action_desc_v3`, `enemy_desc`, `weapon_desc`, `buff_desc`
+
+#### 5. Building System
+
+**Tables (per-player):**
+- `inventory_state` -- materials
+- `progressive_action_state` -- building progress
+
+**Tables (spatial/global):**
+- `building_state` -- all buildings in area
+- `project_site_state` -- construction projects
+- `footprint_tile_state` -- building footprints
+
+**Example subscription SQL:**
+```sql
+SELECT * FROM building_state WHERE claim_entity_id = ?
+SELECT * FROM project_site_state WHERE owner_id = ?
+SELECT * FROM footprint_tile_state WHERE owner_entity_id = ?
+```
+
+**Static data needed:** `building_desc`, `construction_recipe_desc_v2`
+
+#### 6. Trading System
+
+**Tables (per-player):**
+- `trade_session_state` -- active P2P trades
+- `inventory_state` -- items being traded
+
+**Tables (building-scoped):**
+- `trade_order_state` -- barter stall orders
+- `sell_order_state` / `buy_order_state` -- market orders
+- `closed_listing_state` -- completed orders
+
+**Example subscription SQL:**
+```sql
+SELECT * FROM trade_session_state WHERE initiator_entity_id = ? OR acceptor_entity_id = ?
+SELECT * FROM trade_order_state WHERE shop_entity_id = ?
+SELECT * FROM sell_order_state WHERE owner_entity_id = ?
+SELECT * FROM buy_order_state WHERE owner_entity_id = ?
+```
+
+**Static data needed:** `item_desc`, `traveler_trade_order_desc`
+
+#### 7. Empire System
+
+**Tables (global/filtered):**
+- `claim_state` -- empire claims (filtered by empire membership)
+- `building_state` -- empire buildings
+
+**Example subscription SQL:**
+```sql
+SELECT * FROM claim_state WHERE entity_id IN (...)
+```
+
+**Static data needed:** `empire_territory_desc`, `empire_rank_desc`, `empire_supplies_desc`
+
+#### 8. Chat System
+
+**Tables (per-player/channel):**
+- `chat_message_state` -- messages (filtered by channel/player)
+
+**Example subscription SQL:**
+```sql
+SELECT * FROM chat_message_state WHERE channel_id = ? OR target_id = ?
+```
+
+#### 9. Player Lifecycle
+
+**Tables (per-player):**
+- `user_state` -- identity/can_sign_in
+- `player_state` -- signed_in, time_played
+- `signed_in_player_state` -- sign-in state
+- `player_action_state` -- current action type
+- `health_state` -- for respawn detection
+- `player_settings_state_v2` -- settings
+
+**Example subscription SQL:**
+```sql
+SELECT * FROM user_state WHERE entity_id = ?
+SELECT * FROM player_state WHERE entity_id = ?
+SELECT * FROM signed_in_player_state WHERE entity_id = ?
+```
+
+#### 10. Administrative
+
+**Tables (admin-only, global):**
+- `user_moderation_state` -- moderation records
+- `moderation_action_log_entry` -- action logs
+- `player_report_state` -- player reports
+
+**Subscription type:** Global (admin only)
+
+#### 11. Claim/Land Ownership
+
+**Tables (per-claim):**
+- `claim_state` -- claim properties
+- `claim_local_state` -- supplies, maintenance
+- `claim_member_state` -- membership
+- `claim_tile_state` -- territory tiles
+- `claim_tech_state` -- researched technologies
+- `claim_recruitment_state` -- recruitment listings
+- `permission_state` -- permissions
+
+**Example subscription SQL:**
+```sql
+SELECT * FROM claim_state WHERE entity_id = ?
+SELECT * FROM claim_member_state WHERE claim_entity_id = ?
+SELECT * FROM claim_tile_state WHERE claim_id = ?
+```
+
+**Static data needed:** `claim_tile_cost`, `claim_tech_desc_v2`
+
+#### 12. Rental System
+
+**Tables (per-rental):**
+- `rent_state` -- rental data
+- `dimension_network_state` -- interior network
+
+**Example subscription SQL:**
+```sql
+SELECT * FROM rent_state WHERE claim_entity_id = ?
+```
+
+#### 13. Housing System
+
+**Tables (per-player):**
+- `player_housing_state` -- housing entry
+- `player_housing_customization_state` -- customization
+- `dimension_description_state` -- interior layout
+- `dimension_network_state` -- interior connections
+- `interior_player_count_state` -- occupancy
+
+**Example subscription SQL:**
+```sql
+SELECT * FROM player_housing_state WHERE entity_id = ?
+SELECT * FROM dimension_description_state WHERE dimension_network_entity_id = ?
+```
+
+**Static data needed:** `interior_shape_desc`, `interior_instance_desc`, `player_housing_desc`
+
+#### 14. Quest/Onboarding System
+
+**Tables (per-player):**
+- `quest_chain_state` -- quest progress
+- `onboarding_state` -- tutorial state
+- `traveler_task_state` -- NPC tasks
+
+**Example subscription SQL:**
+```sql
+SELECT * FROM quest_chain_state WHERE entity_id = ?
+SELECT * FROM onboarding_state WHERE entity_id = ?
+```
+
+**Static data needed:** `quest_chain_desc`, `quest_stage_desc`, `onboarding_reward_desc`
+
+### Subscription Quick Reference for Stories 5.4-5.8
+
+| Story | Minimum Required Subscriptions | Count |
+|-------|-------------------------------|-------|
+| **5.4 (Basic Round-Trip)** | `user_state`, `player_state`, `signed_in_player_state` | 3 |
+| **5.5 (Player Lifecycle/Movement)** | `user_state`, `player_state`, `signed_in_player_state`, `mobile_entity_state`, `health_state`, `stamina_state`, `player_action_state` | 7 |
+| **5.6 (Gathering/Inventory)** | All of 5.5 + `inventory_state`, `resource_state`, `resource_health_state`, `progressive_action_state`, `experience_state`, `extract_outcome_state` | 13 |
+| **5.7 (Crafting)** | All of 5.5 + `inventory_state`, `building_state`, `progressive_action_state`, `passive_craft_state`, `experience_state`, `public_progressive_action_state` | 13 |
+| **5.8 (Error Scenarios)** | Union of 5.5-5.7 subscriptions | 17 |
+
+### Read-Only vs. Player-Mutated Tables
+
+**Read-only (server agent populated):** `enemy_state`, `enemy_scaling_state`, `herd_state`, `attached_herds_state`, `enemy_mob_monitor_state`, `growth_state`, `npc_state`, `interior_player_count_state`, `a_i_debug_state`, `distant_visible_entity`, `global_search_state`, `the_great_placeholder_table`, `light_source_state`, all `knowledge_*_state` tables (populated by Discovery system, not direct player reducers)
+
+**Player-mutated (via reducers):** `player_state`, `mobile_entity_state`, `inventory_state`, `equipment_state`, `progressive_action_state`, `building_state`, `claim_state`, `trade_session_state`, `chat_message_state`, `quest_chain_state`, and most other tables
+
+**Hybrid (player actions trigger, server resolves):** `health_state` (combat + starvation agent), `stamina_state` (player actions + regen agent), `resource_health_state` (extraction + respawn agent), `active_buff_state` (combat + regen agent)
