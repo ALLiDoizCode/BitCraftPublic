@@ -20,7 +20,11 @@ import {
   type SpacetimeDBTestConnection,
   type SpacetimeDBTestConnectionOptions,
 } from './spacetimedb-connection';
-import { subscribeToStory55Tables, queryTableState, waitForTableInsert } from './subscription-helpers';
+import {
+  subscribeToStory55Tables,
+  queryTableState,
+  waitForTableInsert,
+} from './subscription-helpers';
 import { executeReducer } from './test-client';
 
 /**
@@ -104,7 +108,9 @@ export async function setupSignedInPlayer(
 
     const userStates = queryTableState<SpacetimeDBRow>(testConnection, 'user_state');
     if (userStates.length === 0) {
-      throw new Error('No user_state rows found after sign-in. Subscription may not include user_state.');
+      throw new Error(
+        'No user_state rows found after sign-in. Subscription may not include user_state.'
+      );
     }
 
     // Match by connection identity to avoid grabbing another player's entity_id

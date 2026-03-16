@@ -1,9 +1,9 @@
 /**
  * Integration Test Fixtures - Public API
- * Stories 5.4-5.5: Action Round-Trip and Player Lifecycle Validation
+ * Stories 5.4-5.6: Action Round-Trip, Player Lifecycle, and Resource Gathering Validation
  *
  * Barrel export for all reusable test fixtures.
- * Import from this index for Stories 5.5-5.8.
+ * Import from this index for Stories 5.6-5.8.
  *
  * @example
  * ```typescript
@@ -18,6 +18,14 @@
  *   setupSignedInPlayer,
  *   teardownPlayer,
  *   subscribeToStory55Tables,
+ *   subscribeToStory56Tables,
+ *   findGatherableResource,
+ *   findExtractionRecipe,
+ *   moveNearResource,
+ *   executeExtraction,
+ *   verifyInventoryContains,
+ *   verifyResourceHealthDecremented,
+ *   STORY_56_TABLES,
  * } from './fixtures';
  * ```
  *
@@ -51,6 +59,8 @@ export {
   subscribeToTables,
   subscribeToStory54Tables,
   subscribeToStory55Tables,
+  subscribeToStory56Tables,
+  STORY_56_TABLES,
 } from './subscription-helpers';
 
 // Composite test client factory
@@ -70,3 +80,21 @@ export {
   type SignedInPlayer,
   type SetupSignedInPlayerOptions,
 } from './player-lifecycle';
+
+// Resource discovery, extraction execution, inventory verification (Story 5.6)
+export {
+  findGatherableResource,
+  findExtractionRecipe,
+  moveNearResource,
+  executeExtraction,
+  verifyInventoryContains,
+  verifyResourceHealthDecremented,
+  EXTRACTION_PROGRESSIVE_ACTION_DELAY_MS,
+  EXTRACTION_TIMING_RETRY_COUNT,
+  EXTRACTION_RETRY_DELAY_MS,
+  SUBSCRIPTION_WAIT_TIMEOUT_MS,
+  type GatherableResource,
+  type ExtractionRecipe,
+  type ExecuteExtractionParams,
+  type ExtractionResult,
+} from './resource-helpers';

@@ -184,9 +184,44 @@ export async function serializeReducerArgs(
       writer.writeBool(request.running === true);
       break;
     }
+    case 'extract_start':
+    case 'extract': {
+      // extract_start(request: PlayerExtractRequest) / extract(request: PlayerExtractRequest)
+      // BSATN: struct fields in declaration order:
+      //   recipe_id: i32            (4 bytes, little-endian)
+      //   target_entity_id: u64     (8 bytes, little-endian)
+      //   timestamp: u64            (8 bytes, little-endian)
+      //   clear_from_claim: bool    (1 byte, 0x00=false, 0x01=true)
+      //
+      // Total: 21 bytes per serialized PlayerExtractRequest.
+      //
+      // See Story 5.6 Dev Notes for field descriptions and recommended values.
+      const request = args[0];
+      if (!request || typeof request !== 'object') {
+        throw new Error(
+          `serializeReducerArgs('${reducerName}'): first argument must be a PlayerExtractRequest object`
+        );
+      }
+
+      // recipe_id: i32
+      const recipeId = typeof request.recipe_id === 'number' ? request.recipe_id : 1;
+      writer.writeI32(recipeId);
+
+      // target_entity_id: u64
+      const targetEntityId = BigInt(request.target_entity_id ?? 0);
+      writer.writeU64(targetEntityId);
+
+      // timestamp: u64
+      const extractTimestamp = BigInt(request.timestamp ?? Date.now());
+      writer.writeU64(extractTimestamp);
+
+      // clear_from_claim: bool
+      writer.writeBool(request.clear_from_claim === true);
+      break;
+    }
     default:
       // For unknown reducers, attempt to serialize as empty (no args)
-      // Stories 5.6-5.8 will extend this serializer for additional reducers
+      // Stories 5.7-5.8 will extend this serializer for additional reducers
       break;
   }
 
@@ -206,7 +241,10 @@ export async function serializeReducerArgs(
  * @param coord - Coordinate object { x: number, z: number } or null/undefined for None
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function writeOptionOffsetCoordinatesFloat(writer: any, coord: { x: number; z: number } | null | undefined): void {
+function writeOptionOffsetCoordinatesFloat(
+  writer: any,
+  coord: { x: number; z: number } | null | undefined
+): void {
   if (coord == null) {
     // None: BSATN Option discriminant 0x00
     // writeBool(false) emits a single 0x00 byte, which matches the BSATN None tag.

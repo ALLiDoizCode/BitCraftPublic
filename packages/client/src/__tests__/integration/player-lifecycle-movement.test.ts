@@ -50,7 +50,10 @@ type SpacetimeDBRow = Record<string, any>;
  * Find a row by entity_id in a SpacetimeDB table state array.
  * Handles both numeric and BigInt entity_id comparison (SDK may use either).
  */
-function findByEntityId(rows: SpacetimeDBRow[], entityId: bigint | number): SpacetimeDBRow | undefined {
+function findByEntityId(
+  rows: SpacetimeDBRow[],
+  entityId: bigint | number
+): SpacetimeDBRow | undefined {
   return rows.find(
     (row) => row.entity_id === entityId || String(row.entity_id) === String(entityId)
   );
@@ -127,17 +130,15 @@ describe.skipIf(!runIntegrationTests)('Story 5.5: Player Lifecycle & Movement Va
 
       // Verify the connection identity matches a user_state entry
       const connectionIdentity = testConnection.identity;
-      const matchingUserState = userStates.find(
-        (us) => {
-          const usIdentity = us.identity;
-          return (
-            usIdentity === connectionIdentity ||
-            (usIdentity?.toHexString &&
-              usIdentity.toHexString() === connectionIdentity?.toHexString?.()) ||
-            String(usIdentity) === String(connectionIdentity)
-          );
-        }
-      );
+      const matchingUserState = userStates.find((us) => {
+        const usIdentity = us.identity;
+        return (
+          usIdentity === connectionIdentity ||
+          (usIdentity?.toHexString &&
+            usIdentity.toHexString() === connectionIdentity?.toHexString?.()) ||
+          String(usIdentity) === String(connectionIdentity)
+        );
+      });
       expect(matchingUserState).toBeDefined();
     }, 30000);
 
@@ -153,7 +154,10 @@ describe.skipIf(!runIntegrationTests)('Story 5.5: Player Lifecycle & Movement Va
       testConnection = player.testConnection;
 
       // Then: signed_in_player_state row exists for the player's entity_id
-      const signedInStates = queryTableState<SpacetimeDBRow>(testConnection, 'signed_in_player_state');
+      const signedInStates = queryTableState<SpacetimeDBRow>(
+        testConnection,
+        'signed_in_player_state'
+      );
       const matchingState = findByEntityId(signedInStates, player.entityId);
       expect(matchingState).toBeDefined();
     }, 30000);
@@ -245,7 +249,10 @@ describe.skipIf(!runIntegrationTests)('Story 5.5: Player Lifecycle & Movement Va
       expect(healthState).toBeDefined();
 
       // 5. signed_in_player_state has entry with same entity_id
-      const signedInStates = queryTableState<SpacetimeDBRow>(testConnection, 'signed_in_player_state');
+      const signedInStates = queryTableState<SpacetimeDBRow>(
+        testConnection,
+        'signed_in_player_state'
+      );
       const signedInState = findByEntityId(signedInStates, entityId);
       expect(signedInState).toBeDefined();
 
@@ -294,7 +301,9 @@ describe.skipIf(!runIntegrationTests)('Story 5.5: Player Lifecycle & Movement Va
         'mobile_entity_state',
         (row) => {
           // Match our player's entity_id
-          return row.entity_id === player!.entityId || String(row.entity_id) === String(player!.entityId);
+          return (
+            row.entity_id === player!.entityId || String(row.entity_id) === String(player!.entityId)
+          );
         },
         10000
       );

@@ -375,6 +375,42 @@ export async function subscribeToStory55Tables(
 }
 
 /**
+ * Additional tables required for Story 5.6: Resource Gathering & Inventory Validation
+ *
+ * These 6 tables extend Story 5.5's 7 tables to provide the 13 tables needed
+ * for resource gathering, extraction, and inventory verification.
+ * See BitCraft Game Reference Subscription Quick Reference.
+ */
+export const STORY_56_TABLES = [
+  'SELECT * FROM inventory_state',
+  'SELECT * FROM resource_state',
+  'SELECT * FROM resource_health_state',
+  'SELECT * FROM progressive_action_state',
+  'SELECT * FROM experience_state',
+  'SELECT * FROM extract_outcome_state',
+];
+
+/**
+ * Subscribe to all 13 tables required for Story 5.6
+ *
+ * Subscribes to: all 7 from Story 5.5 (user_state, player_state,
+ * signed_in_player_state, mobile_entity_state, health_state, stamina_state,
+ * player_action_state) PLUS inventory_state, resource_state,
+ * resource_health_state, progressive_action_state, experience_state,
+ * extract_outcome_state
+ *
+ * Designed for reuse by Stories 5.7-5.8 which need the same base tables.
+ *
+ * @param testConnection - Active SpacetimeDB test connection
+ * @returns Promise that resolves when subscription is applied
+ */
+export async function subscribeToStory56Tables(
+  testConnection: SpacetimeDBTestConnection
+): Promise<void> {
+  return subscribeToTables(testConnection, [...STORY_55_TABLES, ...STORY_56_TABLES]);
+}
+
+/**
  * Wait for a table row update (modification) matching a predicate
  *
  * SpacetimeDB SDK may emit row modifications as a delete+insert pair rather than
