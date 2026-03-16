@@ -264,8 +264,7 @@ BitCraftPublic/
 │   │   ├── epic-4-retro-2026-03-15.md # Epic 4 retrospective
 │   │   ├── story-2-5-report.md        # Story 2.5 report
 │   │   ├── story-3-{1-4}-report.md    # 4 Epic 3 story reports
-│   │   ├── story-4-{1-4,6,7}-report.md # 6 Epic 4 story reports
-│   │   ├── story-4.5-report.md        # Story 4.5 report (naming inconsistency)
+│   │   ├── story-4-{1-7}-report.md     # 7 Epic 4 story reports
 │   │   └── spike-*.md                 # Compatibility spikes
 │   ├── test-artifacts/           # ATDD checklists, NFR assessments, traceability matrices
 │   └── test-reports/             # Test execution reports
@@ -1046,8 +1045,7 @@ docker compose -f docker/docker-compose.yml down -v && rm -rf docker/volumes/* &
 - `auto-bmad-artifacts/epic-4-retro-2026-03-15.md` - Epic 4 retrospective
 - `auto-bmad-artifacts/story-2-5-report.md` - Story 2.5 report
 - `auto-bmad-artifacts/story-3-{1,2,3,4}-report.md` - Epic 3 story reports
-- `auto-bmad-artifacts/story-4-{1,2,3,4,6,7}-report.md` - Epic 4 story reports
-- `auto-bmad-artifacts/story-4.5-report.md` - Story 4.5 report (naming inconsistency)
+- `auto-bmad-artifacts/story-4-{1,2,3,4,5,6,7}-report.md` - Epic 4 story reports
 - `auto-bmad-artifacts/spike-*.md` - Compatibility spikes
 
 **Test Architecture:**

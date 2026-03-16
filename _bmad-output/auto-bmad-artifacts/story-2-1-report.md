@@ -59,7 +59,7 @@ Story 2.1 implements the Crosstown Relay Connection & Event Subscriptions featur
 - `_bmad-output/test-artifacts/nfr-testarch-story-2-1.md` (1,456 lines) - NFR test architecture with 69 planned tests
 - `_bmad-output/implementation-artifacts/test-reviews/2-1-test-review-2026-02-27.md` (600+ lines) - Test review report (95/100 quality score)
 - `_bmad-output/implementation-artifacts/code-review-2-1-2026-02-27.md` - Code review report (3 passes, 20 total issues fixed)
-- `_bmad-output/auto-bmad-artifacts/story-2.1-report.md` (this file)
+- `_bmad-output/auto-bmad-artifacts/story-2-1-report.md` (this file)
 
 ### Modified Files
 
