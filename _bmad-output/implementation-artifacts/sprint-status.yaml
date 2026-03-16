@@ -136,7 +136,7 @@ epics:
         status: done
       - id: story-5.4
         title: 'Basic Action Round-Trip Validation'
-        status: backlog
+        status: done
       - id: story-5.5
         title: 'Player Lifecycle & Movement Validation'
         status: backlog
