@@ -340,3 +340,163 @@ export async function subscribeToStory54Tables(
 ): Promise<void> {
   return subscribeToTables(testConnection, STORY_54_TABLES);
 }
+
+/**
+ * Tables required for Story 5.5: Player Lifecycle & Movement Validation
+ *
+ * Extends Story 5.4 tables with movement, health, stamina, and action state.
+ * See BitCraft Game Reference Subscription Quick Reference.
+ */
+const STORY_55_TABLES = [
+  'SELECT * FROM user_state',
+  'SELECT * FROM player_state',
+  'SELECT * FROM signed_in_player_state',
+  'SELECT * FROM mobile_entity_state',
+  'SELECT * FROM health_state',
+  'SELECT * FROM stamina_state',
+  'SELECT * FROM player_action_state',
+];
+
+/**
+ * Subscribe to the 7 tables required for Story 5.5
+ *
+ * Subscribes to: user_state, player_state, signed_in_player_state,
+ * mobile_entity_state, health_state, stamina_state, player_action_state
+ *
+ * Designed for reuse by Stories 5.6-5.8 which need the same base tables.
+ *
+ * @param testConnection - Active SpacetimeDB test connection
+ * @returns Promise that resolves when subscription is applied
+ */
+export async function subscribeToStory55Tables(
+  testConnection: SpacetimeDBTestConnection
+): Promise<void> {
+  return subscribeToTables(testConnection, STORY_55_TABLES);
+}
+
+/**
+ * Wait for a table row update (modification) matching a predicate
+ *
+ * SpacetimeDB SDK may emit row modifications as a delete+insert pair rather than
+ * a direct update callback. This helper handles both patterns:
+ * 1. If the table has an `onUpdate` callback, use it directly
+ * 2. Otherwise, listen for a `onDelete` followed by `onInsert` on the same table
+ *
+ * This is critical for `mobile_entity_state` which is UPDATED (not inserted/deleted)
+ * when a player moves. See risk R5-016 in Story 5.5 Dev Notes.
+ *
+ * @param testConnection - Active SpacetimeDB test connection
+ * @param tableName - Name of the table to watch (e.g., 'mobile_entity_state')
+ * @param predicate - Function that returns true when the desired updated row is found
+ * @param timeoutMs - Timeout in milliseconds (default: 5000ms)
+ * @returns Promise resolving to the old row (if available), new row, and elapsed time
+ * @throws Error with descriptive message if timeout is reached
+ */
+export async function waitForTableUpdate<T = unknown>(
+  testConnection: SpacetimeDBTestConnection,
+  tableName: string,
+  predicate: (newRow: T) => boolean = () => true,
+  timeoutMs: number = DEFAULT_WAIT_TIMEOUT_MS
+): Promise<{ oldRow: T | null; newRow: T; elapsedMs: number }> {
+  const start = performance.now();
+
+  return new Promise((resolve, reject) => {
+    let settled = false;
+
+    const timeoutId = setTimeout(() => {
+      if (!settled) {
+        settled = true;
+        reject(
+          new Error(
+            `waitForTableUpdate('${tableName}') timed out after ${timeoutMs}ms. ` +
+              'No matching row update was detected. Check that the reducer executed ' +
+              'successfully and the subscription includes this table.'
+          )
+        );
+      }
+    }, timeoutMs);
+
+    try {
+      const db = testConnection.connection?.db;
+      if (!db) {
+        settled = true;
+        clearTimeout(timeoutId);
+        reject(new Error('SpacetimeDB connection has no db property. Is the connection active?'));
+        return;
+      }
+
+      const table = db[tableName];
+      if (!table) {
+        settled = true;
+        clearTimeout(timeoutId);
+        reject(
+          new Error(
+            `Table '${tableName}' not found on connection.db. ` +
+              'Available tables: ' +
+              Object.keys(db).join(', ')
+          )
+        );
+        return;
+      }
+
+      // Strategy 1: Use onUpdate if available (preferred, more efficient).
+      // This is EXCLUSIVE -- if onUpdate exists, we register it and return immediately
+      // without falling through to Strategy 2. If the onUpdate callback never fires,
+      // the timeout above will reject the promise.
+      if (typeof table.onUpdate === 'function') {
+        table.onUpdate((oldRow: T, newRow: T) => {
+          if (!settled && predicate(newRow)) {
+            settled = true;
+            clearTimeout(timeoutId);
+            const elapsedMs = performance.now() - start;
+            resolve({ oldRow, newRow, elapsedMs });
+          }
+        });
+        return;
+      }
+
+      // Strategy 2: Fallback to delete+insert pair detection
+      // SpacetimeDB SDK may emit updates as delete-then-insert sequences.
+      // We track deletions matching the predicate so oldRow is correctly paired.
+      let deletedRow: T | null = null;
+
+      if (typeof table.onDelete === 'function') {
+        table.onDelete((row: T) => {
+          if (!settled && predicate(row)) {
+            deletedRow = row;
+          }
+        });
+      }
+
+      if (typeof table.onInsert === 'function') {
+        table.onInsert((row: T) => {
+          if (!settled && predicate(row)) {
+            settled = true;
+            clearTimeout(timeoutId);
+            const elapsedMs = performance.now() - start;
+            resolve({ oldRow: deletedRow, newRow: row, elapsedMs });
+          }
+        });
+      } else {
+        settled = true;
+        clearTimeout(timeoutId);
+        reject(
+          new Error(
+            `Table '${tableName}' does not have onUpdate or onInsert methods. ` +
+              'Cannot detect row updates.'
+          )
+        );
+      }
+    } catch (error) {
+      if (!settled) {
+        settled = true;
+        clearTimeout(timeoutId);
+        reject(
+          new Error(
+            `waitForTableUpdate('${tableName}') setup failed: ${error instanceof Error ? error.message : String(error)}`
+          )
+        );
+      }
+    }
+  });
+}

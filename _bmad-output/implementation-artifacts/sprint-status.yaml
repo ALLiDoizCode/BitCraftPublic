@@ -139,7 +139,7 @@ epics:
         status: done
       - id: story-5.5
         title: 'Player Lifecycle & Movement Validation'
-        status: backlog
+        status: done
       - id: story-5.6
         title: 'Resource Gathering & Inventory Validation'
         status: backlog

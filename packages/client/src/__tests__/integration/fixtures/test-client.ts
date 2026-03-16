@@ -140,13 +140,85 @@ export async function serializeReducerArgs(
     case 'player_queue_join':
       // No arguments
       break;
+    case 'player_move': {
+      // player_move(request: PlayerMoveRequest)
+      // BSATN: struct fields in declaration order:
+      //   timestamp: u64 (8 bytes, little-endian)
+      //   destination: Option<OffsetCoordinatesFloat> (1 byte tag + optional struct)
+      //   origin: Option<OffsetCoordinatesFloat> (1 byte tag + optional struct)
+      //   duration: f32 (4 bytes, little-endian IEEE 754)
+      //   move_type: i32 (4 bytes, little-endian)
+      //   running: bool (1 byte)
+      //
+      // OffsetCoordinatesFloat { x: f32, z: f32 }
+      //
+      // Option<T> encoding:
+      //   None  = 0x00
+      //   Some  = 0x01 + serialized T
+      const request = args[0];
+      if (!request || typeof request !== 'object') {
+        throw new Error(
+          "serializeReducerArgs('player_move'): first argument must be a PlayerMoveRequest object"
+        );
+      }
+
+      // timestamp: u64
+      const timestamp = BigInt(request.timestamp ?? Date.now());
+      writer.writeU64(timestamp);
+
+      // destination: Option<OffsetCoordinatesFloat>
+      writeOptionOffsetCoordinatesFloat(writer, request.destination);
+
+      // origin: Option<OffsetCoordinatesFloat>
+      writeOptionOffsetCoordinatesFloat(writer, request.origin);
+
+      // duration: f32
+      const duration = typeof request.duration === 'number' ? request.duration : 1.0;
+      writer.writeF32(duration);
+
+      // move_type: i32
+      const moveType = typeof request.move_type === 'number' ? request.move_type : 0;
+      writer.writeI32(moveType);
+
+      // running: bool
+      writer.writeBool(request.running === true);
+      break;
+    }
     default:
       // For unknown reducers, attempt to serialize as empty (no args)
-      // Stories 5.5-5.8 will extend this serializer for additional reducers
+      // Stories 5.6-5.8 will extend this serializer for additional reducers
       break;
   }
 
   return writer.getBuffer();
+}
+
+/**
+ * Write an Option<OffsetCoordinatesFloat> value to a BSATN BinaryWriter
+ *
+ * OffsetCoordinatesFloat { x: f32, z: f32 }
+ *
+ * BSATN Option<T> encoding:
+ * - None:    single byte 0x00
+ * - Some(v): byte 0x01 followed by serialized value
+ *
+ * @param writer - BinaryWriter instance from SpacetimeDB SDK
+ * @param coord - Coordinate object { x: number, z: number } or null/undefined for None
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function writeOptionOffsetCoordinatesFloat(writer: any, coord: { x: number; z: number } | null | undefined): void {
+  if (coord == null) {
+    // None: BSATN Option discriminant 0x00
+    // writeBool(false) emits a single 0x00 byte, which matches the BSATN None tag.
+    // BSATN bool and Option discriminant share the same single-byte encoding.
+    writer.writeBool(false);
+  } else {
+    // Some(OffsetCoordinatesFloat { x, z }): BSATN Option discriminant 0x01 + value
+    // writeBool(true) emits a single 0x01 byte, which matches the BSATN Some tag.
+    writer.writeBool(true);
+    writer.writeF32(coord.x);
+    writer.writeF32(coord.z);
+  }
 }
 
 /**
