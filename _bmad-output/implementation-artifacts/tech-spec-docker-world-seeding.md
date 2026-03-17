@@ -2,7 +2,7 @@
 title: 'Docker World Seeding & Integration Test Seed Utilities'
 slug: 'docker-world-seeding'
 created: '2026-03-16'
-status: 'ready-for-dev'
+status: 'implementation-complete'
 stepsCompleted: [1, 2, 3, 4]
 tech_stack: ['shell/sh', 'typescript', 'vitest', 'spacetimedb-sdk ^1.3.3', 'spacetimedb-cli']
 files_to_modify:
@@ -134,7 +134,7 @@ Hybrid approach — modify `init.sh` to call `generate_dev_island()` after modul
 
 ### Tasks
 
-- [ ] Task 1: Add `generate_dev_island` call to Docker init script
+- [x] Task 1: Add `generate_dev_island` call to Docker init script
   - File: `docker/bitcraft/init.sh`
   - Action: After the `spacetime publish` block (line 80: "BitCraft module published successfully"), add a `spacetime call` to invoke `generate_dev_island`. This must run inside the `if ! spacetime describe` block, only when the module is freshly published (not when "BitCraft database already exists").
   - Implementation:
@@ -150,7 +150,7 @@ Hybrid approach — modify `init.sh` to call `generate_dev_island()` after modul
     ```
   - Notes: Use non-fatal error handling because `generate_dev_island` returns `Err("World already loaded")` if called twice. Success echo is inside the success branch only. The `--server localhost` flag ensures it targets the local instance. Place after "published successfully" echo, before the `else` branch. The reducer requires Admin role but the Docker dev environment auto-grants all roles via the `has_role()` dev-mode bypass in `authentication.rs`.
 
-- [ ] Task 2: Add BSATN serialization cases for cheat/admin reducers
+- [x] Task 2: Add BSATN serialization cases for cheat/admin reducers
   - File: `packages/client/src/__tests__/integration/fixtures/test-client.ts`
   - Action: Add new `case` entries to the `serializeReducerArgs()` switch statement for each cheat/admin reducer. Follow the existing pattern (see `extract_start`, `craft_initiate_start` cases for reference).
   - Reducers to add:
@@ -170,7 +170,7 @@ Hybrid approach — modify `init.sh` to call `generate_dev_island()` after modul
     - **Note:** `cheat_teleport_float` server code hardcodes `dimension = 1` regardless of client input. Default dimension to 0 in the helper, but document that the server overrides it.
     - For `cheat_compendium_place_enemy`: BSATN encodes `EnemyType` as a **u8 variant tag byte**, NOT a 4-byte i32. Use `writer.writeByte(enemyType)` or equivalent single-byte write. The `#[repr(i32)]` is for Rust memory layout only — BSATN uses u8 tags for sum types.
 
-- [ ] Task 3: Create `seed-helpers.ts` with typed helper functions
+- [x] Task 3: Create `seed-helpers.ts` with typed helper functions
   - File: `packages/client/src/__tests__/integration/fixtures/seed-helpers.ts` (NEW)
   - Action: Create typed wrapper functions that compose `executeReducer()` calls into ergonomic test helpers. Follow the pattern established in `resource-helpers.ts` (typed params interfaces, JSDoc comments, exported constants).
   - Functions to create:
@@ -188,12 +188,12 @@ Hybrid approach — modify `init.sh` to call `generate_dev_island()` after modul
     - `stopServerAgents(conn)` — wraps `stop_agents`
   - Notes: Each function takes a `SpacetimeDBTestConnection` as first param (same pattern as `executeReducer`). Use sensible defaults (e.g., `dimension: 0`, `isCargo: false`, `iterations: 1`). Export an `EnemyTypeId` const object with common enemy type IDs (PracticeDummy=1, Jakyl=17, etc.) for ergonomic test authoring. **Each helper's params must be a named exported interface** (e.g., `GrantItemsParams`, `TeleportPlayerParams`) following the pattern in `resource-helpers.ts` (`ExecuteExtractionParams`, `GatherableResource`). This enables callers to construct param objects in advance and provides better IDE autocompletion.
 
-- [ ] Task 4: Add barrel exports to `fixtures/index.ts`
+- [x] Task 4: Add barrel exports to `fixtures/index.ts`
   - File: `packages/client/src/__tests__/integration/fixtures/index.ts`
   - Action: Add export block for seed-helpers at the end of the file, following the existing pattern (comment header, named exports).
   - Exports: All functions and types from `seed-helpers.ts`, plus the `EnemyTypeId` constants object.
 
-- [ ] Task 5: Create `seed-helpers.test.ts` integration test file
+- [x] Task 5: Create `seed-helpers.test.ts` integration test file
   - File: `packages/client/src/__tests__/integration/seed-helpers.test.ts` (NEW)
   - Action: Create an integration test file that validates each seed helper against the live Docker stack. Follow the pattern established in `resource-gathering-inventory.test.ts` (Docker health gate in beforeAll, setupSignedInPlayer, teardownPlayer in afterAll).
   - Tests to include:
@@ -206,22 +206,22 @@ Hybrid approach — modify `init.sh` to call `generate_dev_island()` after modul
     - `despawnOverworldEnemies` — despawn all and verify (AC10)
   - Notes: Some helpers (`grantKnowledge`, `discoverMap`, `forceResourceRegen`, `placeBuilding`) may need additional subscription tables not yet loaded. Test what's feasible; mark others as `.todo()` with a note about which subscription tables are needed. Each test should be independent — use `beforeEach`/`afterEach` for cleanup where entities are created.
 
-- [ ] Task 6: Verify existing integration tests pass with seeded world
+- [x] Task 6: Verify existing integration tests pass with seeded world
   - Action: Run the full integration test suite (`pnpm test:integration`) against a Docker stack that includes the `generate_dev_island()` call. The dev island creates resources, enemies, buildings, and terrain that weren't previously present — verify that existing tests (action-round-trip, player-lifecycle-movement, resource-gathering-inventory, crafting-loop) still pass.
   - Notes: The dev island world has entities at known coordinates. Existing tests that rely on an empty world (if any) may need adjustment. The `generate_dev_island()` pre-populates: resource nodes, NPCs, enemies, buildings, and terrain across 10x10 chunks. Tests that `findGatherableResource()` or `findCraftingBuilding()` may find more results now, which should be fine (they use `find` not exact-match).
 
 ### Acceptance Criteria
 
-- [ ] AC1: Given a fresh Docker container start, when `init.sh` runs to completion, then `generate_dev_island` is called after module publish and the world contains terrain, resources, enemies, NPCs, and buildings across 10x10 chunks.
-- [ ] AC2: Given a Docker container where the database already exists (restart without volume wipe), when `init.sh` runs, then `generate_dev_island` is NOT called again (only runs on fresh publish).
-- [ ] AC3: Given a connected test client, when `grantItems()` is called with a valid player entity ID, item ID, and quantity, then the player's `inventory_state` contains the specified item stack.
-- [ ] AC4: Given a connected test client, when `grantExperience()` is called with a valid entity ID, skill ID, and XP amount, then the player's `experience_state` reflects the granted XP.
-- [ ] AC5: Given a connected test client, when `teleportPlayer()` is called with target coordinates, then the player's `mobile_entity_state` position updates to the specified location.
-- [ ] AC6: Given a connected test client, when `spawnEnemy()` is called with coordinates and enemy type, then an enemy entity appears in the world at the specified location.
-- [ ] AC7: Given a connected test client, when `stopServerAgents()` is called, then server-side scheduled agents set `config.agents_enabled = false` (agents continue running but skip their work), and when `startServerAgents()` is called, agents resume processing. Note: `stop_agents` does NOT cancel running agents — it sets a config flag that agents check before doing work. A brief settle delay may be needed after calling stop before asserting deterministic state.
-- [ ] AC8: Given the seeded dev island world, when existing Epic 5 integration tests run (action-round-trip, player-lifecycle-movement, resource-gathering-inventory, crafting-loop), then all previously passing tests still pass.
-- [ ] AC9: Given a connected test client, when `killEntity()` is called with a valid entity ID, then the entity is removed from the world state.
-- [ ] AC10: Given a connected test client, when `despawnOverworldEnemies()` is called, then all overworld enemies are removed.
+- [x] AC1: Given a fresh Docker container start, when `init.sh` runs to completion, then `generate_dev_island` is called after module publish and the world contains terrain, resources, enemies, NPCs, and buildings across 10x10 chunks.
+- [x] AC2: Given a Docker container where the database already exists (restart without volume wipe), when `init.sh` runs, then `generate_dev_island` is NOT called again (only runs on fresh publish).
+- [x] AC3: Given a connected test client, when `grantItems()` is called with a valid player entity ID, item ID, and quantity, then the player's `inventory_state` contains the specified item stack.
+- [x] AC4: Given a connected test client, when `grantExperience()` is called with a valid entity ID, skill ID, and XP amount, then the player's `experience_state` reflects the granted XP.
+- [x] AC5: Given a connected test client, when `teleportPlayer()` is called with target coordinates, then the player's `mobile_entity_state` position updates to the specified location.
+- [x] AC6: Given a connected test client, when `spawnEnemy()` is called with coordinates and enemy type, then an enemy entity appears in the world at the specified location.
+- [x] AC7: Given a connected test client, when `stopServerAgents()` is called, then server-side scheduled agents set `config.agents_enabled = false` (agents continue running but skip their work), and when `startServerAgents()` is called, agents resume processing. Note: `stop_agents` does NOT cancel running agents — it sets a config flag that agents check before doing work. A brief settle delay may be needed after calling stop before asserting deterministic state.
+- [x] AC8: Given the seeded dev island world, when existing Epic 5 integration tests run (action-round-trip, player-lifecycle-movement, resource-gathering-inventory, crafting-loop), then all previously passing tests still pass.
+- [x] AC9: Given a connected test client, when `killEntity()` is called with a valid entity ID, then the entity is removed from the world state.
+- [x] AC10: Given a connected test client, when `despawnOverworldEnemies()` is called, then all overworld enemies are removed.
 
 ## Additional Context
 
@@ -270,3 +270,24 @@ Hybrid approach — modify `init.sh` to call `generate_dev_island()` after modul
 | F13 | Low | **NOTED** | `EnemyTypeId` constants should document they are u8 variant indices matching BSATN encoding. |
 | F14 | Low | **DOCUMENTED** | Crash during world gen leaves partial state. Documented in Notes with clean-slate fix. |
 | F15 | Medium | **FIXED** | Param types must be named exported interfaces, not inline anonymous objects. Fixed in Task 3 notes. |
+
+## Implementation Review Notes
+
+- Adversarial code review completed (2026-03-16)
+- Findings: 12 total, 10 fixed (auto-fix), 2 skipped (noise/undecided)
+- Resolution approach: auto-fix for all "real" findings
+
+| ID | Severity | Resolution | Description |
+|----|----------|------------|-------------|
+| F1 | Critical | **FIXED** | `EnemyTypeId` constants had fabricated names — replaced with actual server `EnemyType` enum values from `static_data.rs`. Extended from 18 to 28 entries. |
+| F2 | Medium | **FIXED** | `writeOffsetCoordinatesSmallMessage` null guard added. |
+| F3 | Medium | **FIXED** | Test assertions strengthened — removed `.catch(() => null)` swallowing, added before/after count comparisons. |
+| F4 | Medium | **FIXED** | AC7 config assertions made unconditional — `expect().toBeDefined()` on config rows. |
+| F5 | Medium | **FIXED** | Documented i32/u32 truncation behavior in `writeOptionOffsetCoordinatesFloatFull` JSDoc. |
+| F6 | Low | **FIXED** | Documented server `unwrap()` panic risk in `teleportPlayer` JSDoc. |
+| F7 | Low | **FIXED** | Changed inner health guards from `return` to `it.skipIf()` for proper skip reporting. |
+| F8 | Low | **FIXED** | `SpawnEnemyParams.enemyType` typed as `EnemyTypeIdValue` instead of `number`. |
+| F9 | Low | **ACKNOWLEDGED** | BSATN unit tests out of scope per tech spec ("No new unit tests"). Pattern follows existing codebase. |
+| F10 | Low | **FIXED** | AC10 test uses `waitForTableDelete` event-driven wait instead of hardcoded 2s delay. |
+| F11 | Low | **SKIPPED** | Noise — local constant intentional per existing test file pattern. |
+| F12 | Low | **SKIPPED** | Undecided — `spacetime call` CLI arg format is version-dependent. Non-fatal handling mitigates. |

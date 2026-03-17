@@ -522,6 +522,10 @@ function writeOptionOffsetCoordinatesFloat(
  * Note: cheat_teleport_float server code hardcodes dimension = 1 regardless
  * of client input.
  *
+ * IMPORTANT: x, z, and dimension are written as i32/u32. Float values passed
+ * as TypeScript `number` will be truncated to integer by writeI32/writeU32.
+ * Pass integer coordinates to avoid silent truncation.
+ *
  * @param writer - BinaryWriter instance from SpacetimeDB SDK
  * @param coord - Coordinate object { x: number, z: number, dimension?: number } or null/undefined for None
  */
@@ -554,6 +558,11 @@ function writeOffsetCoordinatesSmallMessage(
   writer: any,
   coord: { x: number; z: number; dimension?: number }
 ): void {
+  if (coord == null) {
+    throw new Error(
+      'writeOffsetCoordinatesSmallMessage: coord must not be null/undefined'
+    );
+  }
   writer.writeI32(typeof coord.x === 'number' ? coord.x : 0);
   writer.writeI32(typeof coord.z === 'number' ? coord.z : 0);
   writer.writeU32(typeof coord.dimension === 'number' ? coord.dimension : 0);

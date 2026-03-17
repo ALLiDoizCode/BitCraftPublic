@@ -23,26 +23,40 @@ import { executeReducer } from './test-client';
 /**
  * EnemyType variant indices matching BSATN u8 tag encoding.
  * These are BSATN sum type variant tags (u8), NOT Rust #[repr(i32)] discriminants.
+ * Source: BitCraftServer/packages/game/src/messages/static_data.rs
  */
 export const EnemyTypeId = {
   None: 0,
   PracticeDummy: 1,
+  // Huntable Animals
   GrassBird: 2,
-  Deer: 3,
-  ForestBird: 4,
-  PrairieDog: 5,
-  Warthog: 6,
-  Alligator: 7,
-  GrasslandBear: 8,
-  Bobcat: 9,
-  Fox: 10,
-  Spider: 11,
-  ArcticFox: 12,
-  ForestBear: 13,
-  Wolf: 14,
-  Snake: 15,
-  ArcticBear: 16,
+  DesertBird: 3,
+  SwampBird: 4,
+  Goat: 5,
+  MountainGoat: 6,
+  DeerFemale: 7,
+  DeerMale: 8,
+  Elk: 9,
+  BoarFemale: 10,
+  BoarMale: 11,
+  BoarElder: 12,
+  PlainsOx: 13,
+  TundraOx: 14,
+  JungleLargeBird: 15,
+  DesertLargeBird: 16,
+  // Monsters
   Jakyl: 17,
+  AlphaJakyl: 18,
+  KingJakyl: 19,
+  RockCrab: 20,
+  DesertCrab: 21,
+  FrostCrab: 22,
+  ForestToad: 23,
+  SwampToad: 24,
+  FrostToad: 25,
+  Umbura: 26,
+  AlphaUmbura: 27,
+  KingUmbura: 28,
 } as const;
 
 /** Type for EnemyTypeId values */
@@ -105,7 +119,7 @@ export interface SpawnEnemyParams {
     dimension?: number;
   };
   /** Enemy type variant index (use EnemyTypeId constants) */
-  enemyType: number;
+  enemyType: EnemyTypeIdValue;
 }
 
 /** Parameters for placeBuilding() */
@@ -211,6 +225,8 @@ export async function grantKnowledge(
  * Teleport a player to specific coordinates via cheat_teleport_float.
  *
  * Note: The server hardcodes dimension = 1 regardless of client input.
+ * WARNING: The server does `destination.unwrap()` — sending None (null destination)
+ * will panic the server. Always provide a valid destination.
  *
  * @param testConnection - Active SpacetimeDB test connection
  * @param params - Teleport parameters
