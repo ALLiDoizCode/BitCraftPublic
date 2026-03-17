@@ -56,6 +56,17 @@
 - Rust integration tests: `crates/tui/tests/`
 - Cross-runtime IPC tests: `packages/tui-backend/tests/integration/`
 
+**Integration Testing Strategy — Docker-First, No Mocks (ADR 2026-03-16):**
+
+Integration tests target the live Docker stack (SpacetimeDB + Crosstown + BLS). Mocking SpacetimeDB connections, reducers, or subscription state in integration tests is prohibited. The Docker stack with `generate_dev_island()` provides a deterministic baseline world; seed helpers (`packages/client/src/__tests__/integration/fixtures/seed-helpers.ts`) compose per-test scenarios against real infrastructure.
+
+- **Integration tests**: Always run against the Docker stack. No `vi.mock()` or `jest.mock()` for SpacetimeDB, Crosstown, or BLS. Use seed helpers (e.g., `grantItems()`, `spawnEnemy()`, `teleportPlayer()`) to compose test state instead of mocking.
+- **Unit tests**: May mock where appropriate — pure functions, parsers, serializers, configuration validation. The rule: if it talks to SpacetimeDB or Crosstown over a network connection, it is an integration test and must use Docker.
+- **Graceful degradation**: Integration tests use `describe.skipIf(!runIntegrationTests)` to skip when Docker is unavailable. Tests must never fail due to missing Docker — they skip. The `RUN_INTEGRATION_TESTS=true` environment variable gates execution.
+- **Docker baseline**: `docker/bitcraft/init.sh` publishes the BitCraft WASM module and calls `generate_dev_island()` to create a deterministic 10x10 chunk world with resources, enemies, NPCs, buildings, and terrain. This runs once per fresh container start.
+- **Seed helper pattern**: Each SDK validation epic (5, 9-13) extends the shared seed helper library in `fixtures/seed-helpers.ts` with domain-specific helpers. Higher-level composition functions (e.g., `setupCombatScenario()`) belong to their respective epics.
+- **Applies to**: All epics from Epic 5 onward — client SDK validation (5, 9-13), MCP server (6), TUI backend (15-16), observability (7), and experiment harness (14). Any test that validates game state mutations, reducer execution, or subscription updates must use Docker.
+
 **Configuration Files:**
 
 - Shared ESLint + Prettier config at monorepo root
@@ -158,6 +169,8 @@
 - Write co-located tests for new TypeScript code
 - Write inline `#[cfg(test)]` tests for new Rust code
 - Use `async/await` for all async TypeScript code (no callbacks)
+- Never mock SpacetimeDB, Crosstown, or BLS in integration tests — use Docker stack + seed helpers
+- Use `describe.skipIf(!runIntegrationTests)` for all Docker-dependent tests
 
 **Enforcement Mechanisms:**
 
