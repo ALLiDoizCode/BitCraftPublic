@@ -156,7 +156,7 @@ epics:
         status: done
       - id: story-5.8
         title: 'Error Scenarios & Graceful Degradation'
-        status: backlog
+        status: done
 
   - id: epic-6
     title: 'MCP Server for AI Agents'

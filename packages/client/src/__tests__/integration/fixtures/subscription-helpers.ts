@@ -452,6 +452,41 @@ export async function subscribeToStory57Tables(
 }
 
 /**
+ * Additional tables required for Story 5.8: Error Scenarios & Graceful Degradation
+ *
+ * These 2 tables extend Story 5.5's 7 tables to provide the 9 tables needed
+ * for error scenario testing, including inventory state verification and chat
+ * message error testing.
+ * See BitCraft Game Reference Subscription Quick Reference.
+ *
+ * Note: inventory_state is shared with Stories 5.6 and 5.7.
+ * chat_message_state is NEW for Story 5.8.
+ */
+export const STORY_58_TABLES = [
+  'SELECT * FROM inventory_state',
+  'SELECT * FROM chat_message_state',
+];
+
+/**
+ * Subscribe to all 9 tables required for Story 5.8
+ *
+ * Subscribes to: all 7 from Story 5.5 (user_state, player_state,
+ * signed_in_player_state, mobile_entity_state, health_state, stamina_state,
+ * player_action_state) PLUS inventory_state, chat_message_state
+ *
+ * Designed for error scenario testing: unknown reducers, invalid arguments,
+ * precondition violations, and connection loss recovery.
+ *
+ * @param testConnection - Active SpacetimeDB test connection
+ * @returns Promise that resolves when subscription is applied
+ */
+export async function subscribeToStory58Tables(
+  testConnection: SpacetimeDBTestConnection
+): Promise<void> {
+  return subscribeToTables(testConnection, [...STORY_55_TABLES, ...STORY_58_TABLES]);
+}
+
+/**
  * Wait for a table row update (modification) matching a predicate
  *
  * SpacetimeDB SDK may emit row modifications as a delete+insert pair rather than

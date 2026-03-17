@@ -345,6 +345,54 @@ export async function serializeReducerArgs(
       writer.writeU64(cancelPocketId);
       break;
     }
+    case 'chat_post_message': {
+      // chat_post_message(request: PlayerChatPostMessageRequest)
+      // BSATN: struct fields in declaration order:
+      //   text: String         (4-byte u32 LE length prefix + UTF-8 bytes)
+      //   channel_id: ChatChannel  (4-byte i32 LE, #[repr(i32)] enum, NOT sum type)
+      //   target_id: u64       (8 bytes LE)
+      //   language_code: String (4-byte u32 LE length prefix + UTF-8 bytes)
+      //
+      // ChatChannel values: System=0, Global=1, Local=2, Region=3, Claim=4,
+      //   EmpirePublic=5, EmpireInternal=6, LookingForGroup=7, Trade=8
+      //
+      // IMPORTANT: ChatChannel is #[repr(i32)] so it serializes as a plain i32,
+      // NOT as a BSATN sum type tag. Same serialization pattern as other i32 fields.
+      //
+      // Recommended: Use Local channel (channel_id=2) to avoid Region chat
+      // restrictions (2hr play time, username set, rate limit).
+      const chatReq = args[0];
+      if (!chatReq || typeof chatReq !== 'object') {
+        throw new Error(
+          "serializeReducerArgs('chat_post_message'): first argument must be a PlayerChatPostMessageRequest object"
+        );
+      }
+
+      // text: String (4-byte length prefix + UTF-8)
+      const text = typeof chatReq.text === 'string' ? chatReq.text : '';
+      const textBytes = new TextEncoder().encode(text);
+      writer.writeU32(textBytes.length);
+      for (const byte of textBytes) {
+        writer.writeByte(byte);
+      }
+
+      // channel_id: ChatChannel (i32, #[repr(i32)] enum)
+      const channelId = typeof chatReq.channel_id === 'number' ? chatReq.channel_id : 2;
+      writer.writeI32(channelId);
+
+      // target_id: u64
+      const targetId = BigInt(chatReq.target_id ?? 0);
+      writer.writeU64(targetId);
+
+      // language_code: String (4-byte length prefix + UTF-8)
+      const langCode = typeof chatReq.language_code === 'string' ? chatReq.language_code : 'en';
+      const langBytes = new TextEncoder().encode(langCode);
+      writer.writeU32(langBytes.length);
+      for (const byte of langBytes) {
+        writer.writeByte(byte);
+      }
+      break;
+    }
     // --- Cheat/Admin reducers for seed helpers ---
     case 'start_agents':
     case 'stop_agents':

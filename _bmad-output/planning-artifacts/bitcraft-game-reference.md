@@ -2393,3 +2393,102 @@ Each game loop is classified by which validation story exercises it and whether 
 | Empire | Phase 2 | Yes | No (BLOCKER-1) | Multi-player, territory control |
 
 **Per BLOCKER-1:** All Stories 5.4-5.8 validation tests should call reducers directly via SpacetimeDB WebSocket client (as a connected player), bypassing the BLS handler. This validates reducer behavior itself, deferring BLS identity propagation resolution.
+
+---
+
+## Appendix: Error Catalog (Story 5.8)
+
+**Generated:** 2026-03-16
+**Source:** Story 5.8 integration and unit tests
+**Purpose:** Comprehensive error catalog documenting all tested error scenarios for future epic reference
+
+### Error Categories
+
+| Category | Error Source | Testable via Direct WebSocket? | Notes |
+|----------|-------------|-------------------------------|-------|
+| Unknown reducer | SpacetimeDB server | YES | Server rejects non-existent reducer names |
+| Invalid arguments | SpacetimeDB server / Reducer preconditions | YES | BSATN deserialization error or precondition violation |
+| Client-side validation | `executeReducer()` input validation | YES (client-only) | Regex validation rejects before server call |
+| Insufficient budget | BudgetPublishGuard (client-side) | YES (unit test) | Pre-flight rejection, no server call |
+| Connection loss (SpacetimeDB) | WebSocket disconnection | YES (Docker pause/unpause) | Server recovers after unpause |
+| Connection loss (Crosstown) | CrosstownAdapter | DEFERRED (BLOCKER-1) | Unit test coverage in crosstown-adapter.test.ts |
+
+### Error Catalog Entries
+
+#### Unknown Reducer Errors
+
+| Reducer | Error Code | Boundary | Message Format | System State After | Precondition Violated |
+|---------|-----------|----------|---------------|-------------------|----------------------|
+| `nonexistent_reducer_xyz` | REDUCER_NOT_FOUND | spacetimedb | Reducer call fails with server error | No state changes | N/A (reducer does not exist) |
+| `synchronize_time_typo` | REDUCER_NOT_FOUND | spacetimedb | Reducer call fails with server error | No state changes | N/A (plausible typo) |
+| `(empty string)` | INVALID_REDUCER_NAME | client-validation | "Invalid reducer name '': must be 1-64 alphanumeric/underscore characters" | No state changes (rejected before server call) | Reducer name must match `/^[a-zA-Z0-9_]{1,64}$/` |
+| `(65+ character name)` | INVALID_REDUCER_NAME | client-validation | "Invalid reducer name: must be 1-64 alphanumeric/underscore characters" | No state changes (rejected before server call) | Reducer name must be 1-64 characters |
+
+#### Invalid Argument / Precondition Violation Errors
+
+| Reducer | Error Code | Boundary | Message Format | System State After | Precondition Violated |
+|---------|-----------|----------|---------------|-------------------|----------------------|
+| `sign_in` | INVALID_ARGUMENTS | spacetimedb | Server error on missing/invalid arguments | No state changes | Valid PlayerSignInRequest required |
+| `extract_start` | PRECONDITION_VIOLATED | spacetimedb | "Recipe not found." (invalid recipe_id) | No state changes | Valid extraction recipe_id required |
+| `craft_initiate_start` | PRECONDITION_VIOLATED | spacetimedb | "Invalid recipe" (recipe_id = 0) | No state changes | Valid crafting recipe_id required |
+| `craft_initiate_start` | PRECONDITION_VIOLATED | spacetimedb | "Building doesn't exist" (building_entity_id = 0) | No state changes | Valid building_entity_id required |
+| `player_move` | PRECONDITION_VIOLATED | spacetimedb | "Not signed in" (player not signed in) | No state changes | Player must be signed in |
+| `chat_post_message` | PRECONDITION_VIOLATED | spacetimedb | "Can't send empty chat message" (empty text) | No chat_message_state rows inserted | Text must not be empty |
+
+#### Budget / Balance Errors
+
+| Reducer | Error Code | Boundary | Message Format | System State After | Precondition Violated |
+|---------|-----------|----------|---------------|-------------------|----------------------|
+| Any | BUDGET_EXCEEDED | budget-guard | "Budget exceeded for action '{reducer}': cost {cost} exceeds remaining budget {remaining}" | No reducer call. Wallet and budget unchanged. | Agent budget remaining >= action cost |
+| Any | BUDGET_CHECK_FAILED | budget-guard | BudgetPublishGuard.canAfford() returns false | No state changes (pre-flight check) | Budget remaining >= action cost |
+| Any | INSUFFICIENT_BALANCE (deferred) | crosstown (deferred) | SigilError from client.publish.publish() when wallet balance < cost | Deferred to BLOCKER-1 | Wallet balance >= action cost via Crosstown/BLS |
+
+#### Connection Loss Errors
+
+| Scenario | Error Code | Boundary | Message Format | System State After | Precondition Violated |
+|----------|-----------|----------|---------------|-------------------|----------------------|
+| SpacetimeDB connection lost | CONNECTION_LOST | spacetimedb | WebSocket connection lost during Docker pause | Connection must be re-established. Subscription state requires re-subscription. Game state consistent. | Active WebSocket connection required |
+| SpacetimeDB reconnection | RECONNECTION_RECOVERY | spacetimedb | Fresh connection + sign-in produces consistent state after pause/unpause | Fully consistent after re-establishing connection and signing in | N/A |
+| Crosstown connection loss | NETWORK_TIMEOUT / NETWORK_ERROR | crosstown | DEFERRED per BLOCKER-1. Unit test coverage in crosstown-adapter.test.ts | No inconsistent state (NFR24) | Active Crosstown connection required |
+| Crosstown publish failure | PUBLISH_FAILED | crosstown | Crosstown connector rejected publish (4xx/5xx). Unit test coverage. | No state changes | Valid event format and Crosstown health |
+| Crosstown rate limit | RATE_LIMITED | crosstown | Crosstown 429 Too Many Requests. Retry after Retry-After header. | No state changes | Publish rate within limits |
+| Crosstown signing failure | SIGNING_FAILED | identity | Nostr event signing failed. Unit test coverage. | No state changes | Valid Nostr keypair loaded |
+
+#### Test Infrastructure
+
+| Scenario | Error Code | Boundary | Notes |
+|----------|-----------|----------|-------|
+| Docker control unavailable | CI_LIMITATION | test-infrastructure | Docker pause/unpause requires Docker socket access. Connection loss tests skipped in CI without Docker control. |
+
+### Cross-Reference with Precondition Quick Reference
+
+The following precondition errors from the Precondition Quick Reference (above) are tested in Story 5.8:
+
+| Precondition | Error Message | Tested? | Test Location |
+|-------------|---------------|---------|---------------|
+| Player not signed in | "Not signed in" | YES | error-scenarios.test.ts AC2 |
+| Invalid recipe ID (extract) | "Recipe not found." | YES | error-scenarios.test.ts AC2 |
+| Invalid recipe ID (craft) | "Invalid recipe" | YES | error-scenarios.test.ts AC2 |
+| Building doesn't exist | "Building doesn't exist" | YES | error-scenarios.test.ts AC2 |
+| Empty chat message | "Can't send empty chat message" | YES | error-scenarios.test.ts AC2 |
+| Insufficient budget | BudgetExceededError | YES | budget-error-scenarios.test.ts AC3 |
+| Resource depleted | "Deposit already depleted." | NO (requires specific resource state) | Future epic |
+| Not enough stamina | "Not enough stamina" | NO (requires stamina depletion) | Future epic |
+| In combat | "Cannot trade while in combat" | NO (requires combat state) | Phase 2 |
+
+### Reusable Error Assertion Fixtures
+
+The following reusable fixtures were produced for future integration tests:
+
+| Fixture | Location | Purpose |
+|---------|----------|---------|
+| `assertReducerError()` | `fixtures/error-helpers.ts` | Wraps `executeReducer()` expecting error, returns `{ errorMessage, reducerName }` |
+| `assertStateUnchanged()` | `fixtures/error-helpers.ts` | Snapshots table state, executes action, verifies state unchanged |
+| `assertNoNewRows()` | `fixtures/error-helpers.ts` | Verifies no rows inserted into a table during a time window |
+| `assertPreconditionError()` | `fixtures/error-helpers.ts` | Validates reducer returns specific precondition error + state unchanged |
+| `recordErrorCatalogEntry()` | `fixtures/error-helpers.ts` | Collects structured error documentation during test runs |
+| `getErrorCatalog()` | `fixtures/error-helpers.ts` | Retrieves all recorded error catalog entries |
+| `clearErrorCatalog()` | `fixtures/error-helpers.ts` | Resets error catalog between test suites |
+| `subscribeToStory58Tables()` | `fixtures/subscription-helpers.ts` | Subscribes to 9 tables needed for error scenario testing |
+| `STORY_58_TABLES` | `fixtures/subscription-helpers.ts` | Constant array of 2 additional tables beyond Story 5.5 |
+| `chat_post_message` serialization | `fixtures/test-client.ts` | BSATN serialization for PlayerChatPostMessageRequest |
