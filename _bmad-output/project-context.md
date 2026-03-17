@@ -1,8 +1,8 @@
 # Sigil Project Context
 
-**Generated:** 2026-03-15
-**Status:** Epics 1-4 Complete (22/22 stories), Epic 5 Next
-**Phase:** MVP Development (Epics 1-4 delivered, Epics 5-8 remaining)
+**Generated:** 2026-03-17
+**Status:** Epics 1-5 Complete (30/30 stories), Epic 6 Next
+**Phase:** MVP Development (Epics 1-5 delivered, Epics 6-7 remaining for MVP)
 
 ---
 
@@ -16,14 +16,15 @@
 - **Epic 2 (Action Execution & Payment Pipeline):** COMPLETE - 5/5 stories delivered
 - **Epic 3 (BitCraft BLS Game Action Handler):** COMPLETE - 4/4 stories delivered
 - **Epic 4 (Declarative Agent Configuration):** COMPLETE - 7/7 stories delivered
-- **Epic 5 (BitCraft Game Analysis & Playability Validation):** NEXT - 8 stories, backlog
-- **Total Tests:** 1426 passing (1320 TypeScript workspace + 98 root integration + 8 Rust), 242 skipped (Docker-dependent)
-- **Code Quality:** OWASP Top 10 compliant across all stories, 0 semgrep findings in Epic 4 (7 scans), lint baseline clean
-- **Infrastructure:** Full publish pipeline operational -- client SDK through BLS handler to SpacetimeDB
-- **Epic 4 Delivered:** Agent configuration subsystem with skill file parser, Agent.md config, SpacetimeDB validation, budget tracking, event interpretation, decision logging, and swappable configuration
+- **Epic 5 (BitCraft Game Analysis & Playability Validation):** COMPLETE - 8/8 stories delivered
+- **Epic 6 (MCP Server for AI Agents):** NEXT - 4 stories, backlog
+- **Total Tests:** 1760 passing (1430 client + 222 BLS + 1 MCP + 1 TUI-backend + 98 root integration + 8 Rust), 378 skipped (Docker-dependent)
+- **Code Quality:** OWASP Top 10 compliant across all stories, 0 real vulnerabilities across 8 Epic 5 security scans, lint baseline clean
+- **Infrastructure:** Full publish pipeline operational; integration test fixture framework established for all downstream SDK validation epics
+- **Epic 5 Delivered:** BitCraft Game Reference (~2,494 lines), 463 new tests, 9 reusable integration test fixtures, 324 document verification tests, 129 Docker integration tests
 
-**Epic 4 Delivered:**
-Epic 4 delivered the **Declarative Agent Configuration** system -- a client-side module (`packages/client/src/agent/`) that enables AI agents to be defined entirely through markdown files. The module provides YAML frontmatter skill file parsing, Agent.md configuration loading with skill resolution, configuration validation against live SpacetimeDB modules, budget tracking with pre-publish enforcement, event interpretation as semantic narratives, structured JSONL decision logging with eval-compatible metrics, and swappable agent configuration with content-based versioning. 28 source files and 39 test files were added without modifying any Epic 1-3 production code.
+**Epic 5 Delivered:**
+Epic 5 delivered the **BitCraft Game Analysis & Playability Validation** -- the first research-and-validation epic. Stories 5.1-5.3 analyzed the BitCraft server source code, producing a comprehensive Game Reference document (669 reducers, 138 tables, 80 FK relationships, 14 game systems, 9 game loops). Stories 5.4-5.8 validated the full gameplay pipeline against a live SpacetimeDB game world via Docker, establishing a 4-layer integration test fixture framework reusable by Epics 9-13. Zero production code was modified; all deliverables are documentation, test infrastructure, and integration tests. BLOCKER-1 (BLS identity propagation incompatibility) was confirmed and pragmatically worked around using direct WebSocket connections.
 
 ---
 
@@ -37,7 +38,7 @@ Sigil is the brand name for the SDK/platform that enables:
 2. **Human Players** to interact with games via a terminal UI (TUI) built with ratatui
 3. **Researchers** to run multi-agent experiments and comparative decision analysis
 
-**BitCraft** refers ONLY to the v1 game world (Apache 2.0 fork). BitCraft reducers WILL be modified to accept `identity: String` as first parameter for identity propagation (decided in Story 2.4, BLOCKER-1).
+**BitCraft** refers ONLY to the v1 game world (Apache 2.0 fork). BitCraft reducers use `ctx.sender` via `game_state::actor_id()` for identity, which is incompatible with the BLS handler's Nostr pubkey prepend approach (BLOCKER-1).
 
 ### Brand & Package Naming
 
@@ -63,6 +64,7 @@ Sigil is the brand name for the SDK/platform that enables:
 6. **TUI Architecture:** Rust (ratatui) presentation layer + TypeScript backend via JSON-RPC IPC
 7. **Agent Model:** Claude instance with CLAUDE.md + Skills + MCP tools (NOT custom cognition stack)
 8. **Declarative Agent Configuration:** Agents defined via Agent.md + skill files, validated against live SpacetimeDB modules (Epic 4)
+9. **Research-Then-Validate:** Game system epics follow the Epic 5 pattern: static data -> subscriptions -> reducer validation -> fixtures -> error scenarios
 
 ---
 
@@ -140,18 +142,39 @@ BitCraftPublic/
 │   │   │   │       └── mocks/                  # Mock module info providers
 │   │   │   ├── errors/          # Error code documentation
 │   │   │   │   └── error-codes.md
-│   │   │   ├── __tests__/       # Cross-module tests + factories
+│   │   │   ├── __tests__/       # Cross-module tests, factories, verification tests
 │   │   │   │   ├── factories/   # Test data factories
 │   │   │   │   │   ├── bls-error.factory.ts
 │   │   │   │   │   └── nostr-event.factory.ts
-│   │   │   │   └── integration/
-│   │   │   │       └── wallet-balance.test.ts
-│   │   │   └── integration-tests/    # Docker-dependent integration tests
+│   │   │   │   ├── integration/                # Docker-dependent integration tests (Epic 5)
+│   │   │   │   │   ├── fixtures/               # 10 reusable test fixture modules
+│   │   │   │   │   │   ├── docker-health.ts          # Docker stack health checks
+│   │   │   │   │   │   ├── spacetimedb-connection.ts  # Direct WebSocket helpers
+│   │   │   │   │   │   ├── subscription-helpers.ts    # Table subscription & state verification
+│   │   │   │   │   │   ├── test-client.ts             # BSATN serialization, 10+ reducers
+│   │   │   │   │   │   ├── player-lifecycle.ts        # Player sign-in/out, movement helpers
+│   │   │   │   │   │   ├── resource-helpers.ts        # Resource discovery & gathering helpers
+│   │   │   │   │   │   ├── crafting-helpers.ts        # Crafting pipeline helpers
+│   │   │   │   │   │   ├── seed-helpers.ts            # World seeding utilities
+│   │   │   │   │   │   ├── error-helpers.ts           # Error scenario helpers
+│   │   │   │   │   │   └── index.ts                   # Barrel export
+│   │   │   │   │   ├── action-round-trip.test.ts           # Story 5.4 (22 tests)
+│   │   │   │   │   ├── player-lifecycle-movement.test.ts   # Story 5.5 (22 tests)
+│   │   │   │   │   ├── resource-gathering-inventory.test.ts # Story 5.6 (25 tests)
+│   │   │   │   │   ├── crafting-loop.test.ts               # Story 5.7 (38 tests)
+│   │   │   │   │   ├── error-scenarios.test.ts             # Story 5.8 (22 tests)
+│   │   │   │   │   ├── budget-error-scenarios.test.ts      # Story 5.8 (10 tests)
+│   │   │   │   │   ├── seed-helpers.test.ts                # Seeding utilities
+│   │   │   │   │   └── wallet-balance.test.ts              # Story 2.2 (pre-existing)
+│   │   │   │   ├── story-5-1-game-reference-verification.test.ts  # 66 verification tests
+│   │   │   │   ├── story-5-2-state-model-verification.test.ts     # 104 verification tests
+│   │   │   │   └── story-5-3-game-loop-verification.test.ts       # 154 verification tests
+│   │   │   └── integration-tests/    # Docker-dependent integration tests (pre-Epic 5)
 │   │   │       ├── bls-handler.integration.test.ts
 │   │   │       └── crosstown-adapter.integration.test.ts
 │   │   ├── config/
 │   │   │   └── default-action-costs.json  # Default action cost registry
-│   │   └── package.json         # 69 source + 76 test files
+│   │   └── package.json
 │   │
 │   ├── bitcraft-bls/            # @sigil/bitcraft-bls - BLS Game Action Handler (Epic 3)
 │   │   ├── src/
@@ -187,11 +210,11 @@ BitCraftPublic/
 │   │   └── src/
 │   │       └── index.ts         # createNode, fromSecretKey, fromMnemonic, HandlerContext
 │   │
-│   ├── mcp-server/              # @sigil/mcp-server (future Epic 6)
+│   ├── mcp-server/              # @sigil/mcp-server (Epic 6 - NEXT)
 │   │   └── src/
 │   │       └── index.ts         # Minimal placeholder
 │   │
-│   └── tui-backend/             # @sigil/tui-backend (future Epic 7)
+│   └── tui-backend/             # @sigil/tui-backend (future Epic 15)
 │       └── src/
 │           └── index.ts         # Minimal placeholder
 │
@@ -230,9 +253,11 @@ BitCraftPublic/
 │
 ├── _bmad-output/                # BMAD workflow artifacts
 │   ├── planning-artifacts/
-│   │   ├── epics.md             # 13 epics, 61 stories
+│   │   ├── epics.md             # 18 epics, 87 stories
+│   │   ├── bitcraft-game-reference.md  # BitCraft Game Reference (Epic 5, ~2,494 lines)
 │   │   ├── test-design-epic-3.md # Epic 3 test design (~268 planned tests)
 │   │   ├── test-design-epic-4.md # Epic 4 test design (~351-379 planned tests)
+│   │   ├── test-design-epic-5.md # Epic 5 test design (1,109 lines)
 │   │   ├── skill-file-examples/ # SKILL.md format prototypes (PREP-E4-3)
 │   │   │   ├── SCHEMA.md        # YAML frontmatter schema documentation
 │   │   │   ├── player-move.skill.md
@@ -243,14 +268,16 @@ BitCraftPublic/
 │   │   ├── ux-design-specification.md
 │   │   └── archive/             # Historical planning docs
 │   ├── implementation-artifacts/
-│   │   ├── sprint-status.yaml   # Epic/story tracking
+│   │   ├── sprint-status.yaml   # Epic/story tracking (18 epics, 87 stories)
+│   │   ├── tech-spec-docker-world-seeding.md  # Docker world seeding tech spec (Epic 5)
 │   │   ├── epic-1-retro-2026-02-27.md
 │   │   ├── 1-{1-6}-*.md         # 6 Epic 1 story specs
 │   │   ├── 2-{1-5}-*.md         # 5 Epic 2 story specs
 │   │   ├── 3-{1-4}-*.md         # 4 Epic 3 story specs
 │   │   ├── 4-{1-7}-*.md         # 7 Epic 4 story specs
-│   │   ├── adr/                 # Architecture Decision Records (4)
-│   │   ├── reports/             # Test architecture traceability (Epics 2-4)
+│   │   ├── 5-{1-8}-*.md         # 8 Epic 5 story specs
+│   │   ├── adr/                 # Architecture Decision Records (4 + README)
+│   │   ├── reports/             # Test architecture traceability (Epics 2-5)
 │   │   └── test-reviews/        # Test review reports
 │   ├── auto-bmad-artifacts/
 │   │   ├── epic-1-end-report.md       # Epic 1 completion report
@@ -262,9 +289,12 @@ BitCraftPublic/
 │   │   ├── epic-3-start-report.md     # Epic 3 start report
 │   │   ├── epic-4-start-report.md     # Epic 4 start report
 │   │   ├── epic-4-retro-2026-03-15.md # Epic 4 retrospective
+│   │   ├── epic-5-start-report.md     # Epic 5 start report
+│   │   ├── epic-5-retro-2026-03-17.md # Epic 5 retrospective
 │   │   ├── story-2-5-report.md        # Story 2.5 report
 │   │   ├── story-3-{1-4}-report.md    # 4 Epic 3 story reports
-│   │   ├── story-4-{1-7}-report.md     # 7 Epic 4 story reports
+│   │   ├── story-4-{1-7}-report.md    # 7 Epic 4 story reports
+│   │   ├── story-5-{1-8}-report.md    # 8 Epic 5 story reports
 │   │   └── spike-*.md                 # Compatibility spikes
 │   ├── test-artifacts/           # ATDD checklists, NFR assessments, traceability matrices
 │   └── test-reports/             # Test execution reports
@@ -356,7 +386,7 @@ BitCraftPublic/
 **CI/CD:**
 
 - GitHub Actions workflows (`ci-typescript.yml`, `ci-rust.yml`)
-- TypeScript CI: Ubuntu + macOS matrix, lint, typecheck, unit tests, build, integration tests with Docker
+- TypeScript CI: Ubuntu + macOS matrix, lint, typecheck, security audit (`pnpm audit`), unit tests, build, integration tests with Docker
 - Rust CI: Ubuntu + macOS matrix, format check, clippy, test, build
 
 ---
@@ -458,6 +488,8 @@ const metrics = computeMetrics(entries);
 
 **Key Design Decision:** Sigil client owns only event CONTENT construction. All signing, TOON encoding, payment channel management, and transport are delegated to `@crosstown/client`. The BLS handler owns identity propagation, pricing enforcement, and reducer dispatch.
 
+**BLOCKER-1 Note (confirmed in Epic 5):** The BLS handler prepends Nostr pubkey as the first reducer argument (step 14), but BitCraft reducers use `ctx.sender` via `game_state::actor_id()` for identity. These are incompatible. All Epic 5 integration tests bypass BLS and use direct WebSocket connections. Resolution required before MCP tools can use the publish pipeline in production.
+
 ### 3. BLS Handler Architecture (Epic 3 - Complete)
 
 **Handler Pipeline (kind 30078):**
@@ -533,17 +565,57 @@ Decisions -> DecisionLogger
 - **Decision logs are JSONL** -- each line independently parseable, compatible with eval frameworks
 - **Config versioning uses SHA-256** -- truncated to 12 hex chars for human-readable version IDs
 
-### 5. SpacetimeDB 2.0 SDK on 1.6.x Servers
+### 5. BitCraft Game Analysis & Integration Testing Architecture (Epic 5 - Complete)
+
+**BitCraft Game Reference:** `_bmad-output/planning-artifacts/bitcraft-game-reference.md` (~2,494 lines)
+
+**Game Server Analysis (Stories 5.1-5.3):**
+
+- 669 reducers across 14 game systems (player, crafting, building, combat, trading, empire, claim, inventory, vault, rental, queue, resource, admin, migration)
+- 138 entity tables across 21 categories with 80 FK relationships
+- 9 game loops with Mermaid diagrams, precondition tables, and state transitions
+- Identity propagation analysis confirming BLOCKER-1
+
+**Integration Test Fixture Framework (Stories 5.4-5.8):**
+
+```
+packages/client/src/__tests__/integration/fixtures/
+  Layer 1 - Infrastructure:
+    docker-health.ts             # Docker stack availability checks
+  Layer 2 - Connection:
+    spacetimedb-connection.ts    # Direct WebSocket connection helpers
+  Layer 3 - Pipeline:
+    test-client.ts               # BSATN serialization for 10+ reducers
+    subscription-helpers.ts      # Table subscription & state verification
+  Layer 4 - Game System:
+    player-lifecycle.ts          # Player sign-in/out, movement helpers
+    resource-helpers.ts          # Resource discovery & gathering
+    crafting-helpers.ts          # Crafting pipeline helpers
+    seed-helpers.ts              # World seeding utilities
+    error-helpers.ts             # Error scenario helpers
+  Barrel:
+    index.ts                     # Clean imports for downstream consumers
+```
+
+**Key Design Decisions:**
+
+- **Direct WebSocket bypass** -- All integration tests connect directly to SpacetimeDB via WebSocket, bypassing BLS (due to BLOCKER-1)
+- **BSATN serialization** -- Test client includes byte-level BinaryWriter serialization for each reducer's argument types
+- **Discovery-driven testing** -- Tests query the game world first, find suitable targets, then exercise game loops (AGREEMENT-15)
+- **Document verification tests** -- 324 tests validate the Game Reference's structure and completeness (AGREEMENT-14)
+- **Progressive fixture building** -- Each story builds on the previous story's fixtures
+
+### 6. SpacetimeDB 2.0 SDK on 1.6.x Servers
 
 **Decision:** Use SpacetimeDB 2.0 SDK (`@clockworklabs/spacetimedb-sdk` ^1.3.3) to connect to 1.6.x server modules.
-**Status:** VALIDATED - No compatibility issues found in Epics 1-4 testing.
+**Status:** VALIDATED - No compatibility issues found in Epics 1-5 testing.
 
-### 6. Nostr Keypair as Sole Identity
+### 7. Nostr Keypair as Sole Identity
 
 **Decision:** Nostr keypair (secp256k1) is the ONLY identity mechanism. Private key NEVER exposed via client API.
 **Status:** COMPLETE in Story 1.2, identity propagation implemented in Epic 3 (Stories 3.2, 3.4).
 
-### 7. @crosstown/client Integration (Story 2.5)
+### 8. @crosstown/client Integration (Story 2.5)
 
 **What was removed (scaffolding):**
 
@@ -558,7 +630,7 @@ Decisions -> DecisionLogger
 
 **Status:** COMPLETE - All scaffolding removed, adapter operational.
 
-### 8. Workspace Stub Pattern for External Dependencies
+### 9. Workspace Stub Pattern for External Dependencies
 
 **Decision:** Create workspace stubs for unpublished external packages, matching the expected API surface from spec documents and contracts.
 
@@ -574,29 +646,34 @@ Decisions -> DecisionLogger
 
 ## Epic Breakdown & Progress
 
-### Epic Inventory (13 epics, 61 stories)
+### Epic Inventory (18 epics, 87 stories)
 
-**MVP (Epics 1-8):** 45 stories
+**MVP (Epics 1-7):** 36 stories
 
 - Epic 1: Project Foundation & Game World Connection (6 stories) - **COMPLETE**
 - Epic 2: Action Execution & Payment Pipeline (5 stories) - **COMPLETE**
 - Epic 3: BitCraft BLS Game Action Handler (4 stories) - **COMPLETE**
 - Epic 4: Declarative Agent Configuration (7 stories) - **COMPLETE**
-- Epic 5: BitCraft Game Analysis & Playability Validation (8 stories) - Backlog (NEXT)
-- Epic 6: MCP Server for AI Agents (4 stories) - Backlog
-- Epic 7: Terminal Game Client (9 stories) - Backlog
-- Epic 8: Infrastructure & Observability (2 stories) - Backlog
+- Epic 5: BitCraft Game Analysis & Playability Validation (8 stories) - **COMPLETE**
+- Epic 6: MCP Server for AI Agents (4 stories) - Backlog (NEXT)
+- Epic 7: Infrastructure & Observability (2 stories) - Backlog
 
-**Phase 2 (Epics 9-12):** 15 stories
+**Phase 2 (Epics 8-16):** 48 stories
 
-- Epic 9: Advanced Agent Intelligence (4 stories) - Backlog
-- Epic 10: TUI Advanced Gameplay (5 stories) - Backlog
-- Epic 11: Experiment Harness & Multi-Agent Research (4 stories) - Backlog
-- Epic 12: World Extensibility (2 stories) - Backlog
+- Epic 8: Advanced Agent Intelligence (4 stories) - Backlog
+- Epic 9: Skill Progression & World Discovery Validation (4 stories) - Backlog
+- Epic 10: Combat System Validation & SDK Integration (6 stories) - Backlog
+- Epic 11: Building, Claims & Territory Validation (7 stories) - Backlog
+- Epic 12: Trading & Economy Validation (3 stories) - Backlog
+- Epic 13: Empire & Governance Validation (5 stories) - Backlog
+- Epic 14: Experiment Harness & Multi-Agent Research (4 stories) - Backlog
+- Epic 15: Terminal Game Client (9 stories) - Backlog
+- Epic 16: TUI Advanced Gameplay (6 stories) - Backlog
 
-**Phase 3 (Epic 13):** 1 story
+**Phase 3 (Epics 17-18):** 3 stories
 
-- Epic 13: Platform Expansion (1 story) - Backlog
+- Epic 17: World Extensibility (2 stories) - Backlog
+- Epic 18: Platform Expansion (1 story) - Backlog
 
 ### Epic 1: Project Foundation & Game World Connection
 
@@ -694,41 +771,78 @@ Decisions -> DecisionLogger
 8. **Content-Based Versioning** -- SHA-256 truncated to 12 hex chars for human-readable config version IDs
 9. **Triggering Precision Validation** -- Jaccard similarity (threshold 0.7) to detect ambiguous skill descriptions
 
-### Epic 5: BitCraft Game Analysis & Playability Validation (NEXT)
+### Epic 5: BitCraft Game Analysis & Playability Validation
+
+**Status:** COMPLETE (2026-03-17)
+**Stories:** 8/8 delivered
+**Acceptance Criteria:** 42/42 met (100%), 42/42 fully test-covered (100% traceability)
+**Retrospective:** `_bmad-output/auto-bmad-artifacts/epic-5-retro-2026-03-17.md`
+
+| Story | Title                                             | ACs | Tests Written | Type | Status |
+| ----- | ------------------------------------------------- | --- | ------------- | ---- | ------ |
+| 5.1   | Server Source Analysis & Reducer Catalog           | 5   | 66            | Document verification | Done   |
+| 5.2   | Game State Model & Table Relationships             | 5   | 104           | Document verification | Done   |
+| 5.3   | Game Loop Mapping & Precondition Documentation     | 5   | 154           | Document verification | Done   |
+| 5.4   | Basic Action Round-Trip Validation                 | 6   | 22            | Integration (Docker) | Done   |
+| 5.5   | Player Lifecycle & Movement Validation             | 5   | 22            | Integration (Docker) | Done   |
+| 5.6   | Resource Gathering & Inventory Validation          | 5   | 25            | Integration (Docker) | Done   |
+| 5.7   | Multi-Step Crafting Loop Validation                | 5   | 38            | Integration (Docker) | Done   |
+| 5.8   | Error Scenarios & Graceful Degradation             | 6   | 32            | Integration (22) + Unit (10) | Done   |
+
+**Epic 5 Deliverables:**
+
+- `_bmad-output/planning-artifacts/bitcraft-game-reference.md` -- BitCraft Game Reference (~2,494 lines): 669 reducers, 138 tables, 80 FK relationships, 14 game systems, 9 game loops, error catalog
+- `packages/client/src/__tests__/integration/fixtures/` -- 10 reusable test fixture modules (docker-health, spacetimedb-connection, subscription-helpers, test-client, player-lifecycle, resource-helpers, crafting-helpers, seed-helpers, error-helpers, barrel index)
+- `_bmad-output/planning-artifacts/test-design-epic-5.md` -- Epic 5 test design document (1,109 lines)
+- `_bmad-output/implementation-artifacts/tech-spec-docker-world-seeding.md` -- Docker world seeding tech spec
+- 3 document verification test files (Stories 5.1-5.3): 324 tests validating Game Reference structure/completeness
+- 7 integration test files (Stories 5.4-5.8): 129 Docker-dependent integration tests + 10 budget unit tests
+- 463 new tests written; 1,760 total project tests (up from 1,426 baseline)
+- 128 code review issues across 24 passes (0 critical, 0 high, 61 medium, 67 low), 111 fixed, 17 accepted
+- 0 real vulnerabilities across 8 security scans (17 false positives handled)
+- Zero production code modifications -- all deliverables are documentation, test infrastructure, and integration tests
+- BLOCKER-1 confirmed: all integration tests use direct WebSocket bypass
+
+**Epic 5 New Patterns Introduced:**
+
+1. **Document Verification Tests** -- Automated tests that validate reference documentation structure, completeness, and cross-references (AGREEMENT-14)
+2. **Discovery-Driven Testing** -- Query the game world first, find suitable targets, then exercise game loops (AGREEMENT-15)
+3. **4-Layer Integration Test Fixture Framework** -- Infrastructure -> Connection -> Pipeline -> Game System layers with barrel exports
+4. **BSATN Serialization in Tests** -- Byte-level BinaryWriter encoding for SpacetimeDB reducer arguments
+5. **Direct WebSocket Bypass** -- Integration tests connect directly to SpacetimeDB, bypassing BLS (BLOCKER-1 workaround)
+6. **Progressive Fixture Building** -- Each story builds on previous story's fixtures, extending the framework incrementally
+
+### Epic 6: MCP Server for AI Agents (NEXT)
 
 **Status:** Backlog
-**Stories:** 8
-**Dependencies:** Epic 4 complete (dependency met)
+**Stories:** 4
+**Dependencies:** Epic 5 complete (dependency met)
 **Sprint Focus:** Next epic to begin
 
 | Story | Title                                             | Status  |
 | ----- | ------------------------------------------------- | ------- |
-| 5.1   | Server Source Analysis & Reducer Catalog           | Backlog |
-| 5.2   | Game State Model & Table Relationships             | Backlog |
-| 5.3   | Game Loop Mapping & Precondition Documentation     | Backlog |
-| 5.4   | Basic Action Round-Trip Validation                 | Backlog |
-| 5.5   | Player Lifecycle & Movement Validation             | Backlog |
-| 5.6   | Resource Gathering & Inventory Validation          | Backlog |
-| 5.7   | Multi-Step Crafting Loop Validation                | Backlog |
-| 5.8   | Error Scenarios & Graceful Degradation             | Backlog |
+| 6.1   | MCP Server Package & Transport Setup              | Backlog |
+| 6.2   | Game State as MCP Resources                       | Backlog |
+| 6.3   | Game Actions as MCP Tools                         | Backlog |
+| 6.4   | Agent Autonomous Game Loop                        | Backlog |
 
-**Epic 5 Context:**
+**Epic 6 Context:**
 
-- Fundamentally different from Epics 1-4: Stories 5.1-5.3 are research/documentation (analyze BitCraft server source), Stories 5.4-5.8 are validation (exercise full pipeline with Docker stack)
-- First epic requiring sustained Docker integration testing
-- Dependencies on Epic 4: skill files (4.1), Agent.md config (4.2), SpacetimeDB validation (4.3), event interpreter (4.5)
-- Produces: BitCraft Game Reference doc, reusable integration test fixtures
-- Preparation tasks: PREP-E5-1 (project context), PREP-E5-2 (Docker stack health), PREP-E5-3 (server source availability)
+- Returns to production code development (unlike Epic 5's research/validation focus)
+- First epic building on the `@sigil/mcp-server` package (currently a minimal placeholder)
+- Depends heavily on Epic 5 outputs: reducer catalog for tool definitions, game state model for resource schemas, game loop documentation for autonomous agent behavior
+- BLOCKER-1 resolution path is critical -- MCP tools will use `client.publish()` which goes through BLS
+- Preparation tasks: PREP-E6-1 (project context - THIS DOCUMENT), PREP-E6-2 (BLOCKER-1 strategy), PREP-E6-3 (MCP protocol review)
 
 ---
 
 ## Testing & Quality Metrics
 
-### Test Coverage (as of Epic 4 completion)
+### Test Coverage (as of Epic 5 completion)
 
-**Total Tests:** 1426 passing, 242 skipped (Docker-dependent)
+**Total Tests:** 1760 passing, 378 skipped (Docker-dependent)
 
-- **TypeScript Client (`@sigil/client`):** 1096 passed, 118 skipped (76 test files: 67 passed, 9 skipped)
+- **TypeScript Client (`@sigil/client`):** 1430 passed, 254 skipped (86 test files: 71 passed, 15 skipped)
 - **TypeScript BLS (`@sigil/bitcraft-bls`):** 222 passed, 80 skipped (30 test files: 22 passed, 8 skipped)
 - **TypeScript MCP Server:** 1 passed (placeholder)
 - **TypeScript TUI Backend:** 1 passed (placeholder)
@@ -743,18 +857,21 @@ Decisions -> DecisionLogger
 - Epic 3 end: 972 tests (+223 net new, primarily from @sigil/bitcraft-bls)
 - Epic 4 prep: 985 tests (+13 net: contract tests, logger tests, dead code tests removed)
 - Epic 4 end: 1426 tests (+441 net new, all from @sigil/client agent module)
+- Epic 5 start baseline: 1426 tests
+- Epic 5 end: 1760 tests (+334 net new passing, +136 net new skipped/Docker-dependent)
 
-**Per-Story Test Growth (Epic 4):**
+**Per-Story Test Growth (Epic 5):**
 
-| Story | Tests Written | Post-Dev Count | Final Regression Count |
-|-------|--------------|----------------|----------------------|
-| 4.1 | 76 | 1037 | 1053 |
-| 4.2 | 60 | 1103 | 1121 |
-| 4.3 | 63 (48 unit + 15 integration) | 1153 | 1169 |
-| 4.4 | 70 | 1224 | 1239 |
-| 4.5 | 72 | 1280 | 1303 |
-| 4.6 | 70 | 1359 | 1381 |
-| 4.7 | 45 | 1420 | 1426 |
+| Story | Tests Written | Type | Post-Dev Count | Regression Count |
+|-------|--------------|------|----------------|-----------------|
+| 5.1 | 66 | Document verification | 1,449 | 1,492 |
+| 5.2 | 104 | Document verification | 1,581 | 1,596 |
+| 5.3 | 154 | Document verification | 1,750 | 1,750 |
+| 5.4 | 22 | Integration (Docker) | 1,750 | 1,750 |
+| 5.5 | 22 | Integration (Docker) | 1,750 | 1,750 |
+| 5.6 | 25 | Integration (Docker) | 1,742 | 1,750 |
+| 5.7 | 38 | Integration (Docker) | 1,750 | 1,750 |
+| 5.8 | 32 | Integration (22) + Unit (10) | 1,752 | 1,752 |
 
 ### Test Architecture Traceability
 
@@ -764,19 +881,22 @@ All stories include comprehensive traceability reports linking:
 
 **Epic 3 Traceability:** 90% overall (18/20 ACs fully covered, 1 partial, 1 not covered)
 **Epic 4 Traceability:** 100% overall (35/35 ACs fully covered, PASS gate at every story)
+**Epic 5 Traceability:** 100% overall (42/42 ACs fully covered, PASS gate at every story)
 
 **Reports:**
 
 - `_bmad-output/implementation-artifacts/reports/epic-3-testarch-trace-report.md` (aggregate)
 - `_bmad-output/implementation-artifacts/reports/3-{2,3,4}-testarch-trace-report.md`
 - `_bmad-output/implementation-artifacts/reports/4-{1,2,3,5,6}-testarch-trace-report.md`
+- `_bmad-output/implementation-artifacts/reports/5-{3,5,6,7,8}-testarch-trace-report.md`
 - `_bmad-output/implementation-artifacts/reports/2-{3,5}-testarch-trace-report.md`
 - `_bmad-output/implementation-artifacts/2-{1,2}-test-architecture-traceability.md`
 
 ### Code Quality & Security
 
-- OWASP Top 10 compliance validated on all 22 stories (Epics 1-4)
-- Semgrep security scanning: 5 issues found and fixed in Epic 2, **0 issues in Epics 3-4** (11 scans total, 347-360+ rules each)
+- OWASP Top 10 compliance validated on all 30 stories (Epics 1-5)
+- Semgrep security scanning: 5 issues found and fixed in Epic 2, **0 real issues in Epics 3-5** (19 scans total across Epics 3-5)
+- Epic 5: 0 real vulnerabilities across 8 scans; 17 false positives handled
 - SSRF protection on Crosstown connector URL, BTP endpoint, wallet balance client, module info fetcher (Story 4.3)
 - Private key never logged, never in error messages
 - Embedded credentials rejected in connector URLs
@@ -787,23 +907,26 @@ All stories include comprehensive traceability reports linking:
 - Database name validation (Story 4.3) -- alphanumeric + hyphens/underscores only
 - Skill file path traversal prevention (segment-aware check, Story 4.1)
 
-### Code Review Summary (Epics 3-4)
+### Code Review Summary (Epics 3-5)
 
 | Epic | Stories | Passes | Critical | High | Medium | Low | Total | Fixed | Accepted |
 |------|---------|--------|----------|------|--------|-----|-------|-------|----------|
 | 3 | 4 | 12 | 0 | 1 | -- | -- | 62 | 56 | 6 |
 | 4 | 7 | 21 | 0 | 2 | 28 | 44 | 74 | 70 | 4 |
+| 5 | 8 | 24 | 0 | 0 | 61 | 67 | 128 | 111 | 17 |
+
+**Trend:** Epic 5 achieved the lowest severity profile yet -- zero critical AND zero high issues across all 8 stories. Story 5.8 CR#3 achieved a completely clean pass (0 findings) -- a project first.
 
 ### Test Execution
 
 ```bash
 # Unit Tests (fast, no Docker)
-pnpm --filter @sigil/client test:unit    # 1096 tests (118 skipped)
+pnpm --filter @sigil/client test:unit    # 1430 tests (254 skipped)
 pnpm --filter @sigil/bitcraft-bls test   # 222 tests (80 skipped)
 pnpm --filter @sigil/client test:watch   # TDD watch mode
 
 # All workspace tests
-pnpm test                                # All TS packages (1320 pass, 198 skip)
+pnpm test                                # All TS packages (1654 pass, 334 skip)
 
 # Integration Tests (require Docker)
 docker compose -f docker/docker-compose.yml up -d
@@ -825,60 +948,57 @@ cd crates/tui && cargo clippy            # Lint
 
 ### High Priority
 
-**DEBT-E3-5: Deferred Action Items from Epic 2 Retro** (PARTIALLY RESOLVED)
+**DEBT-E5-1 / BLOCKER-1: BLS Identity Propagation Incompatibility**
 
-- ACTION-E2-1 (contract test pattern): RESOLVED -- contract tests created for all 3 stubs (ACTION-E3-1)
-- PREP-E3-3 (stub validation): CANNOT RESOLVE -- real packages don't exist on npm. Contract tests validate API surface instead.
-- PREP-E3-4 (getEvmAddress): DOCUMENTED AS ACCEPTABLE -- placeholder remains; no consumer needs real EVM addresses.
-- ACTION-E2-2 (test tracking): PARTIALLY RESOLVED -- ATDD checklists track integration tests; centralized catalog deferred to PREP-E4-4.
+- BitCraft reducers use `ctx.sender` via `game_state::actor_id()` for identity. The BLS handler prepends Nostr pubkey as first argument. These are incompatible.
+- Identified in Story 2.4, confirmed in Story 5.1, worked around in Stories 5.4-5.8 using direct WebSocket.
+- All 129 Epic 5 integration tests bypass BLS. The full publish pipeline (`client.publish()` -> BLS -> SpacetimeDB) remains unvalidated end-to-end.
+- Resolution required before MCP tools (Epic 6) can use the publish pipeline in production.
+- Resolution strategy to be defined in PREP-E6-2 (ADR-005).
 
 ### Medium Priority
 
-**DEBT-2: Load Remaining 108 Static Data Tables**
+**DEBT-E5-2: 80 BLS Integration Test Placeholders (carried from Epic 3)**
 
-- Story 1.5 loaded 40/148 static data tables. Remaining 108 needed for full game state coverage.
-- May block Epic 5 if validation stories require missing tables.
-
-**DEBT-5: Wallet Balance Stub Mode**
-
-- WalletClient falls back to stub mode (fixed balance 10000) when Crosstown balance API returns 404/501.
-- WalletClient.enableStubMode() / disableStubMode() for explicit control. SIGIL_WALLET_STUB=true env var.
-
-**DEBT-6: EVM Address Derivation is Placeholder**
-
-- CrosstownAdapter.getEvmAddress() and @crosstown/sdk fromSecretKey() both return truncated pubkey as placeholder.
-- No current consumer uses real EVM addresses. Doesn't block Epic 5.
-
-**DEBT-E3-1: 80 Integration Test Placeholders in BLS Package** (carried as DEBT-E4-4)
-
-- All 80 integration tests contain `expect(true).toBe(true)` placeholder assertions.
+- All 80 integration tests in `packages/bitcraft-bls` contain `expect(true).toBe(true)` placeholder assertions.
 - Skipped without Docker, but would pass vacuously even WITH Docker.
-- Need Docker stack with real services to implement real assertions.
-- Epic 5's Docker usage creates the opportunity to convert these.
+- Epic 5's fixture framework makes conversion feasible. Target partial conversion in PREP-E6-5.
+- Carried from DEBT-E3-1 / DEBT-E4-4.
 
-**DEBT-E3-2: @crosstown/sdk Workspace Stub Unvalidated** (PARTIALLY RESOLVED)
+**DEBT-E5-3: Static Data Table Gap (carried from Story 1.5)**
 
-- `@crosstown/sdk@^0.1.4` does not exist on npm. Stub built from spec documents.
-- API divergence risk remains -- createNode, createVerificationPipeline, createPricingValidator are assumptions.
-- Contract tests now validate API surface assumptions (ACTION-E3-1, added in Epic 4 prep).
+- Only 34 of 108 static data tables loaded in SDK, with placeholder names that don't match actual server table names.
+- Affects MCP resource quality -- agents need item names, recipe requirements, building descriptions.
+- Carried from DEBT-2. Discovery-driven testing works around it for validation, but not for production agents.
 
 **DEBT-E4-3: Limited Event Interpreter Table Coverage**
 
 - Only 4 table interpreters shipped (player_state, entity_position, inventory, resource_spawn).
 - Graceful fallback for unmapped tables produces generic narratives.
-- Epic 5 analysis will identify which additional tables need interpreters.
+- Epic 5 analysis identified which additional tables need interpreters. PREP-E5-4 not started.
 
 ### Low Priority
 
 **DEBT-4: Improve Docker Test Stability**
 
 - Integration tests fail when Docker is not running. Auto-skip works but could be improved.
+- 378 tests now Docker-dependent (up from 242 at Epic 4 end).
+
+**DEBT-E5-4: Docker Pause/Unpause CI Compatibility Unknown**
+
+- Story 5.8 connection loss tests use `docker pause`/`docker unpause` to simulate SpacetimeDB disconnection.
+- Unknown whether this works in CI environments (GitHub Actions). Tests skip gracefully when Docker control commands fail.
+
+**DEBT-E5-5: Wallet Stub Mode Only (carried)**
+
+- WalletClient uses stub mode (fixed balance 10000). Real ILP fee deduction not tested.
+- Story 5.8 added 10 budget unit tests as proxy. Resolution depends on BLOCKER-1.
 
 **DEBT-E3-4: Console Logging in BLS Handler** (PATTERN DEFINED)
 
 - Structured logging interface defined in `logger.ts` (ACTION-E3-3): `createLogger()`, `Logger`, `LogEntry`, `LogLevel`
 - JSON output format with auto-truncated pubkeys, log levels, correlation via eventId
-- Handler migration from `console.log()` to structured logger deferred to Epic 8.
+- Handler migration from `console.log()` to structured logger deferred to Epic 7.
 
 **DEBT-E4-1: Decision Logger Silent Error Swallowing**
 
@@ -901,23 +1021,23 @@ cd crates/tui && cargo clippy            # Lint
 - **DEBT-3: Add Linux Integration Test Coverage** - RESOLVED in Epic 2 prep (PREP-2)
 - **~~DEBT-E3-3: Dead Code Exports in BLS Package~~** - RESOLVED in PREP-E4-2 (removed identity-chain.ts, verification.ts)
 
-### Epic 5 Prep Items (from Epic 4 Retro)
+### Epic 6 Prep Items (from Epic 5 Retro)
 
 | #         | Item                                            | Priority | Status                |
 | --------- | ----------------------------------------------- | -------- | --------------------- |
-| PREP-E5-1 | Update project context                          | Critical | DONE (this document)  |
-| PREP-E5-2 | Verify Docker stack health                      | Critical | Not started           |
-| PREP-E5-3 | Assess BitCraft server source availability      | Critical | Not started           |
-| PREP-E5-4 | Extend event interpreter table coverage         | Parallel | Not started           |
-| PREP-E5-5 | Plan integration test conversion (carry-forward)| Parallel | Not started           |
+| PREP-E6-1 | Update project context                          | Critical | DONE (this document)  |
+| PREP-E6-2 | Assess BLOCKER-1 resolution strategy (ADR-005)  | Critical | Not started           |
+| PREP-E6-3 | Review MCP protocol specification               | Critical | Not started           |
+| PREP-E6-4 | Resolve DEBT-2 (static data table loading)      | Parallel | Not started           |
+| PREP-E6-5 | Convert priority BLS integration test placeholders | Parallel | Not started        |
 
-### Epic 4 Action Items (from Retro)
+### Epic 5 Action Items (from Retro)
 
 | Item        | Description                                          | Owner   | Status      |
 | ----------- | ---------------------------------------------------- | ------- | ----------- |
-| ACTION-E4-1 | Enforce artifact naming convention in pipeline        | Charlie | Not started |
-| ACTION-E4-2 | Add npm audit check to CI                            | Dana    | Not started |
-| ACTION-E4-3 | Wire budget guard into publish pipeline              | Charlie | Not started (target: Epic 6) |
+| ACTION-E5-1 | Add Docker to CI for integration test coverage       | Charlie | Not started |
+| ACTION-E5-2 | Create BSATN code generation tool                    | Elena   | Not started (target: before Epics 9-13) |
+| ACTION-E5-3 | Document discovery-driven testing pattern            | Dana    | Not started |
 
 ---
 
@@ -938,7 +1058,7 @@ cd crates/tui && cargo clippy            # Lint
 cd /Users/jonathangreen/Documents/BitCraftPublic
 pnpm install
 pnpm build
-pnpm test   # 1320 TS tests pass, 198 skipped
+pnpm test   # 1654 TS tests pass, 334 skipped
 ```
 
 ### Docker Stack Management
@@ -955,13 +1075,13 @@ docker compose -f docker/docker-compose.yml down -v && rm -rf docker/volumes/* &
 
 ### CI/CD
 
-- `.github/workflows/ci-typescript.yml` - TypeScript lint, typecheck, unit tests, build (Ubuntu + macOS), integration tests with Docker
+- `.github/workflows/ci-typescript.yml` - TypeScript lint, typecheck, security audit (`pnpm audit`), unit tests, build (Ubuntu + macOS), integration tests with Docker
 - `.github/workflows/ci-rust.yml` - Rust format, clippy, test, build (Ubuntu + macOS)
 
 **Branch Strategy:**
 
 - `master` - Main development branch (stable)
-- `epic-4` - Current feature branch (Epic 4 complete, ready for PR to master)
+- `epic-5` - Current feature branch (Epic 5 complete, ready for PR to master)
 - PRs merge to `master` after review
 
 ---
@@ -970,9 +1090,11 @@ docker compose -f docker/docker-compose.yml down -v && rm -rf docker/volumes/* &
 
 ### Planning Artifacts
 
-- `_bmad-output/planning-artifacts/epics.md` - Epic breakdown (13 epics, 61 stories)
+- `_bmad-output/planning-artifacts/epics.md` - Epic breakdown (18 epics, 87 stories)
+- `_bmad-output/planning-artifacts/bitcraft-game-reference.md` - BitCraft Game Reference (~2,494 lines, 669 reducers, 138 tables, 9 game loops)
 - `_bmad-output/planning-artifacts/test-design-epic-3.md` - Epic 3 test design (~268 tests)
 - `_bmad-output/planning-artifacts/test-design-epic-4.md` - Epic 4 test design (~351-379 tests)
+- `_bmad-output/planning-artifacts/test-design-epic-5.md` - Epic 5 test design (1,109 lines)
 - `_bmad-output/planning-artifacts/skill-file-examples/` - SKILL.md format prototypes (PREP-E4-3)
   - `SCHEMA.md` - YAML frontmatter schema documentation
   - `player-move.skill.md` - Movement skill prototype
@@ -1018,12 +1140,28 @@ docker compose -f docker/docker-compose.yml down -v && rm -rf docker/volumes/* &
 - `4-6-structured-decision-logging.md`
 - `4-7-swappable-agent-configuration.md`
 
+**Epic 5 Story Specs:**
+
+- `5-1-server-source-analysis-and-reducer-catalog.md`
+- `5-2-game-state-model-and-table-relationships.md`
+- `5-3-game-loop-mapping-and-precondition-documentation.md`
+- `5-4-basic-action-round-trip-validation.md`
+- `5-5-player-lifecycle-and-movement-validation.md`
+- `5-6-resource-gathering-and-inventory-validation.md`
+- `5-7-multi-step-crafting-loop-validation.md`
+- `5-8-error-scenarios-and-graceful-degradation.md`
+
+**Tech Specs:**
+
+- `tech-spec-docker-world-seeding.md` - Docker world seeding design (from Story 5.7 code review)
+
 **Retrospectives:**
 
 - `epic-1-retro-2026-02-27.md` - Epic 1 retrospective
 - `auto-bmad-artifacts/epic-2-retro-2026-03-13.md` - Epic 2 retrospective
 - `auto-bmad-artifacts/epic-3-retro-2026-03-14.md` - Epic 3 retrospective
 - `auto-bmad-artifacts/epic-4-retro-2026-03-15.md` - Epic 4 retrospective
+- `auto-bmad-artifacts/epic-5-retro-2026-03-17.md` - Epic 5 retrospective
 
 **Architecture Decision Records:**
 
@@ -1043,9 +1181,12 @@ docker compose -f docker/docker-compose.yml down -v && rm -rf docker/volumes/* &
 - `auto-bmad-artifacts/epic-3-start-report.md` - Epic 3 start report
 - `auto-bmad-artifacts/epic-4-start-report.md` - Epic 4 start report
 - `auto-bmad-artifacts/epic-4-retro-2026-03-15.md` - Epic 4 retrospective
+- `auto-bmad-artifacts/epic-5-start-report.md` - Epic 5 start report
+- `auto-bmad-artifacts/epic-5-retro-2026-03-17.md` - Epic 5 retrospective
 - `auto-bmad-artifacts/story-2-5-report.md` - Story 2.5 report
 - `auto-bmad-artifacts/story-3-{1,2,3,4}-report.md` - Epic 3 story reports
 - `auto-bmad-artifacts/story-4-{1,2,3,4,5,6,7}-report.md` - Epic 4 story reports
+- `auto-bmad-artifacts/story-5-{1,2,3,4,5,6,7,8}-report.md` - Epic 5 story reports
 - `auto-bmad-artifacts/spike-*.md` - Compatibility spikes
 
 **Test Architecture:**
@@ -1053,16 +1194,17 @@ docker compose -f docker/docker-compose.yml down -v && rm -rf docker/volumes/* &
 - `reports/epic-3-testarch-trace-report.md` - Epic 3 aggregate traceability
 - `reports/3-{2,3,4}-testarch-trace-report.md`
 - `reports/4-{1,2,3,5,6}-testarch-trace-report.md`
+- `reports/5-{3,5,6,7,8}-testarch-trace-report.md`
 - `reports/2-{3,5}-testarch-trace-report.md`
 - `2-{1,2}-test-architecture-traceability.md`
-- `test-artifacts/atdd-checklist-{3,4}-{1..7}.md` - ATDD checklists
-- `test-artifacts/nfr-assessment-{3,4}-{2..7}.md` - NFR assessments
-- `test-artifacts/traceability-matrix-{4}-{1,2,4}.md` - Traceability matrices
-- `test-artifacts/automation-summary-3-{1,4}.md`
+- `test-artifacts/atdd-checklist-{3,4,5}-{1..8}.md` - ATDD checklists
+- `test-artifacts/nfr-assessment-{3,4,5}-{1..8}.md` - NFR assessments
+- `test-artifacts/traceability-matrix-{4,5}-{1,2,4,6}.md` - Traceability matrices
+- `test-artifacts/automation-summary-{3,5}-{1,4,7}.md`
 
 **Status Tracking:**
 
-- `sprint-status.yaml` - Epic/story status (updated 2026-03-15)
+- `sprint-status.yaml` - Epic/story status (updated 2026-03-17)
 
 ### Developer Documentation
 
@@ -1079,14 +1221,14 @@ docker compose -f docker/docker-compose.yml down -v && rm -rf docker/volumes/* &
 
 ### Current Phase
 
-**Phase:** MVP Implementation (Epics 1-4 complete, Epic 5 next)
+**Phase:** MVP Implementation (Epics 1-5 complete, Epic 6 next)
 **Module:** bmm (Business Model & Management)
-**Sprint Focus:** Epic 5 - BitCraft Game Analysis & Playability Validation
+**Sprint Focus:** Epic 6 - MCP Server for AI Agents
 
 ### Workflow Steps Completed
 
 1. Architecture Definition - 22 architecture documents, validated against requirements
-2. Epic Breakdown - 13 epics, 61 stories, all 50 FRs covered
+2. Epic Breakdown - 18 epics, 87 stories, all 50 FRs covered (restructured 2026-03-16)
 3. Epic 1 Implementation - 6 stories delivered
 4. Epic 1 Retrospective - Lessons learned, action items, prep tasks defined
 5. Epic 2 Preparation - PREP-1, PREP-2, PREP-4, PREP-5, ACTION-1 completed
@@ -1100,14 +1242,19 @@ docker compose -f docker/docker-compose.yml down -v && rm -rf docker/volumes/* &
 13. Epic 4 Started - Baseline green (985 tests), test design created (~351-379 planned tests)
 14. Epic 4 Implementation - 7 stories delivered (441 new tests, 28 source files, 39 test files)
 15. Epic 4 Retrospective - 100% traceability achieved, TDD pattern fully internalized
+16. Epic 5 Preparation - Retro actions resolved (naming convention, npm audit CI, project context, server source assessment)
+17. Epic 5 Started - Baseline green (1,426 tests), test design created (1,109 lines)
+18. Epic 5 Implementation - 8 stories delivered (463 new tests, 324 verification + 129 integration + 10 unit)
+19. Epic 5 Retrospective - Research-then-validate pattern validated, 2 new team agreements (14, 15)
+20. Epic Restructure (2026-03-16) - Old Epic 10 exploded into SDK validation Epics 9-13, TUI moved to Phase 2
 
 ### Next Workflow Steps
 
-1. ~~Execute Epic 5 preparation tasks (PREP-E5-1 critical)~~ DONE (this document)
-2. Execute PREP-E5-2 (Docker stack health) and PREP-E5-3 (server source assessment)
-3. Run `/auto-bmad:epic-start 5` to establish baseline and begin Epic 5
-4. Create Story 5.1 spec file (Server Source Analysis & Reducer Catalog)
-5. Implement Epic 5 stories: 5.1 -> 5.2 -> ... -> 5.8
+1. ~~Execute PREP-E6-1 (project context)~~ DONE (this document)
+2. Execute PREP-E6-2 (BLOCKER-1 resolution strategy, create ADR-005) and PREP-E6-3 (MCP protocol review)
+3. Run `/auto-bmad:epic-start 6` to establish baseline and begin Epic 6
+4. Create Story 6.1 spec file (MCP Server Package & Transport Setup)
+5. Implement Epic 6 stories: 6.1 -> 6.2 -> 6.3 -> 6.4
 
 ---
 
@@ -1125,7 +1272,7 @@ docker compose -f docker/docker-compose.yml down -v && rm -rf docker/volumes/* &
 
 - **FR6:** Subscribe to SpacetimeDB table updates - COMPLETE (Story 1.4)
 - **FR7:** Subscribe to Crosstown relay events - COMPLETE (Story 2.1)
-- **FR8:** Load static data tables - COMPLETE (Story 1.5, partial: 40/148)
+- **FR8:** Load static data tables - COMPLETE (Story 1.5, partial: 34/108 loaded -- DEBT-E5-3)
 - **FR9:** Interpret table events as semantic narratives - COMPLETE (Story 4.5)
 - **FR10:** Auto-reconnect after disconnections - COMPLETE (Story 1.6)
 
@@ -1136,7 +1283,7 @@ docker compose -f docker/docker-compose.yml down -v && rm -rf docker/volumes/* &
 - **FR13:** Validate configuration against SpacetimeDB - COMPLETE (Story 4.3)
 - **FR14:** Budget tracking and enforcement - COMPLETE (Story 4.4)
 - **FR15:** Structured decision logging - COMPLETE (Story 4.6)
-- **FR16:** Backlog (Epic 9, Phase 2)
+- **FR16:** Backlog (Epic 8, Phase 2)
 - **FR27:** Swappable agent configuration - COMPLETE (Story 4.7)
 
 ### Action Execution & Payments (FR17-FR22)
@@ -1150,27 +1297,28 @@ docker compose -f docker/docker-compose.yml down -v && rm -rf docker/volumes/* &
 
 ### Agent Cognition (FR23-FR26)
 
-- **FR23-FR26:** Backlog (Epics 6/9)
+- **FR23-FR26:** Backlog (Epics 6/8)
 
 ### Terminal Game Client (FR28-FR38)
 
-- **FR28-FR38:** Backlog (Epics 7/10)
+- **FR28-FR38:** Backlog (Epics 15/16)
 
 ### Experiment & Analysis (FR39-FR43)
 
 - **FR39:** Configuration versioning for reproducibility - COMPLETE (Story 4.7)
-- **FR40-FR43:** Backlog (Epics 5/11)
+- **FR40:** Game system analysis and validation - COMPLETE (Epic 5: 669 reducers, 138 tables, 9 game loops documented and validated)
+- **FR41-FR43:** Backlog (Epics 9-14)
 
 ### Infrastructure & Deployment (FR44-FR47)
 
 - **FR44:** Docker compose local dev - COMPLETE (Story 1.3, updated in 3.1 with BLS service)
 - **FR45:** ILP fee schedule configuration - COMPLETE (Story 3.3)
-- **FR46:** System health monitoring - PARTIAL (Story 3.1 health endpoint, full dashboard in Epic 8)
+- **FR46:** System health monitoring - PARTIAL (Story 3.1 health endpoint, full dashboard in Epic 7)
 - **FR47:** BLS game action handler mapping - COMPLETE (Story 3.2)
 
 ### World Extensibility (FR48-FR50)
 
-- All Backlog (Epics 12/13)
+- All Backlog (Epics 17/18)
 
 ---
 
@@ -1221,7 +1369,15 @@ Exported code with zero production consumers gets one epic's grace period. If st
 All pipeline-generated artifacts must follow the hyphen-separated naming convention: `story-{epic}-{story}-report.md`, `atdd-checklist-{epic}-{story}.md`, etc. No dots in story identifiers within filenames.
 
 **AGREEMENT-13: New Dependencies Require npm Audit Verification**
-Any new npm dependency added to a production package (`@sigil/client`, `@sigil/bitcraft-bls`) must pass `npm audit --audit-level=high` before the story is marked done.
+Any new npm dependency added to a production package (`@sigil/client`, `@sigil/bitcraft-bls`) must pass `npm audit --audit-level=high` before the story is marked done. CI now enforces this with `pnpm audit --audit-level=high`.
+
+### From Epic 5 Retrospective
+
+**AGREEMENT-14: Document Verification Tests for Reference Documentation**
+All reference documentation produced by research stories (game references, API catalogs, data models) must include automated verification tests that validate the document's structure, completeness, and cross-references. These tests catch documentation rot and ensure the document remains consistent as the codebase evolves. The Epic 5 pattern (`story-5-{1,2,3}-*-verification.test.ts`) is the reference implementation.
+
+**AGREEMENT-15: Discovery-Driven Testing for Game World State**
+Integration tests that depend on game world state (resources, buildings, recipes, enemies) must use the discovery-driven pattern: query the world first, find suitable test targets, exercise the game loop, verify outcomes. Tests must gracefully degrade with diagnostic output when required game world state is unavailable. Never hard-code entity IDs, positions, or item types.
 
 ### Code Review Checklist
 
@@ -1253,10 +1409,41 @@ Any new npm dependency added to a production package (`@sigil/client`, `@sigil/b
 - [ ] Edge cases covered (empty inputs, boundary values, failure modes)
 - [ ] Integration tests conditionally run (Docker availability check)
 - [ ] No placeholder tests without tracking (AGREEMENT-10)
+- [ ] Reference documentation includes verification tests (AGREEMENT-14)
+- [ ] Game world tests use discovery-driven pattern (AGREEMENT-15)
 
 ---
 
 ## Changelog
+
+### 2026-03-17: Epic 5 Complete, Project Context Regenerated (v6.0)
+
+**Epic 5 Delivered:**
+
+- 8/8 stories complete: Server Source Analysis (5.1), Game State Model (5.2), Game Loop Mapping (5.3), Basic Action Round-Trip (5.4), Player Lifecycle & Movement (5.5), Resource Gathering & Inventory (5.6), Crafting Loop (5.7), Error Scenarios (5.8)
+- BitCraft Game Reference document: `_bmad-output/planning-artifacts/bitcraft-game-reference.md` (~2,494 lines) -- 669 reducers, 138 tables, 80 FK relationships, 14 game systems, 9 game loops
+- Integration test fixture framework: 10 reusable modules in `packages/client/src/__tests__/integration/fixtures/`
+- 463 new tests written; 1,760 total project tests (up from 1,426 at Epic 5 start)
+- 128 code review issues across 24 passes (0 critical, 0 high), 111 fixed, 17 accepted
+- 0 real vulnerabilities across 8 security scans (17 false positives handled)
+- 100% traceability (42/42 ACs fully test-covered)
+- Zero production code modifications -- all deliverables are documentation, test infrastructure, and integration tests
+- 2 new team agreements: AGREEMENT-14 (document verification tests), AGREEMENT-15 (discovery-driven testing)
+- Epic 5 retrospective: first research-and-validation epic, established template for Epics 9-13
+
+**Key Findings:**
+
+- BLOCKER-1 confirmed: BLS identity propagation is incompatible with BitCraft reducers
+- 669 reducers discovered (vs ~364 original estimate) across 14 game systems
+- Fresh game world may lack buildings/recipes for full crafting validation
+- Direct WebSocket bypass enables full gameplay validation without BLS
+
+**Epic Restructure (2026-03-16):**
+
+- Old Epic 10 (TUI Advanced, 5 stories) exploded into SDK validation Epics 9-13 + TUI Epic 16
+- TUI moved from MVP to Phase 2 (Epics 15-16)
+- Total: 18 epics, 87 stories (MVP: 36, Phase 2: 48, Phase 3: 3)
+- Old Epics renumbered: 7->15, 8->7, 9->8, 11->14, 12->17, 13->18
 
 ### 2026-03-15: Epic 4 Complete, Project Context Regenerated
 
@@ -1272,23 +1459,6 @@ Any new npm dependency added to a production package (`@sigil/client`, `@sigil/b
 - Zero modifications to Epic 1-3 production code
 - 2 new team agreements: AGREEMENT-12 (artifact naming), AGREEMENT-13 (npm audit)
 - Epic 4 retrospective: highest-quality epic delivered to date
-
-**Quality Highlights:**
-
-- 35/35 acceptance criteria met and fully test-covered (100% traceability)
-- Code review severity trend decreased across the epic (15 issues in Story 4.1 -> 7 issues in Story 4.7)
-- Multiple stories had all TDD tests pass on first implementation
-- Clean module architecture: no coupling to Epics 1-3 production code
-
-**New Patterns Introduced:**
-
-- YAML frontmatter skill file parsing
-- Agent.md section-based configuration
-- Online/offline SpacetimeDB validation
-- Synchronous budget enforcement
-- Pluggable event interpreter pattern
-- JSONL decision logging with eval metrics
-- Content-based configuration versioning
 
 ### 2026-03-14: Epic 4 Prep Complete
 
@@ -1347,7 +1517,7 @@ Any new npm dependency added to a production package (`@sigil/client`, `@sigil/b
 
 ---
 
-**Document Version:** 5.0
-**Last Updated:** 2026-03-15
+**Document Version:** 6.0
+**Last Updated:** 2026-03-17
 **Generated By:** `/bmad-bmm-generate-project-context yolo`
-**Status:** Epics 1-4 Complete (22/22 stories), Epic 5 Ready to Start
+**Status:** Epics 1-5 Complete (30/30 stories), Epic 6 Ready to Start

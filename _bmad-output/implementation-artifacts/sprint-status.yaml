@@ -129,8 +129,9 @@ epics:
   - id: epic-5
     title: 'BitCraft Game Analysis & Playability Validation'
     phase: mvp
-    status: in-progress
-    retrospective_status: not_started
+    status: done
+    retrospective_status: done
+    retrospective_date: 2026-03-17
     note: 'Inserted 2026-03-13. Analyze BitCraft server game mechanics and validate end-to-end gameplay through SDK pipeline before building TUI.'
     stories:
       - id: story-5.1
@@ -449,8 +450,8 @@ sprint_metadata:
   mvp_stories: 36
   phase2_stories: 48
   phase3_stories: 3
-  last_updated: 2026-03-16
-  current_sprint_focus: epic-5
+  last_updated: 2026-03-17
+  current_sprint_focus: epic-6
   restructure_history:
     - date: 2026-03-13
       change: 'Epic 5 inserted, Epics 5-12 renumbered to 6-13'

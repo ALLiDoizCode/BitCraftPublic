@@ -607,9 +607,7 @@ function writeOffsetCoordinatesSmallMessage(
   coord: { x: number; z: number; dimension?: number }
 ): void {
   if (coord == null) {
-    throw new Error(
-      'writeOffsetCoordinatesSmallMessage: coord must not be null/undefined'
-    );
+    throw new Error('writeOffsetCoordinatesSmallMessage: coord must not be null/undefined');
   }
   writer.writeI32(typeof coord.x === 'number' ? coord.x : 0);
   writer.writeI32(typeof coord.z === 'number' ? coord.z : 0);
