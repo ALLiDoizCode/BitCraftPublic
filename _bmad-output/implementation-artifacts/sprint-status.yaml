@@ -1,7 +1,7 @@
 ---
 # Sprint Status Tracking
 # Generated: 2026-02-26
-# Updated: 2026-03-13 (Epic 5 inserted, Epics 5-12 renumbered to 6-13)
+# Updated: 2026-03-16 (Restructured: Epic 10 exploded into SDK validation epics, TUI moved to Phase 2)
 # Source: _bmad-output/planning-artifacts/epics.md
 #
 # STATUS DEFINITIONS:
@@ -12,9 +12,17 @@
 #   deferred: Postponed to later sprint/phase
 #
 # PHASES:
-#   MVP: Epics 1-8 (45 stories)
-#   Phase 2: Epics 9-12 (15 stories)
-#   Phase 3: Epic 13 (1 story)
+#   MVP: Epics 1-7 (36 stories)
+#   Phase 2: Epics 8-16 (48 stories)
+#   Phase 3: Epics 17-18 (3 stories)
+#
+# RESTRUCTURE RATIONALE (2026-03-16):
+#   Epic 5 proved SDK-level validation must precede TUI rendering.
+#   Old Epic 10 (5 stories covering 5 game systems) was undersized — each "story"
+#   covered 9-22 reducers. Exploded into dedicated SDK validation epics (10-13)
+#   following the Epic 5 pattern: static data → subscriptions → reducer validation →
+#   fixtures → error scenarios. TUI epics (old 7, old 10) moved to Phase 2 since
+#   the core value proposition is AI agents playing via MCP, not human TUI.
 
 epics:
   - id: epic-1
@@ -145,7 +153,7 @@ epics:
         status: done
       - id: story-5.7
         title: 'Multi-Step Crafting Loop Validation'
-        status: backlog
+        status: done
       - id: story-5.8
         title: 'Error Scenarios & Graceful Degradation'
         status: backlog
@@ -170,141 +178,281 @@ epics:
         status: backlog
 
   - id: epic-7
-    title: 'Terminal Game Client'
-    phase: mvp
-    status: backlog
-    retrospective_status: not_started
-    stories:
-      - id: story-7.1
-        title: 'TUI Backend JSON-RPC IPC Server'
-        status: backlog
-      - id: story-7.2
-        title: 'Rust TUI Application Shell & Screen Architecture'
-        status: backlog
-      - id: story-7.3
-        title: 'Connection & Identity Setup Flow'
-        status: backlog
-      - id: story-7.4
-        title: 'Player Tab & Character Status'
-        status: backlog
-      - id: story-7.5
-        title: 'Map Tab & Hex Grid Rendering'
-        status: backlog
-      - id: story-7.6
-        title: 'Character Movement'
-        status: backlog
-      - id: story-7.7
-        title: 'Chat Panel & Messaging'
-        status: backlog
-      - id: story-7.8
-        title: 'Inventory Management'
-        status: backlog
-      - id: story-7.9
-        title: 'Status Bar, WalletMeter & ConnectionBadge'
-        status: backlog
-
-  - id: epic-8
     title: 'Infrastructure & Observability'
     phase: mvp
     status: backlog
     retrospective_status: not_started
+    note: 'Renumbered from Epic 8 (2026-03-16). Moved up to MVP — supports agent operations.'
     stories:
-      - id: story-8.1
+      - id: story-7.1
         title: 'System Health Monitoring Dashboard'
         status: backlog
-      - id: story-8.2
+      - id: story-7.2
         title: 'Agent Observation Mode in TUI'
         status: backlog
 
-  - id: epic-9
-    title: 'Advanced Agent Intelligence (Phase 2)'
+  # --- Phase 2: Agent Intelligence ---
+
+  - id: epic-8
+    title: 'Advanced Agent Intelligence'
     phase: phase-2
     status: backlog
     retrospective_status: not_started
+    note: 'Renumbered from Epic 9 (2026-03-16). Moved up — directly enhances agent capabilities.'
     stories:
-      - id: story-9.1
+      - id: story-8.1
         title: 'Configurable LLM Backend Selection'
         status: backlog
-      - id: story-9.2
+      - id: story-8.2
         title: 'LLM-Powered Goal Planning'
         status: backlog
-      - id: story-9.3
+      - id: story-8.3
         title: 'Persistent Memory System'
         status: backlog
-      - id: story-9.4
+      - id: story-8.4
         title: 'Affordance Detection Engine'
         status: backlog
 
-  - id: epic-10
-    title: 'TUI Advanced Gameplay (Phase 2)'
+  # --- Phase 2: SDK Game System Validation (follows Epic 5 pattern) ---
+
+  - id: epic-9
+    title: 'Skill Progression & World Discovery Validation'
     phase: phase-2
     status: backlog
     retrospective_status: not_started
+    note: 'NEW (2026-03-16). Cross-cutting progression system — validates XP, leveling, knowledge discovery. Lightest SDK epic, benefits all subsequent game system epics.'
+    stories:
+      - id: story-9.1
+        title: 'Skill System Analysis & XP Validation'
+        status: backlog
+      - id: story-9.2
+        title: 'Character Stats & Progression Effects'
+        status: backlog
+      - id: story-9.3
+        title: 'Knowledge & Discovery System Validation'
+        status: backlog
+      - id: story-9.4
+        title: 'Exploration & Chunk Discovery Validation'
+        status: backlog
+
+  - id: epic-10
+    title: 'Combat System Validation & SDK Integration'
+    phase: phase-2
+    status: backlog
+    retrospective_status: not_started
+    note: 'NEW (2026-03-16). Replaces old Epic 10 Story 10.1. SDK-level combat validation: 5 combat reducers, 10 state tables, 14 preconditions.'
     stories:
       - id: story-10.1
-        title: 'Combat System'
+        title: 'Combat Static Data Loading & Subscription Setup'
         status: backlog
       - id: story-10.2
-        title: 'Crafting System'
+        title: 'Target Selection & Basic Attack Round-Trip'
         status: backlog
       - id: story-10.3
-        title: 'Building & Territory Management'
+        title: 'Ability System & Combat Action Preconditions'
         status: backlog
       - id: story-10.4
-        title: 'Trading Marketplace'
+        title: 'Enemy Discovery & Threat Mechanics'
         status: backlog
       - id: story-10.5
-        title: 'Empire Management'
+        title: 'Death, Respawn & Combat Error Scenarios'
+        status: backlog
+      - id: story-10.6
+        title: 'Combat Integration Test Fixtures'
         status: backlog
 
   - id: epic-11
-    title: 'Experiment Harness & Multi-Agent Research (Phase 2)'
+    title: 'Building, Claims & Territory Validation'
     phase: phase-2
     status: backlog
     retrospective_status: not_started
+    note: 'NEW (2026-03-16). Replaces old Epic 10 Story 10.3. SDK-level building/claims validation: 10 building reducers, 22 claim reducers, 9 claim tables.'
     stories:
       - id: story-11.1
-        title: 'Multi-Agent Concurrent Launcher'
+        title: 'Building Static Data & Claim Subscription Setup'
         status: backlog
       - id: story-11.2
-        title: 'YAML Experiment Configuration'
+        title: 'Claim Creation & Territory Management'
         status: backlog
       - id: story-11.3
-        title: 'World State Snapshot & Restore'
+        title: 'Claim Membership & Permissions'
         status: backlog
       - id: story-11.4
-        title: 'Comparative Decision Log Analysis'
+        title: 'Building Construction Pipeline'
+        status: backlog
+      - id: story-11.5
+        title: 'Building Management & Specialized Buildings'
+        status: backlog
+      - id: story-11.6
+        title: 'Claim Tech Tree & Supply Management'
+        status: backlog
+      - id: story-11.7
+        title: 'Building & Claims Error Scenarios'
         status: backlog
 
   - id: epic-12
-    title: 'World Extensibility (Phase 2)'
+    title: 'Trading & Economy Validation'
     phase: phase-2
     status: backlog
     retrospective_status: not_started
+    note: 'NEW (2026-03-16). Replaces old Epic 10 Story 10.4. SDK-level trading/marketplace validation.'
     stories:
       - id: story-12.1
-        title: 'Skill File Authoring for New Worlds'
+        title: 'Trading Static Data & Marketplace Subscriptions'
         status: backlog
       - id: story-12.2
-        title: 'BLS Handler Registration for Third-Party Games'
+        title: 'Trade Offer Lifecycle'
+        status: backlog
+      - id: story-12.3
+        title: 'Trading Error Scenarios & Edge Cases'
         status: backlog
 
   - id: epic-13
-    title: 'Platform Expansion (Phase 3)'
+    title: 'Empire & Governance Validation'
+    phase: phase-2
+    status: backlog
+    retrospective_status: not_started
+    note: 'NEW (2026-03-16). Replaces old Epic 10 Story 10.5. SDK-level empire/territory control validation: 9 empire reducers, siege warfare.'
+    stories:
+      - id: story-13.1
+        title: 'Empire Static Data & Subscription Setup'
+        status: backlog
+      - id: story-13.2
+        title: 'Empire Formation & Claim Joining'
+        status: backlog
+      - id: story-13.3
+        title: 'Empire Supply Chain & Resupply'
+        status: backlog
+      - id: story-13.4
+        title: 'Siege Warfare & Territory Contest'
+        status: backlog
+      - id: story-13.5
+        title: 'Empire Error Scenarios'
+        status: backlog
+
+  # --- Phase 2: Research ---
+
+  - id: epic-14
+    title: 'Experiment Harness & Multi-Agent Research'
+    phase: phase-2
+    status: backlog
+    retrospective_status: not_started
+    note: 'Renumbered from Epic 11 (2026-03-16).'
+    stories:
+      - id: story-14.1
+        title: 'Multi-Agent Concurrent Launcher'
+        status: backlog
+      - id: story-14.2
+        title: 'YAML Experiment Configuration'
+        status: backlog
+      - id: story-14.3
+        title: 'World State Snapshot & Restore'
+        status: backlog
+      - id: story-14.4
+        title: 'Comparative Decision Log Analysis'
+        status: backlog
+
+  # --- Phase 2: TUI (human interface, after all SDK validation complete) ---
+
+  - id: epic-15
+    title: 'Terminal Game Client'
+    phase: phase-2
+    status: backlog
+    retrospective_status: not_started
+    note: 'Renumbered from Epic 7 (2026-03-16). Moved from MVP to Phase 2 — AI agents play via MCP (Epic 6), TUI is for human observation/play.'
+    stories:
+      - id: story-15.1
+        title: 'TUI Backend JSON-RPC IPC Server'
+        status: backlog
+      - id: story-15.2
+        title: 'Rust TUI Application Shell & Screen Architecture'
+        status: backlog
+      - id: story-15.3
+        title: 'Connection & Identity Setup Flow'
+        status: backlog
+      - id: story-15.4
+        title: 'Player Tab & Character Status'
+        status: backlog
+      - id: story-15.5
+        title: 'Map Tab & Hex Grid Rendering'
+        status: backlog
+      - id: story-15.6
+        title: 'Character Movement'
+        status: backlog
+      - id: story-15.7
+        title: 'Chat Panel & Messaging'
+        status: backlog
+      - id: story-15.8
+        title: 'Inventory Management'
+        status: backlog
+      - id: story-15.9
+        title: 'Status Bar, WalletMeter & ConnectionBadge'
+        status: backlog
+
+  - id: epic-16
+    title: 'TUI Advanced Gameplay'
+    phase: phase-2
+    status: backlog
+    retrospective_status: not_started
+    note: 'Replaces old Epic 10 TUI stories (2026-03-16). Now backed by SDK validation epics 9-13.'
+    stories:
+      - id: story-16.1
+        title: 'TUI Combat Panel & Action Menu'
+        status: backlog
+      - id: story-16.2
+        title: 'TUI Crafting Panel'
+        status: backlog
+      - id: story-16.3
+        title: 'TUI Building & Territory Panel'
+        status: backlog
+      - id: story-16.4
+        title: 'TUI Trading & Marketplace Panel'
+        status: backlog
+      - id: story-16.5
+        title: 'TUI Empire Management Panel'
+        status: backlog
+      - id: story-16.6
+        title: 'TUI Skill & Progression Panel'
+        status: backlog
+
+  # --- Phase 3: Platform Generalization ---
+
+  - id: epic-17
+    title: 'World Extensibility'
     phase: phase-3
     status: backlog
     retrospective_status: not_started
+    note: 'Renumbered from Epic 12 (2026-03-16).'
     stories:
-      - id: story-13.1
+      - id: story-17.1
+        title: 'Skill File Authoring for New Worlds'
+        status: backlog
+      - id: story-17.2
+        title: 'BLS Handler Registration for Third-Party Games'
+        status: backlog
+
+  - id: epic-18
+    title: 'Platform Expansion'
+    phase: phase-3
+    status: backlog
+    retrospective_status: not_started
+    note: 'Renumbered from Epic 13 (2026-03-16).'
+    stories:
+      - id: story-18.1
         title: 'Auto-Generate Skill Files from SpacetimeDB Schema'
         status: backlog
 
 # Sprint metadata
 sprint_metadata:
-  total_epics: 13
-  total_stories: 61
-  mvp_stories: 45
-  phase2_stories: 15
-  phase3_stories: 1
+  total_epics: 18
+  total_stories: 87
+  mvp_stories: 36
+  phase2_stories: 48
+  phase3_stories: 3
   last_updated: 2026-03-16
   current_sprint_focus: epic-5
+  restructure_history:
+    - date: 2026-03-13
+      change: 'Epic 5 inserted, Epics 5-12 renumbered to 6-13'
+    - date: 2026-03-16
+      change: 'Epic 10 exploded into SDK validation epics 9-13; TUI moved to Phase 2 (Epics 15-16); old Epics 7→15, 8→7, 9→8, 11→14, 12→17, 13→18'

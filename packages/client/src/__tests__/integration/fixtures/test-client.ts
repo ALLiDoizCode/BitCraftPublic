@@ -219,9 +219,260 @@ export async function serializeReducerArgs(
       writer.writeBool(request.clear_from_claim === true);
       break;
     }
+    case 'craft_initiate_start':
+    case 'craft_initiate': {
+      // craft_initiate_start(request: PlayerCraftInitiateRequest)
+      // craft_initiate(request: PlayerCraftInitiateRequest)
+      // BSATN: struct fields in declaration order:
+      //   recipe_id: i32              (4 bytes, little-endian)
+      //   building_entity_id: u64     (8 bytes, little-endian)
+      //   count: i32                  (4 bytes, little-endian)
+      //   timestamp: u64              (8 bytes, little-endian)
+      //   is_public: bool             (1 byte, 0x00=false, 0x01=true)
+      //
+      // Total: 25 bytes per serialized PlayerCraftInitiateRequest.
+      const craftInitReq = args[0];
+      if (!craftInitReq || typeof craftInitReq !== 'object') {
+        throw new Error(
+          `serializeReducerArgs('${reducerName}'): first argument must be a PlayerCraftInitiateRequest object`
+        );
+      }
+
+      // recipe_id: i32
+      const craftRecipeId = typeof craftInitReq.recipe_id === 'number' ? craftInitReq.recipe_id : 1;
+      writer.writeI32(craftRecipeId);
+
+      // building_entity_id: u64
+      const buildingEntityId = BigInt(craftInitReq.building_entity_id ?? 0);
+      writer.writeU64(buildingEntityId);
+
+      // count: i32
+      const craftCount = typeof craftInitReq.count === 'number' ? craftInitReq.count : 1;
+      writer.writeI32(craftCount);
+
+      // timestamp: u64
+      const craftInitTimestamp = BigInt(craftInitReq.timestamp ?? Date.now());
+      writer.writeU64(craftInitTimestamp);
+
+      // is_public: bool
+      writer.writeBool(craftInitReq.is_public === true);
+      break;
+    }
+    case 'craft_continue_start':
+    case 'craft_continue': {
+      // craft_continue_start(request: PlayerCraftContinueRequest)
+      // craft_continue(request: PlayerCraftContinueRequest)
+      // BSATN: struct fields in declaration order:
+      //   progressive_action_entity_id: u64   (8 bytes, little-endian)
+      //   timestamp: u64                      (8 bytes, little-endian)
+      //
+      // Total: 16 bytes per serialized PlayerCraftContinueRequest.
+      const craftContReq = args[0];
+      if (!craftContReq || typeof craftContReq !== 'object') {
+        throw new Error(
+          `serializeReducerArgs('${reducerName}'): first argument must be a PlayerCraftContinueRequest object`
+        );
+      }
+
+      // progressive_action_entity_id: u64
+      const progressiveActionEntityId = BigInt(craftContReq.progressive_action_entity_id ?? 0);
+      writer.writeU64(progressiveActionEntityId);
+
+      // timestamp: u64
+      const craftContTimestamp = BigInt(craftContReq.timestamp ?? Date.now());
+      writer.writeU64(craftContTimestamp);
+      break;
+    }
+    case 'craft_collect': {
+      // craft_collect(request: PlayerCraftCollectRequest)
+      // BSATN: struct fields in declaration order:
+      //   pocket_id: u64              (8 bytes, little-endian)
+      //   recipe_id: i32              (4 bytes, little-endian)
+      //
+      // Total: 12 bytes per serialized PlayerCraftCollectRequest.
+      const craftCollectReq = args[0];
+      if (!craftCollectReq || typeof craftCollectReq !== 'object') {
+        throw new Error(
+          `serializeReducerArgs('${reducerName}'): first argument must be a PlayerCraftCollectRequest object`
+        );
+      }
+
+      // pocket_id: u64
+      const pocketId = BigInt(craftCollectReq.pocket_id ?? 0);
+      writer.writeU64(pocketId);
+
+      // recipe_id: i32
+      const collectRecipeId =
+        typeof craftCollectReq.recipe_id === 'number' ? craftCollectReq.recipe_id : 1;
+      writer.writeI32(collectRecipeId);
+      break;
+    }
+    case 'craft_collect_all': {
+      // craft_collect_all(request: PlayerCraftCollectAllRequest)
+      // BSATN: struct fields in declaration order:
+      //   building_entity_id: u64     (8 bytes, little-endian)
+      //
+      // Total: 8 bytes per serialized PlayerCraftCollectAllRequest.
+      const craftCollectAllReq = args[0];
+      if (!craftCollectAllReq || typeof craftCollectAllReq !== 'object') {
+        throw new Error(
+          `serializeReducerArgs('${reducerName}'): first argument must be a PlayerCraftCollectAllRequest object`
+        );
+      }
+
+      // building_entity_id: u64
+      const collectAllBuildingId = BigInt(craftCollectAllReq.building_entity_id ?? 0);
+      writer.writeU64(collectAllBuildingId);
+      break;
+    }
+    case 'craft_cancel': {
+      // craft_cancel(request: PlayerCraftCancelRequest)
+      // BSATN: struct fields in declaration order:
+      //   pocket_id: u64              (8 bytes, little-endian)
+      //
+      // Total: 8 bytes per serialized PlayerCraftCancelRequest.
+      // Note: PlayerCraftCancelRequest is a separate struct from PlayerCraftCollectRequest
+      // with only pocket_id (server source: action_request.rs).
+      const craftCancelReq = args[0];
+      if (!craftCancelReq || typeof craftCancelReq !== 'object') {
+        throw new Error(
+          `serializeReducerArgs('${reducerName}'): first argument must be a PlayerCraftCancelRequest object`
+        );
+      }
+
+      // pocket_id: u64
+      const cancelPocketId = BigInt(craftCancelReq.pocket_id ?? 0);
+      writer.writeU64(cancelPocketId);
+      break;
+    }
+    // --- Cheat/Admin reducers for seed helpers ---
+    case 'start_agents':
+    case 'stop_agents':
+    case 'admin_despawn_overworld_enemies':
+      // No arguments
+      break;
+    case 'cheat_item_stack_grant': {
+      // cheat_item_stack_grant(player_entity_id: u64, item_id: i32, quantity: i32, is_cargo: bool)
+      // BSATN: u64 + i32 + i32 + bool = 17 bytes
+      const playerEntityId = BigInt(args[0] ?? 0);
+      const itemId = typeof args[1] === 'number' ? args[1] : 0;
+      const quantity = typeof args[2] === 'number' ? args[2] : 1;
+      const isCargo = args[3] === true;
+      writer.writeU64(playerEntityId);
+      writer.writeI32(itemId);
+      writer.writeI32(quantity);
+      writer.writeBool(isCargo);
+      break;
+    }
+    case 'cheat_kill': {
+      // cheat_kill(entity_id: u64)
+      // BSATN: u64 = 8 bytes
+      const killEntityId = BigInt(args[0] ?? 0);
+      writer.writeU64(killEntityId);
+      break;
+    }
+    case 'admin_resource_force_regen': {
+      // admin_resource_force_regen(resource_id: i32, iterations: i32, ignore_target_count: bool)
+      // BSATN: i32 + i32 + bool = 9 bytes
+      const resourceId = typeof args[0] === 'number' ? args[0] : 0;
+      const iterations = typeof args[1] === 'number' ? args[1] : 1;
+      const ignoreTargetCount = args[2] === true;
+      writer.writeI32(resourceId);
+      writer.writeI32(iterations);
+      writer.writeBool(ignoreTargetCount);
+      break;
+    }
+    case 'cheat_experience_grant': {
+      // cheat_experience_grant(request: CheatExperienceGrantRequest)
+      // BSATN: u64 + i32 + i32 = 16 bytes
+      const xpReq = args[0];
+      if (!xpReq || typeof xpReq !== 'object') {
+        throw new Error(
+          "serializeReducerArgs('cheat_experience_grant'): first argument must be a CheatExperienceGrantRequest object"
+        );
+      }
+      writer.writeU64(BigInt(xpReq.owner_entity_id ?? 0));
+      writer.writeI32(typeof xpReq.skill_id === 'number' ? xpReq.skill_id : 0);
+      writer.writeI32(typeof xpReq.amount === 'number' ? xpReq.amount : 0);
+      break;
+    }
+    case 'cheat_grant_knowledge': {
+      // cheat_grant_knowledge(request: CheatGrantKnowledgeRequest)
+      // BSATN: u64 + bool = 9 bytes
+      const knowledgeReq = args[0];
+      if (!knowledgeReq || typeof knowledgeReq !== 'object') {
+        throw new Error(
+          "serializeReducerArgs('cheat_grant_knowledge'): first argument must be a CheatGrantKnowledgeRequest object"
+        );
+      }
+      writer.writeU64(BigInt(knowledgeReq.target_entity_id ?? 0));
+      writer.writeBool(knowledgeReq.also_learn === true);
+      break;
+    }
+    case 'cheat_teleport_float': {
+      // cheat_teleport_float(request: CheatTeleportFloatRequest)
+      // BSATN: u64 + Option<OffsetCoordinatesFloat> (3-field: i32 x, i32 z, u32 dimension)
+      const teleportReq = args[0];
+      if (!teleportReq || typeof teleportReq !== 'object') {
+        throw new Error(
+          "serializeReducerArgs('cheat_teleport_float'): first argument must be a CheatTeleportFloatRequest object"
+        );
+      }
+      writer.writeU64(BigInt(teleportReq.player_entity_id ?? 0));
+      writeOptionOffsetCoordinatesFloatFull(writer, teleportReq.destination);
+      break;
+    }
+    case 'cheat_discover_map': {
+      // cheat_discover_map(request: CheatDiscoverMapRequest)
+      // BSATN: u64 = 8 bytes
+      const discoverReq = args[0];
+      if (!discoverReq || typeof discoverReq !== 'object') {
+        throw new Error(
+          "serializeReducerArgs('cheat_discover_map'): first argument must be a CheatDiscoverMapRequest object"
+        );
+      }
+      writer.writeU64(BigInt(discoverReq.target_entity_id ?? 0));
+      break;
+    }
+    case 'cheat_compendium_place_enemy': {
+      // cheat_compendium_place_enemy(request: CheatCompendiumEnemyPlaceRequest)
+      // BSATN: OffsetCoordinatesSmallMessage(i32+i32+u32) + u8 enemy_type = 13 bytes
+      const enemyReq = args[0];
+      if (!enemyReq || typeof enemyReq !== 'object') {
+        throw new Error(
+          "serializeReducerArgs('cheat_compendium_place_enemy'): first argument must be a CheatCompendiumEnemyPlaceRequest object"
+        );
+      }
+      writeOffsetCoordinatesSmallMessage(writer, enemyReq.coordinates);
+      // CRITICAL: BSATN encodes EnemyType as u8 variant tag, NOT i32
+      writer.writeByte(typeof enemyReq.enemy_type === 'number' ? enemyReq.enemy_type : 0);
+      break;
+    }
+    case 'cheat_building_place': {
+      // cheat_building_place(request: PlayerProjectSitePlaceRequest)
+      // BSATN: OffsetCoordinatesSmallMessage(i32+i32+u32) + i32 + i32 + i32 = 24 bytes
+      const buildReq = args[0];
+      if (!buildReq || typeof buildReq !== 'object') {
+        throw new Error(
+          "serializeReducerArgs('cheat_building_place'): first argument must be a PlayerProjectSitePlaceRequest object"
+        );
+      }
+      writeOffsetCoordinatesSmallMessage(writer, buildReq.coordinates);
+      writer.writeI32(
+        typeof buildReq.construction_recipe_id === 'number' ? buildReq.construction_recipe_id : 0
+      );
+      writer.writeI32(
+        typeof buildReq.resource_placement_recipe_id === 'number'
+          ? buildReq.resource_placement_recipe_id
+          : 0
+      );
+      writer.writeI32(
+        typeof buildReq.facing_direction === 'number' ? buildReq.facing_direction : 0
+      );
+      break;
+    }
     default:
       // For unknown reducers, attempt to serialize as empty (no args)
-      // Stories 5.7-5.8 will extend this serializer for additional reducers
       break;
   }
 
@@ -257,6 +508,55 @@ function writeOptionOffsetCoordinatesFloat(
     writer.writeF32(coord.x);
     writer.writeF32(coord.z);
   }
+}
+
+/**
+ * Write an Option<OffsetCoordinatesFloat> value with the full 3-field format
+ *
+ * OffsetCoordinatesFloat { x: i32, z: i32, dimension: u32 }
+ *
+ * This is the correct 3-field format per server source. The existing
+ * writeOptionOffsetCoordinatesFloat uses 2-field f32 format for player_move
+ * compatibility — do NOT modify that. This helper is for cheat reducers.
+ *
+ * Note: cheat_teleport_float server code hardcodes dimension = 1 regardless
+ * of client input.
+ *
+ * @param writer - BinaryWriter instance from SpacetimeDB SDK
+ * @param coord - Coordinate object { x: number, z: number, dimension?: number } or null/undefined for None
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function writeOptionOffsetCoordinatesFloatFull(
+  writer: any,
+  coord: { x: number; z: number; dimension?: number } | null | undefined
+): void {
+  if (coord == null) {
+    writer.writeBool(false); // None tag 0x00
+  } else {
+    writer.writeBool(true); // Some tag 0x01
+    writer.writeI32(typeof coord.x === 'number' ? coord.x : 0);
+    writer.writeI32(typeof coord.z === 'number' ? coord.z : 0);
+    writer.writeU32(typeof coord.dimension === 'number' ? coord.dimension : 0);
+  }
+}
+
+/**
+ * Write an OffsetCoordinatesSmallMessage value to a BSATN BinaryWriter
+ *
+ * OffsetCoordinatesSmallMessage { x: i32, z: i32, dimension: u32 }
+ * BSATN: i32 + i32 + u32 = 12 bytes
+ *
+ * @param writer - BinaryWriter instance from SpacetimeDB SDK
+ * @param coord - Coordinate object { x: number, z: number, dimension?: number }
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function writeOffsetCoordinatesSmallMessage(
+  writer: any,
+  coord: { x: number; z: number; dimension?: number }
+): void {
+  writer.writeI32(typeof coord.x === 'number' ? coord.x : 0);
+  writer.writeI32(typeof coord.z === 'number' ? coord.z : 0);
+  writer.writeU32(typeof coord.dimension === 'number' ? coord.dimension : 0);
 }
 
 /**

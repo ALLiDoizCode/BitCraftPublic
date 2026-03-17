@@ -239,7 +239,7 @@ This document provides the complete epic and story breakdown for Sigil, decompos
 - FR13: Epic 4 — Skill file format (reducer, params, cost, subscriptions)
 - FR14: Epic 4 — Validation against SpacetimeDB module
 - FR15: Epic 4 — Budget limits per agent
-- FR16: Epic 9 — LLM backend selection in Agent.md (Phase 2)
+- FR16: Epic 8 — LLM backend selection in Agent.md (Phase 2)
 - FR17: Epic 2 — Execute actions via client.publish()
 - FR18: Epic 2 — ILP packet construction and signing
 - FR19: Epic 3 — BLS handler validates and calls reducer
@@ -247,35 +247,37 @@ This document provides the complete epic and story breakdown for Sigil, decompos
 - FR21: Epic 2 — Wallet balance query
 - FR22: Epic 2 — Action cost registry
 - FR23: Epic 6 — Autonomous agent decisions via MCP tools
-- FR24: Epic 9 — LLM-powered goal planning (Phase 2)
-- FR25: Epic 9 — Persistent memory across sessions (Phase 2)
-- FR26: Epic 9 — Affordance detection with cost/reward (Phase 2)
+- FR24: Epic 8 — LLM-powered goal planning (Phase 2)
+- FR25: Epic 8 — Persistent memory across sessions (Phase 2)
+- FR26: Epic 8 — Affordance detection with cost/reward (Phase 2)
 - FR27: Epic 4 — Swappable cognition via config/skill changes
-- FR28: Epic 7 — Hex-grid map rendering in terminal
-- FR29: Epic 7 — Character movement via keyboard
-- FR30: Epic 7 — Chat messaging
-- FR31: Epic 7 — Inventory management
-- FR32: Epic 7 — Character status display
-- FR33: Epic 10 — Combat system (Phase 2)
-- FR34: Epic 10 — Crafting system (Phase 2)
-- FR35: Epic 10 — Building/territory management (Phase 2)
-- FR36: Epic 10 — Trading marketplace (Phase 2)
-- FR37: Epic 10 — Empire management (Phase 2)
-- FR38: Epic 7 — TUI renders at 30+ FPS
+- FR28: Epic 15 — Hex-grid map rendering in terminal (Phase 2)
+- FR29: Epic 15 — Character movement via keyboard (Phase 2)
+- FR30: Epic 15 — Chat messaging (Phase 2)
+- FR31: Epic 15 — Inventory management (Phase 2)
+- FR32: Epic 9 (skills) + Epic 15 (TUI display) — Character status display (Phase 2)
+- FR33: Epic 10 (SDK) + Epic 16 (TUI) — Combat system (Phase 2)
+- FR34: Epic 5 (SDK validation) + Epic 16 (TUI) — Crafting system (Phase 2)
+- FR35: Epic 11 (SDK) + Epic 16 (TUI) — Building/territory management (Phase 2)
+- FR36: Epic 12 (SDK) + Epic 16 (TUI) — Trading marketplace (Phase 2)
+- FR37: Epic 13 (SDK) + Epic 16 (TUI) — Empire management (Phase 2)
+- FR38: Epic 15 — TUI renders at 30+ FPS (Phase 2)
 - FR39: Epic 4 — Structured decision logging (JSONL)
-- FR40: Epic 11 — Multi-agent concurrent execution (Phase 2)
-- FR41: Epic 11 — YAML experiment configuration (Phase 2)
-- FR42: Epic 11 — World state snapshot/restore (Phase 2)
-- FR43: Epic 11 — Comparative decision log analysis (Phase 2)
+- FR40: Epic 14 — Multi-agent concurrent execution (Phase 2)
+- FR41: Epic 14 — YAML experiment configuration (Phase 2)
+- FR42: Epic 14 — World state snapshot/restore (Phase 2)
+- FR43: Epic 14 — Comparative decision log analysis (Phase 2)
 - FR44: Epic 1 — Docker compose local dev environment
 - FR45: Epic 3 — ILP fee schedule configuration
-- FR46: Epic 8 — System health monitoring
+- FR46: Epic 7 — System health monitoring
 - FR47: Epic 3 — BLS game action handler mapping
-- FR48: Epic 12 — Skill files for new SpacetimeDB worlds (Phase 2)
-- FR49: Epic 12 — BLS handler registration for third-party games (Phase 2)
-- FR50: Epic 13 — Auto-generate skill files from schema (Phase 3)
+- FR48: Epic 17 — Skill files for new SpacetimeDB worlds (Phase 3)
+- FR49: Epic 17 — BLS handler registration for third-party games (Phase 3)
+- FR50: Epic 18 — Auto-generate skill files from schema (Phase 3)
 
 **Epic 5 Validation Coverage:** Epic 5 does not introduce new FRs — it validates the end-to-end integration of FR4, FR5, FR17, FR18, FR19, FR20, FR21, FR22, FR47 against real BitCraft gameplay scenarios.
+
+**SDK Validation Coverage (Epics 9-13):** Epics 9-13 do not introduce new FRs — they validate and build SDK-level fixtures for FR32 (skills), FR33 (combat), FR35 (building), FR36 (trading), FR37 (empire) following the Epic 5 pattern. TUI rendering of these systems is in Epic 16.
 
 ## Epic List
 
@@ -310,37 +312,62 @@ Developers analyze the BitCraft server to catalog game mechanics, reducer signat
 AI agents (Claude, Vercel AI, OpenCode) can play the game autonomously through the standard MCP protocol, with game state as resources and game actions as tools. Includes @sigil/mcp-server package, resource/tool mapping, and skill-to-MCP-tool integration.
 **FRs covered:** FR23
 
-### Epic 7: Terminal Game Client (MVP)
-
-Human players can experience a full MMORPG from their terminal — hex-grid map, movement, chat, inventory, and character status at 30+ FPS. Includes @sigil/tui-backend (JSON-RPC IPC), sigil-tui Rust application, 7-tab layout, custom widgets, keyboard-first design, and semantic style system.
-**FRs covered:** FR28, FR29, FR30, FR31, FR32, FR38
-
-### Epic 8: Infrastructure & Observability (MVP)
+### Epic 7: Infrastructure & Observability (MVP)
 
 Operators can monitor system health and researchers can observe agent behavior in real-time. Includes ILP throughput, fee revenue, BLS latency monitoring, and agent observation mode in TUI.
 **FRs covered:** FR46
 
-### Epic 9: Advanced Agent Intelligence (Phase 2)
+### Epic 8: Advanced Agent Intelligence (Phase 2)
 
 Researchers can run LLM-powered agents with persistent memory, affordance detection, and configurable AI backends for advanced cognitive experiments.
 **FRs covered:** FR16, FR24, FR25, FR26
 
-### Epic 10: TUI Advanced Gameplay (Phase 2)
+### Epic 9: Skill Progression & World Discovery Validation (Phase 2)
 
-Players can engage in the full depth of BitCraft — combat, crafting, building, trading, and empire management from their terminal.
-**FRs covered:** FR33, FR34, FR35, FR36, FR37
+Validate the 20-skill profession system (XP accumulation, exponential leveling, character stat derivation), 20 knowledge tables (discovery system), and chunk-based exploration tracking at the SDK level. Cross-cutting system that benefits all subsequent game system epics. Follows Epic 5 pattern.
+**Validates FRs:** FR32 (skills)
 
-### Epic 11: Experiment Harness & Multi-Agent Research (Phase 2)
+### Epic 10: Combat System Validation & SDK Integration (Phase 2)
+
+SDK-level combat validation: 5 combat reducers (`attack_start`, `attack`, `target_update`, `player_respawn`, `player_duel_initiate`), 10 combat state tables, 14 preconditions, weapon/ability system, threat mechanics, enemy discovery. Follows Epic 5 pattern: static data loading → subscription setup → reducer validation → integration test fixtures → error scenarios.
+**Validates FRs:** FR33 (SDK side)
+
+### Epic 11: Building, Claims & Territory Validation (Phase 2)
+
+SDK-level building and claims validation: 10 building reducers (project site placement, construction, repair, deconstruct), 22 claim reducers (ownership, membership, permissions, tech tree, treasury, territory tiles), 9 claim tables, specialized buildings (waystones, banks, marketplaces). Follows Epic 5 pattern.
+**Validates FRs:** FR35 (SDK side)
+
+### Epic 12: Trading & Economy Validation (Phase 2)
+
+SDK-level trading/marketplace validation: trade offer creation, browsing, acceptance, cancellation; inventory transfers; marketplace state subscriptions. Follows Epic 5 pattern.
+**Validates FRs:** FR36 (SDK side)
+
+### Epic 13: Empire & Governance Validation (Phase 2)
+
+SDK-level empire/territory control validation: 9 empire reducers (claim joining, supply logistics, siege warfare), empire formation, supply node management, siege engine deployment. Follows Epic 5 pattern.
+**Validates FRs:** FR37 (SDK side)
+
+### Epic 14: Experiment Harness & Multi-Agent Research (Phase 2)
 
 Researchers can run comparative experiments with multiple concurrent agents, snapshot/restore world state, and analyze decision logs across runs.
 **FRs covered:** FR40, FR41, FR42, FR43
 
-### Epic 12: World Extensibility (Phase 2)
+### Epic 15: Terminal Game Client (Phase 2)
+
+Human players can experience a full MMORPG from their terminal — hex-grid map, movement, chat, inventory, and character status at 30+ FPS. Includes @sigil/tui-backend (JSON-RPC IPC), sigil-tui Rust application, 7-tab layout, custom widgets, keyboard-first design, and semantic style system.
+**FRs covered:** FR28, FR29, FR30, FR31, FR32, FR38
+
+### Epic 16: TUI Advanced Gameplay (Phase 2)
+
+Players can engage in the full depth of BitCraft from their terminal — combat, crafting, building, trading, empire management, and skill/progression display. Each system extends the TUI with new panels, action menus, and skill file mappings, backed by SDK validation from Epics 9-13.
+**FRs covered:** FR33 (TUI), FR34 (TUI), FR35 (TUI), FR36 (TUI), FR37 (TUI)
+
+### Epic 17: World Extensibility (Phase 3)
 
 Game developers can make any SpacetimeDB world agent-accessible by writing skill files and registering BLS handlers — no SDK code changes required.
 **FRs covered:** FR48, FR49
 
-### Epic 13: Platform Expansion (Phase 3)
+### Epic 18: Platform Expansion (Phase 3)
 
 The platform auto-generates skill files from any SpacetimeDB module's published schema, lowering the barrier for new world integration.
 **FRs covered:** FR50
@@ -1527,11 +1554,1061 @@ So that I can observe emergent agent behavior in a real economic environment.
 
 ---
 
-## Epic 7: Terminal Game Client
+## Epic 7: Infrastructure & Observability
+
+Operators can monitor system health across the full pipeline — ILP throughput, fee revenue, BLS latency, SpacetimeDB load, and identity propagation success rates. Researchers can spectate their agents' perception, decisions, and actions in real-time through a dedicated TUI observation panel.
+
+### Story 7.1: System Health Monitoring Dashboard
+
+As an operator,
+I want to monitor system health metrics across the full pipeline,
+So that I can detect issues, track throughput, and ensure the platform is running correctly.
+
+**Acceptance Criteria:**
+
+**Given** the System tab in the TUI (or a dedicated monitoring endpoint)
+**When** the operator views system health
+**Then** the following metrics are displayed in real-time (FR46):
+
+- ILP packets per second (throughput)
+- Fee revenue (cumulative and per-minute rate)
+- BLS validation latency (average and p95)
+- SpacetimeDB load (active subscriptions, query latency)
+- Identity propagation success rate (successful vs. failed attributions)
+
+**Given** system health metrics
+**When** a metric crosses a warning threshold (e.g., BLS latency > 1s, success rate < 99%)
+**Then** the metric is highlighted with STYLE_WARN
+**And** if it crosses a critical threshold, it is highlighted with STYLE_ERROR
+
+**Given** the monitoring system
+**When** metrics are collected
+**Then** they are sourced from the TUI backend which aggregates data from @sigil/client events
+**And** metrics update at the slow tick rate (10Hz) to avoid rendering overhead
+
+**Given** a single Crosstown node under normal load
+**When** 10 concurrent agents and 5 concurrent TUI players are connected
+**Then** all health metrics remain within acceptable ranges (NFR14)
+**And** SpacetimeDB subscriptions remain performant with up to 50 concurrent clients (NFR15)
+
+**Given** system health data
+**When** the operator needs historical context
+**Then** sparkline widgets show recent metric trends (last 5 minutes)
+**And** numeric values show current, average, and peak
+
+### Story 7.2: Agent Observation Mode in TUI
+
+As a researcher,
+I want to spectate my agents' perception, decisions, and actions in real-time through the TUI,
+So that I can observe emergent behavior without disrupting the agent.
+
+**Acceptance Criteria:**
+
+**Given** the System tab or a dedicated Agent panel in the TUI
+**When** the researcher selects an active agent from a list
+**Then** a read-only observation view is displayed showing the agent's current state
+
+**Given** the agent observation view
+**When** the agent perceives world state (SpacetimeDB subscription updates)
+**Then** the observation panel shows what the agent "sees" — semantic events from the event interpreter (Story 4.5)
+
+**Given** the agent observation view
+**When** the agent makes a decision (calls an MCP tool)
+**Then** the panel shows: the skill invoked, parameters chosen, ILP cost, and action result
+**And** the display updates in real-time as decisions occur
+
+**Given** the agent observation view
+**When** the agent's budget is tracked
+**Then** the panel shows current spend, remaining budget, and a budget utilization gauge
+
+**Given** the observation mode
+**When** the researcher is viewing an agent
+**Then** the view is strictly read-only — no ability to control or interfere with the agent
+**And** the observation data is sourced from the same decision log (Story 4.6) and @sigil/client events
+
+**Given** multiple agents owned by the same researcher
+**When** the agent list is displayed
+**Then** each agent shows: name, status (active/idle/stopped), current action, budget utilization
+**And** the researcher can switch between agents using the SplitPanel list pattern
+
+---
+
+## Epic 8: Advanced Agent Intelligence (Phase 2)
+
+Researchers can run LLM-powered agents with configurable AI backends, persistent memory across sessions, and affordance detection that estimates cost/reward for available actions. This extends the declarative agent system (Epic 4) with deeper cognitive capabilities for advanced experiments.
+
+### Story 8.1: Configurable LLM Backend Selection
+
+As a researcher,
+I want to specify which LLM provider and model my agent uses in Agent.md,
+So that I can run experiments with different AI backends without code changes.
+
+**Acceptance Criteria:**
+
+**Given** an Agent.md with an LLM configuration section (e.g., `## LLM: claude-sonnet-4-5-20250929`)
+**When** the agent configuration is loaded
+**Then** the specified LLM provider and model are resolved and configured for the agent's inference calls (FR16)
+
+**Given** supported LLM providers
+**When** the agent is configured
+**Then** any provider exposing an OpenAI-compatible chat completions API is supported (NFR20)
+**And** Anthropic and OpenAI are supported as first-class providers
+
+**Given** an Agent.md referencing an unavailable or invalid LLM backend
+**When** configuration validation runs
+**Then** a clear error identifies the invalid provider/model
+**And** the agent does not start with a broken inference configuration
+
+**Given** two agents with different LLM backends
+**When** both run against the same world
+**Then** each uses its configured provider independently
+**And** decision logs capture which LLM backend produced each decision for A/B comparison
+
+**Given** LLM inference calls
+**When** the agent makes decisions
+**Then** token usage and API costs are tracked per agent session alongside ILP costs
+**And** the budget system (Story 4.4) can optionally include LLM API costs in the budget limit
+
+### Story 8.2: LLM-Powered Goal Planning
+
+As a researcher,
+I want agents to make autonomous decisions using LLM-powered reasoning,
+So that I can study how language models navigate complex economic and social environments.
+
+**Acceptance Criteria:**
+
+**Given** an agent configured with GoalsLLM planning
+**When** the agent's decision cycle runs
+**Then** the current world state (semantic events, available actions, budget) is formatted as a prompt
+**And** the configured LLM is called to reason about what action to take (FR24)
+
+**Given** an LLM inference call for decision-making
+**When** the response is received
+**Then** the chosen action is parsed, validated against available skills, and executed via `client.publish()`
+**And** the full decision cycle completes within 30 seconds (NFR4)
+
+**Given** the LLM response
+**When** it suggests an action not in the agent's skill set
+**Then** the system rejects the invalid action with a clear log entry
+**And** the agent can retry with a corrected prompt or fall back to the next-best action
+
+**Given** LLM-powered decision-making
+**When** each decision is made
+**Then** the decision log captures: input prompt (or summary), LLM response, parsed action, execution result, inference latency, and token usage
+
+**Given** the GoalsLLM planner
+**When** compared to GoalsSimple (rule-based, from MCP-based agents)
+**Then** both planners produce compatible decision log formats
+**And** comparative analysis tools can compare decision quality across planner types
+
+### Story 8.3: Persistent Memory System
+
+As a researcher,
+I want agents to maintain persistent knowledge across sessions,
+So that agents can learn from past experiences and build up contextual understanding over time.
+
+**Acceptance Criteria:**
+
+**Given** an agent with memory enabled in Agent.md
+**When** the agent observes events and makes decisions during a session
+**Then** key observations, outcomes, and learned patterns are stored in the memory system (FR25)
+
+**Given** an agent session ends
+**When** the agent is restarted
+**Then** the memory system loads previously stored knowledge from disk
+**And** the agent has access to memories from prior sessions
+
+**Given** memory persistence
+**When** data is serialized to disk
+**Then** it is stored as JSON files in the agent's data directory
+**And** the format supports in-memory loading with indexed lookups
+
+**Given** the memory system
+**When** the agent queries memory for relevant context (e.g., "what happened last time I visited this hex?")
+**Then** relevant memories are retrieved based on recency and relevance
+**And** retrieved memories are included in the LLM prompt context for decision-making
+
+**Given** memory accumulation over many sessions
+**When** the memory store grows large
+**Then** older or less-relevant memories can be summarized or pruned
+**And** memory storage size remains bounded per agent
+
+### Story 8.4: Affordance Detection Engine
+
+As a researcher,
+I want agents to detect available actions and estimate cost/reward for each,
+So that agents can make economically rational decisions in the game world.
+
+**Acceptance Criteria:**
+
+**Given** the agent's current world state (position, inventory, nearby entities)
+**When** the affordance engine runs
+**Then** all currently available actions are identified based on the agent's skills, position, and game state (FR26)
+
+**Given** detected available actions
+**When** the affordance engine estimates costs and rewards
+**Then** each action has: ILP cost (from cost registry), estimated reward (heuristic or learned), prerequisites met (boolean), and confidence score
+
+**Given** the affordance list
+**When** it is provided to the goal planner (GoalsLLM or GoalsSimple)
+**Then** the planner uses cost/reward estimates to make informed decisions
+**And** the decision log captures which affordances were considered and why the chosen action was selected
+
+**Given** the agent's budget constraints
+**When** affordances are evaluated
+**Then** actions exceeding the remaining budget are marked as unaffordable
+**And** the planner is informed to avoid budget-exceeding actions
+
+**Given** a changing game world
+**When** SpacetimeDB subscription updates arrive
+**Then** the affordance list is recalculated to reflect new available actions
+**And** actions that are no longer possible (moved out of range, resource depleted) are removed
+
+---
+
+## Epic 9: Skill Progression & World Discovery Validation (Phase 2)
+
+Validate the cross-cutting progression and discovery systems at the SDK level. The 20-skill profession system (XP accumulation, exponential leveling to max 110, character stat derivation), 20 knowledge discovery tables (`knowledge_*_state`), and chunk-based exploration tracking. This is the lightest SDK validation epic and benefits all subsequent game system epics since skills, XP, and discovery cross-cut combat, building, trading, and empire mechanics. Follows the Epic 5 pattern.
+**Validates FRs:** FR32 (skills)
+
+### Story 9.1: Skill System Analysis & XP Validation
+
+As a developer,
+I want to validate that XP accumulates correctly across all 20 skill professions and that the exponential leveling formula produces correct level calculations,
+So that we can trust skill progression as a foundation for all game system interactions.
+
+**Acceptance Criteria:**
+
+**Given** a player performing extraction (gathering) actions validated in Story 5.6
+**When** the `experience_state` subscription is monitored
+**Then** XP increments are observed for the relevant skill (e.g., Forestry for tree extraction, Mining for ore)
+**And** the XP amount matches `extraction_recipe_desc.experience_per_progress` (modified by experience rate)
+
+**Given** a player performing crafting actions validated in Story 5.7
+**When** the `experience_state` subscription is monitored
+**Then** XP increments are observed for the relevant crafting skill (e.g., Carpentry, Smithing)
+**And** the XP amount matches `crafting_recipe_desc.experience_per_progress`
+
+**Given** the `skill_desc` static data table
+**When** loaded and queried
+**Then** all 20 skill definitions are present with `skill_type`, `max_level`, and metadata
+**And** the exponential leveling formula `xp_for_level(L) = floor(64 * (2^0.145)^L) * 10` is validated for representative levels (1, 10, 50, 100, 110)
+
+**Given** the XP validation tests
+**When** all pass
+**Then** reusable fixtures are produced for: `getSkillXP(skillType)`, `getSkillLevel(skillType)`, `validateXPGain(action, expectedSkill, expectedAmount)`
+
+### Story 9.2: Character Stats & Progression Effects
+
+As a developer,
+I want to validate that character stats derived from progression (skill levels, equipment, buffs) are correctly reflected in `character_stats_state`,
+So that downstream systems (crafting speed, combat damage, movement) can rely on accurate stat values.
+
+**Acceptance Criteria:**
+
+**Given** a player with XP in a skill (from Story 9.1 validation)
+**When** `character_stats_state` is queried for the player's entity
+**Then** derived stats are present (e.g., `CarpentryPower`, `CarpentrySpeed` for Carpentry skill)
+**And** stat values correlate with the player's skill level and equipment
+
+**Given** the `character_stat_desc` static data table
+**When** loaded and queried
+**Then** all character stat types are enumerated with their effects documented
+
+**Given** the stat derivation system
+**When** tested with a player at different progression states
+**Then** stat changes are observable via `character_stats_state` subscription updates
+
+**Given** the character stats tests
+**When** all pass
+**Then** reusable fixtures are produced for: `getCharacterStats(entityId)`, `waitForStatUpdate(entityId, statType)`
+
+### Story 9.3: Knowledge & Discovery System Validation
+
+As a developer,
+I want to validate that the 20 knowledge tables track player discoveries correctly through the Unknown → Discovered → Acquired state transitions,
+So that recipe unlocks, enemy knowledge, and building knowledge are reliable.
+
+**Acceptance Criteria:**
+
+**Given** a player encountering entities in the game world
+**When** the `discover_entities` reducer is called via the SDK
+**Then** relevant `knowledge_*_state` tables update for the player's entity
+**And** knowledge entries transition from `Unknown` to `Discovered`
+
+**Given** a player performing actions that grant knowledge (extraction, crafting, combat)
+**When** `acquire_knowledge_from_entities` is called or knowledge is granted as a side effect
+**Then** knowledge entries transition from `Discovered` to `Acquired`
+**And** the appropriate `knowledge_*_state` table reflects the change
+
+**Given** the 20 knowledge table types
+**When** subscribed to during integration tests
+**Then** at least the following are validated: `knowledge_extract_state`, `knowledge_craft_state`, `knowledge_resource_state`, `knowledge_item_state`
+**And** the subscription pattern is documented for the remaining 16 tables
+
+**Given** the knowledge system tests
+**When** all pass
+**Then** reusable fixtures are produced for: `discoverEntities(entityIds)`, `getKnowledgeState(tableType, entityId)`, `waitForKnowledgeUpdate(tableType)`
+
+### Story 9.4: Exploration & Chunk Discovery Validation
+
+As a developer,
+I want to validate that chunk-based exploration tracking updates correctly as a player moves through the world,
+So that spatial discovery and fog-of-war mechanics work correctly for agents navigating the game world.
+
+**Acceptance Criteria:**
+
+**Given** a player moving to a new chunk (from Story 5.5 movement fixtures)
+**When** `exploration_chunks_state` is subscribed to
+**Then** the newly visited chunk is added to the player's exploration data
+**And** the chunk_index in `mobile_entity_state` updates to reflect the new chunk
+
+**Given** a player revisiting a previously explored chunk
+**When** movement occurs
+**Then** `exploration_chunks_state` does not duplicate the entry
+**And** the system handles repeated visits gracefully
+
+**Given** the exploration tracking system
+**When** validated alongside movement tests
+**Then** dimension field support is verified (different dimensions tracked separately)
+**And** `crumb_trail_state` updates are observed during prospecting-related movement
+
+**Given** the exploration tests
+**When** all pass
+**Then** reusable fixtures are produced for: `getExploredChunks(entityId)`, `hasExploredChunk(entityId, chunkIndex)`, `getChunkForPosition(x, z)`
+
+---
+
+## Epic 10: Combat System Validation & SDK Integration (Phase 2)
+
+SDK-level combat validation following the Epic 5 pattern. BitCraft's combat system includes 5 combat reducers in `attack.rs`, 10 combat state tables, 14 preconditions, an ability-based weapon-gated combat model, threat/aggro mechanics, and enemy herds managed by server-side AI. This epic validates the full combat pipeline at the SDK level before the TUI renders any combat UI.
+**Validates FRs:** FR33 (SDK side)
+**Depends on:** Epic 5 (movement/gathering fixtures), Epic 9 (skill/XP validation)
+
+### Story 10.1: Combat Static Data Loading & Subscription Setup
+
+As a developer,
+I want to load all combat-related static data tables and establish subscriptions to combat state tables,
+So that the SDK has the data needed to execute and observe combat actions.
+
+**Acceptance Criteria:**
+
+**Given** the static data loading system from Story 1.5
+**When** combat-specific static data tables are loaded
+**Then** the following tables are successfully loaded and queryable: `combat_action_desc_v3`, `enemy_desc`, `weapon_desc`, `weapon_type_desc`, `targeting_matrix_desc`
+**And** this resolves DEBT-3 for combat static data
+
+**Given** an active SpacetimeDB connection
+**When** combat state subscriptions are established
+**Then** the following tables are subscribed to: `combat_state`, `target_state`, `threat_state`, `attack_outcome_state`, `targetable_state`, `ability_state`, `action_bar_state`, `enemy_state`, `herd_state`, `duel_state`
+
+**Given** the combat static data is loaded
+**When** queried for a combat action by ID
+**Then** the response includes: lead_in_time, damage, range, stamina_cost, required_weapon_type
+**And** weapon_desc lookups resolve weapon tier, type, and stats
+
+**Given** the combat subscription setup
+**When** all tables are subscribed
+**Then** reusable fixtures are produced for: `setupCombatSubscriptions()`, `getCombatAction(actionId)`, `getWeapon(weaponId)`, `getEnemyDesc(enemyId)`
+
+### Story 10.2: Target Selection & Basic Attack Round-Trip
+
+As a developer,
+I want to validate the target selection and basic attack round-trip through the SDK,
+So that we prove the fundamental combat pipeline works: select target → attack → observe damage.
+
+**Acceptance Criteria:**
+
+**Given** a player entity and a targetable enemy entity in the game world
+**When** `target_update` is called with `{ owner_entity_id, target_entity_id, generate_aggro: true }`
+**Then** `target_state` updates to reflect the selected target
+**And** the subscription delivers the update within 500ms (NFR5)
+
+**Given** a selected target
+**When** `attack_start` is called with a valid `EntityAttackRequest`
+**Then** `player_action_state` updates to reflect the Attack action type
+**And** `combat_state.last_attacked_timestamp` updates
+
+**Given** an attack wind-up has completed (lead_in_time elapsed)
+**When** `attack` is called with the same `EntityAttackRequest`
+**Then** `combat_state.global_cooldown` is set
+**And** `stamina_state.stamina` is decremented by the combat action's stamina cost
+**And** the server schedules `attack_impact` for damage resolution
+
+**Given** the attack impact resolves
+**When** `health_state` and `attack_outcome_state` subscriptions fire
+**Then** the defender's health is decremented
+**And** `attack_outcome_state` contains damage dealt, hit type, and entity IDs
+**And** `experience_state` updates if the defender is killed (combat XP)
+
+**Given** the basic attack round-trip tests
+**When** all pass
+**Then** reusable fixtures are produced for: `selectTarget(ownerEntityId, targetEntityId)`, `executeAttack(attackerEntityId, defenderEntityId, combatActionId)`, `waitForAttackOutcome()`
+**And** `EntityAttackRequest` serialization is validated
+
+### Story 10.3: Ability System & Combat Action Preconditions
+
+As a developer,
+I want to validate that the ability system and combat preconditions are correctly enforced,
+So that agents understand what conditions must be met before combat actions succeed.
+
+**Acceptance Criteria:**
+
+**Given** a player with abilities in `ability_state`
+**When** `ability_set` is called to assign an ability to the action bar
+**Then** `ability_state` and `action_bar_state` update correctly
+**And** the ability is available for combat use
+
+**Given** a combat action requiring a specific weapon type
+**When** `attack` is called without the correct weapon equipped
+**Then** the reducer rejects with "You cannot use this action with your currently equipped weapon"
+**And** no state changes occur
+
+**Given** a combat action against an enemy requiring a minimum weapon tier
+**When** `attack` is called with a lower-tier weapon
+**Then** the reducer rejects with "You need a tier {n} weapon to attack this type of enemy"
+
+**Given** a combat action with stamina cost
+**When** `stamina_state.stamina` is less than the action's `stamina_use`
+**Then** the reducer rejects with "Not enough stamina."
+
+**Given** an ability on cooldown
+**When** `attack` is called using that ability before cooldown expires
+**Then** the action is silently rejected (empty string error)
+**And** `ability_state.cooldown` is observable for timing
+
+**Given** the targeting matrix from `targeting_matrix_desc`
+**When** an invalid target type is selected (e.g., targeting a non-combatable entity)
+**Then** the reducer rejects with "Unable to target that entity"
+
+**Given** the precondition validation tests
+**When** all 14 preconditions are tested
+**Then** each precondition has a documented test case with: input, expected error, and state verification
+**And** the precondition matrix from Story 5.3 is fully validated
+
+### Story 10.4: Enemy Discovery & Threat Mechanics
+
+As a developer,
+I want to validate enemy discovery, herd mechanics, and the threat/aggro system,
+So that agents can find enemies in the world and understand how aggro works.
+
+**Acceptance Criteria:**
+
+**Given** an active game world with spawned enemy herds
+**When** `enemy_state` and `herd_state` subscriptions are active
+**Then** enemy entities are observable with their herd associations
+**And** enemy positions are trackable via `mobile_entity_state`
+
+**Given** the `discover_entities` reducer
+**When** called for an area containing enemies
+**Then** the client receives enemy entity data
+**And** `knowledge_enemy_state` updates with the discovered enemy types
+
+**Given** a player attacking an enemy (from Story 10.2)
+**When** `threat_state` is subscribed to
+**Then** the player appears in the enemy's threat list
+**And** threat values correlate with damage dealt
+
+**Given** the `combat_action_multi_hit_desc` static data
+**When** multi-hit combat actions are available
+**Then** multi-hit sequences execute correctly: each hit generates separate damage and threat entries
+
+**Given** the enemy discovery tests
+**When** all pass
+**Then** reusable fixtures are produced for: `findNearbyEnemy()`, `getEnemyInfo(entityId)`, `getHerdMembers(herdEntityId)`, `getThreatState(entityId)`
+
+### Story 10.5: Death, Respawn & Combat Error Scenarios
+
+As a developer,
+I want to validate the death/respawn cycle and combat-specific error scenarios,
+So that agents can handle combat failures gracefully.
+
+**Acceptance Criteria:**
+
+**Given** a player whose `health_state.health` reaches 0 during combat
+**When** the death event fires
+**Then** the player is marked as incapacitated
+**And** all combat actions are rejected with incapacitation errors
+
+**Given** an incapacitated player
+**When** `player_respawn(ctx, teleport_home: true)` is called
+**Then** `health_state.health` is restored to a positive value
+**And** `mobile_entity_state` updates to the home/spawn position (if teleport_home)
+**And** the player can resume combat actions
+
+**Given** a player attempting combat while mounted on a deployable
+**When** any combat reducer is called
+**Then** the action is rejected with "Can't walk while in a deployable." or equivalent
+
+**Given** the `player_duel_initiate` reducer
+**When** called with a valid target player entity ID
+**Then** `duel_state` is created for both participants
+**And** the PvP duel mechanics are observable
+
+**Given** all combat error scenarios
+**When** tested systematically
+**Then** each error case documents: the error code/message, the precondition violated, and the recommended agent response
+**And** the combat error catalog is added to the BitCraft Game Reference
+
+### Story 10.6: Combat Integration Test Fixtures
+
+As a developer,
+I want a complete set of reusable combat test fixtures that downstream epics and the TUI can consume,
+So that combat functionality is accessible without re-implementing low-level reducer calls.
+
+**Acceptance Criteria:**
+
+**Given** all combat validation from Stories 10.1-10.5
+**When** fixtures are assembled
+**Then** the following high-level helpers are available: `setupCombatSubscriptions()`, `findNearbyEnemy()`, `selectTarget()`, `executeAttack()`, `waitForAttackOutcome()`, `respawnPlayer()`, `getCombatStats()`
+
+**Given** the combat fixture suite
+**When** imported by downstream code (TUI, MCP tools, agent skills)
+**Then** a complete combat sequence can be executed in under 10 lines of code
+**And** all fixtures handle subscription setup, event waiting, and error propagation
+
+**Given** the combat fixture performance
+**When** a full combat sequence is timed (target → attack → outcome)
+**Then** the round-trip completes within 2 seconds (NFR3)
+**And** baseline performance metrics are documented
+
+---
+
+## Epic 11: Building, Claims & Territory Validation (Phase 2)
+
+SDK-level building and claims validation following the Epic 5 pattern. BitCraft's building system includes 10 building reducers (project site lifecycle, repair, deconstruct, move), 22 claim reducers (ownership, membership, permissions, territory tiles, tech tree, treasury, supply chain), 9 claim tables, and specialized buildings (waystones, banks, marketplaces). This epic validates the complete settlement construction and territory management pipeline.
+**Validates FRs:** FR35 (SDK side)
+**Depends on:** Epic 5 (movement/gathering/crafting fixtures), Epic 9 (skill/XP for construction)
+
+### Story 11.1: Building Static Data & Claim Subscription Setup
+
+As a developer,
+I want to load all building and claim static data tables and establish subscriptions,
+So that the SDK can execute and observe construction and territory management actions.
+
+**Acceptance Criteria:**
+
+**Given** the static data loading system from Story 1.5
+**When** building/claim static data tables are loaded
+**Then** the following tables are loaded: `building_desc`, `construction_recipe_desc`, `resource_placement_recipe_desc`
+**And** this resolves DEBT-3 for building static data
+
+**Given** an active SpacetimeDB connection
+**When** building/claim subscriptions are established
+**Then** the following tables are subscribed to: `building_state`, `project_site_state`, `footprint_tile_state`, `claim_state`, `claim_member_state`, `claim_tile_state`, `claim_tech_state`, `claim_local_state`, `waystone_state`, `bank_state`, `marketplace_state`
+
+**Given** the building static data is loaded
+**When** queried for a construction recipe
+**Then** the response includes: required materials, construction steps, output building type
+**And** `building_desc` lookups resolve building name, footprint, and properties
+
+**Given** the subscription setup
+**When** all tables are subscribed
+**Then** reusable fixtures are produced for: `setupBuildingSubscriptions()`, `getConstructionRecipe(recipeId)`, `getBuildingDesc(buildingId)`
+
+### Story 11.2: Claim Creation & Territory Management
+
+As a developer,
+I want to validate claim creation, territory tile expansion, and basic claim management,
+So that agents can establish land ownership as a prerequisite for building.
+
+**Acceptance Criteria:**
+
+**Given** a player in the game world
+**When** `claim_take_ownership` is called for an unclaimed totem building
+**Then** `claim_state` is created with the player as owner
+**And** the claim is observable via subscription
+
+**Given** an owned claim
+**When** `claim_add_tile` is called with valid adjacent coordinates
+**Then** `claim_tile_state` creates a new entry linking the tile to the claim
+**And** `claim_local_state.num_tiles` increments
+
+**Given** an owned claim with tiles
+**When** `claim_remove_tile` is called for an existing tile
+**Then** the `claim_tile_state` entry is removed
+**And** `claim_local_state.num_tiles` decrements
+
+**Given** an owned claim
+**When** `claim_rename` is called with a new name
+**Then** `claim_state.name` updates to the new value
+
+**Given** the territory management tests
+**When** all pass
+**Then** reusable fixtures are produced for: `createClaim()`, `expandTerritory(claimEntityId, coordinates)`, `getClaimInfo(claimEntityId)`
+
+### Story 11.3: Claim Membership & Permissions
+
+As a developer,
+I want to validate claim membership management and permission enforcement,
+So that multi-player territory control works correctly.
+
+**Acceptance Criteria:**
+
+**Given** an owned claim
+**When** `claim_add_member` is called with a player name and claim ID
+**Then** `claim_member_state` creates a new entry with default permissions
+**And** the new member is observable via subscription
+
+**Given** a claim with members
+**When** `claim_set_member_permissions` is called with specific permission flags (Usage, Build)
+**Then** `claim_member_state` updates to reflect the new permissions
+
+**Given** a claim member without Build permission
+**When** they attempt to place a building on the claim's territory
+**Then** the action is rejected with a permissions error
+
+**Given** a claim member
+**When** `claim_leave` is called
+**Then** their `claim_member_state` entry is removed
+**And** they can no longer interact with claim-specific features
+
+**Given** the membership tests
+**When** all pass
+**Then** reusable fixtures are produced for: `addClaimMember(claimId, playerName)`, `setMemberPermissions(claimId, playerId, permissions)`, `getClaimMembers(claimId)`
+
+### Story 11.4: Building Construction Pipeline
+
+As a developer,
+I want to validate the full building construction lifecycle through the progressive action pattern,
+So that agents can construct buildings from project site placement through completion.
+
+**Acceptance Criteria:**
+
+**Given** a player on claimed territory with Build permission and required materials in inventory
+**When** `project_site_place` is called with `{ coordinates, construction_recipe_id, facing_direction }`
+**Then** `project_site_state` is created with the recipe and initial progress
+**And** `footprint_tile_state` entries are created for the building's footprint
+**And** `location_state` is created for the project site entity
+
+**Given** a placed project site
+**When** `project_site_add_materials` is called with inventory pocket references
+**Then** materials are transferred from player inventory to the project site
+**And** `project_site_state.items` or `cargos` reflects the added materials
+
+**Given** a project site with sufficient materials
+**When** `project_site_advance_project_start` is called, followed by `project_site_advance_project` after the timer
+**Then** `project_site_state.progress` increments
+**And** the progressive action pattern (start → wait → complete) works correctly
+
+**Given** construction progress reaches 100%
+**When** the final advance completes
+**Then** `building_state` is created with the completed building
+**And** `project_site_state` is deleted
+**And** the building's `claim_entity_id` FK links to the parent claim
+
+**Given** the construction pipeline tests
+**When** all pass
+**Then** a complete end-to-end construction sequence is documented: gather materials → place project → add materials → advance to completion
+**And** reusable fixtures are produced for: `placeProjectSite()`, `addBuildingMaterials()`, `advanceConstruction()`, `waitForBuildingComplete()`
+
+### Story 11.5: Building Management & Specialized Buildings
+
+As a developer,
+I want to validate building management operations and specialized building types,
+So that agents can maintain, relocate, and interact with buildings after construction.
+
+**Acceptance Criteria:**
+
+**Given** a completed building
+**When** `building_repair_start` followed by `building_repair` is called
+**Then** `building_state.health` is restored
+
+**Given** a completed building
+**When** `building_deconstruct_start` followed by `building_deconstruct` is called
+**Then** `building_state` is deleted
+**And** partial material refund appears in the player's inventory
+
+**Given** a completed building
+**When** `building_move` is called with new coordinates and facing direction
+**Then** `building_state` location updates to the new position
+
+**Given** a completed building
+**When** `building_set_nickname` or `building_set_sign_text` is called
+**Then** `building_nickname_state` or the sign text updates accordingly
+
+**Given** specialized building types (waystone, bank, marketplace)
+**When** constructed and queried
+**Then** their dedicated state tables (`waystone_state`, `bank_state`, `marketplace_state`) are populated
+**And** the `claim_entity_id` FK links correctly
+
+### Story 11.6: Claim Tech Tree & Supply Management
+
+As a developer,
+I want to validate claim technology research and supply chain management,
+So that agents can unlock advanced buildings and maintain claim upkeep.
+
+**Acceptance Criteria:**
+
+**Given** an owned claim
+**When** `claim_tech_learn` is called with a valid technology ID
+**Then** `claim_tech_state` updates to reflect the researched technology
+**And** the technology gates (e.g., unlocking advanced building types) are enforceable
+
+**Given** a claim with active buildings
+**When** `claim_resupply_start` followed by `claim_resupply` is called
+**Then** `claim_local_state.supplies` is replenished
+**And** the progressive action pattern works correctly
+
+**Given** a claim treasury
+**When** `claim_treasury_deposit` is called with items
+**Then** the treasury balance increases
+**And** `claim_withdraw_from_treasury` returns deposited items
+
+**Given** the tech/supply tests
+**When** all pass
+**Then** reusable fixtures are produced for: `researchClaimTech(claimId, techId)`, `resupplyClaim(claimId)`, `depositToTreasury(claimId, items)`
+
+### Story 11.7: Building & Claims Error Scenarios
+
+As a developer,
+I want to validate all building and claim error scenarios with graceful degradation,
+So that agents can handle construction failures and permission denials correctly.
+
+**Acceptance Criteria:**
+
+**Given** the 13+ building preconditions from Story 5.3
+**When** each precondition is violated
+**Then** the appropriate error message is returned and no state changes occur
+
+**Given** an attempt to build on unclaimed territory without claim ownership
+**When** `project_site_place` is called
+**Then** the action is rejected with a permissions error
+
+**Given** an attempt to build on coordinates that overlap multiple claims or are in invalid dimensions
+**When** `project_site_place` is called
+**Then** the action is rejected with a spatial error
+
+**Given** an attempt to add insufficient or wrong materials to a project site
+**When** `project_site_add_materials` is called
+**Then** the action is rejected and inventory remains unchanged
+
+**Given** all building/claim error scenarios
+**When** tested systematically
+**Then** each error case is documented in the BitCraft Game Reference with: error message, violated precondition, and recommended agent response
+
+---
+
+## Epic 12: Trading & Economy Validation (Phase 2)
+
+SDK-level trading and marketplace validation following the Epic 5 pattern. Validates trade offer creation, browsing, acceptance, and cancellation through the SDK pipeline. Includes marketplace state subscriptions and inventory transfer verification.
+**Validates FRs:** FR36 (SDK side)
+**Depends on:** Epic 5 (inventory fixtures), Epic 11 (marketplace buildings)
+
+### Story 12.1: Trading Static Data & Marketplace Subscriptions
+
+As a developer,
+I want to load trading-related static data and establish marketplace subscriptions,
+So that the SDK can execute and observe trading actions.
+
+**Acceptance Criteria:**
+
+**Given** the static data loading system from Story 1.5
+**When** trading-specific static data tables are loaded
+**Then** all marketplace and trading `*_desc` tables are loaded and queryable
+
+**Given** an active SpacetimeDB connection
+**When** marketplace subscriptions are established
+**Then** `marketplace_state` and related trading tables are subscribed to
+**And** active trade offers are observable
+
+**Given** the trading subscription setup
+**When** all tables are subscribed
+**Then** reusable fixtures are produced for: `setupTradingSubscriptions()`, `getMarketplaceOffers()`
+
+### Story 12.2: Trade Offer Lifecycle
+
+As a developer,
+I want to validate the complete trade offer lifecycle (create, browse, accept, cancel),
+So that the full trading pipeline works end-to-end through the SDK.
+
+**Acceptance Criteria:**
+
+**Given** a player with items in inventory
+**When** the trade offer creation reducer is called with offered items and requested items
+**Then** a trade offer is created and visible via marketplace subscription
+**And** the offered items are held/escrowed from the player's inventory
+
+**Given** an active trade offer
+**When** another player accepts the offer via the acceptance reducer
+**Then** both players' inventories update via SpacetimeDB subscriptions
+**And** the offered items transfer to the buyer and requested items transfer to the seller
+
+**Given** an active trade offer created by the player
+**When** the cancellation reducer is called
+**Then** the offer is removed from the marketplace
+**And** escrowed items are returned to the player's inventory
+
+**Given** the trade lifecycle tests
+**When** all pass
+**Then** reusable fixtures are produced for: `createTradeOffer(offeredItems, requestedItems)`, `acceptTradeOffer(offerId)`, `cancelTradeOffer(offerId)`, `waitForTradeCompletion()`
+
+### Story 12.3: Trading Error Scenarios & Edge Cases
+
+As a developer,
+I want to validate trading error scenarios and edge cases,
+So that agents handle trading failures gracefully.
+
+**Acceptance Criteria:**
+
+**Given** a player with insufficient inventory for a trade offer
+**When** the create offer reducer is called
+**Then** the action is rejected and no offer is created
+
+**Given** a trade offer that has already been accepted
+**When** another player attempts to accept it concurrently
+**Then** one acceptance succeeds and the other is rejected gracefully
+
+**Given** a trade offer with invalid item references
+**When** the acceptance reducer is called
+**Then** the action is rejected with a clear error
+
+**Given** all trading error scenarios
+**When** tested systematically
+**Then** each error case is documented with: error message, cause, and recommended agent response
+
+---
+
+## Epic 13: Empire & Governance Validation (Phase 2)
+
+SDK-level empire and territory control validation following the Epic 5 pattern. BitCraft's empire system includes 9 empire reducers (claim joining, supply logistics, siege engine deployment), empire formation, supply node management, and siege warfare. This is the most complex multi-player coordination system in the game.
+**Validates FRs:** FR37 (SDK side)
+**Depends on:** Epic 11 (claim/territory fixtures)
+
+### Story 13.1: Empire Static Data & Subscription Setup
+
+As a developer,
+I want to load empire-related static data and establish empire state subscriptions,
+So that the SDK can execute and observe empire management actions.
+
+**Acceptance Criteria:**
+
+**Given** the static data loading system from Story 1.5
+**When** empire-specific static data tables are loaded
+**Then** the following tables are loaded: `empire_color_desc`, `empire_icon_desc`, `empire_notification_desc`, `empire_rank_desc`, `empire_supplies_desc`, `empire_territory_desc`, `hexite_exchange_entry_desc`
+
+**Given** an active SpacetimeDB connection
+**When** empire state subscriptions are established
+**Then** empire state tables are subscribed to for real-time empire data
+
+**Given** the empire subscription setup
+**When** all tables are subscribed
+**Then** reusable fixtures are produced for: `setupEmpireSubscriptions()`, `getEmpireInfo(empireId)`
+
+### Story 13.2: Empire Formation & Claim Joining
+
+As a developer,
+I want to validate empire creation and the process of joining claims to empires,
+So that agents can form and expand empires through claim aggregation.
+
+**Acceptance Criteria:**
+
+**Given** a player with an owned claim (from Epic 11 fixtures)
+**When** `empire_claim_join` is called to join the claim to an empire
+**Then** the claim is associated with the empire
+**And** empire territory state reflects the new claim
+
+**Given** multiple claims joining an empire
+**When** each `empire_claim_join` succeeds
+**Then** the empire's territory grows with each added claim
+**And** `empire_collect_hexite_capsule` can harvest hexite currency from the network
+
+**Given** the empire formation tests
+**When** all pass
+**Then** reusable fixtures are produced for: `createEmpire()`, `joinClaimToEmpire(claimId, empireId)`, `getEmpireTerritory(empireId)`
+
+### Story 13.3: Empire Supply Chain & Resupply
+
+As a developer,
+I want to validate the empire supply chain management and node resupply mechanics,
+So that agents can maintain empire infrastructure through logistics.
+
+**Acceptance Criteria:**
+
+**Given** an empire with territory nodes
+**When** `empire_queue_supplies` is called with supply allocation
+**Then** supplies are queued for the specified node
+
+**Given** queued supplies at an empire node
+**When** `empire_resupply_node_start` followed by `empire_resupply_node` is called (progressive action pattern)
+**Then** the node's supply level is replenished
+**And** the progressive action timing works correctly
+
+**Given** the supply chain tests
+**When** all pass
+**Then** reusable fixtures are produced for: `queueEmpireSupplies(nodeId, supplies)`, `resupplyNode(nodeId)`, `getNodeSupplyLevel(nodeId)`
+
+### Story 13.4: Siege Warfare & Territory Contest
+
+As a developer,
+I want to validate the siege warfare mechanics including engine deployment and territory contestation,
+So that agents can engage in empire-level territorial conflict.
+
+**Acceptance Criteria:**
+
+**Given** two opposing empires with adjacent territory
+**When** `empire_deploy_siege_engine_start` followed by `empire_deploy_siege_engine` is called
+**Then** a siege engine is deployed at the target location
+**And** the progressive action pattern works correctly
+
+**Given** an active siege engine
+**When** `empire_add_siege_supplies` is called
+**Then** the siege engine's supply level increases
+
+**Given** a siege against a watchtower
+**When** `empire_siege_depleted_watchtower` fires (server-side or client-triggered)
+**Then** the watchtower territory changes state
+**And** empire territory maps update via subscriptions
+
+**Given** the siege warfare tests
+**When** all pass
+**Then** reusable fixtures are produced for: `deploySiegeEngine(targetCoords)`, `supplySiege(siegeEntityId)`, `getSiegeStatus(siegeEntityId)`
+
+### Story 13.5: Empire Error Scenarios
+
+As a developer,
+I want to validate empire error scenarios with graceful degradation,
+So that agents handle empire management failures correctly.
+
+**Acceptance Criteria:**
+
+**Given** an attempt to join a claim to an empire without ownership
+**When** `empire_claim_join` is called
+**Then** the action is rejected with a permissions error
+
+**Given** an attempt to resupply a node with insufficient resources
+**When** `empire_resupply_node` is called
+**Then** the action is rejected with an insufficient supplies error
+
+**Given** an attempt to deploy a siege engine at an invalid location
+**When** `empire_deploy_siege_engine` is called
+**Then** the action is rejected with a spatial or permissions error
+
+**Given** all empire error scenarios
+**When** tested systematically
+**Then** each error case is documented with: error message, cause, and recommended agent response
+
+---
+
+## Epic 14: Experiment Harness & Multi-Agent Research (Phase 2)
+
+Researchers can run comparative experiments with multiple concurrent agents, configure experiments from YAML files, snapshot and restore world state for reproducibility, and analyze decision logs across experiment runs.
+**FRs covered:** FR40, FR41, FR42, FR43
+
+### Story 14.1: Multi-Agent Concurrent Launcher
+
+As a researcher,
+I want to run multiple agents concurrently against the same game world,
+So that I can study multi-agent dynamics, competition, and emergent behavior.
+
+**Acceptance Criteria:**
+
+**Given** a multi-agent configuration (YAML or command-line)
+**When** the launcher is invoked
+**Then** N agents are spawned concurrently, each with its own Nostr identity and @sigil/client instance (FR40)
+**And** each agent connects to the same SpacetimeDB server
+
+**Given** multiple concurrent agents
+**When** all are running
+**Then** each agent operates independently with its own Agent.md, skill set, and budget
+**And** each produces its own JSONL decision log
+
+**Given** concurrent agents under load
+**When** 10+ agents are active simultaneously
+**Then** the system remains stable and performant (NFR14)
+**And** SpacetimeDB subscriptions remain responsive for all connected clients
+
+**Given** the agent launcher
+**When** a single agent crashes or exceeds its budget
+**Then** other agents continue running unaffected
+**And** the failed agent's status and error are logged
+
+### Story 14.2: YAML Experiment Configuration
+
+As a researcher,
+I want to define experiments in YAML configuration files,
+So that I can specify agent configurations, parameters, and experiment metadata declaratively.
+
+**Acceptance Criteria:**
+
+**Given** a YAML experiment configuration file
+**When** the experiment runner parses it
+**Then** the following are extracted: experiment name, agent configurations (count, Agent.md paths, skill sets), duration, and success criteria (FR41)
+
+**Given** a valid experiment configuration
+**When** the experiment is launched
+**Then** all specified agents are started with their respective configurations
+**And** experiment metadata (start time, config hash, versions) is recorded
+
+**Given** an experiment configuration referencing invalid Agent.md paths or skills
+**When** validation runs before launch
+**Then** clear errors identify the invalid references
+**And** the experiment does not start with a partial configuration
+
+**Given** completed experiments
+**When** the configuration file is archived alongside results
+**Then** the exact experiment is reproducible by re-running the same YAML file against the same world state
+
+### Story 14.3: World State Snapshot & Restore
+
+As a researcher,
+I want to snapshot and restore SpacetimeDB world state,
+So that I can run reproducible experiments from the same starting conditions.
+
+**Acceptance Criteria:**
+
+**Given** a running game world
+**When** the researcher triggers a snapshot
+**Then** the current SpacetimeDB world state is captured and saved to a timestamped snapshot file (FR42)
+
+**Given** a saved snapshot
+**When** the researcher triggers a restore
+**Then** the SpacetimeDB world state is restored to the captured state
+**And** all connected clients receive subscription updates reflecting the restored state
+
+**Given** a snapshot file
+**When** multiple experiments are run from the same snapshot
+**Then** each experiment starts from identical world conditions
+**And** results are comparable across runs
+
+**Given** snapshot/restore operations
+**When** they execute
+**Then** the operations complete within a reasonable timeframe for the world size
+**And** agent states (decision logs, budgets) are reset or preserved as configured
+
+### Story 14.4: Comparative Decision Log Analysis
+
+As a researcher,
+I want to compare decision logs across experiment runs,
+So that I can evaluate how different agent configurations or LLM backends affect behavior and outcomes.
+
+**Acceptance Criteria:**
+
+**Given** decision logs from multiple experiment runs
+**When** the analysis tool processes them
+**Then** comparative metrics are produced: actions taken, budget efficiency, area explored, goals achieved, error rates (FR43)
+
+**Given** two experiment runs with different LLM backends
+**When** compared
+**Then** the analysis highlights behavioral differences: decision latency, action distribution, cost patterns, and outcome quality
+
+**Given** comparative analysis results
+**When** the researcher reviews them
+**Then** results are formatted as structured reports (JSON or markdown)
+**And** key metrics are summarized with statistical comparisons
+
+**Given** decision logs from agents with different skill configurations
+**When** compared
+**Then** the analysis shows how skill availability affected agent behavior and decision patterns
+
+---
+
+## Epic 15: Terminal Game Client (Phase 2)
 
 Human players can experience a full MMORPG from their terminal — navigate a hex-grid map, move their character, chat with other players, manage inventory, and view character status at 30+ FPS. The Rust ratatui TUI (sigil-tui) is a pure presentation layer connected to @sigil/tui-backend via JSON-RPC IPC. All game data and actions flow through the TypeScript backend. Keyboard-first design following rebels-in-the-sky patterns.
+**FRs covered:** FR28, FR29, FR30, FR31, FR32, FR38
 
-### Story 7.1: TUI Backend JSON-RPC IPC Server
+### Story 15.1: TUI Backend JSON-RPC IPC Server
 
 As a developer,
 I want @sigil/tui-backend to bridge @sigil/client to the Rust TUI over JSON-RPC 2.0 stdio,
@@ -1574,7 +2651,7 @@ So that the TUI can access game state and execute actions without any direct Spa
 **Then** actions are derived from the loaded skill file registry — not hardcoded reducer names
 **And** the TUI backend exposes the same skill-sourced actions consumed by the MCP server (NFR21)
 
-### Story 7.2: Rust TUI Application Shell & Screen Architecture
+### Story 15.2: Rust TUI Application Shell & Screen Architecture
 
 As a player,
 I want a polished terminal application with tab navigation, keyboard controls, and a consistent screen layout,
@@ -1617,7 +2694,7 @@ So that I have a familiar, efficient interface for playing the game.
 **Then** a quit confirmation popup appears overlaying the current screen
 **And** the popup captures all key input until dismissed
 
-### Story 7.3: Connection & Identity Setup Flow
+### Story 15.3: Connection & Identity Setup Flow
 
 As a player,
 I want the first launch to automatically set up my identity, connect to the game, and fund my wallet,
@@ -1656,7 +2733,7 @@ So that I can start playing within 2 minutes with zero manual configuration.
 **Then** the application transitions directly to Main state with the Player tab active
 **And** total time from launch to Main is under 5 seconds for returning players
 
-### Story 7.4: Player Tab & Character Status
+### Story 15.4: Player Tab & Character Status
 
 As a player,
 I want to view my character's status, stats, and equipment in a dedicated tab,
@@ -1694,7 +2771,7 @@ So that I can track my progress and manage my character.
 **Then** the category list follows SplitPanel wrapping behavior
 **And** the footer shows available actions for the selected category
 
-### Story 7.5: Map Tab & Hex Grid Rendering
+### Story 15.5: Map Tab & Hex Grid Rendering
 
 As a player,
 I want to view the game world as a hex-grid map with terrain, resources, and entities,
@@ -1731,7 +2808,7 @@ So that I can navigate and understand the world around me.
 **When** the player hovers (selects) a hex
 **Then** the hover text row shows hex details: coordinates, terrain type, occupants, resources
 
-### Story 7.6: Character Movement
+### Story 15.6: Character Movement
 
 As a player,
 I want to move my character across the hex grid using keyboard controls,
@@ -1765,7 +2842,7 @@ So that I can explore the game world and interact with nearby entities.
 **Then** the total latency is under 50ms for local rendering (NFR2)
 **And** the ILP round-trip for the actual move completes within 2 seconds (NFR3)
 
-### Story 7.7: Chat Panel & Messaging
+### Story 15.7: Chat Panel & Messaging
 
 As a player,
 I want to send and receive chat messages with other players,
@@ -1798,7 +2875,7 @@ So that I can communicate and coordinate within the game world.
 **Then** the hover text row shows the error with STYLE_ERROR
 **And** the unsent message text is preserved for the player to retry
 
-### Story 7.8: Inventory Management
+### Story 15.8: Inventory Management
 
 As a player,
 I want to view and manage my inventory with item details,
@@ -1830,7 +2907,7 @@ So that I can track my possessions and use items effectively.
 **Then** the inventory panel re-renders automatically
 **And** new items appear and removed items disappear without manual refresh
 
-### Story 7.9: Status Bar, WalletMeter & ConnectionBadge
+### Story 15.9: Status Bar, WalletMeter & ConnectionBadge
 
 As a player,
 I want a persistent status bar showing wallet balance, connection status, and mode indicator,
@@ -1874,223 +2951,13 @@ So that I always know my financial and system state at a glance.
 
 ---
 
-## Epic 8: Infrastructure & Observability
+## Epic 16: TUI Advanced Gameplay (Phase 2)
 
-Operators can monitor system health across the full pipeline — ILP throughput, fee revenue, BLS latency, SpacetimeDB load, and identity propagation success rates. Researchers can spectate their agents' perception, decisions, and actions in real-time through a dedicated TUI observation panel.
+Players can engage in the full depth of BitCraft from their terminal — combat, crafting, building, trading, empire management, and skill/progression display. Each system extends the TUI with new panels, action menus, and skill file mappings, building on the core TUI established in Epic 15 and backed by SDK validation from Epics 9-13.
+**FRs covered:** FR33 (TUI), FR34 (TUI), FR35 (TUI), FR36 (TUI), FR37 (TUI)
+**Depends on:** Epic 10 (combat fixtures), Epic 11 (building fixtures), Epic 12 (trading fixtures), Epic 13 (empire fixtures), Epic 15 (TUI shell)
 
-### Story 8.1: System Health Monitoring Dashboard
-
-As an operator,
-I want to monitor system health metrics across the full pipeline,
-So that I can detect issues, track throughput, and ensure the platform is running correctly.
-
-**Acceptance Criteria:**
-
-**Given** the System tab in the TUI (or a dedicated monitoring endpoint)
-**When** the operator views system health
-**Then** the following metrics are displayed in real-time (FR46):
-
-- ILP packets per second (throughput)
-- Fee revenue (cumulative and per-minute rate)
-- BLS validation latency (average and p95)
-- SpacetimeDB load (active subscriptions, query latency)
-- Identity propagation success rate (successful vs. failed attributions)
-
-**Given** system health metrics
-**When** a metric crosses a warning threshold (e.g., BLS latency > 1s, success rate < 99%)
-**Then** the metric is highlighted with STYLE_WARN
-**And** if it crosses a critical threshold, it is highlighted with STYLE_ERROR
-
-**Given** the monitoring system
-**When** metrics are collected
-**Then** they are sourced from the TUI backend which aggregates data from @sigil/client events
-**And** metrics update at the slow tick rate (10Hz) to avoid rendering overhead
-
-**Given** a single Crosstown node under normal load
-**When** 10 concurrent agents and 5 concurrent TUI players are connected
-**Then** all health metrics remain within acceptable ranges (NFR14)
-**And** SpacetimeDB subscriptions remain performant with up to 50 concurrent clients (NFR15)
-
-**Given** system health data
-**When** the operator needs historical context
-**Then** sparkline widgets show recent metric trends (last 5 minutes)
-**And** numeric values show current, average, and peak
-
-### Story 8.2: Agent Observation Mode in TUI
-
-As a researcher,
-I want to spectate my agents' perception, decisions, and actions in real-time through the TUI,
-So that I can observe emergent behavior without disrupting the agent.
-
-**Acceptance Criteria:**
-
-**Given** the System tab or a dedicated Agent panel in the TUI
-**When** the researcher selects an active agent from a list
-**Then** a read-only observation view is displayed showing the agent's current state
-
-**Given** the agent observation view
-**When** the agent perceives world state (SpacetimeDB subscription updates)
-**Then** the observation panel shows what the agent "sees" — semantic events from the event interpreter (Story 4.5)
-
-**Given** the agent observation view
-**When** the agent makes a decision (calls an MCP tool)
-**Then** the panel shows: the skill invoked, parameters chosen, ILP cost, and action result
-**And** the display updates in real-time as decisions occur
-
-**Given** the agent observation view
-**When** the agent's budget is tracked
-**Then** the panel shows current spend, remaining budget, and a budget utilization gauge
-
-**Given** the observation mode
-**When** the researcher is viewing an agent
-**Then** the view is strictly read-only — no ability to control or interfere with the agent
-**And** the observation data is sourced from the same decision log (Story 4.6) and @sigil/client events
-
-**Given** multiple agents owned by the same researcher
-**When** the agent list is displayed
-**Then** each agent shows: name, status (active/idle/stopped), current action, budget utilization
-**And** the researcher can switch between agents using the SplitPanel list pattern
-
----
-
-## Epic 9: Advanced Agent Intelligence (Phase 2)
-
-Researchers can run LLM-powered agents with configurable AI backends, persistent memory across sessions, and affordance detection that estimates cost/reward for available actions. This extends the declarative agent system (Epic 4) with deeper cognitive capabilities for advanced experiments.
-
-### Story 9.1: Configurable LLM Backend Selection
-
-As a researcher,
-I want to specify which LLM provider and model my agent uses in Agent.md,
-So that I can run experiments with different AI backends without code changes.
-
-**Acceptance Criteria:**
-
-**Given** an Agent.md with an LLM configuration section (e.g., `## LLM: claude-sonnet-4-5-20250929`)
-**When** the agent configuration is loaded
-**Then** the specified LLM provider and model are resolved and configured for the agent's inference calls (FR16)
-
-**Given** supported LLM providers
-**When** the agent is configured
-**Then** any provider exposing an OpenAI-compatible chat completions API is supported (NFR20)
-**And** Anthropic and OpenAI are supported as first-class providers
-
-**Given** an Agent.md referencing an unavailable or invalid LLM backend
-**When** configuration validation runs
-**Then** a clear error identifies the invalid provider/model
-**And** the agent does not start with a broken inference configuration
-
-**Given** two agents with different LLM backends
-**When** both run against the same world
-**Then** each uses its configured provider independently
-**And** decision logs capture which LLM backend produced each decision for A/B comparison
-
-**Given** LLM inference calls
-**When** the agent makes decisions
-**Then** token usage and API costs are tracked per agent session alongside ILP costs
-**And** the budget system (Story 4.4) can optionally include LLM API costs in the budget limit
-
-### Story 9.2: LLM-Powered Goal Planning
-
-As a researcher,
-I want agents to make autonomous decisions using LLM-powered reasoning,
-So that I can study how language models navigate complex economic and social environments.
-
-**Acceptance Criteria:**
-
-**Given** an agent configured with GoalsLLM planning
-**When** the agent's decision cycle runs
-**Then** the current world state (semantic events, available actions, budget) is formatted as a prompt
-**And** the configured LLM is called to reason about what action to take (FR24)
-
-**Given** an LLM inference call for decision-making
-**When** the response is received
-**Then** the chosen action is parsed, validated against available skills, and executed via `client.publish()`
-**And** the full decision cycle completes within 30 seconds (NFR4)
-
-**Given** the LLM response
-**When** it suggests an action not in the agent's skill set
-**Then** the system rejects the invalid action with a clear log entry
-**And** the agent can retry with a corrected prompt or fall back to the next-best action
-
-**Given** LLM-powered decision-making
-**When** each decision is made
-**Then** the decision log captures: input prompt (or summary), LLM response, parsed action, execution result, inference latency, and token usage
-
-**Given** the GoalsLLM planner
-**When** compared to GoalsSimple (rule-based, from MCP-based agents)
-**Then** both planners produce compatible decision log formats
-**And** comparative analysis tools can compare decision quality across planner types
-
-### Story 9.3: Persistent Memory System
-
-As a researcher,
-I want agents to maintain persistent knowledge across sessions,
-So that agents can learn from past experiences and build up contextual understanding over time.
-
-**Acceptance Criteria:**
-
-**Given** an agent with memory enabled in Agent.md
-**When** the agent observes events and makes decisions during a session
-**Then** key observations, outcomes, and learned patterns are stored in the memory system (FR25)
-
-**Given** an agent session ends
-**When** the agent is restarted
-**Then** the memory system loads previously stored knowledge from disk
-**And** the agent has access to memories from prior sessions
-
-**Given** memory persistence
-**When** data is serialized to disk
-**Then** it is stored as JSON files in the agent's data directory
-**And** the format supports in-memory loading with indexed lookups
-
-**Given** the memory system
-**When** the agent queries memory for relevant context (e.g., "what happened last time I visited this hex?")
-**Then** relevant memories are retrieved based on recency and relevance
-**And** retrieved memories are included in the LLM prompt context for decision-making
-
-**Given** memory accumulation over many sessions
-**When** the memory store grows large
-**Then** older or less-relevant memories can be summarized or pruned
-**And** memory storage size remains bounded per agent
-
-### Story 9.4: Affordance Detection Engine
-
-As a researcher,
-I want agents to detect available actions and estimate cost/reward for each,
-So that agents can make economically rational decisions in the game world.
-
-**Acceptance Criteria:**
-
-**Given** the agent's current world state (position, inventory, nearby entities)
-**When** the affordance engine runs
-**Then** all currently available actions are identified based on the agent's skills, position, and game state (FR26)
-
-**Given** detected available actions
-**When** the affordance engine estimates costs and rewards
-**Then** each action has: ILP cost (from cost registry), estimated reward (heuristic or learned), prerequisites met (boolean), and confidence score
-
-**Given** the affordance list
-**When** it is provided to the goal planner (GoalsLLM or GoalsSimple)
-**Then** the planner uses cost/reward estimates to make informed decisions
-**And** the decision log captures which affordances were considered and why the chosen action was selected
-
-**Given** the agent's budget constraints
-**When** affordances are evaluated
-**Then** actions exceeding the remaining budget are marked as unaffordable
-**And** the planner is informed to avoid budget-exceeding actions
-
-**Given** a changing game world
-**When** SpacetimeDB subscription updates arrive
-**Then** the affordance list is recalculated to reflect new available actions
-**And** actions that are no longer possible (moved out of range, resource depleted) are removed
-
----
-
-## Epic 10: TUI Advanced Gameplay (Phase 2)
-
-Players can engage in the full depth of BitCraft from their terminal — combat, crafting, building, trading, and empire management. Each system extends the TUI with new panels, action menus, and skill file mappings, building on the core gameplay established in Epic 7.
-
-### Story 10.1: Combat System
+### Story 16.1: TUI Combat Panel & Action Menu
 
 As a player,
 I want to engage in combat with game entities and other players from my terminal,
@@ -2104,7 +2971,7 @@ So that I can defend my territory, compete for resources, and progress through c
 **And** the CostPreview widget shows the cost before execution
 
 **Given** a combat action is executed
-**When** `client.publish()` calls the corresponding combat reducer
+**When** the TUI backend calls the combat reducer (using Epic 10 fixtures)
 **Then** the combat result is reflected via SpacetimeDB subscription updates
 **And** health changes, damage dealt, and combat outcomes are displayed in the relevant panels
 
@@ -2118,10 +2985,10 @@ So that I can defend my territory, compete for resources, and progress through c
 **Then** combat-related reducers are mapped to skill files with appropriate costs and prerequisites
 **And** the same skills are available to AI agents via MCP tools
 
-### Story 10.2: Crafting System
+### Story 16.2: TUI Crafting Panel
 
 As a player,
-I want to craft items using recipes and gathered resources,
+I want to craft items using recipes and gathered resources from the TUI,
 So that I can create equipment, tools, and trade goods.
 
 **Acceptance Criteria:**
@@ -2134,7 +3001,7 @@ So that I can create equipment, tools, and trade goods.
 **Given** a craftable recipe selected
 **When** the player initiates crafting
 **Then** the CostPreview shows the ILP cost
-**And** `client.publish()` calls the appropriate `craft_*` reducer
+**And** the TUI backend calls the appropriate `craft_*` reducer (using Epic 5 fixtures)
 
 **Given** a successful craft action
 **When** SpacetimeDB subscription updates arrive
@@ -2145,10 +3012,10 @@ So that I can create equipment, tools, and trade goods.
 **When** loaded from static data tables
 **Then** recipe names, descriptions, and material requirements are resolved from \*\_desc tables
 
-### Story 10.3: Building & Territory Management
+### Story 16.3: TUI Building & Territory Panel
 
 As a player,
-I want to construct and manage buildings on claimed territory,
+I want to construct and manage buildings on claimed territory from the TUI,
 So that I can establish a base, produce resources, and expand my empire's footprint.
 
 **Acceptance Criteria:**
@@ -2158,7 +3025,7 @@ So that I can establish a base, produce resources, and expand my empire's footpr
 **Then** available building types are listed with material costs, ILP costs, and prerequisites (FR35)
 
 **Given** a building is placed
-**When** `client.publish()` calls the `build_*` reducer
+**When** the TUI backend calls the building reducer (using Epic 11 fixtures)
 **Then** the building appears on the hex grid map at the specified location
 **And** the player's inventory is decremented by the material cost
 
@@ -2171,10 +3038,10 @@ So that I can establish a base, produce resources, and expand my empire's footpr
 **When** SpacetimeDB updates arrive
 **Then** the map and building panels reflect current state automatically
 
-### Story 10.4: Trading Marketplace
+### Story 16.4: TUI Trading & Marketplace Panel
 
 As a player,
-I want to create and respond to trade offers with other players,
+I want to create and respond to trade offers with other players from the TUI,
 So that I can buy and sell resources, items, and services in the game economy.
 
 **Acceptance Criteria:**
@@ -2185,12 +3052,12 @@ So that I can buy and sell resources, items, and services in the game economy.
 
 **Given** the player wants to create a trade offer
 **When** they specify items to offer and items to request
-**Then** `client.publish()` creates the trade offer via the `trade_*` reducer
+**Then** the TUI backend creates the trade offer (using Epic 12 fixtures)
 **And** the offer appears in the marketplace for other players
 
 **Given** an existing trade offer from another player
 **When** the player accepts the offer
-**Then** `client.publish()` executes the trade via the appropriate reducer
+**Then** the TUI backend executes the trade (using Epic 12 fixtures)
 **And** both players' inventories update via SpacetimeDB subscriptions
 
 **Given** a trade the player created
@@ -2198,10 +3065,10 @@ So that I can buy and sell resources, items, and services in the game economy.
 **Then** a cancel action is available with the trade still active
 **And** the offer is removed from the marketplace after cancellation
 
-### Story 10.5: Empire Management
+### Story 16.5: TUI Empire Management Panel
 
 As a player,
-I want to participate in empire management — join, create, govern, and conduct diplomacy,
+I want to participate in empire management from the TUI — join, create, govern, and conduct diplomacy,
 So that I can collaborate with other players and compete at a larger scale.
 
 **Acceptance Criteria:**
@@ -2212,7 +3079,7 @@ So that I can collaborate with other players and compete at a larger scale.
 **And** a "Create Empire" option is available
 
 **Given** the player joins or creates an empire
-**When** the action is executed via `client.publish()`
+**When** the action is executed via the TUI backend (using Epic 13 fixtures)
 **Then** the Player tab updates with empire membership and role
 **And** empire-specific panels become available (member list, territory, diplomacy)
 
@@ -2225,125 +3092,40 @@ So that I can collaborate with other players and compete at a larger scale.
 **Then** the actions are executed through appropriate reducers with ILP costs
 **And** diplomacy status is visible in the empire panel
 
----
+### Story 16.6: TUI Skill & Progression Panel
 
-## Epic 11: Experiment Harness & Multi-Agent Research (Phase 2)
-
-Researchers can run comparative experiments with multiple concurrent agents, configure experiments from YAML files, snapshot and restore world state for reproducibility, and analyze decision logs across experiment runs.
-
-### Story 11.1: Multi-Agent Concurrent Launcher
-
-As a researcher,
-I want to run multiple agents concurrently against the same game world,
-So that I can study multi-agent dynamics, competition, and emergent behavior.
+As a player,
+I want to view my skill levels, XP progress, and knowledge discoveries in the TUI,
+So that I can track my character progression across all 20 professions.
 
 **Acceptance Criteria:**
 
-**Given** a multi-agent configuration (YAML or command-line)
-**When** the launcher is invoked
-**Then** N agents are spawned concurrently, each with its own Nostr identity and @sigil/client instance (FR40)
-**And** each agent connects to the same SpacetimeDB server
+**Given** the Player tab with Skills category selected
+**When** it renders
+**Then** all 20 skill professions are listed with current level, XP progress toward next level, and max level
 
-**Given** multiple concurrent agents
-**When** all are running
-**Then** each agent operates independently with its own Agent.md, skill set, and budget
-**And** each produces its own JSONL decision log
+**Given** a skill in the list
+**When** selected
+**Then** the detail panel shows: skill name, current level, total XP, XP to next level, related character stats (e.g., CarpentrySpeed, CarpentryPower)
+**And** data is sourced from `experience_state` and `character_stats_state` subscriptions (using Epic 9 fixtures)
 
-**Given** concurrent agents under load
-**When** 10+ agents are active simultaneously
-**Then** the system remains stable and performant (NFR14)
-**And** SpacetimeDB subscriptions remain responsive for all connected clients
+**Given** a knowledge/discovery view
+**When** the player browses discovered knowledge
+**Then** entries from `knowledge_*_state` tables are displayed organized by category (resources, crafting, enemies, buildings, etc.)
+**And** discovery states (Unknown, Discovered, Acquired) are visually distinguished
 
-**Given** the agent launcher
-**When** a single agent crashes or exceeds its budget
-**Then** other agents continue running unaffected
-**And** the failed agent's status and error are logged
-
-### Story 11.2: YAML Experiment Configuration
-
-As a researcher,
-I want to define experiments in YAML configuration files,
-So that I can specify agent configurations, parameters, and experiment metadata declaratively.
-
-**Acceptance Criteria:**
-
-**Given** a YAML experiment configuration file
-**When** the experiment runner parses it
-**Then** the following are extracted: experiment name, agent configurations (count, Agent.md paths, skill sets), duration, and success criteria (FR41)
-
-**Given** a valid experiment configuration
-**When** the experiment is launched
-**Then** all specified agents are started with their respective configurations
-**And** experiment metadata (start time, config hash, versions) is recorded
-
-**Given** an experiment configuration referencing invalid Agent.md paths or skills
-**When** validation runs before launch
-**Then** clear errors identify the invalid references
-**And** the experiment does not start with a partial configuration
-
-**Given** completed experiments
-**When** the configuration file is archived alongside results
-**Then** the exact experiment is reproducible by re-running the same YAML file against the same world state
-
-### Story 11.3: World State Snapshot & Restore
-
-As a researcher,
-I want to snapshot and restore SpacetimeDB world state,
-So that I can run reproducible experiments from the same starting conditions.
-
-**Acceptance Criteria:**
-
-**Given** a running game world
-**When** the researcher triggers a snapshot
-**Then** the current SpacetimeDB world state is captured and saved to a timestamped snapshot file (FR42)
-
-**Given** a saved snapshot
-**When** the researcher triggers a restore
-**Then** the SpacetimeDB world state is restored to the captured state
-**And** all connected clients receive subscription updates reflecting the restored state
-
-**Given** a snapshot file
-**When** multiple experiments are run from the same snapshot
-**Then** each experiment starts from identical world conditions
-**And** results are comparable across runs
-
-**Given** snapshot/restore operations
-**When** they execute
-**Then** the operations complete within a reasonable timeframe for the world size
-**And** agent states (decision logs, budgets) are reset or preserved as configured
-
-### Story 11.4: Comparative Decision Log Analysis
-
-As a researcher,
-I want to compare decision logs across experiment runs,
-So that I can evaluate how different agent configurations or LLM backends affect behavior and outcomes.
-
-**Acceptance Criteria:**
-
-**Given** decision logs from multiple experiment runs
-**When** the analysis tool processes them
-**Then** comparative metrics are produced: actions taken, budget efficiency, area explored, goals achieved, error rates (FR43)
-
-**Given** two experiment runs with different LLM backends
-**When** compared
-**Then** the analysis highlights behavioral differences: decision latency, action distribution, cost patterns, and outcome quality
-
-**Given** comparative analysis results
-**When** the researcher reviews them
-**Then** results are formatted as structured reports (JSON or markdown)
-**And** key metrics are summarized with statistical comparisons
-
-**Given** decision logs from agents with different skill configurations
-**When** compared
-**Then** the analysis shows how skill availability affected agent behavior and decision patterns
+**Given** the player performs an action that grants XP
+**When** `experience_state` updates via subscription
+**Then** the skill panel updates in real-time to reflect the new XP and potential level-up
 
 ---
 
-## Epic 12: World Extensibility (Phase 2)
+## Epic 17: World Extensibility (Phase 3)
 
 Game developers can make any SpacetimeDB world agent-accessible by writing skill files for its public reducers and registering Crosstown BLS handlers — no SDK code changes required. The platform generalizes beyond BitCraft.
+**FRs covered:** FR48, FR49
 
-### Story 12.1: Skill File Authoring for New Worlds
+### Story 17.1: Skill File Authoring for New Worlds
 
 As a game developer,
 I want to write skill files for my SpacetimeDB world's public reducers,
@@ -2371,7 +3153,7 @@ So that AI agents and TUI players can interact with my game through the Sigil pl
 **Then** AI agents can play the new world using the same MCP protocol
 **And** the only per-world customization is the skill files themselves
 
-### Story 12.2: BLS Handler Registration for Third-Party Games
+### Story 17.2: BLS Handler Registration for Third-Party Games
 
 As a game developer,
 I want to register a Crosstown BLS handler for my SpacetimeDB module's reducers,
@@ -2395,11 +3177,12 @@ So that my game world is accessible through the ILP payment pipeline.
 
 ---
 
-## Epic 13: Platform Expansion (Phase 3)
+## Epic 18: Platform Expansion (Phase 3)
 
 The platform auto-generates skeleton skill files from any SpacetimeDB module's published schema, dramatically lowering the barrier for new world integration and enabling rapid onboarding of new game worlds.
+**FRs covered:** FR50
 
-### Story 13.1: Auto-Generate Skill Files from SpacetimeDB Schema
+### Story 18.1: Auto-Generate Skill Files from SpacetimeDB Schema
 
 As a game developer,
 I want the system to auto-generate skeleton skill files from my SpacetimeDB module's published schema,

@@ -411,6 +411,47 @@ export async function subscribeToStory56Tables(
 }
 
 /**
+ * Additional tables required for Story 5.7: Multi-Step Crafting Loop Validation
+ *
+ * These 6 tables extend Story 5.5's 7 tables to provide the 13 tables needed
+ * for crafting loop validation including building discovery, progressive action
+ * tracking, passive crafts, and public craft visibility.
+ * See BitCraft Game Reference Subscription Quick Reference.
+ *
+ * Note: inventory_state and progressive_action_state are shared with Story 5.6.
+ * building_state, passive_craft_state, public_progressive_action_state are NEW.
+ * experience_state is shared with Story 5.6.
+ */
+export const STORY_57_TABLES = [
+  'SELECT * FROM inventory_state',
+  'SELECT * FROM building_state',
+  'SELECT * FROM progressive_action_state',
+  'SELECT * FROM passive_craft_state',
+  'SELECT * FROM experience_state',
+  'SELECT * FROM public_progressive_action_state',
+];
+
+/**
+ * Subscribe to all 13 tables required for Story 5.7
+ *
+ * Subscribes to: all 7 from Story 5.5 (user_state, player_state,
+ * signed_in_player_state, mobile_entity_state, health_state, stamina_state,
+ * player_action_state) PLUS inventory_state, building_state,
+ * progressive_action_state, passive_craft_state, experience_state,
+ * public_progressive_action_state
+ *
+ * Designed for reuse by Story 5.8 which may need the same crafting tables.
+ *
+ * @param testConnection - Active SpacetimeDB test connection
+ * @returns Promise that resolves when subscription is applied
+ */
+export async function subscribeToStory57Tables(
+  testConnection: SpacetimeDBTestConnection
+): Promise<void> {
+  return subscribeToTables(testConnection, [...STORY_55_TABLES, ...STORY_57_TABLES]);
+}
+
+/**
  * Wait for a table row update (modification) matching a predicate
  *
  * SpacetimeDB SDK may emit row modifications as a delete+insert pair rather than

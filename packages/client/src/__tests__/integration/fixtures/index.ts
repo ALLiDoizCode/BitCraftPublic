@@ -1,9 +1,10 @@
 /**
  * Integration Test Fixtures - Public API
- * Stories 5.4-5.6: Action Round-Trip, Player Lifecycle, and Resource Gathering Validation
+ * Stories 5.4-5.7: Action Round-Trip, Player Lifecycle, Resource Gathering,
+ * and Multi-Step Crafting Loop Validation
  *
  * Barrel export for all reusable test fixtures.
- * Import from this index for Stories 5.6-5.8.
+ * Import from this index for Stories 5.7-5.8.
  *
  * @example
  * ```typescript
@@ -19,13 +20,21 @@
  *   teardownPlayer,
  *   subscribeToStory55Tables,
  *   subscribeToStory56Tables,
+ *   subscribeToStory57Tables,
  *   findGatherableResource,
  *   findExtractionRecipe,
  *   moveNearResource,
  *   executeExtraction,
  *   verifyInventoryContains,
  *   verifyResourceHealthDecremented,
+ *   findCraftingBuilding,
+ *   findCraftingRecipe,
+ *   moveNearBuilding,
+ *   executeCraftingLoop,
+ *   verifyMaterialsConsumed,
+ *   verifyCraftedItemReceived,
  *   STORY_56_TABLES,
+ *   STORY_57_TABLES,
  * } from './fixtures';
  * ```
  *
@@ -60,7 +69,9 @@ export {
   subscribeToStory54Tables,
   subscribeToStory55Tables,
   subscribeToStory56Tables,
+  subscribeToStory57Tables,
   STORY_56_TABLES,
+  STORY_57_TABLES,
 } from './subscription-helpers';
 
 // Composite test client factory
@@ -98,3 +109,52 @@ export {
   type ExecuteExtractionParams,
   type ExtractionResult,
 } from './resource-helpers';
+
+// Crafting discovery, execution, verification (Story 5.7)
+export {
+  findCraftingBuilding,
+  findCraftingRecipe,
+  moveNearBuilding,
+  executeCraftingLoop,
+  verifyMaterialsConsumed,
+  verifyCraftedItemReceived,
+  CRAFTING_PROGRESSIVE_ACTION_DELAY_MS,
+  CRAFTING_CONTINUE_DELAY_MS,
+  CRAFTING_TIMING_RETRY_COUNT,
+  CRAFTING_RETRY_DELAY_MS,
+  CRAFTING_MAX_CONTINUE_ITERATIONS,
+  CRAFTING_SUBSCRIPTION_WAIT_TIMEOUT_MS,
+  CRAFTING_BUILDING_RANGE,
+  CRAFTING_MOVEMENT_BUFFER,
+  type CraftingBuilding,
+  type CraftingRecipe,
+  type ExecuteCraftingLoopParams,
+  type CraftingLoopResult,
+} from './crafting-helpers';
+
+// Seed helpers — cheat/admin reducer wrappers for test scenario composition
+export {
+  grantItems,
+  grantExperience,
+  grantKnowledge,
+  teleportPlayer,
+  spawnEnemy,
+  placeBuilding,
+  discoverMap,
+  killEntity,
+  forceResourceRegen,
+  despawnOverworldEnemies,
+  startServerAgents,
+  stopServerAgents,
+  EnemyTypeId,
+  type EnemyTypeIdValue,
+  type GrantItemsParams,
+  type GrantExperienceParams,
+  type GrantKnowledgeParams,
+  type TeleportPlayerParams,
+  type SpawnEnemyParams,
+  type PlaceBuildingParams,
+  type DiscoverMapParams,
+  type KillEntityParams,
+  type ForceResourceRegenParams,
+} from './seed-helpers';

@@ -78,6 +78,15 @@ if ! spacetime describe bitcraft --server localhost >/dev/null 2>&1; then
         exit 1
     fi
     echo "BitCraft module published successfully"
+
+    # Generate deterministic dev island world (10x10 chunks, all entity types)
+    # Requires Admin role — auto-granted in dev environment via has_role() bypass
+    echo "Generating dev island world..."
+    if spacetime call bitcraft generate_dev_island --server localhost; then
+        echo "Dev island world generated successfully"
+    else
+        echo "WARNING: generate_dev_island failed (non-fatal, world may already exist)"
+    fi
 else
     echo "BitCraft database already exists"
 fi
