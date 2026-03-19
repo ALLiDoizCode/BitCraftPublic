@@ -26,7 +26,7 @@
 | ------------------------------------------- | -------------------------------------------------- | --------------------------------- |
 | SpacetimeDB 1.6.x protocol                  | Pins subscription API surface                      | `@sigil/client`                   |
 | Crosstown consumed as dependency            | No modifications to payment layer                  | Write path                        |
-| BitCraft server unmodified                  | Must work with vanilla reducers                    | All game interactions             |
+| BitCraft server fork (Apache 2.0)           | Reducers modified for identity propagation (ADR-005) | All game interactions             |
 | Nostr public key = sole identity            | No username/password fallback                      | Identity system                   |
 | ILP payment on every write                  | Zero bypass paths allowed                          | Business model                    |
 | Skill file format parsed by `@sigil/client` | Single parser in TypeScript, served to TUI via IPC | Core interoperability             |

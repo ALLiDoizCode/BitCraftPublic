@@ -22,7 +22,7 @@
 
 ## Data Architecture
 
-**Database:** SpacetimeDB (server-side, unmodified BitCraft). No additional database required for MVP.
+**Database:** SpacetimeDB (server-side, BitCraft fork with identity modifications). No additional database required for MVP.
 
 - SpacetimeDB SDK 1.3.3 (1.x) required for compatibility with BitCraft's 1.6.0 server (SDK 2.0+ NOT backwards compatible)
 - ~80 entity tables, 148 static data tables, 364+ reducers available

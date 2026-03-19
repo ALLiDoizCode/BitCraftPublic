@@ -22,6 +22,6 @@
 
 ## Licensing & Naming
 
-- **BitCraft Server:** Apache 2.0 licensed fork, run unmodified. Our product — SDK, TUI client, platform brand — must have its own independent name.
+- **BitCraft Server:** Apache 2.0 licensed fork, modified with identity propagation changes (reducers accept identity parameter per ADR-005). Our product — SDK, TUI client, platform brand — must have its own independent name.
 - **SDK licensing:** Open-source (license TBD — MIT, Apache 2.0, or AGPL for infrastructure moat). License choice affects community adoption vs. competitive protection.
 - **Third-party dependencies:** SpacetimeDB SDK, Nostr client libraries, ILP/Crosstown libraries, ratatui — all must have compatible licenses.

@@ -122,7 +122,7 @@ node agent.js --wallet g.agent.alice --budget 1000
 
 - **[HANDOFF.md](./HANDOFF.md)** - Complete design document and implementation plan
 - **[README.md](./README.md)** - Original BitCraft documentation
-- **BitCraftServer/** - Vanilla BitCraft server (unmodified)
+- **BitCraftServer/** - BitCraft server fork (modified for identity propagation per ADR-005)
 
 ---
 

@@ -50,7 +50,7 @@ This document defines the architecture for an **AI Agent SDK** that enables LLM-
 | **Observable**                 | Every agent perception, decision, and action must be loggable and replayable                     |
 | **Reproducible**               | Snapshot game + agent state; rerun experiments from the same starting conditions                 |
 | **Pluggable**                  | Swap LLM backends, cognition strategies, and memory implementations independently                |
-| **Unmodified BitCraft**        | Zero changes to the BitCraft server — it runs vanilla in Docker                                  |
+| **BitCraft Fork**              | BitCraft server runs as an Apache 2.0 fork with identity propagation modifications (ADR-005)     |
 | **ILP is Crosstown's Problem** | The Agent SDK publishes Nostr events via `@crosstown/client`; payment validation is out of scope |
 | **TypeScript First**           | Native compatibility with SpacetimeDB TS SDK and Crosstown; researchers can hack on it quickly   |
 
@@ -76,7 +76,7 @@ This document defines the architecture for an **AI Agent SDK** that enables LLM-
 │  (Docker container)  │    │  (existing project)              │
 │                      │    │                                  │
 │  SpacetimeDB module  │    │  BLS validates ILP payment       │
-│  Unmodified source   │    │  Relay stores Nostr events       │
+│  Apache 2.0 fork     │    │  Relay stores Nostr events       │
 │  Local dev only      │    │  Connector routes ILP packets    │
 └──────────────────────┘    └──────────────────────────────────┘
         ▲                              │
@@ -88,7 +88,7 @@ This document defines the architecture for an **AI Agent SDK** that enables LLM-
 | Component           | Owner                                       | Modifiable?                   | Purpose                                 |
 | ------------------- | ------------------------------------------- | ----------------------------- | --------------------------------------- |
 | **Agent SDK**       | Us (new repo)                               | Yes                           | Cognition framework, experiment harness |
-| **BitCraft Server** | Clockwork Labs (Apache 2.0 fork)            | No — run unmodified in Docker | Game logic, state, reducers             |
+| **BitCraft Server** | Clockwork Labs (Apache 2.0 fork)            | Yes — identity propagation modifications (ADR-005) | Game logic, state, reducers             |
 | **Crosstown Node**  | Existing project (`~/Documents/crosstown/`) | No — consume as dependency    | ILP payment gateway, Nostr relay        |
 | **SpacetimeDB**     | Clockwork Labs (open source)                | No — use SDK                  | Real-time database, subscriptions       |
 
@@ -863,13 +863,13 @@ volumes:
 **Requirements:**
 
 - Retain Apache 2.0 license and copyright notices in the BitCraft Server code
-- Mark modified files with prominent change notices (if we modify — we don't plan to)
+- Mark modified files with prominent change notices (required — identity propagation modifications per ADR-005)
 - Do NOT use BitCraft trademarks, IP, art, or branding
 - Do NOT present the project as official BitCraft
 
 **Our Agent SDK:** Licensed separately (recommend MIT or Apache 2.0 for maximum researcher adoption).
 
-**Risk Assessment:** Low. We run unmodified BitCraft in Docker as a game environment. Our product is the Agent SDK — a separate, original work. We don't compete with BitCraft (AI research platform vs human MMORPG), don't use their IP, and don't operate public-facing servers.
+**Risk Assessment:** Low. We run BitCraft as an Apache 2.0 fork in Docker with identity propagation modifications (ADR-005). Apache 2.0 explicitly permits modification and derivative works. Our product is the Agent SDK — a separate, original work. We don't compete with BitCraft (AI research platform vs human MMORPG), don't use their IP, and don't operate public-facing servers.
 
 ---
 
@@ -929,7 +929,7 @@ _This document is a living artifact. Update as decisions are made and implementa
 | ------------------------------------------- | -------------------------------------------------- | --------------------------------- |
 | SpacetimeDB 1.6.x protocol                  | Pins subscription API surface                      | `@sigil/client`                   |
 | Crosstown consumed as dependency            | No modifications to payment layer                  | Write path                        |
-| BitCraft server unmodified                  | Must work with vanilla reducers                    | All game interactions             |
+| BitCraft server fork (Apache 2.0)           | Reducers modified for identity propagation (ADR-005) | All game interactions             |
 | Nostr public key = sole identity            | No username/password fallback                      | Identity system                   |
 | ILP payment on every write                  | Zero bypass paths allowed                          | Business model                    |
 | Skill file format parsed by `@sigil/client` | Single parser in TypeScript, served to TUI via IPC | Core interoperability             |
@@ -1084,7 +1084,7 @@ mkdir -p crates/{core,tui,client}
 
 ### Data Architecture
 
-**Database:** SpacetimeDB (server-side, unmodified BitCraft). No additional database required for MVP.
+**Database:** SpacetimeDB (server-side, BitCraft fork with identity modifications). No additional database required for MVP.
 
 - SpacetimeDB 2.0 client SDKs targeting 1.6.x server modules (backwards compatible)
 - ~80 entity tables, 148 static data tables, 364+ reducers available
@@ -1828,7 +1828,7 @@ sigil/
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                        SpacetimeDB Server                          │
-│  (BitCraft WASM module — unmodified, ~80 tables, 364+ reducers)    │
+│  (BitCraft WASM module — Apache 2.0 fork, ~80 tables, 364+ reducers) │
 └──────────┬──────────────────────────────────┬───────────────────────┘
            │ WebSocket v2 (subscriptions)      │ reducer calls
            ▼                                   ▲

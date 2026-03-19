@@ -10,12 +10,12 @@
 **Requirements:**
 
 - Retain Apache 2.0 license and copyright notices in the BitCraft Server code
-- Mark modified files with prominent change notices (if we modify — we don't plan to)
+- Mark modified files with prominent change notices (required — identity propagation modifications per ADR-005)
 - Do NOT use BitCraft trademarks, IP, art, or branding
 - Do NOT present the project as official BitCraft
 
 **Our Agent SDK:** Licensed separately (recommend MIT or Apache 2.0 for maximum researcher adoption).
 
-**Risk Assessment:** Low. We run unmodified BitCraft in Docker as a game environment. Our product is the Agent SDK — a separate, original work. We don't compete with BitCraft (AI research platform vs human MMORPG), don't use their IP, and don't operate public-facing servers.
+**Risk Assessment:** Low. We run BitCraft as an Apache 2.0 fork in Docker with identity propagation modifications (ADR-005). Apache 2.0 explicitly permits modification and derivative works. Our product is the Agent SDK — a separate, original work. We don't compete with BitCraft (AI research platform vs human MMORPG), don't use their IP, and don't operate public-facing servers.
 
 ---

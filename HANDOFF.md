@@ -43,7 +43,7 @@ Create a fully playable headless MMORPG where:
 │              BitCraft Server (SpacetimeDB)                   │
 │  - All game logic in reducers (movement, combat, etc.)      │
 │  - All game state in tables                                 │
-│  - Unmodified vanilla BitCraft                              │
+│  - Modified BitCraft fork (identity propagation, ADR-005)    │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -53,7 +53,7 @@ Create a fully playable headless MMORPG where:
 
 ### 1. **BLS as Payment Gateway** (PREFERRED APPROACH)
 
-Instead of modifying BitCraft reducers, use Crosstown BLS as a proxy:
+Use Crosstown BLS as a payment gateway and identity propagation proxy (BitCraft reducers modified to accept identity parameter per ADR-005):
 
 ```
 Agent → Nostr Event (game action + ILP proof)
@@ -64,7 +64,7 @@ Agent → Nostr Event (game action + ILP proof)
 
 **Benefits:**
 
-- ✅ No BitCraft modifications needed
+- ✅ Minimal BitCraft modifications (identity parameter added per ADR-005)
 - ✅ Reuse existing Crosstown ILP validation
 - ✅ Clean separation: BLS = payments, SpacetimeDB = game logic
 - ✅ Nostr events provide audit trail
@@ -447,7 +447,7 @@ BitCraftPublic/
 
 1. BitCraft is **already headless-ready** - server has all logic, client is just UI
 2. SpacetimeDB SDK provides programmatic access - no client needed
-3. ILP-gating via BLS is cleaner than modifying BitCraft directly
+3. ILP-gating via BLS with minimal BitCraft reducer modifications (identity parameter, ADR-005) enables clean identity propagation
 4. Agent cognition requires **5 layers**: static data, events, memory, affordances, goals
 5. The hard problem isn't game access - it's **agent understanding and memory**
 

@@ -83,7 +83,7 @@ The module contains approximately **669 reducers** total, broken down as:
 
 **Player Resolution:** The function `game_state::actor_id(ctx, must_be_signed_in)` looks up `ctx.sender` in the `user_state` table to find the player's `entity_id` (a `u64`). This is the primary mechanism by which reducers know which player is acting.
 
-**No explicit identity parameter:** Unmodified BitCraft reducers do NOT accept an identity string as a parameter. They rely entirely on `ctx.sender` from the SpacetimeDB framework.
+**Identity parameter (ADR-005):** BitCraft reducers have been modified to accept an `identity: String` parameter for BLS identity propagation. This allows the BLS handler to pass the Nostr public key through to reducers, which use it instead of relying solely on `ctx.sender` from the SpacetimeDB framework. See BLOCKER-1 resolution below.
 
 ---
 
@@ -464,31 +464,17 @@ The current BLS handler (`packages/bitcraft-bls/src/handler.ts`) does the follow
 4. **Prepends the pubkey as the first argument:** `[ctx.pubkey, ...args]`
 5. Calls SpacetimeDB reducer via HTTP API: `POST /database/bitcraft/call/{reducer}` with `Authorization: Bearer <admin_token>`
 
-### BLOCKER-1 Analysis: Identity Propagation Mismatch
+### BLOCKER-1 Resolution: Identity Propagation (ADR-005)
 
-**The Problem:**
+**Original Problem:**
 
-The BLS handler prepends the Nostr pubkey as the first reducer argument (`[pubkey, ...args]`), but BitCraft reducers do NOT accept an identity parameter. They use `ctx.sender` exclusively.
+The BLS handler prepends the Nostr pubkey as the first reducer argument (`[pubkey, ...args]`), but unmodified BitCraft reducers did not accept an identity parameter. They used `ctx.sender` exclusively, which would resolve to the admin identity when called via the BLS HTTP API.
 
-When the BLS handler calls a reducer via HTTP with the admin token, `ctx.sender` will be the **admin identity** -- NOT the player's identity. Therefore:
+**Resolution: Option B -- Modify reducers to accept identity parameter (ADR-005)**
 
-1. `game_state::actor_id()` will look up the admin identity in `user_state`, which will either not find a player entity (returning "Invalid sender" error) or find the admin's entity (acting as the admin, not the intended player).
-2. The prepended Nostr pubkey argument will cause a **type mismatch** error because the reducer expects its first real argument (e.g., a `PlayerMoveRequest` struct), not a string.
+BLOCKER-1 has been resolved by modifying BitCraft reducers to accept an `identity: String` parameter. The BLS handler passes the Nostr public key as this parameter, and reducers use it for player resolution instead of relying solely on `ctx.sender`. This approach was selected over alternatives (per-player SpacetimeDB tokens, identity-aware proxy, custom wrapper module) as the most direct solution for BLS identity propagation.
 
-**Resolution Options:**
-
-| Option | Description | Complexity | Recommended |
-|--------|-------------|------------|-------------|
-| **A: Modify BitCraft reducers** | Add `identity: String` as first parameter to every player-facing reducer, use it instead of `ctx.sender` | HIGH (modify ~180 reducers) | No |
-| **B: Per-player SpacetimeDB identity** | Create a SpacetimeDB identity for each player, use their individual token when calling via HTTP | MEDIUM (requires identity management) | Possible |
-| **C: Identity-aware proxy** | Modify the BLS handler to NOT prepend pubkey, instead use a different mechanism to convey player identity to SpacetimeDB | MEDIUM | Yes (preferred) |
-| **D: Custom SpacetimeDB module** | Add a wrapper reducer that accepts `(identity: String, reducer: String, args: Vec<u8>)` and dispatches internally after setting the appropriate context | MEDIUM-HIGH | Possible |
-
-**Recommendation for Stories 5.4-5.8:**
-
-For validation stories, the simplest approach is to call reducers directly via the SpacetimeDB WebSocket client (as a connected player) rather than through the BLS handler. This bypasses the identity propagation issue entirely and validates the reducer behavior itself. The BLS identity propagation issue should be resolved as a separate engineering task (likely requiring either Option B or Option C).
-
-**Key Insight:** The architecture's BLOCKER-1 ("BitCraft reducers WILL be modified to accept `identity: String` as first parameter") is architecturally expensive and potentially unnecessary. The SpacetimeDB HTTP call API already identifies the caller via the authentication token. The more practical approach is to manage per-player SpacetimeDB tokens or to modify the BLS handler to use a different identity mechanism.
+**Impact on validation stories:** Stories 5.4-5.8 validated reducer behavior via direct SpacetimeDB WebSocket client connections. With BLOCKER-1 resolved, future stories can test the full BLS pipeline end-to-end.
 
 ---
 
@@ -577,11 +563,11 @@ For validation stories, the simplest approach is to call reducers directly via t
 
 ### Identity Model Limitations
 
-1. **BLOCKER-1:** The BLS handler's identity propagation mechanism (prepending Nostr pubkey as first arg) is incompatible with unmodified BitCraft reducers. See Identity Propagation section for detailed analysis and recommendations.
+1. **BLOCKER-1 (RESOLVED):** The BLS identity propagation mismatch has been resolved via ADR-005. BitCraft reducers now accept an `identity: String` parameter, allowing the BLS handler to propagate the Nostr public key directly. See Identity Propagation section for details.
 
-2. **Admin Token Usage:** When calling reducers via HTTP with the SpacetimeDB admin token, all actions appear to come from the admin identity. There is no per-player identity delegation mechanism in the current architecture.
+2. **Admin Token Usage:** When calling reducers via HTTP with the SpacetimeDB admin token, `ctx.sender` resolves to the admin identity. The modified reducers use the explicit `identity` parameter (passed by BLS) for player resolution instead.
 
-3. **No Nostr Integration:** The BitCraft server has no awareness of Nostr keys. The `user_state.identity` field is a SpacetimeDB `Identity`, not a Nostr public key.
+3. **Nostr Key Awareness:** The modified BitCraft reducers accept Nostr public keys via the `identity` parameter. The `user_state.identity` field remains a SpacetimeDB `Identity` type; the mapping from Nostr pubkey to SpacetimeDB identity is handled at the BLS/reducer boundary.
 
 ### API Constraints
 
@@ -2382,17 +2368,17 @@ Each game loop is classified by which validation story exercises it and whether 
 
 | Game Loop | Validation Story | Test via WebSocket | Test via BLS | Notes |
 |-----------|-----------------|-------------------|-------------|-------|
-| Player Lifecycle | 5.4, 5.5 | Yes | No (BLOCKER-1) | WebSocket direct; `sign_in`/`sign_out` use `ctx.sender` |
-| Movement | 5.5 | Yes | No (BLOCKER-1) | WebSocket direct; `player_move` uses `actor_id(ctx, true)` |
-| Gathering | 5.6 | Yes | No (BLOCKER-1) | WebSocket direct; two-phase `extract_start`/`extract` |
-| Crafting | 5.7 | Yes | No (BLOCKER-1) | WebSocket direct; multi-step progressive action |
-| Building | Phase 2 | Yes | No (BLOCKER-1) | Complex claim/permission dependencies |
-| Combat | Phase 2 | Yes | No (BLOCKER-1) | Multi-entity, timer-based impact resolution |
-| Trading | Phase 2 | Yes (2 players) | No (BLOCKER-1) | Requires two simultaneous WebSocket connections |
-| Chat | 5.8 | Yes | No (BLOCKER-1) | Simple single-reducer test for error scenarios |
-| Empire | Phase 2 | Yes | No (BLOCKER-1) | Multi-player, territory control |
+| Player Lifecycle | 5.4, 5.5 | Yes | Yes (BLOCKER-1 resolved) | `sign_in`/`sign_out` accept identity parameter per ADR-005 |
+| Movement | 5.5 | Yes | Yes (BLOCKER-1 resolved) | `player_move` accepts identity parameter per ADR-005 |
+| Gathering | 5.6 | Yes | Yes (BLOCKER-1 resolved) | Two-phase `extract_start`/`extract` |
+| Crafting | 5.7 | Yes | Yes (BLOCKER-1 resolved) | Multi-step progressive action |
+| Building | Phase 2 | Yes | Yes (BLOCKER-1 resolved) | Complex claim/permission dependencies |
+| Combat | Phase 2 | Yes | Yes (BLOCKER-1 resolved) | Multi-entity, timer-based impact resolution |
+| Trading | Phase 2 | Yes (2 players) | Yes (BLOCKER-1 resolved) | Requires two simultaneous connections |
+| Chat | 5.8 | Yes | Yes (BLOCKER-1 resolved) | Simple single-reducer test for error scenarios |
+| Empire | Phase 2 | Yes | Yes (BLOCKER-1 resolved) | Multi-player, territory control |
 
-**Per BLOCKER-1:** All Stories 5.4-5.8 validation tests should call reducers directly via SpacetimeDB WebSocket client (as a connected player), bypassing the BLS handler. This validates reducer behavior itself, deferring BLS identity propagation resolution.
+**Note:** Stories 5.4-5.8 validation tests were written to call reducers directly via SpacetimeDB WebSocket client. With BLOCKER-1 resolved (ADR-005), future stories can validate the full BLS pipeline end-to-end.
 
 ---
 
@@ -2411,7 +2397,7 @@ Each game loop is classified by which validation story exercises it and whether 
 | Client-side validation | `executeReducer()` input validation | YES (client-only) | Regex validation rejects before server call |
 | Insufficient budget | BudgetPublishGuard (client-side) | YES (unit test) | Pre-flight rejection, no server call |
 | Connection loss (SpacetimeDB) | WebSocket disconnection | YES (Docker pause/unpause) | Server recovers after unpause |
-| Connection loss (Crosstown) | CrosstownAdapter | DEFERRED (BLOCKER-1) | Unit test coverage in crosstown-adapter.test.ts |
+| Connection loss (Crosstown) | CrosstownAdapter | YES (BLOCKER-1 resolved) | Unit test coverage in crosstown-adapter.test.ts; integration testing now unblocked |
 
 ### Error Catalog Entries
 
@@ -2441,7 +2427,7 @@ Each game loop is classified by which validation story exercises it and whether 
 |---------|-----------|----------|---------------|-------------------|----------------------|
 | Any | BUDGET_EXCEEDED | budget-guard | "Budget exceeded for action '{reducer}': cost {cost} exceeds remaining budget {remaining}" | No reducer call. Wallet and budget unchanged. | Agent budget remaining >= action cost |
 | Any | BUDGET_CHECK_FAILED | budget-guard | BudgetPublishGuard.canAfford() returns false | No state changes (pre-flight check) | Budget remaining >= action cost |
-| Any | INSUFFICIENT_BALANCE (deferred) | crosstown (deferred) | SigilError from client.publish.publish() when wallet balance < cost | Deferred to BLOCKER-1 | Wallet balance >= action cost via Crosstown/BLS |
+| Any | INSUFFICIENT_BALANCE | crosstown | SigilError from client.publish.publish() when wallet balance < cost | No state changes | Wallet balance >= action cost via Crosstown/BLS |
 
 #### Connection Loss Errors
 
@@ -2449,7 +2435,7 @@ Each game loop is classified by which validation story exercises it and whether 
 |----------|-----------|----------|---------------|-------------------|----------------------|
 | SpacetimeDB connection lost | CONNECTION_LOST | spacetimedb | WebSocket connection lost during Docker pause | Connection must be re-established. Subscription state requires re-subscription. Game state consistent. | Active WebSocket connection required |
 | SpacetimeDB reconnection | RECONNECTION_RECOVERY | spacetimedb | Fresh connection + sign-in produces consistent state after pause/unpause | Fully consistent after re-establishing connection and signing in | N/A |
-| Crosstown connection loss | NETWORK_TIMEOUT / NETWORK_ERROR | crosstown | DEFERRED per BLOCKER-1. Unit test coverage in crosstown-adapter.test.ts | No inconsistent state (NFR24) | Active Crosstown connection required |
+| Crosstown connection loss | NETWORK_TIMEOUT / NETWORK_ERROR | crosstown | Unit test coverage in crosstown-adapter.test.ts; integration testing now unblocked (BLOCKER-1 resolved) | No inconsistent state (NFR24) | Active Crosstown connection required |
 | Crosstown publish failure | PUBLISH_FAILED | crosstown | Crosstown connector rejected publish (4xx/5xx). Unit test coverage. | No state changes | Valid event format and Crosstown health |
 | Crosstown rate limit | RATE_LIMITED | crosstown | Crosstown 429 Too Many Requests. Retry after Retry-After header. | No state changes | Publish rate within limits |
 | Crosstown signing failure | SIGNING_FAILED | identity | Nostr event signing failed. Unit test coverage. | No state changes | Valid Nostr keypair loaded |

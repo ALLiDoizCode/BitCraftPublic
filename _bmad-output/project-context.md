@@ -24,7 +24,7 @@
 - **Epic 5 Delivered:** BitCraft Game Reference (~2,494 lines), 463 new tests, 9 reusable integration test fixtures, 324 document verification tests, 129 Docker integration tests
 
 **Epic 5 Delivered:**
-Epic 5 delivered the **BitCraft Game Analysis & Playability Validation** -- the first research-and-validation epic. Stories 5.1-5.3 analyzed the BitCraft server source code, producing a comprehensive Game Reference document (669 reducers, 138 tables, 80 FK relationships, 14 game systems, 9 game loops). Stories 5.4-5.8 validated the full gameplay pipeline against a live SpacetimeDB game world via Docker, establishing a 4-layer integration test fixture framework reusable by Epics 9-13. Zero production code was modified; all deliverables are documentation, test infrastructure, and integration tests. BLOCKER-1 (BLS identity propagation incompatibility) was confirmed and pragmatically worked around using direct WebSocket connections.
+Epic 5 delivered the **BitCraft Game Analysis & Playability Validation** -- the first research-and-validation epic. Stories 5.1-5.3 analyzed the BitCraft server source code, producing a comprehensive Game Reference document (669 reducers, 138 tables, 80 FK relationships, 14 game systems, 9 game loops). Stories 5.4-5.8 validated the full gameplay pipeline against a live SpacetimeDB game world via Docker, establishing a 4-layer integration test fixture framework reusable by Epics 9-13. Zero production code was modified; all deliverables are documentation, test infrastructure, and integration tests. BLOCKER-1 (BLS identity propagation incompatibility) was confirmed and pragmatically worked around using direct WebSocket connections. BLOCKER-1 has since been resolved via ADR-005 (modify BitCraft reducers to accept identity parameter).
 
 ---
 
@@ -38,7 +38,7 @@ Sigil is the brand name for the SDK/platform that enables:
 2. **Human Players** to interact with games via a terminal UI (TUI) built with ratatui
 3. **Researchers** to run multi-agent experiments and comparative decision analysis
 
-**BitCraft** refers ONLY to the v1 game world (Apache 2.0 fork). BitCraft reducers use `ctx.sender` via `game_state::actor_id()` for identity, which is incompatible with the BLS handler's Nostr pubkey prepend approach (BLOCKER-1).
+**BitCraft** refers ONLY to the v1 game world (Apache 2.0 fork, modified for identity propagation per ADR-005). BitCraft reducers are modified to accept an explicit `caller_identity: String` parameter, enabling BLS identity propagation.
 
 ### Brand & Package Naming
 
@@ -488,7 +488,7 @@ const metrics = computeMetrics(entries);
 
 **Key Design Decision:** Sigil client owns only event CONTENT construction. All signing, TOON encoding, payment channel management, and transport are delegated to `@crosstown/client`. The BLS handler owns identity propagation, pricing enforcement, and reducer dispatch.
 
-**BLOCKER-1 Note (confirmed in Epic 5):** The BLS handler prepends Nostr pubkey as the first reducer argument (step 14), but BitCraft reducers use `ctx.sender` via `game_state::actor_id()` for identity. These are incompatible. All Epic 5 integration tests bypass BLS and use direct WebSocket connections. Resolution required before MCP tools can use the publish pipeline in production.
+**BLOCKER-1 Resolved (ADR-005):** BitCraft reducers are modified to accept `caller_identity: String` as the first parameter, matching the BLS handler's prepend strategy (step 14). The `game_state::actor_id()` function is updated to resolve identity from this parameter instead of `ctx.sender`. Epic 5 integration tests used direct WebSocket connections (pre-resolution); future tests can validate the full BLS pipeline.
 
 ### 3. BLS Handler Architecture (Epic 3 - Complete)
 
@@ -599,7 +599,7 @@ packages/client/src/__tests__/integration/fixtures/
 
 **Key Design Decisions:**
 
-- **Direct WebSocket bypass** -- All integration tests connect directly to SpacetimeDB via WebSocket, bypassing BLS (due to BLOCKER-1)
+- **Direct WebSocket bypass** -- Epic 5 integration tests connect directly to SpacetimeDB via WebSocket, bypassing BLS (BLOCKER-1 now resolved via ADR-005; future tests can use full pipeline)
 - **BSATN serialization** -- Test client includes byte-level BinaryWriter serialization for each reducer's argument types
 - **Discovery-driven testing** -- Tests query the game world first, find suitable targets, then exercise game loops (AGREEMENT-15)
 - **Document verification tests** -- 324 tests validate the Game Reference's structure and completeness (AGREEMENT-14)
@@ -801,7 +801,7 @@ packages/client/src/__tests__/integration/fixtures/
 - 128 code review issues across 24 passes (0 critical, 0 high, 61 medium, 67 low), 111 fixed, 17 accepted
 - 0 real vulnerabilities across 8 security scans (17 false positives handled)
 - Zero production code modifications -- all deliverables are documentation, test infrastructure, and integration tests
-- BLOCKER-1 confirmed: all integration tests use direct WebSocket bypass
+- BLOCKER-1 resolved via ADR-005: Epic 5 tests used direct WebSocket bypass; full pipeline now unblocked
 
 **Epic 5 New Patterns Introduced:**
 
@@ -809,7 +809,7 @@ packages/client/src/__tests__/integration/fixtures/
 2. **Discovery-Driven Testing** -- Query the game world first, find suitable targets, then exercise game loops (AGREEMENT-15)
 3. **4-Layer Integration Test Fixture Framework** -- Infrastructure -> Connection -> Pipeline -> Game System layers with barrel exports
 4. **BSATN Serialization in Tests** -- Byte-level BinaryWriter encoding for SpacetimeDB reducer arguments
-5. **Direct WebSocket Bypass** -- Integration tests connect directly to SpacetimeDB, bypassing BLS (BLOCKER-1 workaround)
+5. **Direct WebSocket Bypass** -- Epic 5 integration tests connected directly to SpacetimeDB, bypassing BLS (BLOCKER-1 workaround, now resolved via ADR-005)
 6. **Progressive Fixture Building** -- Each story builds on previous story's fixtures, extending the framework incrementally
 
 ### Epic 6: MCP Server for AI Agents (NEXT)
@@ -831,8 +831,8 @@ packages/client/src/__tests__/integration/fixtures/
 - Returns to production code development (unlike Epic 5's research/validation focus)
 - First epic building on the `@sigil/mcp-server` package (currently a minimal placeholder)
 - Depends heavily on Epic 5 outputs: reducer catalog for tool definitions, game state model for resource schemas, game loop documentation for autonomous agent behavior
-- BLOCKER-1 resolution path is critical -- MCP tools will use `client.publish()` which goes through BLS
-- Preparation tasks: PREP-E6-1 (project context - THIS DOCUMENT), PREP-E6-2 (BLOCKER-1 strategy), PREP-E6-3 (MCP protocol review)
+- BLOCKER-1 resolved via ADR-005 -- BitCraft reducers modified to accept identity parameter, unblocking MCP tools
+- Preparation tasks: PREP-E6-1 (project context - DONE), PREP-E6-2 (BLOCKER-1 strategy - DONE, ADR-005), PREP-E6-3 (MCP protocol review)
 
 ---
 
@@ -948,13 +948,12 @@ cd crates/tui && cargo clippy            # Lint
 
 ### High Priority
 
-**DEBT-E5-1 / BLOCKER-1: BLS Identity Propagation Incompatibility**
+**DEBT-E5-1 / BLOCKER-1: BLS Identity Propagation — RESOLVED (ADR-005)**
 
-- BitCraft reducers use `ctx.sender` via `game_state::actor_id()` for identity. The BLS handler prepends Nostr pubkey as first argument. These are incompatible.
-- Identified in Story 2.4, confirmed in Story 5.1, worked around in Stories 5.4-5.8 using direct WebSocket.
-- All 129 Epic 5 integration tests bypass BLS. The full publish pipeline (`client.publish()` -> BLS -> SpacetimeDB) remains unvalidated end-to-end.
-- Resolution required before MCP tools (Epic 6) can use the publish pipeline in production.
-- Resolution strategy to be defined in PREP-E6-2 (ADR-005).
+- BitCraft reducers are modified to accept `caller_identity: String` as first parameter, matching BLS handler's prepend strategy.
+- Identified in Story 2.4, confirmed in Story 5.1, resolved via ADR-005 (2026-03-17).
+- Epic 5 integration tests used direct WebSocket bypass (pre-resolution). Future tests can validate the full BLS pipeline.
+- **Remaining work:** Implement the reducer modifications in the BitCraft fork and update `game_state::actor_id()` to use the explicit identity parameter.
 
 ### Medium Priority
 
@@ -992,7 +991,7 @@ cd crates/tui && cargo clippy            # Lint
 **DEBT-E5-5: Wallet Stub Mode Only (carried)**
 
 - WalletClient uses stub mode (fixed balance 10000). Real ILP fee deduction not tested.
-- Story 5.8 added 10 budget unit tests as proxy. Resolution depends on BLOCKER-1.
+- Story 5.8 added 10 budget unit tests as proxy. BLOCKER-1 now resolved (ADR-005); full pipeline testing unblocked.
 
 **DEBT-E3-4: Console Logging in BLS Handler** (PATTERN DEFINED)
 
@@ -1026,8 +1025,8 @@ cd crates/tui && cargo clippy            # Lint
 | #         | Item                                            | Priority | Status                |
 | --------- | ----------------------------------------------- | -------- | --------------------- |
 | PREP-E6-1 | Update project context                          | Critical | DONE (this document)  |
-| PREP-E6-2 | Assess BLOCKER-1 resolution strategy (ADR-005)  | Critical | Not started           |
-| PREP-E6-3 | Review MCP protocol specification               | Critical | Not started           |
+| PREP-E6-2 | Assess BLOCKER-1 resolution strategy (ADR-005)  | Critical | DONE (ADR-005 accepted) |
+| PREP-E6-3 | Review MCP protocol specification               | Critical | DONE                  |
 | PREP-E6-4 | Resolve DEBT-2 (static data table loading)      | Parallel | Not started           |
 | PREP-E6-5 | Convert priority BLS integration test placeholders | Parallel | Not started        |
 
@@ -1251,7 +1250,7 @@ docker compose -f docker/docker-compose.yml down -v && rm -rf docker/volumes/* &
 ### Next Workflow Steps
 
 1. ~~Execute PREP-E6-1 (project context)~~ DONE (this document)
-2. Execute PREP-E6-2 (BLOCKER-1 resolution strategy, create ADR-005) and PREP-E6-3 (MCP protocol review)
+2. ~~Execute PREP-E6-2 (BLOCKER-1 resolution strategy, create ADR-005)~~ DONE and PREP-E6-3 (MCP protocol review)
 3. Run `/auto-bmad:epic-start 6` to establish baseline and begin Epic 6
 4. Create Story 6.1 spec file (MCP Server Package & Transport Setup)
 5. Implement Epic 6 stories: 6.1 -> 6.2 -> 6.3 -> 6.4
@@ -1433,7 +1432,7 @@ Integration tests that depend on game world state (resources, buildings, recipes
 
 **Key Findings:**
 
-- BLOCKER-1 confirmed: BLS identity propagation is incompatible with BitCraft reducers
+- BLOCKER-1 confirmed in Epic 5, resolved via ADR-005 (modify reducers to accept identity parameter)
 - 669 reducers discovered (vs ~364 original estimate) across 14 game systems
 - Fresh game world may lack buildings/recipes for full crafting validation
 - Direct WebSocket bypass enables full gameplay validation without BLS
